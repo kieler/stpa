@@ -1,0 +1,42 @@
+{
+    "name": "vscode-xtext-sprotty-example",
+    "displayName": "STPA",
+    "description": "An DSL for STPA with Sprotty diagrams",
+    "repository": {
+        "type": "git"
+    },
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.46.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "stpa",
+                "aliases": [
+                    "stpa"
+                ],
+                "extensions": [
+                    ".stpa"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "stpa",
+                "scopeName": "source.stpa",
+                "path": "./syntaxes/stpa.tmLanguage.json"
+            }
+        ]
+    },
+    "files": [
+        "syntaxes"
+    ],
+    "scripts": {
+        "publish": "vsce publish"
+    }
+}
