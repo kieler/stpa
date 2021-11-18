@@ -15,7 +15,7 @@
                 "--extensionDevelopmentPath=${workspaceFolder}/extension"
             ],
             "outFiles": [
-                "${workspaceFolder}/extension/pack/*.js"
+                "${workspaceFolder}/extension/out/*.js"
             ],
             "sourceMaps": true
         }

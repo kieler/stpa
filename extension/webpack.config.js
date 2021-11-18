@@ -9,7 +9,7 @@ const config = {
 
     entry: path.resolve(__dirname, 'src/stpa-extension.ts'),
     output: { 
-        path: path.resolve(__dirname, 'pack'),
+        path: path.resolve(__dirname, 'out'),
         filename: 'stpa-extension.js',
         libraryTarget: "commonjs2",
         devtoolModuleFilenameTemplate: "../[resource-path]",

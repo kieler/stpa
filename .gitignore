@@ -6,3 +6,4 @@ pack
 *.vsix
 src-gen/
 *.tgz
+out

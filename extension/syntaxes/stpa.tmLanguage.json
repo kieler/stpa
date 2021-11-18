@@ -10,7 +10,7 @@
         },
         {
             "name": "keyword.control.stpa",
-            "match": "\\b(statemachine|state|event|=>)\\b"
+            "match": "\\b(person|Hello|event|=>)\\b"
         },
         {
             "name": "keyword.operator.stpa",
