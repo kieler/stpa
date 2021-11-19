@@ -6,18 +6,12 @@
 	"version": "0.2.0",
     "configurations": [
         {
-            "name": "STPA Extension",
+            "name": "Extension",
             "type": "extensionHost",
             "request": "launch",
-            "runtimeExecutable": "${execPath}",
             "args": [
-                "${workspaceFolder}/workspace",
                 "--extensionDevelopmentPath=${workspaceFolder}/extension"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/extension/out/*.js"
-            ],
-            "sourceMaps": true
+            ]
         }
     ]
 }

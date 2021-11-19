@@ -1,66 +1,51 @@
 {
-    "name": "STPA DSL",
-    "scopeName": "source.stpa",
-    "fileTypes": [
-        "stpa"
-    ],
-    "patterns": [
+  "name": "stpa",
+  "scopeName": "source.stpa",
+  "fileTypes": [
+    ".stpa"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "keyword.control.stpa",
+      "match": "\\b(Bye|Hello|person)\\b"
+    },
+    {
+      "name": "keyword.symbol.stpa",
+      "match": "(\\!)"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
         {
-            "include": "#comments"
-        },
-        {
-            "name": "keyword.control.stpa",
-            "match": "\\b(person|Hello|event|=>)\\b"
-        },
-        {
-            "name": "keyword.operator.stpa",
-            "match": "\\=\\>"
-        },
-        {
-            "name": "constant.numeric.stpa",
-            "match": "\\b[1-9][0-9]*\\b"
-        },
-        {
-            "name": "string.quoted.double.stpa",
-            "begin": "\"",
-            "end": "\""
-        },
-        {
-            "name": "string.quoted.single.stpa",
-            "begin": "'",
-            "end": "'"
-        }
-    ],
-    "repository": 
-        {
-            "comments": {
-                "patterns": [
-                    {
-                        "name": "comment.block.stpa",
-                        "begin": "/\\*",
-                        "beginCaptures": {
-                            "0": {
-                                "name": "punctuation.definition.comment.stpa"
-                            }
-                        },
-                        "end": "\\*/",
-                        "endCaptures": {
-                            "0": {
-                                "name": "punctuation.definition.comment.stpa"
-                            }
-                        }
-                    }, {
-                        "begin": "(^\\s+)?(?=//)",
-                        "beginCaptures": {
-                            "1": {
-                                "name": "punctuation.whitespace.comment.leading.cs"
-                            }
-                        },
-                        "end": "(?=$)",
-                        "name":"comment.line.stpa"
-                    }
-                ]
+          "name": "comment.block.stpa",
+          "begin": "/\\*",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.stpa"
             }
+          },
+          "end": "\\*/",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.stpa"
+            }
+          }
+        },
+        {
+          "begin": "//",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.comment.leading.stpa"
+            }
+          },
+          "end": "(?=$)",
+          "name": "comment.line.stpa"
         }
-    
+      ]
+    }
+  }
 }

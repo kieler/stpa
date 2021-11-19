@@ -7,6 +7,17 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import { AstNode, AstReflection, Reference, isAstNode } from 'langium';
 
+export interface Goodbye extends AstNode {
+    readonly $container: Model;
+    person: Reference<Person>
+}
+
+export const Goodbye = 'Goodbye';
+
+export function isGoodbye(item: unknown): item is Goodbye {
+    return reflection.isInstance(item, Goodbye);
+}
+
 export interface Greeting extends AstNode {
     readonly $container: Model;
     person: Reference<Person>
@@ -19,6 +30,7 @@ export function isGreeting(item: unknown): item is Greeting {
 }
 
 export interface Model extends AstNode {
+    goodbyes: Array<Goodbye>
     greetings: Array<Greeting>
     persons: Array<Person>
 }
@@ -40,14 +52,14 @@ export function isPerson(item: unknown): item is Person {
     return reflection.isInstance(item, Person);
 }
 
-export type StpaAstType = 'Greeting' | 'Model' | 'Person';
+export type StpaAstType = 'Goodbye' | 'Greeting' | 'Model' | 'Person';
 
-export type StpaAstReference = 'Greeting:person';
+export type StpaAstReference = 'Goodbye:person' | 'Greeting:person';
 
 export class StpaAstReflection implements AstReflection {
 
     getAllTypes(): string[] {
-        return ['Greeting', 'Model', 'Person'];
+        return ['Goodbye', 'Greeting', 'Model', 'Person'];
     }
 
     isInstance(node: unknown, type: string): boolean {
@@ -67,6 +79,9 @@ export class StpaAstReflection implements AstReflection {
 
     getReferenceType(referenceId: StpaAstReference): string {
         switch (referenceId) {
+            case 'Goodbye:person': {
+                return Person;
+            }
             case 'Greeting:person': {
                 return Person;
             }

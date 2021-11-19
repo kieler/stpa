@@ -55,6 +55,19 @@ export const grammar = (): Grammar => loaded || (loaded = loadGrammar(`{
               }
             },
             "elements": []
+          },
+          {
+            "$type": "Assignment",
+            "feature": "goodbyes",
+            "operator": "+=",
+            "terminal": {
+              "$type": "RuleCall",
+              "arguments": [],
+              "rule": {
+                "$refText": "Goodbye"
+              }
+            },
+            "elements": []
           }
         ],
         "cardinality": "*"
@@ -122,6 +135,40 @@ export const grammar = (): Grammar => loaded || (loaded = loadGrammar(`{
           {
             "$type": "Keyword",
             "value": "!"
+          }
+        ]
+      }
+    },
+    {
+      "$type": "ParserRule",
+      "parameters": [],
+      "name": "Goodbye",
+      "hiddenTokens": [],
+      "alternatives": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "Keyword",
+            "value": "Bye",
+            "elements": []
+          },
+          {
+            "$type": "Assignment",
+            "feature": "person",
+            "operator": "=",
+            "terminal": {
+              "$type": "CrossReference",
+              "type": {
+                "$refText": "Person"
+              },
+              "terminal": {
+                "$type": "RuleCall",
+                "arguments": [],
+                "rule": {
+                  "$refText": "ID"
+                }
+              }
+            }
           }
         ]
       }

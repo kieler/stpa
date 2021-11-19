@@ -1,10 +1,23 @@
 {
-	"extends": "../base-tsconfig.json",
-	"compilerOptions": {
-        "rootDir": "src",
-        "outDir": "lib",
-    },
-    "include": [
-        "src"
-    ]
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "lib": ["ESNext"],
+    "sourceMap": true,
+    "outDir": "out",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+     "src/**/*.ts"
+  ],
+  "exclude": [
+     "out",
+     "node_modules"
+  ]
 }

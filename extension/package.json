@@ -1,13 +1,10 @@
 {
-    "name": "stpa-dsl",
-    "displayName": "STPA",
-    "description": "An DSL for STPA with Sprotty diagrams",
-    "repository": {
-        "type": "git"
-    },
+    "name": "stpa",
+    "displayName": "STPA-DSL",
+    "description": "Please enter a brief description here",
     "version": "0.0.1",
     "engines": {
-        "vscode": "^1.46.0"
+        "vscode": "^1.56.0"
     },
     "categories": [
         "Programming Languages"
@@ -17,6 +14,7 @@
             {
                 "id": "stpa",
                 "aliases": [
+                    "stpa",
                     "stpa"
                 ],
                 "extensions": [
@@ -31,53 +29,121 @@
                 "scopeName": "source.stpa",
                 "path": "./syntaxes/stpa.tmLanguage.json"
             }
-        ]
+        ],
+        "commands": [
+            {
+                "command": "stpa.diagram.open",
+                "title": "Open in Diagram",
+                "icon": "$(symbol-structure)",
+                "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.fit",
+                "title": "Fit to Screen",
+                "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.center",
+                "title": "Center selection",
+                "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.delete",
+                "title": "Delete selected element",
+                "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.export",
+                "title": "Export diagram to SVG",
+                "category": "STPA Diagram"
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "stpa.diagram.open",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "stpa.diagram.fit",
+                    "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.diagram.center",
+                    "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.diagram.delete",
+                    "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.diagram.export",
+                    "when": "stpa-diagram-focused"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "stpa.diagram.open",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                }
+            ],
+            "editor/title": [
+                {
+                    "command": "stpa.diagram.open",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "stpa.diagram.open",
+                    "when": "resourceExtname == '.stpa'",
+                    "group": "navigation"
+                }
+            ]
+        }
     },
     "activationEvents": [
-        "onLanguage:stpa"
+        "onLanguage:stpa",
+        "onCommand:stpa.diagram.open"
     ],
     "files": [
+        "bin",
+        "out",
+        "src",
         "lib",
         "extension",
-        "server",
-        "syntaxes"
+        "syntaxes",
+        "webview"
     ],
     "bin": {
-        "blabb-cli": "./bin/cli"
+        "stpa-cli": "./bin/cli"
     },
-    "main": "./out/stpa-extension",
-    "dependencies": {
-        "colors": "^1.4.0",
-        "commander": "^8.0.0",
-        "langium": "^0.2.0"
-    },
-    "devDependencies": {
-        "@types/node": "^14.17.3",
-        "@types/vscode": "^1.56.0",
-        "rimraf": "^2.6.3",
-        "source-map-loader": "^1.0.2",
-        "ts-loader": "^8.0.3",
-        "tslint": "^5.11.0",
-        "typescript": "3.8.3",
-        "vscode-languageclient": "^7.0.0",
-        "vscode-languageserver": "^7.0.0",
-        "webpack": "^4.44.1",
-        "webpack-cli": "^3.3.12",
-        "@typescript-eslint/eslint-plugin": "^4.14.1",
-        "@typescript-eslint/parser": "^4.14.1",
-        "eslint": "^7.19.0",
-        "langium-cli": "^0.2.0"
-    },
+    "main": "./out/extension.js",
     "scripts": {
         "vscode:prepublish": "npm run build && npm run lint",
         "build": "tsc -b tsconfig.json",
         "watch": "tsc -b tsconfig.json --watch",
         "lint": "eslint src --ext ts",
         "langium:generate": "langium generate",
-        "langium:watch": "langium generate --watch",
-        "prepare": "yarn run clean && yarn run build",
-        "clean": "rimraf extension/lib extension/out",
-        "watch:webpack": "webpack --mode=development --watch",
-        "publish": "vsce publish"
+        "langium:watch": "langium generate --watch"
+    },
+    "dependencies": {
+        "colors": "^1.4.0",
+        "commander": "^8.0.0",
+        "langium": "^0.2.0",
+        "vscode-languageclient": "^7.0.0",
+        "vscode-languageserver": "^7.0.0",
+        "packages-vscode": "../packages/sprotty-vscode-extension"
+    },
+    "devDependencies": {
+        "@types/node": "^14.17.3",
+        "@types/vscode": "^1.56.0",
+        "@typescript-eslint/eslint-plugin": "^4.14.1",
+        "@typescript-eslint/parser": "^4.14.1",
+        "eslint": "^7.19.0",
+        "langium-cli": "^0.2.0",
+        "typescript": "^4.1.3"
     }
 }

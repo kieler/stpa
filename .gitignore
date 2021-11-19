@@ -1,9 +1,7 @@
 node_modules
-lib
-bin
-*.log
-pack
-*.vsix
-src-gen/
-*.tgz
-out
+extension/node_modules
+extension/out
+extension/pack
+
+webview/node_modules
+webview/lib
