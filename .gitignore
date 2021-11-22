@@ -2,6 +2,7 @@ node_modules
 extension/node_modules
 extension/out
 extension/pack
+extension/src/language-server/generated
 
 webview/node_modules
 webview/lib

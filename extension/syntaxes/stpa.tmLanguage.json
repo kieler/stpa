@@ -10,11 +10,11 @@
     },
     {
       "name": "keyword.control.stpa",
-      "match": "\\b(Bye|Hello|person)\\b"
+      "match": "\\b(controlActions|ControllerConstraints|ControlStructure|feedback|Hazards|label:|Losses|notProviding:|processModel:|providing:|Responsibilities|stoppedTooSoon:|subsystem|SystemConstraints|tooEarly/Late:|UCAs)\\b"
     },
     {
       "name": "keyword.symbol.stpa",
-      "match": "(\\!)"
+      "match": "(\\->|\\,|\\:|\\[|\\]|\\{|\\}|\\label:|\\notProviding:|\\processModel:|\\providing:|\\stoppedTooSoon:|\\tooEarly/Late:)"
     }
   ],
   "repository": {

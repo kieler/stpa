@@ -1,5 +1,5 @@
 import { ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
-import { StpaAstType, Person } from './generated/ast';
+import { Model, StpaAstType } from './generated/ast';
 import { StpaServices } from './stpa-module';
 
 /**
@@ -15,7 +15,7 @@ export class StpaValidationRegistry extends ValidationRegistry {
         super(services);
         const validator = services.validation.StpaValidator;
         const checks: StpaChecks = {
-            Person: validator.checkPersonStartsWithCapital
+            Model: validator.checkIDsAreUnique
         };
         this.register(checks, validator);
     }
@@ -26,11 +26,27 @@ export class StpaValidationRegistry extends ValidationRegistry {
  */
 export class StpaValidator {
 
-    checkPersonStartsWithCapital(person: Person, accept: ValidationAcceptor): void {
-        if (person.name) {
-            const firstChar = person.name.substring(0, 1);
-            if (firstChar.toUpperCase() !== firstChar) {
-                accept('warning', 'Person name should start with a capital.', { node: person, property: 'name' });
+    checkIDsAreUnique(model: Model, accept: ValidationAcceptor): void {
+        const lossNames = new Set()
+        for (let loss of model.losses) {
+            const name = loss.name
+            if (name != null) {
+                if (lossNames.has(name)) {
+                    accept('warning', 'Loss identifiers should be unique.', { node: loss, property: 'name' });
+                } else {
+                    lossNames.add(name)
+                }
+            }
+        }
+        const hazardNames = new Set()
+        for (let hazard of model.hazards) {
+            const name = hazard.name
+            if (name != null) {
+                if (hazardNames.has(name)) {
+                    accept('warning', 'Hazard identifiers should be unique.', { node: hazard, property: 'name' });
+                } else {
+                    hazardNames.add(name)
+                }
             }
         }
     }

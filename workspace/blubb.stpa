@@ -1,5 +1,43 @@
-person c
-person F
-person D
+Losses
+L1 "loss of life"
+L2 "loss of equipment"
 
-Hello D!
+Hazards
+H1 "blubb" [L1, L2]
+H2 "bald" [L1]
+
+SystemConstraints
+SC1 "dfhas" [H1]
+
+ControlStructure
+Node1 {
+    processModel:
+        Var1: ["Val1", "Val2"]
+    controlActions 
+        contAct1 -> Node2 
+}
+Node2 {
+    feedback 
+        feedback1 -> Node1 
+}
+Node3 {
+
+}
+Edge1 {
+    Node3 -> Node2
+    label: "hjkh"
+}
+
+Responsibilities
+    R1 "jh" [SC1]
+
+UCAs
+    Blubb
+    notProviding: UCA1 "Gjk" [H1]
+    providing: UCA2 "Gjk" [H2]
+    tooEarly/Late: UCA3 "Gjk" [H1]
+    stoppedTooSoon: UCA4 "Gjk" [H1]
+
+ControllerConstraints
+    C1: "jhklh" []
+

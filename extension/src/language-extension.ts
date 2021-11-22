@@ -34,28 +34,6 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
         return webview;
     }
 
-/*         protected activateLanguageClient(context: vscode.ExtensionContext): LanguageClient {
-        const executable = process.platform === 'win32' ? 'states-language-server.bat' : 'states-language-server';
-        const languageServerPath =  path.join('server', 'states-language-server', 'bin', executable);
-        const serverLauncher = context.asAbsolutePath(languageServerPath);
-        const serverOptions: ServerOptions = {
-            run: {
-                command: serverLauncher,
-                args: ['-trace']
-            },
-            debug: {
-                command: serverLauncher,
-                args: ['-trace']
-            }
-        };
-        const clientOptions: LanguageClientOptions = {
-            documentSelector: [{ scheme: 'file', language: 'states' }],
-        };
-        const languageClient = new LanguageClient('statesLanguageClient', 'States Language Server', serverOptions, clientOptions);
-        languageClient.start();
-        return languageClient;
-    } */
-
     protected activateLanguageClient(context: vscode.ExtensionContext): LanguageClient {
         const serverModule = context.asAbsolutePath(path.join('out', 'language-server', 'main'));
         // The debug options for the server
