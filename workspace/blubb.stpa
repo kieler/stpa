@@ -18,7 +18,7 @@ Node1 {
 }
 Node2 {
     feedback 
-        feedback1 -> Node1 
+        feedback1 -> Node1
 }
 Node3 {
 
@@ -35,12 +35,25 @@ Responsibilities
     
 
  UCAs
-    Node3
+    Node3 {
         notProviding UCA1 "Gjk" [H1]
         providing UCA2 "Gjk" [H2]
         tooEarly/Late UCA3 "Gjk" [H1]
         stoppedTooSoon UCA4 "Gjk" [H1]
+    }
+    Node2 {
+        notProviding UCA5 "Gjk" [H1]
+        providing UCA6 "Gjk" [H2]
+        tooEarly/Late UCA7 "Gjk" [H1]
+        stoppedTooSoon UCA8 "Gjk" [H1]
+    }
 
 ControllerConstraints
-    C1: "jhklh" []
+    C1: "jhklh" [UCA6]
 
+LossScenarios
+    Scenario1: "ghkjg" [UCA1]. "hgk" [H1]
+    Scenario2 for UCA2: "gh" [H2]
+
+SafetyConstraints
+    SR1: "jhgkj" [Scenario1]

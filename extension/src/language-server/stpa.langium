@@ -8,7 +8,9 @@ Model:
     ('ControlStructure' controlStructure=Graph)?
     ('Responsibilities' responsibilities+=Resps*)?
     ('UCAs' allUCAs+=SystemUCAs*)?
-    ('ControllerConstraints' controllerConstraints+=ContConstraint*)?;
+    ('ControllerConstraints' controllerConstraints+=ContConstraint*)?
+    ('LossScenarios' scenarios+=LossScenario*)?
+    ('SafetyConstraints' safteyCons+=SafetyConstraint*)?;
 
 
 Loss:
@@ -31,7 +33,6 @@ Node:
             actions+=VerticalEdge*)?
         ('feedback'
             feedbacks+=VerticalEdge*)?
-        ('subsystem' subsystem += Graph)?
     '}';
 
 Edge:
@@ -53,17 +54,25 @@ Responsibility:
     name=ID description=STRING '['systemConstraints+=[SystemConstraint] (',' systemConstraints+=[SystemConstraint])*']';
 
 SystemUCAs:
-    system=[Node]
-    'notProviding' ucas+=UCA*
-    'providing' ucas+=UCA*
-    'tooEarly/Late' ucas+=UCA*
-    'stoppedTooSoon' ucas+=UCA*;
+    system=[Node] '{'
+        'notProviding' ucas+=UCA*
+        'providing' ucas+=UCA*
+        'tooEarly/Late' ucas+=UCA*
+        'stoppedTooSoon' ucas+=UCA*
+    '}';
 
 UCA:
     name=ID description=STRING '['hazards+=[Hazard] (',' hazards+=[Hazard])*']';
 
 ContConstraint:
     name=ID':' description=STRING '['ucas+=[UCA] (',' ucas+=[UCA])*']';
+
+LossScenario:
+    (name=ID':' description1=STRING '['uca=[UCA]'].' description2=STRING '['hazard=[Hazard]']') |
+    (name=ID 'for' uca=[UCA]':' description=STRING '['hazard=[Hazard]']');
+
+SafetyConstraint:
+    name=ID':' description=STRING '['scenario=[LossScenario]']';
 
 terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
