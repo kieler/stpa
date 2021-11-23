@@ -2,7 +2,8 @@ node_modules
 extension/node_modules
 extension/out
 extension/pack
-extension/src/language-server/generated
+extension/src/language-server/generated/ast.ts
+extension/src/language-server/generated/grammar.ts
 
 webview/node_modules
 webview/lib
