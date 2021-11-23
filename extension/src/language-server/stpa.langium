@@ -23,22 +23,19 @@ SystemConstraint:
     name=ID description=STRING '['hazard=[Hazard]']';
 
 Graph:
-    (systems+=Node | edges+=Edge)*;
+    name=ID '{'(systems+=Node | edges+=Edge)*'}';
 
 Node:
     name=ID '{'
-        ('processModel:' 
-            variables+=Variable*)?
-        ('controlActions' 
-            actions+=VerticalEdge*)?
-        ('feedback'
-            feedbacks+=VerticalEdge*)?
+        ('processModel' '{'variables+=Variable*'}')?
+        ('controlActions' '{'actions+=VerticalEdge*'}')?
+        ('feedback' '{'feedbacks+=VerticalEdge*'}')?
     '}';
 
 Edge:
     name=ID '{'
         source=[Node] '->' target=[Node]
-        ('label:' label=STRING)?
+        ('label' label=STRING)?
     '}';
 
 Variable:
@@ -48,17 +45,17 @@ VerticalEdge:
     names=ID* '->' target=[Node];
 
 Resps:
-    system=[Node]':' responsiblitiesForOneSystem+=Responsibility*;
+    system=[Node] '{'responsiblitiesForOneSystem+=Responsibility*'}';
 
 Responsibility:
     name=ID description=STRING '['systemConstraints+=[SystemConstraint] (',' systemConstraints+=[SystemConstraint])*']';
 
 SystemUCAs:
     system=[Node] '{'
-        'notProviding' ucas+=UCA*
-        'providing' ucas+=UCA*
-        'tooEarly/Late' ucas+=UCA*
-        'stoppedTooSoon' ucas+=UCA*
+        'notProviding' '{'ucas+=UCA*'}'
+        'providing' '{'ucas+=UCA*'}'
+        'tooEarly/Late' '{'ucas+=UCA*'}'
+        'stoppedTooSoon' '{'ucas+=UCA*'}'
     '}';
 
 UCA:
@@ -81,3 +78,4 @@ terminal STRING: /"[^"]*"|'[^']*'/;
 
 terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 terminal SL_COMMENT: /\/\/[^\n\r]*/;
+

@@ -4,6 +4,8 @@ extension/out
 extension/pack
 extension/src/language-server/generated/ast.ts
 extension/src/language-server/generated/grammar.ts
+extension/src/language-server/generated/module.ts
+
 
 webview/node_modules
 webview/lib

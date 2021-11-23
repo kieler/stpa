@@ -10,11 +10,11 @@
     },
     {
       "name": "keyword.control.stpa",
-      "match": "\\b(controlActions|ControllerConstraints|ControlStructure|feedback|for|Hazards|label:|Losses|LossScenarios|notProviding|processModel:|providing|Responsibilities|SafetyConstraints|stoppedTooSoon|SystemConstraints|tooEarly/Late|UCAs)\\b"
+      "match": "\\b(controlActions|ControllerConstraints|ControlStructure|feedback|for|Hazards|label|Losses|LossScenarios|notProviding|processModel|providing|Responsibilities|SafetyConstraints|stoppedTooSoon|SystemConstraints|tooEarly/Late|UCAs)\\b"
     },
     {
       "name": "keyword.symbol.stpa",
-      "match": "(\\->|\\,|\\:|\\[|\\]|\\].|\\{|\\}|\\label:|\\processModel:|\\tooEarly/Late)"
+      "match": "(\\->|\\,|\\:|\\[|\\]|\\].|\\{|\\}|\\tooEarly/Late)"
     }
   ],
   "repository": {

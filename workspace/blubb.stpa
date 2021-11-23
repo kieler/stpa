@@ -10,42 +10,55 @@ SystemConstraints
 SC1 "dfhas" [H1]
 
 ControlStructure
-Node1 {
-    processModel:
-        Var1: ["Val1", "Val2"]
-    controlActions 
-        contAct1 -> Node2 
-}
-Node2 {
-    feedback 
-        feedback1 -> Node1
-}
-Node3 {
-
-}
-Edge1 {
-    Node3 -> Node2
-    label: "hjkh"
+Graph1 {
+    Node1 {
+        processModel {
+            Var1: ["Val1", "Val2"]
+        }
+        controlActions {
+            contAct1 -> Node2 
+        }
+    }
+    Node2 {
+        feedback {
+            feedback1 -> Node1
+        }
+    }
+    Node3 {}
+    Edge1 {
+        Node3 -> Node2
+        label "hjkh"
+    }
 }
 
 Responsibilities
-    Node2:
+    Node2 {
         R1 "jkh" [SC1]
         R2 "jk" [SC1]
-    
+    }
 
  UCAs
     Node3 {
-        notProviding UCA1 "Gjk" [H1]
-        providing UCA2 "Gjk" [H2]
-        tooEarly/Late UCA3 "Gjk" [H1]
-        stoppedTooSoon UCA4 "Gjk" [H1]
+        notProviding {
+            UCA1 "Gjk" [H1]
+        }
+        providing {
+            UCA2 "Gjk" [H2]
+        }
+        tooEarly/Late {
+            UCA3 "Gjk" [H1]
+        }
+        stoppedTooSoon {
+            UCA4 "Gjk" [H1]
+        }
     }
     Node2 {
-        notProviding UCA5 "Gjk" [H1]
-        providing UCA6 "Gjk" [H2]
-        tooEarly/Late UCA7 "Gjk" [H1]
-        stoppedTooSoon UCA8 "Gjk" [H1]
+        notProviding {}
+        providing {
+            UCA6 "Gjk" [H2]
+        }
+        tooEarly/Late {}
+        stoppedTooSoon {}
     }
 
 ControllerConstraints
@@ -53,7 +66,7 @@ ControllerConstraints
 
 LossScenarios
     Scenario1: "ghkjg" [UCA1]. "hgk" [H1]
-    Scenario2 for UCA2: "gh" [H2]
+    Scenario2 for UCA6: "gh" [H2]
 
 SafetyConstraints
     SR1: "jhgkj" [Scenario1]
