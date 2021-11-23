@@ -6,9 +6,7 @@ Model:
     ('Hazards' hazards+=Hazard*)?
     ('SystemConstraints' systemLevelConstraints+=SystemConstraint*)?
     ('ControlStructure' controlStructure=Graph)?
-    ('Responsibilities' responsibilities+=Responsibility*)?
-    ('UCAs' allUCAs+=CommandUCAs)?
-    ('ControllerConstraints' controllerConstraints+=ContConstraints*)?;
+    ('Responsibilities' responsibilities+=Resps*)?;
 
 
 Loss:
@@ -44,23 +42,13 @@ Variable:
     name=ID':' '['values+=STRING (',' values+=STRING)*']';
 
 VerticalEdge:
-    name=ID '->' target=[Node];
+    names=ID* '->' target=[Node];
+
+Resps:
+    system=[Node]':' responsiblitiesForOneSystem+=Responsibility*;
 
 Responsibility:
     name=ID description=STRING '['systemConstraints+=[SystemConstraint] (',' systemConstraints+=[SystemConstraint])*']';
-
-CommandUCAs:
-    name=ID
-    'notProviding:' ucas+=UCA*
-    'providing:' ucas+=UCA*
-    'tooEarly/Late:' ucas+=UCA*
-    'stoppedTooSoon:' ucas+=UCA*;
-
-UCA:
-    name=ID description=STRING '['hazards+=[Hazard] (',' hazards+=[Hazard])*']';
-
-ContConstraints:
-    name=ID':' description=STRING '['ucas+=[UCA] (',' ucas+=[UCA])*']';
 
 terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;

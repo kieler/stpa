@@ -1,11 +1,15 @@
 import { createDefaultModule, DefaultModuleContext, inject, LangiumServices, Module, PartialLangiumServices } from 'langium';
 import { StpaGeneratedModule } from './generated/module';
+import { STPAScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
 export type StpaAddedServices = {
+    references: {
+        STPAScopeProvider: STPAScopeProvider
+    },
     validation: {
         StpaValidator: StpaValidator
     }
@@ -23,6 +27,10 @@ export type StpaServices = LangiumServices & StpaAddedServices
  * selected services, while the custom services must be fully specified.
  */
 export const StpaModule: Module<StpaServices, PartialLangiumServices & StpaAddedServices> = {
+    references: {
+        ScopeProvider: (injector) => new STPAScopeProvider(injector),
+        STPAScopeProvider: (injector) => new STPAScopeProvider(injector)
+    },
     validation: {
         ValidationRegistry: (injector) => new StpaValidationRegistry(injector),
         StpaValidator: () => new StpaValidator()

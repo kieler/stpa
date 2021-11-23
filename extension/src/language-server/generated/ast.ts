@@ -7,31 +7,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import { AstNode, AstReflection, Reference, isAstNode } from 'langium';
 
-export interface CommandUCAs extends AstNode {
-    readonly $container: Model;
-    name: string
-    ucas: Array<UCA>
-}
-
-export const CommandUCAs = 'CommandUCAs';
-
-export function isCommandUCAs(item: unknown): item is CommandUCAs {
-    return reflection.isInstance(item, CommandUCAs);
-}
-
-export interface ContConstraints extends AstNode {
-    readonly $container: Model;
-    description: string
-    name: string
-    ucas: Array<Reference<UCA>>
-}
-
-export const ContConstraints = 'ContConstraints';
-
-export function isContConstraints(item: unknown): item is ContConstraints {
-    return reflection.isInstance(item, ContConstraints);
-}
-
 export interface Edge extends AstNode {
     readonly $container: Graph;
     label: string
@@ -84,12 +59,10 @@ export function isLoss(item: unknown): item is Loss {
 }
 
 export interface Model extends AstNode {
-    allUCAs: Array<CommandUCAs>
-    controllerConstraints: Array<ContConstraints>
     controlStructure: Graph
     hazards: Array<Hazard>
     losses: Array<Loss>
-    responsibilities: Array<Responsibility>
+    responsibilities: Array<Resps>
     systemLevelConstraints: Array<SystemConstraint>
 }
 
@@ -115,7 +88,7 @@ export function isNode(item: unknown): item is Node {
 }
 
 export interface Responsibility extends AstNode {
-    readonly $container: Model;
+    readonly $container: Resps;
     description: string
     name: string
     systemConstraints: Array<Reference<SystemConstraint>>
@@ -125,6 +98,18 @@ export const Responsibility = 'Responsibility';
 
 export function isResponsibility(item: unknown): item is Responsibility {
     return reflection.isInstance(item, Responsibility);
+}
+
+export interface Resps extends AstNode {
+    readonly $container: Model;
+    responsiblitiesForOneSystem: Array<Responsibility>
+    system: Reference<Node>
+}
+
+export const Resps = 'Resps';
+
+export function isResps(item: unknown): item is Resps {
+    return reflection.isInstance(item, Resps);
 }
 
 export interface SystemConstraint extends AstNode {
@@ -138,19 +123,6 @@ export const SystemConstraint = 'SystemConstraint';
 
 export function isSystemConstraint(item: unknown): item is SystemConstraint {
     return reflection.isInstance(item, SystemConstraint);
-}
-
-export interface UCA extends AstNode {
-    readonly $container: CommandUCAs;
-    description: string
-    hazards: Array<Reference<Hazard>>
-    name: string
-}
-
-export const UCA = 'UCA';
-
-export function isUCA(item: unknown): item is UCA {
-    return reflection.isInstance(item, UCA);
 }
 
 export interface Variable extends AstNode {
@@ -167,7 +139,7 @@ export function isVariable(item: unknown): item is Variable {
 
 export interface VerticalEdge extends AstNode {
     readonly $container: Node;
-    name: string
+    names: string
     target: Reference<Node>
 }
 
@@ -177,14 +149,14 @@ export function isVerticalEdge(item: unknown): item is VerticalEdge {
     return reflection.isInstance(item, VerticalEdge);
 }
 
-export type StpaAstType = 'CommandUCAs' | 'ContConstraints' | 'Edge' | 'Graph' | 'Hazard' | 'Loss' | 'Model' | 'Node' | 'Responsibility' | 'SystemConstraint' | 'UCA' | 'Variable' | 'VerticalEdge';
+export type StpaAstType = 'Edge' | 'Graph' | 'Hazard' | 'Loss' | 'Model' | 'Node' | 'Responsibility' | 'Resps' | 'SystemConstraint' | 'Variable' | 'VerticalEdge';
 
-export type StpaAstReference = 'ContConstraints:ucas' | 'Edge:source' | 'Edge:target' | 'Hazard:losses' | 'Responsibility:systemConstraints' | 'SystemConstraint:hazard' | 'UCA:hazards' | 'VerticalEdge:target';
+export type StpaAstReference = 'Edge:source' | 'Edge:target' | 'Hazard:losses' | 'Responsibility:systemConstraints' | 'Resps:system' | 'SystemConstraint:hazard' | 'VerticalEdge:target';
 
 export class StpaAstReflection implements AstReflection {
 
     getAllTypes(): string[] {
-        return ['CommandUCAs', 'ContConstraints', 'Edge', 'Graph', 'Hazard', 'Loss', 'Model', 'Node', 'Responsibility', 'SystemConstraint', 'UCA', 'Variable', 'VerticalEdge'];
+        return ['Edge', 'Graph', 'Hazard', 'Loss', 'Model', 'Node', 'Responsibility', 'Resps', 'SystemConstraint', 'Variable', 'VerticalEdge'];
     }
 
     isInstance(node: unknown, type: string): boolean {
@@ -204,9 +176,6 @@ export class StpaAstReflection implements AstReflection {
 
     getReferenceType(referenceId: StpaAstReference): string {
         switch (referenceId) {
-            case 'ContConstraints:ucas': {
-                return UCA;
-            }
             case 'Edge:source': {
                 return Node;
             }
@@ -219,10 +188,10 @@ export class StpaAstReflection implements AstReflection {
             case 'Responsibility:systemConstraints': {
                 return SystemConstraint;
             }
-            case 'SystemConstraint:hazard': {
-                return Hazard;
+            case 'Resps:system': {
+                return Node;
             }
-            case 'UCA:hazards': {
+            case 'SystemConstraint:hazard': {
                 return Hazard;
             }
             case 'VerticalEdge:target': {
