@@ -34,13 +34,13 @@ Responsibilities
         R2 "jk" [SC1]
     
 
-// UCAs
-//    Blubb
-//    notProviding UCA1 "Gjk" [H1]
-//    providing UCA2 "Gjk" [H2]
-//    tooEarly/Late UCA3 "Gjk" [H1]
-//    stoppedTooSoon UCA4 "Gjk" [H1]
+ UCAs
+    Node3
+        notProviding UCA1 "Gjk" [H1]
+        providing UCA2 "Gjk" [H2]
+        tooEarly/Late UCA3 "Gjk" [H1]
+        stoppedTooSoon UCA4 "Gjk" [H1]
 
-//ControllerConstraints
-//    C1: "jhklh" []
+ControllerConstraints
+    C1: "jhklh" []
 

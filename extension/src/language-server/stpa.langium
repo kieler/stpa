@@ -6,7 +6,9 @@ Model:
     ('Hazards' hazards+=Hazard*)?
     ('SystemConstraints' systemLevelConstraints+=SystemConstraint*)?
     ('ControlStructure' controlStructure=Graph)?
-    ('Responsibilities' responsibilities+=Resps*)?;
+    ('Responsibilities' responsibilities+=Resps*)?
+    ('UCAs' allUCAs+=SystemUCAs*)?
+    ('ControllerConstraints' controllerConstraints+=ContConstraint*)?;
 
 
 Loss:
@@ -49,6 +51,19 @@ Resps:
 
 Responsibility:
     name=ID description=STRING '['systemConstraints+=[SystemConstraint] (',' systemConstraints+=[SystemConstraint])*']';
+
+SystemUCAs:
+    system=[Node]
+    'notProviding' ucas+=UCA*
+    'providing' ucas+=UCA*
+    'tooEarly/Late' ucas+=UCA*
+    'stoppedTooSoon' ucas+=UCA*;
+
+UCA:
+    name=ID description=STRING '['hazards+=[Hazard] (',' hazards+=[Hazard])*']';
+
+ContConstraint:
+    name=ID':' description=STRING '['ucas+=[UCA] (',' ucas+=[UCA])*']';
 
 terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
