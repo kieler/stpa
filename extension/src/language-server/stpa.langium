@@ -10,7 +10,7 @@ Model:
     ('UCAs' allUCAs+=SystemUCAs*)?
     ('ControllerConstraints' controllerConstraints+=ContConstraint*)?
     ('LossScenarios' scenarios+=LossScenario*)?
-    ('SafetyConstraints' safteyCons+=SafetyConstraint*)?;
+    ('SafetyRequirements' safetyCons+=SafetyConstraint*)?;
 
 
 Loss:

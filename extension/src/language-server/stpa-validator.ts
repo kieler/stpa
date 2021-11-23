@@ -1,5 +1,6 @@
-import { ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
-import { Model, StpaAstType } from './generated/ast';
+import { AstNode, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
+import { Position } from 'vscode-languageserver-types';
+import { isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, Model, StpaAstType } from './generated/ast';
 import { StpaServices } from './stpa-module';
 
 /**
@@ -15,7 +16,7 @@ export class StpaValidationRegistry extends ValidationRegistry {
         super(services);
         const validator = services.validation.StpaValidator;
         const checks: StpaChecks = {
-            Model: validator.checkIDsAreUnique
+            Model: validator.checkModel
         };
         this.register(checks, validator);
     }
@@ -26,28 +27,56 @@ export class StpaValidationRegistry extends ValidationRegistry {
  */
 export class StpaValidator {
 
+    checkModel(model: Model, accept: ValidationAcceptor): void {
+        this.checkIDsAreUnique(model, accept)
+        this.checkAllAspectsPresent(model, accept)
+    }
+
     checkIDsAreUnique(model: Model, accept: ValidationAcceptor): void {
-        const lossNames = new Set()
-        for (let loss of model.losses) {
-            const name = loss.name
-            if (name != null) {
-                if (lossNames.has(name)) {
-                    accept('warning', 'Loss identifiers should be unique.', { node: loss, property: 'name' });
-                } else {
-                    lossNames.add(name)
+        const names = new Set()
+        // collect all defined elements that have an identifier
+        let allNodes: AstNode[] =  model.losses.concat(model.hazards, model.systemLevelConstraints)
+        for (const resp of model.responsibilities) {
+            allNodes = allNodes.concat(resp.responsiblitiesForOneSystem)
+        }
+        for (const systemUCAs of model.allUCAs) {
+            allNodes = allNodes.concat(systemUCAs.ucas)
+        }
+        allNodes = allNodes.concat(model.controllerConstraints, model.scenarios, model.safetyCons)
+
+        // check whether the identifiers of the elements are unique
+        for (const node of allNodes) {
+            if (isLoss(node)|| isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node) || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node)){
+                let name = node.name
+                if (name != "") {
+                    if(names.has(name)) {
+                        accept('warning', 'All identifiers should be unique.', { node: node, property: 'name' });
+                    } else {
+                        names.add(name)
+                    }
                 }
             }
         }
-        const hazardNames = new Set()
-        for (let hazard of model.hazards) {
-            const name = hazard.name
-            if (name != null) {
-                if (hazardNames.has(name)) {
-                    accept('warning', 'Hazard identifiers should be unique.', { node: hazard, property: 'name' });
-                } else {
-                    hazardNames.add(name)
-                }
-            }
+    }
+
+    checkAllAspectsPresent(model: Model, accept: ValidationAcceptor): void {
+        let lineCount = model.$document?.textDocument.lineCount
+        if (lineCount == undefined) {
+            lineCount = 0
+        }
+        const start: Position = {line:lineCount, character:0}
+        const end: Position = {line:lineCount+1, character:0}
+        if (model.responsibilities.length == 0) {
+            accept('info', 'No responsibilities are defined', { node: model, range: {start: start, end: end} });
+        }
+        if (model.safetyCons.length == 0) {
+            accept('info', 'No safety requirements are defined', { node: model, range: {start: start, end: end} });
+        }
+        if (model.systemLevelConstraints.length == 0) {
+            accept('info', 'No system-level constraints are defined', { node: model, range: {start: start, end: end} });
+        }
+        if (model.controllerConstraints.length == 0) {
+            accept('info', 'No controller constraints are defined', { node: model, range: {start: start, end: end} });
         }
     }
 

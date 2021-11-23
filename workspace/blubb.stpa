@@ -41,10 +41,9 @@ Responsibilities
     Node3 {
         notProviding {
             UCA1 "Gjk" [H1]
+            UCA2 "hjk" [H1]
         }
-        providing {
-            UCA2 "Gjk" [H2]
-        }
+        providing {}
         tooEarly/Late {
             UCA3 "Gjk" [H1]
         }
@@ -70,3 +69,5 @@ LossScenarios
 
 SafetyConstraints
     SR1: "jhgkj" [Scenario1]
+    SR2: "hjk" [Scenario2]
+    SR3: "hjk" [Scenario1]
