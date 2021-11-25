@@ -32,10 +32,17 @@ export class StpaValidator {
         this.checkAllAspectsPresent(model, accept)
     }
 
+    /**
+     * Controls whether the ids of the defined elements are unique.
+     * @param model The model to control.
+     * @param accept 
+     */
     checkIDsAreUnique(model: Model, accept: ValidationAcceptor): void {
         const names = new Set()
         // collect all defined elements that have an identifier
-        let allNodes: AstNode[] =  model.losses.concat(model.hazards, model.systemLevelConstraints)
+        const allHazards = this.collectHazards(model)
+        const allSysCons = this.collectSystemConstrainta(model)
+        let allNodes: AstNode[] =  (model.losses as AstNode[]).concat(allHazards, allSysCons)
         for (const resp of model.responsibilities) {
             allNodes = allNodes.concat(resp.responsiblitiesForOneSystem)
         }
@@ -59,13 +66,21 @@ export class StpaValidator {
         }
     }
 
+    /**
+     * Controls whether all aspects of STPA are defined.
+     * @param model The model to control.
+     * @param accept 
+     */
     checkAllAspectsPresent(model: Model, accept: ValidationAcceptor): void {
+        // determine position of info
         let lineCount = model.$document?.textDocument.lineCount
         if (lineCount == undefined) {
             lineCount = 0
         }
         const start: Position = {line:lineCount, character:0}
         const end: Position = {line:lineCount+1, character:0}
+
+        // check whether all aspects of STPA are defined
         if (model.responsibilities.length == 0) {
             accept('info', 'No responsibilities are defined', { node: model, range: {start: start, end: end} });
         }
@@ -80,4 +95,40 @@ export class StpaValidator {
         }
     }
 
+
+    /**
+     * Collects all existing hazards.
+     * @param model The model containing the hazards
+     * @returns A list with the existing hazards.
+     */
+    private collectHazards(model: Model): AstNode[] {
+        let result: AstNode[] = model.hazards
+        let todo = model.hazards
+        for (let i = 0; i < todo.length; i++) {
+            let current = todo[i]
+            if (current.subHazards) {
+                result = result.concat(current.subHazards)
+                todo = todo.concat(current.subHazards)
+            }
+        }
+        return result
+    }
+
+    /**
+     * Collects all existing system-level constraints.
+     * @param model The model containing the constraints
+     * @returns A list with the existing system constraints.
+     */
+    private collectSystemConstrainta(model: Model): AstNode[] {
+        let result: AstNode[] = model.systemLevelConstraints
+        let todo = model.systemLevelConstraints
+        for (let i = 0; i < todo.length; i++) {
+            let current = todo[i]
+            if (current.systemSubConstraints) {
+                result = result.concat(current.systemSubConstraints)
+                todo = todo.concat(current.systemSubConstraints)
+            }
+        }
+        return result
+    }
 }

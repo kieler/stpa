@@ -1,73 +1,33 @@
 Losses
-/*L1 "loss of life"
-L2 "loss of equipment"
+L1 "Loss of life or serious injury to people"
 
 Hazards
-H1 "blubb" [L1, L2]
-H2 "bald" [L1]
+H1 "Aircraft comes too close to other objects on the ground" [L1] {
+    "Deceleration"
+        H1.1 "Deceleration is insufficient upon landing, rejected takeoff, or during taxiing"
+}
 
 SystemConstraints
-SC1 "dfhas" [H1]
+SC1 "Aircraft must have safe distance to other objects on the ground" [H1] {
+    SC1.1 "Deceleration must occur within TBD seconds of landing or rejected takeoff at a rate of at least TBD m/s2" [H1.1]
+}
 
 ControlStructure
-Graph1 {
-    Node1 {
-        processModel {
-            Var1: ["Val1", "Val2"]
-        }
-        controlActions {
-            cA "contAct1" -> Node2 
-        }
-    }
-    Node2 {
-        feedback {
-            f "feedback1" -> Node1
-        }
-    }
-    Node3 {}
-    Edge1 {
-        Node3 -> Node2
-        label "hjkh"
+Aircraft {
+    Wheels {
     }
 }
 
 Responsibilities
-    Node2 {
-        R1 "jkh" [constraints: SC1]
-        R2 "jk" [constraints: SC1]
-    }
+Wheels {
+    R1 "Decelerate wheels when commanded by BSCU or Flight Crew" [SC1]
+}
 
- UCAs
-    Node3 {
-        notProviding {
-            UCA1 "Gjk" [H1]
-            UCA2 "hjk" [H1]
-        }
-        providing {}
-        tooEarly/Late {
-            UCA3 "Gjk" [H1]
-        }
-        stoppedTooSoon {
-            UCA4 "Gjk" [H1]
-        }
-    }
-    Node2 {
-        notProviding {}
-        providing {
-            UCA6 "Gjk" [H2]
-        }
-        tooEarly/Late {}
-        stoppedTooSoon {}
-    }
+UCAs
 
 ControllerConstraints
-    C1: "jhklh" [UCA6]
+
 
 LossScenarios
-    Scenario1 for UCA6: "ghkjg" [H1]
-    Scenario2: "gh" [H2]
 
-SafetyRequirements
-    SR1: "jhgkj" [Scenario1]
-    SR2: "hjk" [Scenario2]
-    SR3: "hjk" [Scenario1]*/
+
