@@ -1,5 +1,5 @@
 Losses
-L1 "loss of life"
+/*L1 "loss of life"
 L2 "loss of equipment"
 
 Hazards
@@ -16,12 +16,12 @@ Graph1 {
             Var1: ["Val1", "Val2"]
         }
         controlActions {
-            contAct1 -> Node2 
+            cA "contAct1" -> Node2 
         }
     }
     Node2 {
         feedback {
-            feedback1 -> Node1
+            f "feedback1" -> Node1
         }
     }
     Node3 {}
@@ -33,8 +33,8 @@ Graph1 {
 
 Responsibilities
     Node2 {
-        R1 "jkh" [SC1]
-        R2 "jk" [SC1]
+        R1 "jkh" [constraints: SC1]
+        R2 "jk" [constraints: SC1]
     }
 
  UCAs
@@ -64,10 +64,10 @@ ControllerConstraints
     C1: "jhklh" [UCA6]
 
 LossScenarios
-    Scenario1: "ghkjg" [UCA1]. "hgk" [H1]
-    Scenario2 for UCA6: "gh" [H2]
+    Scenario1 for UCA6: "ghkjg" [H1]
+    Scenario2: "gh" [H2]
 
-SafetyConstraints
+SafetyRequirements
     SR1: "jhgkj" [Scenario1]
     SR2: "hjk" [Scenario2]
-    SR3: "hjk" [Scenario1]
+    SR3: "hjk" [Scenario1]*/

@@ -1,5 +1,5 @@
-import { AstNode, AstNodeDescription, DefaultScopeProvider, getDocument, PrecomputedScopes, Scope, SimpleScope, Stream, stream } from "langium";
-import { isResps, isSystemUCAs, Model, Node, UCA} from "./generated/ast";
+import { AstNode, AstNodeDescription, DefaultScopeProvider, EMPTY_SCOPE, getDocument, PrecomputedScopes, Scope, SimpleScope, Stream, stream } from "langium";
+import { isResponsibility, isResps, isSystemSubConstraint, isActionUCAs, Model, Node, Responsibility, SubHazard, SystemSubConstraint, UCA, VerticalEdge, ActionUCAs, isUCA, isLossScenario} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -17,10 +17,16 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         if (precomputed) {
             if (referenceType == UCA) {
                 return this.getUCAs(node, referenceType, precomputed)
+            } else if (isResponsibility(node) && referenceType == SystemSubConstraint) {
+                this.getSystemSubConstraints(node, referenceType, precomputed)
+            } else if ((isSystemSubConstraint(node) || isUCA(node) || isLossScenario(node)) && referenceType == SubHazard) {
+                return this.getSubHazards(node, referenceType, precomputed)
+            } else if (isActionUCAs(node) && referenceType == VerticalEdge) {
+                return this.getCAs(node, referenceType, precomputed)
             } else {
                 let currentNode: AstNode | undefined = node;
                 // responsibilities and UCAs should have references to the nodes in the control structure
-                if ((isResps(node) || isSystemUCAs(node)) && referenceType == Node) {
+                if (isResps(node) && referenceType == Node) {
                     const model = node.$container as Model
                     currentNode = model.controlStructure
                 } 
@@ -34,6 +40,84 @@ export class STPAScopeProvider extends DefaultScopeProvider {
                     currentNode = currentNode.$container;
                 } while (currentNode);
             }
+        }
+
+        let result: Scope = this.getGlobalScope(referenceType);
+        for (let i = scopes.length - 1; i >= 0; i--) {
+            result = new SimpleScope(scopes[i], result);
+        }
+        return result;
+    }
+
+    getCAs(node: ActionUCAs, referenceType: string, precomputed: PrecomputedScopes): Scope {
+        let model = node.$container
+        const scopes: Array<Stream<AstNodeDescription>> = [];
+        let hazards = model.controlStructure.nodes
+        for (const hazard of hazards) {
+            let currentNode: AstNode | undefined = hazard;
+            do {
+                const allDescriptions = precomputed.get(currentNode);
+                if (allDescriptions) {
+                    scopes.push(stream(allDescriptions).filter(
+                        desc => this.reflection.isSubtype(desc.type, referenceType)));
+                }
+                currentNode = currentNode.$container;
+            } while (currentNode);
+        }
+
+        let result: Scope = this.getGlobalScope(referenceType);
+        for (let i = scopes.length - 1; i >= 0; i--) {
+            result = new SimpleScope(scopes[i], result);
+        }
+        return result;
+    }
+
+    getSubHazards(node: AstNode, referenceType: string, precomputed: PrecomputedScopes): Scope {
+        let model = undefined
+        if (isLossScenario(node)) {
+            model = node.$container
+        } else if (isUCA(node) || isSystemSubConstraint(node)){
+            model = node.$container?.$container
+        }
+        if (model) {
+            const scopes: Array<Stream<AstNodeDescription>> = [];
+            let hazards = model.hazards
+            for (const hazard of hazards) {
+                let currentNode: AstNode | undefined = hazard;
+                do {
+                    const allDescriptions = precomputed.get(currentNode);
+                    if (allDescriptions) {
+                        scopes.push(stream(allDescriptions).filter(
+                            desc => this.reflection.isSubtype(desc.type, referenceType)));
+                    }
+                    currentNode = currentNode.$container;
+                } while (currentNode);
+            }
+
+            let result: Scope = this.getGlobalScope(referenceType);
+            for (let i = scopes.length - 1; i >= 0; i--) {
+                result = new SimpleScope(scopes[i], result);
+            }
+            return result;
+        }
+        return EMPTY_SCOPE
+    }
+
+    getSystemSubConstraints(node: Responsibility, referenceType: string, precomputed: PrecomputedScopes): Scope {
+        let model = node.$container.$container
+        const scopes: Array<Stream<AstNodeDescription>> = [];
+        let constraints = model.systemLevelConstraints
+        for (const cons of constraints) {
+            console.log(cons)
+            let currentNode: AstNode | undefined = constraints[2].systemSubConstraints[0];
+            do {
+                const allDescriptions = precomputed.get(currentNode);
+                if (allDescriptions) {
+                    scopes.push(stream(allDescriptions).filter(
+                        desc => this.reflection.isSubtype(desc.type, referenceType)));
+                }
+                currentNode = currentNode.$container;
+            } while (currentNode);
         }
 
         let result: Scope = this.getGlobalScope(referenceType);
@@ -64,7 +148,6 @@ export class STPAScopeProvider extends DefaultScopeProvider {
             result = new SimpleScope(scopes[i], result);
         }
         return result;
-
     }
 
 }
