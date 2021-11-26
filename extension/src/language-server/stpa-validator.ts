@@ -1,6 +1,6 @@
 import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, Loss, Model, Responsibility, StpaAstType, SystemConstraint } from './generated/ast';
+import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isGraph, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isVerticalEdge, Loss, Model, Node, Responsibility, StpaAstType, SystemConstraint } from './generated/ast';
 import { StpaServices } from './stpa-module';
 
 /**
@@ -22,7 +22,8 @@ export class StpaValidationRegistry extends ValidationRegistry {
             Responsibility: validator.checkResponsibility,
             ContConstraint: validator.checkControllerConstraints,
             HazardList: validator.checkHazardList,
-            ActionUCAs: validator.checkActionUCAs
+            ActionUCAs: validator.checkActionUCAs,
+            Node: validator.checkNode
         };
         this.register(checks, validator);
     }
@@ -39,8 +40,20 @@ export class StpaValidator {
      * @param accept 
      */
     checkModel(model: Model, accept: ValidationAcceptor): void {
-        this.checkIDsAreUnique(model, accept)
         this.checkAllAspectsPresent(model, accept)
+        // collect all defined elements that have an identifier in order to check the uniqueness
+        const allHazards = this.collectHazards(model)
+        const allSysCons = this.collectSystemConstrainta(model)
+        let allNodes: AstNode[] =  (model.losses as AstNode[]).concat(allHazards, allSysCons, model.controlStructure.nodes, 
+            model.controlStructure.edges)
+        for (const resp of model.responsibilities) {
+            allNodes = allNodes.concat(resp.responsiblitiesForOneSystem)
+        }
+        for (const systemUCAs of model.allUCAs) {
+            allNodes = allNodes.concat(systemUCAs.ucas)
+        }
+        allNodes = allNodes.concat(model.controllerConstraints, model.scenarios, model.safetyCons)
+        this.checkIDsAreUnique(allNodes, accept)
     }
 
     /**
@@ -74,6 +87,17 @@ export class StpaValidator {
      */
     checkResponsibility(resp: Responsibility, accept: ValidationAcceptor): void {
         this.checkReferenceListForDuplicates(resp, resp.refs, accept)
+    }
+
+    /**
+     * Executes validation checks for a node of the control structure.
+     * @param node The node to check.
+     * @param accept 
+     */
+    checkNode(node: Node, accept: ValidationAcceptor): void {
+        this.checkIDsAreUnique(node.variables, accept)
+        this.checkIDsAreUnique(node.actions, accept)
+        this.checkIDsAreUnique(node.feedbacks, accept)
     }
 
     /**
@@ -117,29 +141,17 @@ export class StpaValidator {
     }
 
     /**
-     * Controls whether the ids of the defined elements are unique.
-     * @param model The model to control.
+     * Controls whether the ids of the given elements are unique.
+     * @param allNodes The elements which IDs should be checked.
      * @param accept 
      */
-    private checkIDsAreUnique(model: Model, accept: ValidationAcceptor): void {
+    private checkIDsAreUnique(allNodes: AstNode[], accept: ValidationAcceptor): void {
         const names = new Set()
-        // collect all defined elements that have an identifier
-        const allHazards = this.collectHazards(model)
-        const allSysCons = this.collectSystemConstrainta(model)
-        let allNodes: AstNode[] =  (model.losses as AstNode[]).concat(allHazards, allSysCons, model.controlStructure.nodes, 
-            model.controlStructure.edges)
-        for (const resp of model.responsibilities) {
-            allNodes = allNodes.concat(resp.responsiblitiesForOneSystem)
-        }
-        for (const systemUCAs of model.allUCAs) {
-            allNodes = allNodes.concat(systemUCAs.ucas)
-        }
-        allNodes = allNodes.concat(model.controllerConstraints, model.scenarios, model.safetyCons)
-
-        // check whether the identifiers of the elements are unique
         for (const node of allNodes) {
+            // needs to be checked in order to get the name
             if (isLoss(node)|| isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node) 
-                    || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isNode(node) || isEdge(node)){
+                    || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isNode(node) || isEdge(node) 
+                    || isVerticalEdge(node) || isGraph(node) || isVariable(node)){
                 let name = node.name
                 if (name != "") {
                     if(names.has(name)) {
