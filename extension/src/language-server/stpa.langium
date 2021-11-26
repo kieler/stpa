@@ -18,11 +18,11 @@ Loss:
 
 Hazard:
     name=SubID description=STRING 
-    ('['losses+=[Loss] (',' losses+=[Loss])*']')?
+    ('['refs+=[Loss] (',' refs+=[Loss])*']')?
     ('{' (header=STRING? subHazards+=Hazard+)*'}')?;
 
 SystemConstraint:
-    name=SubID description=STRING '['hazard=[Hazard|SubID]']'
+    name=SubID description=STRING '['ref=[Hazard|SubID]']'
     ('{' (header=STRING? systemSubConstraints+=SystemConstraint+)*'}')?;
 
 Graph:
@@ -53,7 +53,7 @@ Resps:
 
 Responsibility:
     name=ID description=STRING '[' 
-    systemConstraints+=[SystemConstraint | SubID] (',' systemConstraints+=[SystemConstraint | SubID])*
+    refs+=[SystemConstraint | SubID] (',' refs+=[SystemConstraint | SubID])*
     ']';
 
 ActionUCAs:
@@ -68,17 +68,17 @@ UCA:
     name=ID description=STRING list=HazardList;
 
 ContConstraint:
-    name=ID':' description=STRING '['ucas+=[UCA] (',' ucas+=[UCA])*']';
+    name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
 
 LossScenario:
-    (name=ID':' description=STRING (list=HazardList)?) |
-    (name=ID 'for' uca=[UCA]':' description=STRING (list=HazardList)?);
+    (name=ID description=STRING (list=HazardList)?) |
+    (name=ID 'for' uca=[UCA] description=STRING (list=HazardList)?);
 
 HazardList:
-    '[' hazards+=[Hazard|SubID] (',' hazards+=[Hazard|SubID])*']';
+    '[' refs+=[Hazard|SubID] (',' refs+=[Hazard|SubID])*']';
 
 SafetyConstraint:
-    name=ID':' description=STRING '['scenario=[LossScenario]']';
+    name=ID description=STRING '['scenario=[LossScenario]']';
 
 SubID returns string:
     ID('.'INT)*;

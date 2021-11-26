@@ -1,5 +1,5 @@
-import { AstNode, AstNodeDescription, DefaultScopeProvider, getDocument, PrecomputedScopes, Scope, SimpleScope, Stream, stream } from "langium";
-import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, VerticalEdge, ActionUCAs, Hazard, SystemConstraint, isModel, isHazardList} from "./generated/ast";
+import { AstNode, AstNodeDescription, DefaultScopeProvider, EMPTY_SCOPE, getDocument, PrecomputedScopes, Scope, SimpleScope, Stream, stream } from "langium";
+import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, VerticalEdge, ActionUCAs, Hazard, SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -18,9 +18,10 @@ export class STPAScopeProvider extends DefaultScopeProvider {
     override getScope(node: AstNode, referenceId: string): Scope {
         const referenceType = this.reflection.getReferenceType(referenceId);
         const precomputed = getDocument(node).precomputedScopes;
+        // TODO: for a responsibility precomputed is undefined
         if (precomputed) {
             // determine the scope for the different reference types
-            if (referenceType == this.UCA_TYPE) {
+            if ((isContConstraint(node) || isLossScenario(node)) && referenceType == this.UCA_TYPE) {
                 return this.getUCAs(node, precomputed)
             } else if (isResponsibility(node) && referenceType == this.SYS_CONSTRAINT_TYPE) {
                 this.getSystemConstraints(node, precomputed)
@@ -136,7 +137,8 @@ export class STPAScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing all system-level constraints.
      */
     private getSystemConstraints(node: AstNode, precomputed: PrecomputedScopes): Scope {
-        let model = node.$container
+        console.log("test")
+/*         let model = node.$container
         while (!isModel(model)) {
             model=model?.$container
         }
@@ -157,8 +159,8 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         let result: Scope = this.getGlobalScope(this.SYS_CONSTRAINT_TYPE);
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);
-        }
-        return result;
+        } */
+        return EMPTY_SCOPE;
     }
     
     /**

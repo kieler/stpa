@@ -1,10 +1,12 @@
 Losses
 L1 "Loss of life or serious injury to people"
+L2 "test"
+L3 "test"
 
 Hazards
-H1 "Aircraft comes too close to other objects on the ground" [L1] {
+H1 "Aircraft comes too close to other objects on the ground" [L2, L1, L1] {
     "Deceleration"
-        H1.1 "Deceleration is insufficient upon landing, rejected takeoff, or during taxiing"
+        H1.1 "Deceleration is insufficient upon landing, rejected takeoff, or during taxiing" [L1, L2, L3]
 }
 
 SystemConstraints
@@ -15,6 +17,15 @@ SC1 "Aircraft must have safe distance to other objects on the ground" [H1] {
 ControlStructure
 Aircraft {
     Wheels {
+    }
+    Wheels2 {
+        
+    }
+    edge {
+        Wheels -> Wheels2
+    }
+    edge {
+        Wheels2 -> Wheels
     }
 }
 
