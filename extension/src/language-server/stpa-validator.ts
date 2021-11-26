@@ -1,6 +1,6 @@
 import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, Loss, Model, Responsibility, StpaAstType, SystemConstraint } from './generated/ast';
+import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, Loss, Model, Responsibility, StpaAstType, SystemConstraint } from './generated/ast';
 import { StpaServices } from './stpa-module';
 
 /**
@@ -21,7 +21,8 @@ export class StpaValidationRegistry extends ValidationRegistry {
             SystemConstraint: validator.checkSystemConstraint,
             Responsibility: validator.checkResponsibility,
             ContConstraint: validator.checkControllerConstraints,
-            HazardList: validator.checkHazardList
+            HazardList: validator.checkHazardList,
+            ActionUCAs: validator.checkActionUCAs
         };
         this.register(checks, validator);
     }
@@ -73,6 +74,28 @@ export class StpaValidator {
      */
     checkResponsibility(resp: Responsibility, accept: ValidationAcceptor): void {
         this.checkReferenceListForDuplicates(resp, resp.refs, accept)
+    }
+
+    /**
+     * Executes validation checks for an ActionUCAs.
+     * @param actionUCA The actionUCAs to check.
+     * @param accept 
+     */
+    checkActionUCAs(actionUCA: ActionUCAs, accept: ValidationAcceptor): void {
+        // checks whether the referenced action is a defined control action for the referenced system
+        const system = actionUCA.system.ref
+        const searchName = actionUCA.action.ref?.name
+        let found = false
+        if (system && searchName) {
+            for (const act of system?.actions) {
+                if (act.name == searchName) {
+                    found = true
+                }
+            }
+            if(!found) {
+                accept('error', 'This is not a control action of ' + system.name, { node: actionUCA, property: 'action' });
+            }
+        }
     }
 
     /**

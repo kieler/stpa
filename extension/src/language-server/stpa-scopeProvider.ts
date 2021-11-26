@@ -47,7 +47,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         const scopes: Array<Stream<AstNodeDescription>> = [];
         let currentNode: AstNode | undefined = node;
         // responsibilities and UCAs should have references to the nodes in the control structure
-        if (isResps(node) && referenceType == Node) {
+        if ((isResps(node) || isActionUCAs(node)) && referenceType == Node) {
             const model = node.$container as Model
             currentNode = model.controlStructure
         } 
@@ -69,17 +69,16 @@ export class STPAScopeProvider extends DefaultScopeProvider {
     }
 
     /**
-     * Collects all definitions of control ations.
-     * @param node Current AstNode.
+     * Collects all definitions of VerticalEdges (controlActions&Feedback) for the referenced system.
+     * @param node Current ActionUCAs.
      * @param precomputed Precomputed Scope of the document.
-     * @returns Scope containing all control actions.
+     * @returns Scope containing all VerticalEdges.
      */
     getCAs(node: ActionUCAs, precomputed: PrecomputedScopes): Scope {
-        let model = node.$container
         const scopes: Array<Stream<AstNodeDescription>> = [];
-        let hazards = model.controlStructure.nodes
-        for (const hazard of hazards) {
-            let currentNode: AstNode | undefined = hazard;
+        let system = node.system.ref
+        if (system) {
+            let currentNode: AstNode | undefined = system;
             do {
                 const allDescriptions = precomputed.get(currentNode);
                 if (allDescriptions) {

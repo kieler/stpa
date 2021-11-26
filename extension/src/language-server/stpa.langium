@@ -57,6 +57,7 @@ Responsibility:
     ']';
 
 ActionUCAs:
+    system=[Node]'.'
     action=[VerticalEdge] '{'
         'notProviding' '{'ucas+=UCA*'}'
         'providing' '{'ucas+=UCA*'}'
