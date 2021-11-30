@@ -6,12 +6,32 @@
 	"version": "0.2.0",
     "configurations": [
         {
-            "name": "Extension",
+            "name": "Attach",
+            "port": 6009,
+            "request": "attach",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/extension/out/*.js",
+                "${workspaceFolder}/extension/out/language-server/*.js"
+            ],
+            "type": "pwa-node"
+        },
+        {
+            "name": "Run STPA Extension",
             "type": "extensionHost",
             "request": "launch",
+            "runtimeExecutable": "${execPath}",
             "args": [
+                "${workspaceFolder}/workspace",
                 "--extensionDevelopmentPath=${workspaceFolder}/extension"
-            ]
+            ],
+            "outFiles": [
+                "${workspaceFolder}/extension/out/*.js",
+                "${workspaceFolder}/extension/out/language-server/*.js"
+            ],
         }
     ]
 }

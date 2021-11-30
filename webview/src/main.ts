@@ -17,13 +17,47 @@ import 'reflect-metadata';
 import 'sprotty-vscode-webview/css/sprotty-vscode.css';
 
 import { SprottyDiagramIdentifier, SprottyStarter } from 'sprotty-vscode-webview';
-
+import { Container } from 'inversify';
 import { createSTPADiagramContainer } from './di.config';
+import { SGraphSchema, SNodeSchema, SEdgeSchema, LocalModelSource, TYPES } from 'sprotty';
 
 export class STPASprottyStarter extends SprottyStarter {
 
     createContainer(diagramIdentifier: SprottyDiagramIdentifier) {
-        return createSTPADiagramContainer(diagramIdentifier.clientId);
+        const container = createSTPADiagramContainer(diagramIdentifier.clientId);
+        const graph: SGraphSchema = {
+            type: 'graph',
+            id: 'root',
+            children: [
+                {
+                    type: 'node',
+                    id: 'node1',
+                    size: {width: 50, height: 20},
+                    position: {x: 5, y: 5}
+                } as SNodeSchema,
+                {
+                    type: 'node',
+                    id: 'node2',
+                    size: {width: 50, height: 20},
+                    position: {x: 70, y: 5}
+                } as SNodeSchema,
+                {
+                    type: 'edge',
+                    id: 'edge1',
+                    sourceId: 'node1',
+                    targetId: 'node2'
+                } as SEdgeSchema
+            ]
+        }
+    
+        const modelSource = container.get<LocalModelSource>(TYPES.ModelSource);
+        modelSource.setModel(graph); 
+        return container
+    }
+
+    addVscodeBindings(container: Container, diagramIdentifier: SprottyDiagramIdentifier): void {
+        super.addVscodeBindings(container, diagramIdentifier)
+        container.rebind(TYPES.ModelSource).to(LocalModelSource).inSingletonScope();
     }
 }
 

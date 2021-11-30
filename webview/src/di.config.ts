@@ -22,12 +22,13 @@ import {
     configureModelElement, ConsoleLogger, HtmlRoot,
     HtmlRootView, LogLevel, overrideViewerOptions, PreRenderedElement,
     PreRenderedView, RectangularNodeView, SEdge, SGraphView, SLabelView,
-    TYPES, loadDefaultModules, SGraph, SLabel, SNode
+    TYPES, loadDefaultModules, SGraph, SLabel, SNode, LocalModelSource
 } from 'sprotty';
 import { STPAModelFactory } from './model';
 import { PolylineArrowEdgeView } from './views';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
+    bind(TYPES.ModelSource).to(LocalModelSource).inSingletonScope();
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
     rebind(TYPES.IModelFactory).to(STPAModelFactory);
