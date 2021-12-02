@@ -20,21 +20,98 @@ import { SprottyDiagramIdentifier, SprottyStarter } from 'sprotty-vscode-webview
 import { Container } from 'inversify';
 import { createSTPADiagramContainer } from './di.config';
 import { SGraphSchema, SEdgeSchema, LocalModelSource, TYPES, SLabelSchema } from 'sprotty';
-import { STPAAspect, STPANodeSchema } from './STPA-model';
+import { CS_EDGE_TYPE, EdgeDirection, STPAAspect, CSEdgeSchema, STPANodeSchema, STPA_NODE_TYPE, PARENT_TYPE, CS_NODE_TYPE, CSNodeSchema } from './STPA-model';
 
 export class STPASprottyStarter extends SprottyStarter {
 
     createContainer(diagramIdentifier: SprottyDiagramIdentifier) {
         const container = createSTPADiagramContainer(diagramIdentifier.clientId);
-        const graph: SGraphSchema = {
+
+        const test: SGraphSchema = {
+            id: "root",
             type: 'graph',
-            id: 'root',
             children: [
+                <SGraphSchema> {
+                    id: 'controlStructure',
+                    type: PARENT_TYPE,
+                    position: {x: 450, y: 5},
+                    children: [
+                        {
+                            type: CS_NODE_TYPE,
+                            id: 'node10',
+                            size: {width: 100, height: 40},
+                            position: {x: 5, y: 5},
+                            children: [
+                                <SLabelSchema> {
+                                    id: 'label10',
+                                    type: 'label',
+                                    text: 'FlightCrew'
+                                }
+                            ]
+                        } as CSNodeSchema,
+                        {
+                            type: CS_NODE_TYPE,
+                            id: 'node20',
+                            size: {width: 100, height: 40},
+                            position: {x: 5, y: 90},
+                            children: [
+                                <SLabelSchema> {
+                                    id: 'label20',
+                                    type: 'label',
+                                    text: 'BSCU'
+                                }
+                            ]
+                        } as CSNodeSchema,
+                        {
+                            type: CS_EDGE_TYPE,
+                            id: 'edge10',
+                            sourceId: 'node20',
+                            targetId: 'node10',
+                            direction: EdgeDirection.Up,
+                            children: [
+                                <SLabelSchema> {
+                                    id: 'label40',
+                                    type: 'label',
+                                    text: 'feedback'
+                                }
+                            ]
+                        } as CSEdgeSchema,
+                        {
+                            type: CS_EDGE_TYPE,
+                            id: 'edge20',
+                            sourceId: 'node10',
+                            targetId: 'node20',
+                            direction: EdgeDirection.Down,
+                            children: [
+                                <SLabelSchema> {
+                                    id: 'label50',
+                                    type: 'label',
+                                    text: 'controlAction'
+                                }
+                            ]
+                        } as CSEdgeSchema,
+                        <SLabelSchema> {
+                            id: 'label30',
+                            type: 'label',
+                            text: 'control structure'
+                        }
+                    ]
+                },
+                <SGraphSchema> {
+                    id: 'relationGraph',
+                    type: PARENT_TYPE,
+                    position: {x: 0, y: 0},
+                    children: [
+                        <SLabelSchema> {
+                            id: 'label100',
+                            type: 'label',
+                            text: 'relatonships'
+                        },
                 {
-                    type: 'node',
+                    type: STPA_NODE_TYPE,
                     id: 'node1',
                     size: {width: 100, height: 40},
-                    position: {x: 5, y: 5},
+                    position: {x: 155, y: 5},
                     aspect: STPAAspect.Loss,
                     description: "Loss of life",
                     children: [
@@ -46,10 +123,10 @@ export class STPASprottyStarter extends SprottyStarter {
                     ]
                 } as STPANodeSchema,
                 {
-                    type: 'node',
+                    type: STPA_NODE_TYPE,
                     id: 'node2',
                     size: {width: 100, height: 40},
-                    position: {x: 5, y: 90},
+                    position: {x: 155, y: 90},
                     aspect: STPAAspect.Hazard,
                     description: "blubb",
                     children: [
@@ -67,10 +144,10 @@ export class STPASprottyStarter extends SprottyStarter {
                     targetId: 'node1'
                 } as SEdgeSchema,
                 {
-                    type: 'node',
+                    type: STPA_NODE_TYPE,
                     id: 'node3',
                     size: {width: 100, height: 40},
-                    position: {x: 5, y: 175},
+                    position: {x: 155, y: 175},
                     aspect: STPAAspect.SystemConstraint,
                     description: "blubb",
                     children: [
@@ -88,10 +165,10 @@ export class STPASprottyStarter extends SprottyStarter {
                     targetId: 'node2'
                 } as SEdgeSchema,
                 {
-                    type: 'node',
+                    type: STPA_NODE_TYPE,
                     id: 'node4',
                     size: {width: 100, height: 40},
-                    position: {x: 5, y: 260},
+                    position: {x: 155, y: 260},
                     aspect: STPAAspect.Responsibility,
                     description: "blubb",
                     children: [
@@ -109,10 +186,10 @@ export class STPASprottyStarter extends SprottyStarter {
                     targetId: 'node3'
                 } as SEdgeSchema,
                 {
-                    type: 'node',
+                    type: STPA_NODE_TYPE,
                     id: 'node5',
                     size: {width: 100, height: 40},
-                    position: {x: -145, y: 345},
+                    position: {x: 5, y: 345},
                     aspect: STPAAspect.UCA,
                     description: "blubb",
                     children: [
@@ -130,10 +207,10 @@ export class STPASprottyStarter extends SprottyStarter {
                     targetId: 'node2'
                 } as SEdgeSchema,
                 {
-                    type: 'node',
+                    type: STPA_NODE_TYPE,
                     id: 'node6',
                     size: {width: 100, height: 40},
-                    position: {x: -145, y: 430},
+                    position: {x: 5, y: 430},
                     aspect: STPAAspect.ControllerConstraint,
                     description: "blubb",
                     children: [
@@ -151,10 +228,10 @@ export class STPASprottyStarter extends SprottyStarter {
                     targetId: 'node5'
                 } as SEdgeSchema,
                 {
-                    type: 'node',
+                    type: STPA_NODE_TYPE,
                     id: 'node7',
                     size: {width: 100, height: 40},
-                    position: {x: 155, y: 515},
+                    position: {x: 305, y: 515},
                     aspect: STPAAspect.Scenario,
                     description: "blubb",
                     children: [
@@ -173,10 +250,10 @@ export class STPASprottyStarter extends SprottyStarter {
                     targetId: 'node2'
                 } as SEdgeSchema,
                 {
-                    type: 'node',
+                    type: STPA_NODE_TYPE,
                     id: 'node8',
                     size: {width: 100, height: 40},
-                    position: {x: 155, y: 600},
+                    position: {x: 305, y: 600},
                     aspect: STPAAspect.SafetyRequirement,
                     description: "blubb",
                     children: [
@@ -193,12 +270,12 @@ export class STPASprottyStarter extends SprottyStarter {
                     id: 'edge7',
                     sourceId: 'node8',
                     targetId: 'node7'
-                } as SEdgeSchema
+                } as SEdgeSchema]}
             ]
         }
     
         const modelSource = container.get<LocalModelSource>(TYPES.ModelSource);
-        modelSource.setModel(graph); 
+        modelSource.setModel(test); 
         return container
     }
 

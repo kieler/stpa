@@ -1,5 +1,10 @@
+.parent-node {
+    fill-opacity: 0.3;
+}
+
 .sprotty-node {
-    fill: var(--vscode-button-background)
+    fill: var(--vscode-button-background);
+    stroke: black
 }
 
 .sprotty-node.selected {
@@ -8,7 +13,7 @@
 }
 
 .sprotty-label {
-    fill: var(--vscode-button-foreground);
+    fill: var(--vscode-editorActiveLineNumber-foreground);
     stroke-width: 0;
 }
 

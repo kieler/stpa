@@ -21,12 +21,12 @@ import { Container, ContainerModule } from 'inversify';
 import {
     configureModelElement, ConsoleLogger, HtmlRoot,
     HtmlRootView, LogLevel, overrideViewerOptions, PreRenderedElement,
-    PreRenderedView, SEdge, SGraphView, SLabelView,
-    TYPES, loadDefaultModules, SGraph, SLabel, LocalModelSource
+    PreRenderedView, SGraphView, SLabelView,
+    TYPES, loadDefaultModules, SGraph, SLabel, LocalModelSource, SNode, SEdge
 } from 'sprotty';
 import { STPAModelFactory } from './model';
-import { PolylineArrowEdgeView, STPANodeView } from './views';
-import { EDGE_TYPE, NODE_TYPE, STPANode } from './STPA-model';
+import { PolylineArrowEdgeView, STPANodeView, CSNodeView } from './views';
+import { EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE} from './STPA-model';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(TYPES.ModelSource).to(LocalModelSource).inSingletonScope();
@@ -36,10 +36,13 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     
     const context = { bind, unbind, isBound, rebind };
     configureModelElement(context, 'graph', SGraph, SGraphView);
-    configureModelElement(context, NODE_TYPE, STPANode, STPANodeView);
+    configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
+    configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
+    configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
     configureModelElement(context, 'label', SLabel, SLabelView);
     configureModelElement(context, 'label:xref', SLabel, SLabelView);
     configureModelElement(context, EDGE_TYPE, SEdge, PolylineArrowEdgeView);
+    configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
     configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
 });
