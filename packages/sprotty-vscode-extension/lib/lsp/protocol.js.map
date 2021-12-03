@@ -1,1 +1,0 @@
-{"version":3,"file":"protocol.js","sourceRoot":"","sources":["../../src/lsp/protocol.ts"],"names":[],"mappings":";AAAA;;;;;;;;;;;;;;kFAckF;;;AAElF,+DAAmE;AAGnE,qCAAqC;AACrC,yBAAyB;AAEZ,QAAA,iBAAiB,GAAG,IAAI,wCAAgB,CAAgB,gBAAgB,CAAC,CAAC;AAC1E,QAAA,mBAAmB,GAAG,IAAI,wCAAgB,CAAS,kBAAkB,CAAC,CAAC;AACvE,QAAA,2BAA2B,GAAG,IAAI,wCAAgB,CAA0B,0BAA0B,CAAC,CAAC"}

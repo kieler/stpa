@@ -1,1 +1,0 @@
-{"version":3,"file":"edit-diagram-locker.d.ts","sourceRoot":"","sources":["../../../src/lsp/editing/edit-diagram-locker.ts"],"names":[],"mappings":"AAgBA,OAAO,EACH,MAAM,EAIN,cAAc,EASjB,MAAM,SAAS,CAAC;AAGjB;;;;;GAKG;AACH,qBACa,iBAAkB,YAAW,cAAc;IAEpD,SAAS,CAAC,cAAc,WAMtB;IAEF,SAAS,UAAQ;IAEjB,SAAS,CAAC,MAAM,EAAE,MAAM,GAAG,OAAO;CAGrC"}

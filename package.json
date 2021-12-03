@@ -1,24 +1,16 @@
 {
     "private": true,
     "workspaces": [
-        "extension/*",
-        "webview/*",
-        "packages/*"
+        "language-server",
+        "webview",
+        "extension"
     ],
     "scripts": {
-        "clean": "lerna run clean --parallel",
-        "lint": "lerna run lint --parallel",
-        "prebuild": "yarn clean",
-        "build": "lerna run build",
-        "watch": "lerna run watch --parallel",
-        "package": "lerna run build && lerna run package --parallel",
-        "distribute": "lerna run build && lerna run distribute --parallel"
-    },
-    "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "^4.27.0",
-        "@typescript-eslint/parser": "^4.27.0",
-        "eslint": "^7.28.0",
-        "lerna": "^4.0.0",
-        "typescript": "^4.3.2"
-    }
+        "prepare": "lerna run prepare",
+        "clean": "lerna run clean",
+        "publish:next": "lerna publish --canary --npm-tag next"
+      },
+      "devDependencies": {
+        "lerna": "^3.20.2"
+      }
 }

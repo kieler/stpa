@@ -33,7 +33,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
     rebind(TYPES.IModelFactory).to(STPAModelFactory);
-    
+
     const context = { bind, unbind, isBound, rebind };
     configureModelElement(context, 'graph', SGraph, SGraphView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);

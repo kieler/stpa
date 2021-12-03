@@ -15,8 +15,8 @@ export class STPANode extends SNode {
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
         layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
 
-    aspect: STPAAspect
-    description: string
+    aspect: STPAAspect = STPAAspect.Loss
+    description: string = ""
 }
 
 export interface CSNodeSchema extends SNodeSchema {
@@ -33,7 +33,7 @@ export interface CSEdgeSchema extends SEdgeSchema {
 }
 
 export class CSEdge extends SEdge {
-    direction: EdgeDirection
+    direction: EdgeDirection = EdgeDirection.Down
 }
 
 export enum STPAAspect {

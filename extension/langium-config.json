@@ -1,9 +1,0 @@
-{
-    "languageId": "stpa",
-    "grammar": "src/language-server/stpa.langium",
-    "fileExtensions": [".stpa"],
-    "out": "src/language-server/generated",
-    "textMate": {
-        "out": "syntaxes/stpa.tmLanguage.json"
-    }
-}

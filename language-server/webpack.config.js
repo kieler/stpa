@@ -5,24 +5,17 @@ const outputPath = path.resolve(__dirname, '../extension/pack');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
-    target: 'web',
+    target: 'node',
 
     entry: path.resolve(__dirname, 'src/main.ts'),
     output: {
-		filename: 'webview.js',
+		filename: 'language-server.js',
         path: outputPath
     },
-    devtool: 'eval-source-map',
+    devtool: 'nosources-source-map',
 
     resolve: {
-        extensions: ['.ts', '.tsx', '.js'],
-        fallback: {
-            'crypto': false,
-            'os': false,
-            'net': false,
-            'vscode-jsonrpc': false,
-            'vscode-languageserver-protocol': false
-        }
+        extensions: ['.ts', '.js']
     },
     module: {
         rules: [
@@ -34,11 +27,6 @@ const config = {
                 test: /\.js$/,
                 use: ['source-map-loader'],
                 enforce: 'pre'
-            },
-            {
-                test: /\.css$/,
-                exclude: /\.useable\.css$/,
-                use: ['style-loader', 'css-loader']
             }
         ]
     }

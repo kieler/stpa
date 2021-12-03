@@ -1,10 +1,8 @@
 node_modules
 extension/node_modules
-extension/out
+extension/syntaxes
 extension/pack
-extension/src/language-server/generated/ast.ts
-extension/src/language-server/generated/grammar.ts
-extension/src/language-server/generated/module.ts
+extension/language-server/src/generated
 
 
 webview/node_modules

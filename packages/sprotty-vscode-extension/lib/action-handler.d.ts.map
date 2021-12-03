@@ -1,1 +1,0 @@
-{"version":3,"file":"action-handler.d.ts","sourceRoot":"","sources":["../src/action-handler.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;kFAckF;AAClF,OAAO,EAAE,MAAM,EAAE,MAAM,yBAAyB,CAAC;AAEjD;;GAEG;AACH,MAAM,WAAW,aAAa;IAC1B,QAAQ,CAAC,IAAI,EAAE,MAAM,CAAC;IAEtB;;;OAGG;IACH,YAAY,CAAC,MAAM,EAAE,MAAM,GAAG,QAAQ,CAAC,OAAO,CAAC,CAAA;CAClD"}

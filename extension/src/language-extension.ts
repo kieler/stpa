@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
-import { SprottyDiagramIdentifier, SprottyLspWebview } from 'packages-vscode/lib/lsp';
+import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 
 export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
@@ -24,9 +24,9 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
             extension: this,
             identifier,
             localResourceRoots: [
-                this.getExtensionFileUri('out')
+                this.getExtensionFileUri('pack')
             ],
-            scriptUri: this.getExtensionFileUri('out', 'webview.js'),
+            scriptUri: this.getExtensionFileUri('pack', 'webview.js'),
             singleton: false // Change this to `true` to enable a singleton view
         });
         webview.addActionHandler(WorkspaceEditActionHandler);
@@ -35,12 +35,12 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
     }
 
     protected activateLanguageClient(context: vscode.ExtensionContext): LanguageClient {
-        const serverModule = context.asAbsolutePath(path.join('out', 'language-server', 'main'));
+        const serverModule = context.asAbsolutePath(path.join('pack', 'language-server'));
         // The debug options for the server
         // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging.
         // By setting `process.env.DEBUG_BREAK` to a truthy value, the language server will wait until a debugger is attached.
         //const debugOptions = { execArgv: ['--nolazy', `--inspect${process.env.DEBUG_BREAK ? '-brk' : ''}=${process.env.DEBUG_SOCKET || '6009'}`] };
-        const debugOptions = { execArgv: ['--nolazy', '--inspect=6009']}
+        const debugOptions = { execArgv: ['--nolazy', `--inspect${process.env.DEBUG_BREAK ? '-brk' : ''}=${process.env.DEBUG_SOCKET || '6009'}`]}
 
         // If the extension is launched in debug mode then the debug server options are used
         // Otherwise the run options are used

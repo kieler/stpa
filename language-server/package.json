@@ -1,0 +1,27 @@
+{
+    "name": "stpa-language-server",
+    "displayName": "stpa-langium",
+    "description": "Please enter a brief description here",
+    "version": "0.0.0",
+    "dependencies": {
+        "langium": "0.2.0",
+        "vscode-languageserver": "^7.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^14.17.3",
+        "@types/vscode": "^1.56.0",
+        "langium-cli": "0.2.0",
+        "ts-loader": "^9.2.6",
+        "typescript": "3.8.3",
+        "webpack": "^5.64.2",
+        "webpack-cli": "^4.9.1",
+        "source-map-loader": "^1.0.2"
+    },
+    "scripts": {
+        "prepare": "yarn run langium:generate && yarn run build",
+        "build": "webpack --mode=development",
+        "watch": "webpack --mode=development --watch",
+        "langium:generate": "langium generate",
+        "langium:watch": "langium generate --watch"
+    }
+}

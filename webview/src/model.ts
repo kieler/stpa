@@ -37,7 +37,7 @@ export class STPAModelFactory extends SGraphFactory {
             child.targetAnchorCorrection = Math.sqrt(5);
         } else if (child instanceof SLabel) {
             child.edgePlacement = <EdgePlacement> {
-                rotate: true,
+                rotate: false,
                 position: 0.6
             };
         }
