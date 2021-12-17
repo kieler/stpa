@@ -1,0 +1,177 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js
+
+PATH: 
+  C:\Python310\Scripts\;C:\Python310\;C:\Program Files\AdoptOpenJDK\jdk-11.0.8.10-openj9\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\Yarn\bin\;C:\Users\Drakae\.windows-build-tools\python27;C:\Users\Drakae\.windows-build-tools\python27\Scripts;C:\Program Files\Git\cmd;C:\Users\Drakae\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\Java\jdk-11.0.8\bin;C:\ProgramData\chocolatey\bin;C:\Gradle\gradle-7.3\bin;C:\Users\Drakae\AppData\Local\Microsoft\WindowsApps;C:\Users\Drakae\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Drakae\AppData\Local\Yarn\bin;C:\Users\Drakae\.windows-build-tools\python27;C:\Users\Drakae\.windows-build-tools\python27\Scripts;C:\Users\Drakae\AppData\Local\Programs\MiKTeX 2.9\miktex\bin\x64\;C:\Users\Drakae\AppData\Roaming\nvm;C:\Program Files\nodejs
+
+Yarn version: 
+  1.15.2
+
+Node version: 
+  14.18.1
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/stpa-language-server: Not found
+      at Request.params.callback [as _callback] (C:\Program Files (x86)\Yarn\lib\cli.js:65167:18)
+      at Request.self.callback (C:\Program Files (x86)\Yarn\lib\cli.js:129541:22)
+      at Request.emit (events.js:400:28)
+      at Request.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:130513:10)
+      at Request.emit (events.js:400:28)
+      at IncomingMessage.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:130435:12)
+      at Object.onceWrapper (events.js:519:28)
+      at IncomingMessage.emit (events.js:412:35)
+      at endReadableNT (internal/streams/readable.js:1334:12)
+      at processTicksAndRejections (internal/process/task_queues.js:82:21)
+
+npm manifest: 
+  {
+      "name": "stpa",
+      "displayName": "STPA-DSL",
+      "description": "Please enter a brief description here",
+      "version": "0.0.1",
+      "engines": {
+          "vscode": "^1.46.0"
+      },
+      "categories": [
+          "Programming Languages"
+      ],
+      "contributes": {
+          "languages": [
+              {
+                  "id": "stpa",
+                  "aliases": [
+                      "stpa",
+                      "stpa"
+                  ],
+                  "extensions": [
+                      ".stpa"
+                  ],
+                  "configuration": "./language-configuration.json"
+              }
+          ],
+          "grammars": [
+              {
+                  "language": "stpa",
+                  "scopeName": "source.stpa",
+                  "path": "./syntaxes/stpa.tmLanguage.json"
+              }
+          ],
+          "commands": [
+              {
+                  "command": "stpa.diagram.open",
+                  "title": "Open in Diagram",
+                  "icon": "$(symbol-structure)",
+                  "category": "STPA Diagram"
+              },
+              {
+                  "command": "stpa.diagram.fit",
+                  "title": "Fit to Screen",
+                  "category": "STPA Diagram"
+              },
+              {
+                  "command": "stpa.diagram.center",
+                  "title": "Center selection",
+                  "category": "STPA Diagram"
+              },
+              {
+                  "command": "stpa.diagram.delete",
+                  "title": "Delete selected element",
+                  "category": "STPA Diagram"
+              },
+              {
+                  "command": "stpa.diagram.export",
+                  "title": "Export diagram to SVG",
+                  "category": "STPA Diagram"
+              }
+          ],
+          "menus": {
+              "commandPalette": [
+                  {
+                      "command": "stpa.diagram.open",
+                      "when": "editorLangId == 'stpa'"
+                  },
+                  {
+                      "command": "stpa.diagram.fit",
+                      "when": "stpa-diagram-focused"
+                  },
+                  {
+                      "command": "stpa.diagram.center",
+                      "when": "stpa-diagram-focused"
+                  },
+                  {
+                      "command": "stpa.diagram.delete",
+                      "when": "stpa-diagram-focused"
+                  },
+                  {
+                      "command": "stpa.diagram.export",
+                      "when": "stpa-diagram-focused"
+                  }
+              ],
+              "editor/context": [
+                  {
+                      "command": "stpa.diagram.open",
+                      "when": "editorLangId == 'stpa'",
+                      "group": "navigation"
+                  }
+              ],
+              "editor/title": [
+                  {
+                      "command": "stpa.diagram.open",
+                      "when": "editorLangId == 'stpa'",
+                      "group": "navigation"
+                  }
+              ],
+              "explorer/context": [
+                  {
+                      "command": "stpa.diagram.open",
+                      "when": "resourceExtname == '.stpa'",
+                      "group": "navigation"
+                  }
+              ]
+          }
+      },
+      "activationEvents": [
+          "onLanguage:stpa",
+          "onCommand:stpa.diagram.open"
+      ],
+      "files": [
+          "lib",
+          "extension",
+          "server",
+          "syntaxes",
+          "webview"
+      ],
+      "main": "./pack/extension",
+  
+      "devDependencies": {
+          "@types/node": "^12.12.6",
+          "@types/vscode": "1.46.0",
+          "rimraf": "^3.0.2",
+          "source-map-loader": "^3.0.0",
+          "sprotty-vscode": "^0.2.0",
+          "stpa-language-server": "^0.0.0",
+          "stpa-sprotty-webview": "^0.0.8",
+          "ts-loader": "^9.2.6",
+          "typescript": "3.8.3",
+          "vscode-languageclient": "^7.0.0",
+          "webpack": "^5.64.2",
+          "webpack-cli": "^4.9.1"
+      },
+      "scripts": {
+          "prepare": "yarn run clean && yarn run build && yarn run copy-language-server && yarn run copy-webview",
+          "clean": "rimraf pack",
+          "build": "webpack --mode=development",
+          "watch": "webpack --mode=development --watch",
+          "copy-language-server": "cp ../language-server/out/* pack/",
+          "copy-webview": "cp ../webview/out/* pack/"
+      }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

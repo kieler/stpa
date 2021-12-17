@@ -121,18 +121,20 @@
         "@types/node": "^12.12.6",
         "@types/vscode": "1.46.0",
         "rimraf": "^3.0.2",
-        "source-map-loader": "^1.0.2",
-        "sprotty-vscode": "^0.1.3",
-        "ts-loader": "^8.0.3",
+        "source-map-loader": "^3.0.0",
+        "sprotty-vscode": "^0.2.0",
+        "ts-loader": "^9.2.6",
         "typescript": "3.8.3",
-        "vscode-languageclient": "^5.2.1",
+        "vscode-languageclient": "^7.0.0",
         "webpack": "^5.64.2",
         "webpack-cli": "^4.9.1"
     },
     "scripts": {
-        "prepare": "yarn run clean && yarn run build",
+        "prepare": "yarn run clean && yarn run build && yarn run copy-language-server && yarn run copy-webview",
         "clean": "rimraf pack",
         "build": "webpack --mode=development",
-        "watch": "webpack --mode=development --watch"
+        "watch": "webpack --mode=development --watch",
+        "copy-language-server": "xcopy ..\\language-server\\out\\* pack",
+        "copy-webview": "xcopy ..\\webview\\out\\* pack"
     }
 }

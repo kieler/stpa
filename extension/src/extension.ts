@@ -11,6 +11,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate(): Thenable<void> {
     if (!extension)
-       return Promise.resolve(undefined);
+       return Promise.resolve();
     return extension.deactivateLanguageClient();
 }

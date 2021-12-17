@@ -13,8 +13,14 @@
       "match": "\\b(controlActions|ControllerConstraints|ControlStructure|feedback|for|Hazards|label|Losses|LossScenarios|notProviding|processModel|providing|Responsibilities|SafetyRequirements|stoppedTooSoon|SystemConstraints|tooEarly/Late|UCAs)\\b"
     },
     {
-      "name": "keyword.symbol.stpa",
-      "match": "(\\->|\\,|\\:|\\.|\\[|\\]|\\{|\\}|\\tooEarly/Late)"
+      "name": "string.quoted.double.stpa",
+      "begin": "\"",
+      "end": "\""
+    },
+    {
+      "name": "string.quoted.single.stpa",
+      "begin": "'",
+      "end": "'"
     }
   ],
   "repository": {

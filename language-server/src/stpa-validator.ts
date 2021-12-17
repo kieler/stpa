@@ -1,12 +1,12 @@
 import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isGraph, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isVerticalEdge, Loss, Model, Node, Responsibility, StpaAstType, SystemConstraint } from './generated/ast';
+import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isGraph, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isVerticalEdge, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
 import { StpaServices } from './stpa-module';
 
 /**
  * Map AST node types to validation checks.
  */
-type StpaChecks = { [type in StpaAstType]?: ValidationCheck | ValidationCheck[] }
+type StpaChecks = { [type in STPAAstType]?: ValidationCheck | ValidationCheck[] }
 
 /**
  * Registry for validation checks.
@@ -128,7 +128,7 @@ export class StpaValidator {
      * @param accept 
      */
     checkControllerConstraints(contCons: ContConstraint, accept: ValidationAcceptor): void {
-        this.checkReferenceListForDuplicates(contCons, contCons.refs, accept)
+        this.checkReferenceListForDuplicates(contCons, [contCons.refs], accept)
     }
 
     /**

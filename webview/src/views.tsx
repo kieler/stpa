@@ -15,11 +15,9 @@
  ********************************************************************************/
 
 /** @jsx svg */
-import { svg } from 'snabbdom-jsx';
-
+import { VNode } from 'snabbdom';
+import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees} from 'sprotty';
 import { injectable } from 'inversify';
-import { VNode } from 'snabbdom/vnode';
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, SPort, toDegrees} from 'sprotty';
 import { STPANode, PARENT_TYPE } from './STPA-model';
 import { getAspectColor } from './views-styles';
 

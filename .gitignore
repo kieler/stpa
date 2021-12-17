@@ -2,8 +2,11 @@ node_modules
 extension/node_modules
 extension/syntaxes
 extension/pack
-extension/language-server/src/generated
+language-server/src/generated
+language-server/node_modules
+language-server/out
 
 
 webview/node_modules
 webview/lib
+webview/out

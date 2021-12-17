@@ -1,9 +1,12 @@
 {
-    "languageId": "stpa",
-    "grammar": "src/stpa.langium",
-    "fileExtensions": [".stpa"],
-    "out": "src/generated",
-    "textMate": {
-        "out": "../extension/syntaxes/stpa.tmLanguage.json"
-    }
+    "projectName": "STPA",
+    "languages": [{
+        "id": "stpa",
+        "grammar": "src/stpa.langium",
+        "fileExtensions": [".stpa"],
+        "textMate": {
+            "out": "../extension/syntaxes/stpa.tmLanguage.json"
+        }
+    }],
+    "out": "src/generated"
 }

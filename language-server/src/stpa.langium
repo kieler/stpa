@@ -1,7 +1,6 @@
 grammar Stpa
-hidden(WS, SL_COMMENT, ML_COMMENT)
 
-Model:
+entry Model:
     'Losses' losses+=Loss*  
     ('Hazards' hazards+=Hazard*)?
     ('SystemConstraints' systemLevelConstraints+=SystemConstraint*)?
@@ -22,7 +21,7 @@ Hazard:
     ('{' (header=STRING? subHazards+=Hazard+)*'}')?;
 
 SystemConstraint:
-    name=SubID description=STRING '['ref=[Hazard|SubID]']'
+    name=SubID description=STRING '['refs=[Hazard:SubID]']'
     ('{' (header=STRING? systemSubConstraints+=SystemConstraint+)*'}')?;
 
 Graph:
@@ -53,7 +52,7 @@ Resps:
 
 Responsibility:
     name=ID description=STRING '[' 
-    refs+=[SystemConstraint | SubID] (',' refs+=[SystemConstraint | SubID])*
+    refs+=[SystemConstraint : SubID] (',' refs+=[SystemConstraint : SubID])*
     ']';
 
 ActionUCAs:
@@ -69,27 +68,26 @@ UCA:
     name=ID description=STRING list=HazardList;
 
 ContConstraint:
-    name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
+    name=ID description=STRING '['refs=[UCA]']';
 
 LossScenario:
     (name=ID description=STRING (list=HazardList)?) |
     (name=ID 'for' uca=[UCA] description=STRING (list=HazardList)?);
 
 HazardList:
-    '[' refs+=[Hazard|SubID] (',' refs+=[Hazard|SubID])*']';
+    '[' refs+=[Hazard:SubID] (',' refs+=[Hazard:SubID])*']';
 
 SafetyConstraint:
-    name=ID description=STRING '['scenario=[LossScenario]']';
+    name=ID description=STRING '['refs=[LossScenario]']';
 
 SubID returns string:
     ID('.'INT)*;
 
 
-terminal WS: /\s+/;
+hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
 terminal INT returns number: /[0-9]+/;
 terminal STRING: /"[^"]*"|'[^']*'/;
 
-terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
-terminal SL_COMMENT: /\/\/[^\n\r]*/;
-
+hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
+hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

@@ -1,7 +1,7 @@
 // @ts-check
 const path = require('path');
 
-const outputPath = path.resolve(__dirname, '../extension/pack');
+const outputPath = path.resolve(__dirname, 'out');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -15,14 +15,7 @@ const config = {
     devtool: 'eval-source-map',
 
     resolve: {
-        extensions: ['.ts', '.tsx', '.js'],
-        fallback: {
-            'crypto': false,
-            'os': false,
-            'net': false,
-            'vscode-jsonrpc': false,
-            'vscode-languageserver-protocol': false
-        }
+        extensions: ['.ts', '.tsx', '.js']
     },
     module: {
         rules: [
@@ -39,7 +32,17 @@ const config = {
                 test: /\.css$/,
                 exclude: /\.useable\.css$/,
                 use: ['style-loader', 'css-loader']
-            }
+            },
+            {
+                test: /\.(ttf)$/,
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                    outputPath: '',
+                    publicPath: '..',
+                    postTransformPublicPath: (p) => `__webpack_public_path__ + ${p}`,
+                }
+            },
         ]
     }
 };
