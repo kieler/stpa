@@ -24,7 +24,7 @@ export interface ContConstraint extends AstNode {
     readonly $container: Model;
     description: string
     name: string
-    refs: Reference<UCA>
+    refs: Array<Reference<UCA>>
 }
 
 export const ContConstraint = 'ContConstraint';
@@ -188,7 +188,7 @@ export interface SystemConstraint extends AstNode {
     description: string
     header: string
     name: SubID
-    refs: Reference<Hazard>
+    refs: Array<Reference<Hazard>>
     systemSubConstraints: Array<SystemConstraint>
 }
 

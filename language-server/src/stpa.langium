@@ -21,7 +21,10 @@ Hazard:
     ('{' (header=STRING? subHazards+=Hazard+)*'}')?;
 
 SystemConstraint:
-    name=SubID description=STRING '['refs=[Hazard:SubID]']'
+    name=SubID description=STRING 
+    '[' 
+    refs+=[Hazard:SubID] (',' refs+=[Hazard:SubID])*
+    ']'
     ('{' (header=STRING? systemSubConstraints+=SystemConstraint+)*'}')?;
 
 Graph:
@@ -52,7 +55,7 @@ Resps:
 
 Responsibility:
     name=ID description=STRING '[' 
-    refs+=[SystemConstraint : SubID] (',' refs+=[SystemConstraint : SubID])*
+    refs+=[SystemConstraint:SubID] (',' refs+=[SystemConstraint:SubID])*
     ']';
 
 ActionUCAs:
@@ -68,7 +71,7 @@ UCA:
     name=ID description=STRING list=HazardList;
 
 ContConstraint:
-    name=ID description=STRING '['refs=[UCA]']';
+    name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
 
 LossScenario:
     (name=ID description=STRING (list=HazardList)?) |

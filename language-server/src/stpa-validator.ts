@@ -78,6 +78,7 @@ export class StpaValidator {
         if (sysCons.systemSubConstraints) {
             this.checkPrefixOfSubElements(sysCons.name, sysCons.systemSubConstraints, accept)
         }
+        this.checkReferenceListForDuplicates(sysCons, sysCons.refs, accept)
     }
 
     /**
@@ -128,7 +129,7 @@ export class StpaValidator {
      * @param accept 
      */
     checkControllerConstraints(contCons: ContConstraint, accept: ValidationAcceptor): void {
-        this.checkReferenceListForDuplicates(contCons, [contCons.refs], accept)
+        this.checkReferenceListForDuplicates(contCons, contCons.refs, accept)
     }
 
     /**

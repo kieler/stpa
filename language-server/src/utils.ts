@@ -1,5 +1,5 @@
 import { AstNode } from "langium";
-import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario } from "./generated/ast"
+import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, isLoss } from "./generated/ast"
 import { STPANode, STPAAspect, CSNode } from "./STPA-model"
 
 /**
@@ -69,27 +69,54 @@ export function determineLayerForCSNodes(nodes: CSNode[]): void {
  * @returns The objects {@code node} is traceable to.
  */
 export function getTargets(node: AstNode): AstNode[] {
-    if (isHazard(node) || isResponsibility(node)) { 
-        /* const refs = node.refs.map(x => x.ref)
-        const targets = []
-        for (const ref of refs) {
-            if (ref) targets.push(ref)
+    if (node) {
+        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) { 
+            const targets: AstNode[] = []
+            for (const ref of node.refs) {
+                if (ref?.ref) targets.push(ref.ref)
+            }
+            return targets
+        } else if (isSafetyConstraint(node)) {
+            const targets = []
+            if (node.refs.ref) targets.push(node.refs.ref)
+            return targets
+        } else if ((isUCA(node) || isLossScenario(node)) && node.list) {
+            const refs = node.list.refs.map(x => x.ref)
+            const targets = []
+            for (const ref of refs) {
+                if (ref) targets.push(ref)
+            }
+            return targets
+        } else {
+            return []
         }
-        return targets */
-        return []
-    } else if (isSystemConstraint(node) || isContConstraint(node) || isSafetyConstraint(node)) {
-        const targets = []
-        if (node.refs.ref) targets.push(node.refs.ref)
-        return targets
-    } else if (isUCA(node) || isLossScenario(node)) {
-        const list = node.list
-        const refs = list.refs.map(x => x.ref)
-        const targets = []
-        for (const ref of refs) {
-            if (ref) targets.push(ref)
-        }
-        return targets
     } else {
         return []
     }
+}
+
+/**
+ * Getter for the aspect of a STPA component
+ * @param node AstNode, which aspect should determined
+ * @returns the aspect of {@code node}
+ */
+export function getAspect(node: AstNode): STPAAspect {
+    if (isLoss(node)) {
+        return STPAAspect.LOSS
+    } else if (isHazard(node)) {
+        return STPAAspect.HAZARD
+    } else if (isSystemConstraint(node)) {
+        return STPAAspect.SYSTEMCONSTRAINT
+    } else if (isUCA(node)) {
+        return STPAAspect.UCA
+    } else if (isResponsibility(node)) {
+        return STPAAspect.RESPONSIBILITY
+    } else if (isContConstraint(node)) {
+        return STPAAspect.CONTROLLERCONSTRAINT
+    } else if (isLossScenario(node)) {
+        return STPAAspect.SCENARIO
+    } else if (isSafetyConstraint(node)) {
+        return STPAAspect.SAFETYREQUIREMENT
+    }
+    return STPAAspect.UNDEFINED
 }

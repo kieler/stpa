@@ -441,7 +441,7 @@ export const StpaGrammar = (): Grammar => loadedStpaGrammar ||(loadedStpaGrammar
           {
             "$type": "Assignment",
             "feature": "refs",
-            "operator": "=",
+            "operator": "+=",
             "terminal": {
               "$type": "CrossReference",
               "type": {
@@ -455,6 +455,35 @@ export const StpaGrammar = (): Grammar => loadedStpaGrammar ||(loadedStpaGrammar
                 }
               }
             }
+          },
+          {
+            "$type": "Group",
+            "elements": [
+              {
+                "$type": "Keyword",
+                "value": ",",
+                "elements": []
+              },
+              {
+                "$type": "Assignment",
+                "feature": "refs",
+                "operator": "+=",
+                "terminal": {
+                  "$type": "CrossReference",
+                  "type": {
+                    "$refText": "Hazard"
+                  },
+                  "terminal": {
+                    "$type": "RuleCall",
+                    "arguments": [],
+                    "rule": {
+                      "$refText": "SubID"
+                    }
+                  }
+                }
+              }
+            ],
+            "cardinality": "*"
           },
           {
             "$type": "Keyword",
@@ -1300,13 +1329,35 @@ export const StpaGrammar = (): Grammar => loadedStpaGrammar ||(loadedStpaGrammar
           {
             "$type": "Assignment",
             "feature": "refs",
-            "operator": "=",
+            "operator": "+=",
             "terminal": {
               "$type": "CrossReference",
               "type": {
                 "$refText": "UCA"
               }
             }
+          },
+          {
+            "$type": "Group",
+            "elements": [
+              {
+                "$type": "Keyword",
+                "value": ",",
+                "elements": []
+              },
+              {
+                "$type": "Assignment",
+                "feature": "refs",
+                "operator": "+=",
+                "terminal": {
+                  "$type": "CrossReference",
+                  "type": {
+                    "$refText": "UCA"
+                  }
+                }
+              }
+            ],
+            "cardinality": "*"
           },
           {
             "$type": "Keyword",

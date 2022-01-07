@@ -1,16 +1,17 @@
 import { AstNode } from 'langium';
 import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty'
-import { SModelRoot, SLabel, SPort, SEdge, SModelElement } from 'sprotty-protocol';
+import { SModelRoot, SLabel, SEdge, SModelElement } from 'sprotty-protocol';
 import { Edge, isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint, 
     isSystemConstraint, isUCA, Model, Node } from './generated/ast';
-import { CSEdge, CSNode, CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection, PARENT_TYPE, STPAAspect, STPANode, STPA_NODE_TYPE } from './STPA-model';
-import { getTargets } from './utils';
+import { CSEdge, CSNode, CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection, PARENT_TYPE, STPANode, STPA_NODE_TYPE } from './STPA-model';
+import { getAspect, getTargets } from './utils';
 
 export class STPADiagramGenerator extends LangiumDiagramGenerator {
 
     protected generateRoot(args: GeneratorContext<Model>): SModelRoot {
         const { document } = args;
         const model: Model = document.parseResult.value;
+        console.log("TEST")
         const CSChildren= [
             ...model.controlStructure.nodes.map(n => this.generateNode(n, args)),
             ...this.generateVerticalCSEdges(model.controlStructure.nodes, args),
@@ -37,11 +38,11 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
                         ...model.losses.map(l => this.generateSTPANode(l, args)),
                         ...model.hazards.map(h => this.generateAspectWithEdges(h, args)).flat(1),
                         ...model.systemLevelConstraints.map(sc => this.generateAspectWithEdges(sc, args)).flat(1),
-                        //...model.responsibilities.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))),
-                        //...model.allUCAs.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))),
-                        //...model.controllerConstraints.map(c => this.generateAspectWithEdges(c, args)).flat(1),
-                        //...model.scenarios.map(s => this.generateAspectWithEdges(s, args)).flat(1),
-                        //...model.safetyCons.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
+                        ...model.responsibilities.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
+                        ...model.allUCAs.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
+                        ...model.controllerConstraints.map(c => this.generateAspectWithEdges(c, args)).flat(1),
+                        ...model.scenarios.map(s => this.generateAspectWithEdges(s, args)).flat(1),
+                        ...model.safetyCons.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
                     ]
                 }
             ]
@@ -104,18 +105,27 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
     }
 
     private generateSEdge(edgeId: string, sourceId: string, targetId: string, label:string, { idCache }: GeneratorContext<Model>): SEdge {
-        return {
-            type: 'edge',
-            id: edgeId,
-            sourceId: sourceId!,
-            targetId: targetId!,
-            children: [
-                <SLabel> {
-                    type: 'label:xref',
-                    id: idCache.uniqueId(edgeId + '.label'),
-                    text: label
-                }
-            ]
+        if (label != '') {
+            return {
+                type: 'edge',
+                id: edgeId,
+                sourceId: sourceId,
+                targetId: targetId,
+                children: [
+                    <SLabel> {
+                        type: 'label:xref',
+                        id: idCache.uniqueId(edgeId + '.label'),
+                        text: label
+                    }
+                ]
+            }
+        } else {
+            return {
+                type: 'edge',
+                id: edgeId,
+                sourceId: sourceId,
+                targetId: targetId,
+            }
         }
     }
 
@@ -130,10 +140,6 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
                     type: 'label',
                     id: idCache.uniqueId(nodeId + '.label'),
                     text: label
-                },
-                <SPort>{
-                    type: 'port',
-                    id: idCache.uniqueId(nodeId + '.newTransition')
                 }
             ],
             layout: 'stack',
@@ -155,9 +161,11 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
         const targets = getTargets(node)
         for (const target of targets) {
             const targetId = idCache.getId(target)
-            const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, node)
-            const e = this.generateSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '', '', args)
-            elements.push(e)
+            const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined)
+            if (sourceId && targetId) {
+                const e = this.generateSEdge(edgeId, sourceId, targetId, '', args)
+                elements.push(e)
+            }
         }
         return elements
     }
@@ -169,7 +177,7 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
             return {
                 type: STPA_NODE_TYPE,
                 id: nodeId,
-                aspect: STPAAspect.LOSS,
+                aspect: getAspect(node),
                 description: node.description,
                 children: [
                     <SLabel>{
@@ -177,10 +185,11 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
                         id: idCache.uniqueId(nodeId + '.label'),
                         text: node.name
                     },
-                    <SPort>{
+                    /* <SPort>{
                         type: 'port',
-                        id: idCache.uniqueId(nodeId + '.newTransition')
-                    }
+                        id: idCache.uniqueId(nodeId + '.newTransition'),
+                        text: 'test'
+                    } */
                 ],
                 layout: 'stack',
                 layoutOptions: {

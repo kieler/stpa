@@ -9,25 +9,27 @@ const UCA_COLOR: ColorStyle = {color: 'indianRed', opacity: undefined}
 const CONTCONS_COLOR: ColorStyle = {color: 'dodgerBlue', opacity: undefined}
 const SCENARIO_COLOR: ColorStyle = {color: 'darkOrange', opacity: undefined}
 const SAFETYREQ_COLOR: ColorStyle = {color: 'darkSlateGrey', opacity: undefined}
+const DEFAULT_COLOR: ColorStyle = {color: 'grey', opacity: undefined}
 
 export function getAspectColor(aspect: STPAAspect): ColorStyle {
     switch (aspect) {
-        case STPAAspect.Loss: 
+        case STPAAspect.LOSS: 
             return LOSS_COLOR
-        case STPAAspect.Hazard: 
+        case STPAAspect.HAZARD: 
             return HAZARD_COLOR
-        case STPAAspect.SystemConstraint: 
+        case STPAAspect.SYSTEMCONSTRAINT: 
             return SYSCONS_COLOR
-        case STPAAspect.Responsibility: 
+        case STPAAspect.RESPONSIBILITY: 
             return RESP_COLOR
         case STPAAspect.UCA: 
             return UCA_COLOR
-        case STPAAspect.ControllerConstraint: 
+        case STPAAspect.CONTROLLERCONSTRAINT: 
             return CONTCONS_COLOR
-        case STPAAspect.Scenario: 
+        case STPAAspect.SCENARIO: 
             return SCENARIO_COLOR
-        case STPAAspect.SafetyRequirement: 
+        case STPAAspect.SAFETYREQUIREMENT: 
             return SAFETYREQ_COLOR
+        default: return DEFAULT_COLOR
     }
 }
 
