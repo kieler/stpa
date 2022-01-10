@@ -31,7 +31,6 @@ export type StpaAddedServices = {
  * of custom service classes.
  */
 export type StpaServices = LangiumSprottyServices & StpaAddedServices
-//export type StpaServices = LangiumServices & StpaAddedServices
 
 /**
  * Dependency injection module that overrides Langium default services and contributes the

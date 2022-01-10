@@ -1,6 +1,7 @@
 import { AstNode } from "langium";
 import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, isLoss } from "./generated/ast"
-import { STPANode, STPAAspect, CSNode } from "./STPA-model"
+import { STPAAspect } from "./STPA-model"
+import { STPANode, CSNode } from "./STPA-interfaces";
 
 /**
  * Determines the layer {@code node} should be in depending on the STPA aspect it represents.
@@ -42,7 +43,7 @@ export function determineLayerForCSNodes(nodes: CSNode[]): void {
         for (let n of nodes) {
             let s = true
             for (let edge of n.outgoingEdges) {
-                if (edge instanceof CSEdge && edge.direction == EdgeDirection.Down && edge.target instanceof CSNode && !edge.target.layer) {
+                if (edge instanceof CSEdge && edge.direction == EdgeDirection.DOWN && edge.target instanceof CSNode && !edge.target.layer) {
                     s = false
                 }
             }
@@ -80,6 +81,8 @@ export function getTargets(node: AstNode): AstNode[] {
             const targets = []
             if (node.refs.ref) targets.push(node.refs.ref)
             return targets
+        } else if (isLossScenario(node) && node.uca && node.uca.ref) {
+            return [node.uca.ref]
         } else if ((isUCA(node) || isLossScenario(node)) && node.list) {
             const refs = node.list.refs.map(x => x.ref)
             const targets = []
