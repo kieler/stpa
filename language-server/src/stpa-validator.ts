@@ -1,6 +1,6 @@
 import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isGraph, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isVerticalEdge, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
+import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isGraph, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
 import { StpaServices } from './stpa-module';
 
 /**
@@ -44,7 +44,7 @@ export class StpaValidator {
         // collect all defined elements that have an identifier in order to check the uniqueness
         const allHazards = this.collectHazards(model)
         const allSysCons = this.collectSystemConstrainta(model)
-        let allNodes: AstNode[] =  (model.losses as AstNode[]).concat(allHazards, allSysCons, model.controlStructure.nodes, 
+        let allNodes: AstNode[] =  (model.losses as AstNode[]).concat(allHazards, allSysCons, model.controlStructure?.nodes, 
             model.controlStructure.edges)
         for (const resp of model.responsibilities) {
             allNodes = allNodes.concat(resp.responsiblitiesForOneSystem)
@@ -113,8 +113,10 @@ export class StpaValidator {
         let found = false
         if (system && searchName) {
             for (const act of system?.actions) {
-                if (act.name == searchName) {
-                    found = true
+                for (const com of act.comms) {
+                    if (com.name == searchName) {
+                        found = true
+                    }
                 }
             }
             if(!found) {
@@ -152,7 +154,7 @@ export class StpaValidator {
             // needs to be checked in order to get the name
             if (isLoss(node)|| isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node) 
                     || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isNode(node) || isEdge(node) 
-                    || isVerticalEdge(node) || isGraph(node) || isVariable(node)){
+                    || isCommand(node) || isGraph(node) || isVariable(node)){
                 let name = node.name
                 if (name != "") {
                     if(names.has(name)) {

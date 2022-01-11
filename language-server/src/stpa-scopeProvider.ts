@@ -1,12 +1,12 @@
 import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, SimpleScope, EMPTY_SCOPE } from "langium";
-import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, VerticalEdge, ActionUCAs, Hazard, SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario} from "./generated/ast";
+import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
 export class STPAScopeProvider extends DefaultScopeProvider {
 
     /* the types of the different aspects */
-    private CA_TYPE = VerticalEdge
+    private CA_TYPE = Command
     private HAZARD_TYPE = Hazard
     private SYS_CONSTRAINT_TYPE = SystemConstraint
     private UCA_TYPE = UCA
@@ -76,17 +76,20 @@ export class STPAScopeProvider extends DefaultScopeProvider {
      */
     getCAs(node: ActionUCAs, precomputed: PrecomputedScopes): Scope {
         const scopes: Array<Stream<AstNodeDescription>> = [];
-        let system = node.system.ref
-        if (system) {
-            let currentNode: AstNode | undefined = system;
-            do {
-                const allDescriptions = precomputed.get(currentNode);
-                if (allDescriptions) {
-                    scopes.push(stream(allDescriptions).filter(
-                        desc => this.reflection.isSubtype(desc.type, this.CA_TYPE)));
-                }
-                currentNode = currentNode.$container;
-            } while (currentNode);
+        let actionLists = node.system.ref?.actions
+
+        if (actionLists) {
+            for (const actionList of actionLists) {
+                let currentNode: AstNode | undefined = actionList;
+                do {
+                    const allDescriptions = precomputed.get(currentNode);
+                    if (allDescriptions) {
+                        scopes.push(stream(allDescriptions).filter(
+                            desc => this.reflection.isSubtype(desc.type, this.CA_TYPE)));
+                    }
+                    currentNode = currentNode.$container;
+                } while (currentNode);
+            }
         }
 
         let result: Scope = this.getGlobalScope(this.CA_TYPE);
@@ -136,7 +139,6 @@ export class STPAScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing all system-level constraints.
      */
     private getSystemConstraints(node: AstNode, precomputed: PrecomputedScopes): Scope {
-        console.log("test")
 /*         let model = node.$container
         while (!isModel(model)) {
             model=model?.$container

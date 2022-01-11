@@ -32,10 +32,11 @@ Graph:
 
 Node:
     name=ID '{'
+        'hierarchyLevel' level=INT
         ('label' label=STRING)?
         ('processModel' '{'variables+=Variable*'}')?
-        ('controlActions' '{'actions+=VerticalEdge*'}')?
-        ('feedback' '{'feedbacks+=VerticalEdge*'}')?
+        ('controlActions' '{'actions+=VE*'}')?
+        ('feedback' '{'feedbacks+=VE*'}')?
     '}';
 
 Edge:
@@ -47,8 +48,11 @@ Edge:
 Variable:
     name=ID':' '['values+=STRING (',' values+=STRING)*']';
 
-VerticalEdge:
-    name=ID (label=STRING)? '->' target=[Node];
+VE:
+    '[' comms+=Command (',' comms+=Command)* ']' '->' target=[Node];
+
+Command:
+    name=ID label=STRING;
 
 Resps:
     system=[Node] '{'responsiblitiesForOneSystem+=Responsibility*'}';
@@ -60,7 +64,7 @@ Responsibility:
 
 ActionUCAs:
     system=[Node]'.'
-    action=[VerticalEdge] '{'
+    action=[Command] '{'
         'notProviding' '{'ucas+=UCA*'}'
         'providing' '{'ucas+=UCA*'}'
         'tooEarly/Late' '{'ucas+=UCA*'}'

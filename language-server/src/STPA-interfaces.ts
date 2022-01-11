@@ -8,7 +8,7 @@ export interface STPANode extends SNode {
 }
 
 export interface CSNode extends SNode {
-    layer?: number
+    level?: number
     // processmodel?
 }
 

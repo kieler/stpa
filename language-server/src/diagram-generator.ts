@@ -26,7 +26,7 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
         ]
         if (model.controlStructure) {
             const CSChildren= [
-                ...model.controlStructure?.nodes.map(n => this.generateNode(n, args)),
+                ...model.controlStructure?.nodes.map(n => this.generateCSNode(n, args)),
                 ...this.generateVerticalCSEdges(model.controlStructure.nodes, args),
                 ...this.generateHorizontalCSEdges(model.controlStructure.edges, args)
             ] 
@@ -68,17 +68,35 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
             for (const edge of node.actions) {
                 const sourceId = idCache.getId(edge.$container)
                 const targetId = idCache.getId(edge.target.ref)
-                const edgeId = idCache.uniqueId(`${sourceId}:${edge.name}:${targetId}`, edge)
+                console.log("source: " + sourceId + ", " + edge.$container)
+                console.log("target: " + targetId + ", " + edge.target.ref)
+                const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge)
+                let label = ''
+                for (let i = 0; i < edge.comms.length; i++) {
+                    const com = edge.comms[i]
+                    label+=com.label
+                    if (i < edge.comms.length - 1) {
+                        label += ", "
+                    }
+                }
                 const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '', 
-                                edge.label? edge.label:edge.name, EdgeDirection.DOWN, args)
+                                label, EdgeDirection.DOWN, args)
                 edges.push(e)
             }
             for (const edge of node.feedbacks) {
                 const sourceId = idCache.getId(edge.$container)
                 const targetId = idCache.getId(edge.target.ref)
-                const edgeId = idCache.uniqueId(`${sourceId}:${edge.name}:${targetId}`, edge)
+                const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge)
+                let label = ''
+                for (let i = 0; i < edge.comms.length; i++) {
+                    const com = edge.comms[i]
+                    label+=com.label
+                    if (i < edge.comms.length - 1) {
+                        label += ", "
+                    }
+                }
                 const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '', 
-                                edge.label? edge.label:edge.name, EdgeDirection.UP, args)
+                                label, EdgeDirection.UP, args)
                 edges.push(e)
             }
         }
@@ -141,12 +159,13 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
         }
     }
 
-    protected generateNode(node: Node, { idCache }: GeneratorContext<Model>): CSNode {
+    protected generateCSNode(node: Node, { idCache }: GeneratorContext<Model>): CSNode {
         const label = node.label ? node.label : node.name
         const nodeId = idCache.uniqueId(node.name, node);
         return {
             type: CS_NODE_TYPE,
             id: nodeId,
+            level: node.level,
             children: [
                 <SLabel>{
                     type: 'label',
@@ -201,12 +220,7 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
                         type: 'label',
                         id: idCache.uniqueId(nodeId + '.label'),
                         text: node.name
-                    },
-                    /* <SPort>{
-                        type: 'port',
-                        id: idCache.uniqueId(nodeId + '.newTransition'),
-                        text: 'test'
-                    } */
+                    }
                 ],
                 layout: 'stack',
                 layoutOptions: {

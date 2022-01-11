@@ -15,7 +15,7 @@ export class STPANode extends SNode {
 }
 
 export class CSNode extends SNode {
-    layer?: number
+    level?: number
     // processmodel?
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
         layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];

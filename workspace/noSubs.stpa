@@ -19,40 +19,41 @@ SC7 "Aircraft must have safe distance to other objects on the ground" [H7]
 ControlStructure
 Aircraft {
     FlightCrew {
+        hierarchyLevel 0
         processModel {
             BCSUmode: ["on", "off"]
         }
         controlActions {
-            mc "Manual Controls" -> OtherSubsystems
-            powerOff "Power Off BSCU" -> BSCU 
-            powerOn "Power On BSCU" -> BSCU
-            manual "Manual Braking" -> Wheels
+            [mc "Manual Controls" ]-> OtherSubsystems
+            [powerOff "Power Off BSCU", powerOn "Power On BSCU"] -> BSCU 
+            [manual "Manual Braking"] -> Wheels
         }
     }
     OtherSubsystems {
+        hierarchyLevel 1
         feedback {
-            modes "Other system modes" -> FlightCrew
-            states "states" -> FlightCrew
+            [modes "Other system modes", states "states"] -> FlightCrew
         }
     }
     BSCU {
+        hierarchyLevel 1
         controlActions {
-            brake "Brake" -> Wheels
+            [brake "Brake"] -> Wheels
         }
         feedback {
-            mode "BSCU mode" -> FlightCrew 
-            faults "BSCU faults" -> FlightCrew
+            [mode "BSCU mode", faults "BSCU faults"] -> FlightCrew 
         }
     }
     Wheels {
+        hierarchyLevel 2
         feedback {
-            speed "Wheel speed" -> BSCU
+            [speed "Wheel speed"] -> BSCU
         }
     }
-    HorizontalEdge {
+/*     HorizontalEdge {
         BSCU -> OtherSubsystems
         label "Example"
-    }
+    } */
 }
 
 Responsibilities

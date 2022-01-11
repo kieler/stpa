@@ -1,7 +1,7 @@
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { getBasicType, SEdge, SGraph, SLabel, SModelElement, SModelIndex, SNode, SPort, SShapeElement } from 'sprotty-protocol';
-import { STPANode } from './STPA-interfaces';
+import { CSNode, STPANode } from './STPA-interfaces';
 import { CS_NODE_TYPE, PARENT_TYPE, STPA_NODE_TYPE } from './STPA-model';
 import { determineLayerForSTPANode } from './utils';
 
@@ -48,11 +48,13 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
                     }
                 } else if (element.type == CS_NODE_TYPE) {
                     //const layer = element.layer
-                    const layer = "0"
+                    const layer = (element as CSNode).level;
+                    if (layer) {
+                        (element as SShapeElement).position = {x: 100 * layer, y: 100 * layer}
+                    }
                     return {
                         'org.eclipse.elk.port.side': 'DOWN',
-                        'org.eclipse.elk.port.borderOffset': '3.0',
-                        'org.eclipse.elk.layered.layering.layerChoiceConstraint': layer
+                        'org.eclipse.elk.port.borderOffset': '3.0'
                     }
                 } else if (element.type == PARENT_TYPE) {
                     return this.nodeOptions(element as SNode, index)
