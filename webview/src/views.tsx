@@ -22,6 +22,7 @@ import { STPANode, PARENT_TYPE } from './STPA-model';
 import { getAspectColor } from './views-styles';
 
 const STROKE_COLOR='black'
+const colored = true
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
@@ -33,7 +34,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             const p = segments[i];
             path += ` L ${p.x},${p.y}`;
         }
-        if (edge.source instanceof STPANode) {
+        if (colored && edge.source instanceof STPANode) {
             const color = getAspectColor((edge.source as STPANode).aspect).color
             return <path d={path} stroke={color}/>;
         }
@@ -43,7 +44,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
-        if (edge.source instanceof STPANode) {
+        if (colored && edge.source instanceof STPANode) {
             const color = getAspectColor((edge.source as STPANode).aspect).color
             return [<path d="M 6,-3 L 0,0 L 6,3 Z"
             transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} stroke={color}/>];
@@ -62,15 +63,26 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 @injectable()
 export class STPANodeView extends RectangularNodeView  {
     render(node: STPANode, context: RenderingContext): VNode {
-        const color = getAspectColor(node.aspect).color
-        return  <g>
-                    <rect class-sprotty-port={node instanceof SPort}
-                        class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                        x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
-                        stroke={STROKE_COLOR} fill={color}
-                    ></rect>
-                    {context.renderChildren(node)}
-                </g>;
+        if (colored) {
+            const color = getAspectColor(node.aspect).color
+            return  <g>
+                        <rect class-sprotty-port={node instanceof SPort}
+                            class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                            x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
+                            stroke={STROKE_COLOR} fill={color}
+                        ></rect>
+                        {context.renderChildren(node)}
+                    </g>;
+        } else {
+            return  <g>
+                        <rect class-sprotty-node={node instanceof SNode} class-sprotty-port={node instanceof SPort}
+                            class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                            x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
+                            
+                        ></rect>
+                        {context.renderChildren(node)}
+                    </g>;
+        }
     }
 }
 
