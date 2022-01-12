@@ -1,5 +1,7 @@
-import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, SimpleScope } from "langium";
-import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, Responsibility} from "./generated/ast";
+import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, 
+    SimpleScope } from "langium";
+import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, 
+    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -111,7 +113,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         }
         const scopes: Array<Stream<AstNodeDescription>> = [];
         let hazards = model.hazards
-        // TODO: probably does not work for several hierarchy levels
+        // TODO: does not work for several hierarchy levels
         for (const hazard of hazards) {
             let currentNode: AstNode | undefined = hazard;
             do {
@@ -139,14 +141,13 @@ export class STPAScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing all system-level constraints.
      */
     private getSystemConstraints(node: AstNode, precomputed: PrecomputedScopes): Scope {
-        console.log("node: " + (node as Responsibility).name)
         let model = node.$container
         while (!isModel(model)) {
             model=model?.$container
         }
         const scopes: Array<Stream<AstNodeDescription>> = [];
         let constraints = model.systemLevelConstraints
-        // TODO: probably does not work for several hierarchy levels
+        // TODO: does not work for several hierarchy levels
         for (const cons of constraints) {
             let currentNode: AstNode | undefined = cons;
             do {

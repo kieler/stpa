@@ -19,10 +19,11 @@ import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees} from 'sprotty';
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE } from './STPA-model';
-import { getAspectColor } from './views-styles';
+import { getAspectColor, renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 
 const STROKE_COLOR='black'
 const colored = true
+const forms = false
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
@@ -63,23 +64,49 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 @injectable()
 export class STPANodeView extends RectangularNodeView  {
     render(node: STPANode, context: RenderingContext): VNode {
+        let element: VNode
+        if (forms) {
+            switch(node.aspect) {
+                case 0: 
+                    element = renderTrapez(node)
+                    break
+                case 1: 
+                    element = renderCircle(node)
+                    break
+                case 2: 
+                    element = renderTriangle(node)
+                    break
+                case 3:
+                    element = renderPentagon(node)
+                    break
+                case 5:
+                    element = renderMirroredTriangle(node)
+                    break
+                case 6:
+                    element = renderHexagon(node)
+                    break
+                case 7:
+                    element = renderDiamond(node)
+                    break
+                default: 
+                    element = renderRectangle(node)
+                    break
+            }
+        } else {
+            element = renderRectangle(node)
+        }
         if (colored) {
             const color = getAspectColor(node.aspect).color
-            return  <g>
-                        <rect class-sprotty-port={node instanceof SPort}
-                            class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                            x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
-                            stroke={STROKE_COLOR} fill={color}
-                        ></rect>
+            return  <g class-sprotty-port={node instanceof SPort}
+                        class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                        stroke={STROKE_COLOR} fill={color}>
+                        {element}
                         {context.renderChildren(node)}
                     </g>;
         } else {
-            return  <g>
-                        <rect class-sprotty-node={node instanceof SNode} class-sprotty-port={node instanceof SPort}
-                            class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                            x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
-                            
-                        ></rect>
+            return  <g class-sprotty-node={node instanceof SNode} class-sprotty-port={node instanceof SPort}
+                        class-mouseover={node.hoverFeedback} class-selected={node.selected}>
+                        {element}
                         {context.renderChildren(node)}
                     </g>;
         }
