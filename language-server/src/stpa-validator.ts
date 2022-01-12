@@ -45,7 +45,7 @@ export class StpaValidator {
         const allHazards = this.collectHazards(model)
         const allSysCons = this.collectSystemConstrainta(model)
         let allNodes: AstNode[] =  (model.losses as AstNode[]).concat(allHazards, allSysCons, model.controlStructure?.nodes, 
-            model.controlStructure.edges)
+            model.controlStructure?.edges)
         for (const resp of model.responsibilities) {
             allNodes = allNodes.concat(resp.responsiblitiesForOneSystem)
         }

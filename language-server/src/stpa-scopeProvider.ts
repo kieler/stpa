@@ -1,5 +1,5 @@
-import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, SimpleScope, EMPTY_SCOPE } from "langium";
-import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario} from "./generated/ast";
+import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, SimpleScope } from "langium";
+import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, Responsibility} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -18,13 +18,12 @@ export class STPAScopeProvider extends DefaultScopeProvider {
     getScope(node: AstNode, referenceId: string): Scope {
         const referenceType = this.reflection.getReferenceType(referenceId);
         const precomputed = getDocument(node).precomputedScopes;
-        // TODO: for a responsibility precomputed is undefined. But getDocument() works fine
         if (precomputed) {
             // determine the scope for the different reference types
             if ((isContConstraint(node) || isLossScenario(node)) && referenceType == this.UCA_TYPE) {
                 return this.getUCAs(node, precomputed)
             } else if (isResponsibility(node) && referenceType == this.SYS_CONSTRAINT_TYPE) {
-                this.getSystemConstraints(node, precomputed)
+                return this.getSystemConstraints(node, precomputed)
             } else if ((isSystemConstraint(node) || isHazardList(node)) && referenceType == this.HAZARD_TYPE) {
                 return this.getHazards(node, precomputed)
             } else if (isActionUCAs(node) && referenceType == this.CA_TYPE) {
@@ -112,6 +111,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         }
         const scopes: Array<Stream<AstNodeDescription>> = [];
         let hazards = model.hazards
+        // TODO: probably does not work for several hierarchy levels
         for (const hazard of hazards) {
             let currentNode: AstNode | undefined = hazard;
             do {
@@ -139,12 +139,14 @@ export class STPAScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing all system-level constraints.
      */
     private getSystemConstraints(node: AstNode, precomputed: PrecomputedScopes): Scope {
-/*         let model = node.$container
+        console.log("node: " + (node as Responsibility).name)
+        let model = node.$container
         while (!isModel(model)) {
             model=model?.$container
         }
         const scopes: Array<Stream<AstNodeDescription>> = [];
         let constraints = model.systemLevelConstraints
+        // TODO: probably does not work for several hierarchy levels
         for (const cons of constraints) {
             let currentNode: AstNode | undefined = cons;
             do {
@@ -160,8 +162,8 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         let result: Scope = this.getGlobalScope(this.SYS_CONSTRAINT_TYPE);
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);
-        } */
-        return EMPTY_SCOPE;
+        }
+        return result;
     }
     
     /**

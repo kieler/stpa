@@ -26,8 +26,8 @@ H7 "Aircraft comes too close to other objects on the ground" [L1, L2] {
 }
 
 SystemConstraints
-SC1 "Aircraft must satisfy minimum sperartion standards from other aircraft and objects" [H1]
-SC4 "Aircraft airfram integrity must be maintained under worst-case conditions" [H4]
+//SC1 "Aircraft must satisfy minimum sperartion standards from other aircraft and objects" [H1]
+//SC4 "Aircraft airfram integrity must be maintained under worst-case conditions" [H4]
 SC7 "Aircraft must have safe distance to other objects on the ground" [H7] {
     SC7.1 "Deceleration must occur within TBD seconds of landing or rejected takeoff at a rate of at least TBD m/s2" [H7.1]
     SC7.2 "Asymmetric deceleration must not lead to loss of directional control or cause aircraft to depart taxiway, runway, or apron" [H7.2]
@@ -75,7 +75,7 @@ Aircraft {
 }
 
 Responsibilities
-/*Wheels {
+Wheels {
     R1 "Decelerate wheels when commanded by BSCU or Flight Crew" [SC7.1]
 }
 BSCU {
@@ -88,7 +88,7 @@ FlightCrew {
     R6 "Decide how braking will be done: Autobrake, normal braking, or manual braking" [SC7.1]
     R7 "Configure BSCU and Autobrake to prepare for braking" [SC7.1]
     R8 "Monitor braking and disable BSCU, manually brake in case of malfunction" [SC7.1, SC7.2]
-}*/
+}
 
 UCAs
 BSCU.brake {
