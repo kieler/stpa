@@ -20,6 +20,8 @@ import { SprottyDiagramIdentifier } from 'sprotty-vscode-webview';
 import { Container } from 'inversify';
 import { createSTPADiagramContainer } from './di.config';
 import { SprottyLspEditStarter } from 'sprotty-vscode-webview/lib/lsp/editing'
+import { ColorToggleCommand, FormToggleCommand } from './commands';
+import { configureCommand } from 'sprotty';
 
 export class STPASprottyStarter extends SprottyLspEditStarter {
 
@@ -29,6 +31,8 @@ export class STPASprottyStarter extends SprottyLspEditStarter {
 
     addVscodeBindings(container: Container, diagramIdentifier: SprottyDiagramIdentifier): void {
         super.addVscodeBindings(container, diagramIdentifier)
+        configureCommand(container, ColorToggleCommand);
+        configureCommand(container, FormToggleCommand);
     }
 }
 

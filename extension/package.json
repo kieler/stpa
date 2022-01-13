@@ -56,6 +56,16 @@
                 "command": "stpa.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.color",
+                "title": "Toggle STPA diagram colors",
+                "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.forms",
+                "title": "Toggle STPA diagram forms",
+                "category": "STPA Diagram"
             }
         ],
         "menus": {
@@ -78,6 +88,14 @@
                 },
                 {
                     "command": "stpa.diagram.export",
+                    "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.diagram.color",
+                    "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.diagram.forms",
                     "when": "stpa-diagram-focused"
                 }
             ],
@@ -102,7 +120,33 @@
                     "group": "navigation"
                 }
             ]
-        }
+        },
+        "keybindings": [
+            {
+                "key": "alt+f",
+                "mac": "alt+f",
+                "command": "stpa.diagram.fit",
+                "when": "stpa-diagram-focused"
+            },
+            {
+                "key": "alt+c",
+                "mac": "alt+c",
+                "command": "stpa.diagram.center",
+                "when": "stpa-diagram-focused"
+            },
+            {
+                "key": "alt+e",
+                "mac": "alt+e",
+                "command": "stpa.diagram.export",
+                "when": "stpa-diagram-focused"
+            },
+            {
+                "key": "delete",
+                "mac": "delete",
+                "command": "stpa.diagram.delete",
+                "when": "stpa-diagram-focused"
+            }
+        ]
     },
     "activationEvents": [
         "onLanguage:stpa",

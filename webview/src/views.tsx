@@ -20,13 +20,16 @@ import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, 
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE } from './STPA-model';
 import { getAspectColor, renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
+import { Options } from './options';
+import { inject } from 'inversify'
 
 const STROKE_COLOR='black'
-const colored = true
-const forms = false
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
+
+    @inject(Options)
+    protected readonly options: Options
 
     protected renderLine(edge: SEdge, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
@@ -35,7 +38,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             const p = segments[i];
             path += ` L ${p.x},${p.y}`;
         }
-        if (colored && edge.source instanceof STPANode) {
+        if (this.options.getColored() && edge.source instanceof STPANode) {
             const color = getAspectColor((edge.source as STPANode).aspect).color
             return <path d={path} stroke={color}/>;
         }
@@ -45,7 +48,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
-        if (colored && edge.source instanceof STPANode) {
+        if (this.options.getColored() && edge.source instanceof STPANode) {
             const color = getAspectColor((edge.source as STPANode).aspect).color
             return [<path d="M 6,-3 L 0,0 L 6,3 Z"
             transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} stroke={color}/>];
@@ -63,9 +66,13 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
 @injectable()
 export class STPANodeView extends RectangularNodeView  {
+
+    @inject(Options)
+    protected readonly options: Options
+
     render(node: STPANode, context: RenderingContext): VNode {
         let element: VNode
-        if (forms) {
+        if (this.options.getForms()) {
             switch(node.aspect) {
                 case 0: 
                     element = renderTrapez(node)
@@ -95,7 +102,7 @@ export class STPANodeView extends RectangularNodeView  {
         } else {
             element = renderRectangle(node)
         }
-        if (colored) {
+        if (this.options.getColored()) {
             const color = getAspectColor(node.aspect).color
             return  <g class-sprotty-port={node instanceof SPort}
                         class-mouseover={node.hoverFeedback} class-selected={node.selected}

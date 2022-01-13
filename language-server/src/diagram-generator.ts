@@ -4,7 +4,7 @@ import { SModelRoot, SLabel, SEdge, SModelElement } from 'sprotty-protocol';
 import { Edge, isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint, 
     isSystemConstraint, isUCA, Model, Node, SystemConstraint } from './generated/ast';
 import { CSEdge, CSNode, STPANode } from './STPA-interfaces';
-import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE } from './STPA-model';
+import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE } from './STPA-model'
 import { getAspect, getTargets } from './utils';
 
 export class STPADiagramGenerator extends LangiumDiagramGenerator {
@@ -12,7 +12,6 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
     protected generateRoot(args: GeneratorContext<Model>): SModelRoot {
         const { document } = args;
         const model: Model = document.parseResult.value;
-        console.log("TEST")
 
         const stpaChildren = [
             ...model.losses?.map(l => this.generateSTPANode(l, args)),
