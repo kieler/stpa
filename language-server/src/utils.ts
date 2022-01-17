@@ -13,8 +13,14 @@ export function determineLayerForSTPANode(node: STPANode): number {
         case STPAAspect.LOSS: 
             return 0
         case STPAAspect.HAZARD:
+            if (node.subcomp) {
+                return 1.5
+            }
             return 1
         case STPAAspect.SYSTEMCONSTRAINT:
+            if (node.subcomp) {
+                return 2.5
+            }
             return 2
         case STPAAspect.RESPONSIBILITY:
             return 3
@@ -75,6 +81,9 @@ export function getTargets(node: AstNode): AstNode[] {
             const targets: AstNode[] = []
             for (const ref of node.refs) {
                 if (ref?.ref) targets.push(ref.ref)
+            }
+            if ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container))) {
+                targets.push(node.$container)
             }
             return targets
         } else if (isSafetyConstraint(node)) {

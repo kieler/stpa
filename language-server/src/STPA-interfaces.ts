@@ -5,6 +5,7 @@ export interface STPANode extends SNode {
 
     aspect: STPAAspect
     description: string
+    subcomp: boolean
 }
 
 export interface CSNode extends SNode {

@@ -12,6 +12,7 @@ export class STPANode extends SNode {
 
     aspect: STPAAspect = STPAAspect.UNDEFINED
     description: string = ""
+    subcomp: boolean = false
 }
 
 export class CSNode extends SNode {
