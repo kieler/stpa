@@ -19,11 +19,10 @@ import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees} from 'sprotty';
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE } from './STPA-model';
-import { getAspectColor, renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
+import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { Options } from './options';
 import { inject } from 'inversify'
 
-const STROKE_COLOR='black'
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
@@ -38,23 +37,21 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             const p = segments[i];
             path += ` L ${p.x},${p.y}`;
         }
-        if (this.options.getColored() && edge.source instanceof STPANode) {
-            const color = getAspectColor((edge.source as STPANode).aspect).color
-            return <path d={path} stroke={color}/>;
-        }
-        return <path d={path} />;
+   
+        const printEdge = this.options.getPrintStyle()
+        const stpaEdge = this.options.getColored() && !printEdge
+        return <path class-print-edge={printEdge} class-stpa-edge={stpaEdge} aspect={(edge.source as STPANode).aspect} d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
-        if (this.options.getColored() && edge.source instanceof STPANode) {
-            const color = getAspectColor((edge.source as STPANode).aspect).color
-            return [<path d="M 6,-3 L 0,0 L 6,3 Z"
-            transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} stroke={color}/>];
-        }
+        const printEdge = this.options.getPrintStyle()
+        const stpaEdge = this.options.getColored() && !printEdge
+        const sprottyEdge = !printEdge && !stpaEdge
         return [
-            <path class-sprotty-edge-arrow={true} d="M 6,-3 L 0,0 L 6,3 Z"
+            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={stpaEdge} aspect={(edge.source as STPANode).aspect}
+                  class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
                   transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`}/>
         ];
     }
@@ -102,29 +99,35 @@ export class STPANodeView extends RectangularNodeView  {
         } else {
             element = renderRectangle(node)
         }
-        if (this.options.getColored()) {
-            const color = getAspectColor(node.aspect).color
-            return  <g class-sprotty-port={node instanceof SPort}
-                        class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                        stroke={STROKE_COLOR} fill={color}>
-                        {element}
-                        {context.renderChildren(node)}
-                    </g>;
-        } else {
-            return  <g class-sprotty-node={node instanceof SNode} class-sprotty-port={node instanceof SPort}
-                        class-mouseover={node.hoverFeedback} class-selected={node.selected}>
-                        {element}
-                        {context.renderChildren(node)}
-                    </g>;
-        }
+
+        const printNode = this.options.getPrintStyle()
+        const stpaNode = this.options.getColored() && !printNode
+        const sprottyNode = !printNode && !stpaNode
+        
+        return  <g  
+                    class-print-node={printNode}
+                    class-stpa-node={stpaNode} aspect={node.aspect}
+                    class-sprotty-node={sprottyNode}
+                    class-sprotty-port={node instanceof SPort}
+                    class-mouseover={node.hoverFeedback} class-selected={node.selected}>
+                    {element}
+                    {context.renderChildren(node)}
+                </g>;
     }
 }
 
 @injectable()
 export class CSNodeView extends RectangularNodeView {
+
+    @inject(Options)
+    protected readonly options: Options
+
     render(node: SNode, context: RenderingContext): VNode {
+        const printNode = this.options.getPrintStyle()
+        const sprottyNode = !printNode && node instanceof SNode
         return <g>
-            <rect class-parent-node={node.type == PARENT_TYPE} class-sprotty-node={node instanceof SNode} class-sprotty-port={node instanceof SPort}
+            <rect class-parent-node={node.type == PARENT_TYPE} class-print-node={printNode}
+                  class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
                   class-mouseover={node.hoverFeedback} class-selected={node.selected}
                   x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
             > </rect>

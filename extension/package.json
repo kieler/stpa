@@ -66,6 +66,11 @@
                 "command": "stpa.diagram.forms",
                 "title": "Toggle STPA diagram forms",
                 "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.printStyle",
+                "title": "Toggle diagram print style",
+                "category": "STPA Diagram"
             }
         ],
         "menus": {
@@ -96,6 +101,10 @@
                 },
                 {
                     "command": "stpa.diagram.forms",
+                    "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.diagram.printStyle",
                     "when": "stpa-diagram-focused"
                 }
             ],

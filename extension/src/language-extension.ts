@@ -46,6 +46,14 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
                         kind: 'forms'
                     } as Action);
             }));
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.printStyle', (...commandArgs: any) => {
+                const activeWebview = this.findActiveWebview();
+                if (activeWebview)
+                    activeWebview.dispatch({
+                        kind: 'printStyle'
+                    } as Action);
+            }));
     }
 
     protected getDiagramType(commandArgs: any[]): string | undefined {

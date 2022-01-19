@@ -4,10 +4,12 @@ import { injectable } from 'inversify';
 export class Options {
     private colored: boolean
     private forms: boolean
+    private printStyle: boolean
 
     constructor(){
         this.colored = true
         this.forms = false
+        this.printStyle = false
     }
 
     toggleColored() {
@@ -18,11 +20,19 @@ export class Options {
         this.forms = !this.forms
     }
 
+    togglePrintStyle() {
+        this.printStyle = !this.printStyle
+    }
+
     getColored() {
         return this.colored
     }
 
     getForms() {
         return this.forms
+    }
+
+    getPrintStyle() {
+        return this.printStyle
     }
 }
