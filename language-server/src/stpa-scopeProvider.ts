@@ -1,5 +1,5 @@
 import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, 
-    SimpleScope } from "langium";
+    SimpleScope, EMPTY_SCOPE } from "langium";
 import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, 
     SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
@@ -34,7 +34,8 @@ export class STPAScopeProvider extends DefaultScopeProvider {
                 return this.getStandardScope(node, referenceType, precomputed)
             }
         }
-        return this.getGlobalScope(referenceType);
+        return EMPTY_SCOPE
+        //return this.getGlobalScope(referenceType);
     }
 
     /**
@@ -62,7 +63,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
             currentNode = currentNode.$container;
         } while (currentNode);
 
-        let result: Scope = this.getGlobalScope(referenceType);
+        let result: Scope = EMPTY_SCOPE;
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);
         }
@@ -93,7 +94,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
             }
         }
 
-        let result: Scope = this.getGlobalScope(this.CA_TYPE);
+        let result: Scope = EMPTY_SCOPE;
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);
         }
@@ -126,7 +127,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
             } while (currentNode);
         }
 
-        let result: Scope = this.getGlobalScope(this.HAZARD_TYPE);
+        let result: Scope = EMPTY_SCOPE;
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);
         }
@@ -160,7 +161,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
             } while (currentNode);
         }
 
-        let result: Scope = this.getGlobalScope(this.SYS_CONSTRAINT_TYPE);
+        let result: Scope = EMPTY_SCOPE;
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);
         }
@@ -189,7 +190,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
             } while (currentNode);
         }
 
-        let result: Scope = this.getGlobalScope(this.UCA_TYPE);
+        let result: Scope = EMPTY_SCOPE;
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);
         }
