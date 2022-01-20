@@ -1,6 +1,6 @@
 import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isGraph, isHazard, isHazardList, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
+import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isGraph, isHazard, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
 import { StpaServices } from './stpa-module';
 
 /**
@@ -228,7 +228,7 @@ export class StpaValidator {
      * @param list The list of the references to check.
      * @param accept 
      */
-     private checkReferenceListForDuplicates(main: Hazard|ContConstraint|Responsibility|HazardList, list: Reference<AstNode>[], accept: ValidationAcceptor): void {
+     private checkReferenceListForDuplicates(main: Hazard|ContConstraint|Responsibility|HazardList|SystemConstraint, list: Reference<AstNode>[], accept: ValidationAcceptor): void {
         const names = new Set()
         for (let i = 0; i < list.length; i++) {
             const ref = list[i]
