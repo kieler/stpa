@@ -29,6 +29,7 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
     }
 
     protected registerCommands() {
+        // command to change hiararchy visualization in the STPA diagram
         super.registerCommands();
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.diagram.hierarchy', (...commandArgs: any) => {
@@ -36,6 +37,7 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
                 if (lC)
                     lC.sendNotification('hierarchy')
             }));
+        // command to change the colors in the STPA diagram
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color', (...commandArgs: any) => {
                 const activeWebview = this.findActiveWebview();
@@ -44,6 +46,7 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
                         kind: 'color'
                     } as Action);
             }));
+        // command to change the forms in the STPA diagram
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.diagram.forms', (...commandArgs: any) => {
                 const activeWebview = this.findActiveWebview();
@@ -52,6 +55,7 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
                         kind: 'forms'
                     } as Action);
             }));
+        // command to toggle the color style for printing purposes
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.diagram.printStyle', (...commandArgs: any) => {
                 const activeWebview = this.findActiveWebview();

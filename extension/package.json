@@ -1,7 +1,7 @@
 {
     "name": "stpa",
     "displayName": "STPA-DSL",
-    "description": "Please enter a brief description here",
+    "description": "A DSL for STPA. Includes an automatic visualization of the defined relationships and control structure.",
     "version": "0.0.1",
     "engines": {
         "vscode": "^1.46.0"
