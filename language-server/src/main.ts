@@ -7,8 +7,10 @@ import { createStpaServices } from './stpa-module';
 const connection = createConnection(ProposedFeatures.all);
 
 // Inject the language services
-const { shared } = createStpaServices({ connection });
+const { shared, states } = createStpaServices({ connection });
 
 // Start the language server with the language-specific services
 startLanguageServer(shared);
 addDiagramHandler(connection, shared)
+
+connection.onNotification('hierarchy', (message: string) => states.options.Options.toggleHierarchy())

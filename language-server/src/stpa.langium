@@ -18,14 +18,14 @@ Loss:
 Hazard:
     name=SubID description=STRING 
     ('['refs+=[Loss] (',' refs+=[Loss])*']')?
-    ('{' (header=STRING? subHazards+=Hazard+)*'}')?;
+    ('{' (header=STRING? subComps+=Hazard+)*'}')?;
 
 SystemConstraint:
     name=SubID description=STRING 
     '[' 
     refs+=[Hazard:SubID] (',' refs+=[Hazard:SubID])*
     ']'
-    ('{' (header=STRING? systemSubConstraints+=SystemConstraint+)*'}')?;
+    ('{' (header=STRING? subComps+=SystemConstraint+)*'}')?;
 
 Graph:
     name=ID '{'(nodes+=Node | edges+=Edge)*'}';

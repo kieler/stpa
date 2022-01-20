@@ -18,7 +18,7 @@
 import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees} from 'sprotty';
 import { injectable } from 'inversify';
-import { STPANode, PARENT_TYPE } from './STPA-model';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE } from './STPA-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { Options } from './options';
 import { inject } from 'inversify'
@@ -103,14 +103,13 @@ export class STPANodeView extends RectangularNodeView  {
         const printNode = this.options.getPrintStyle()
         const stpaNode = this.options.getColored() && !printNode
         const sprottyNode = !printNode && !stpaNode
-        
         return  <g  
                     class-print-node={printNode}
                     class-stpa-node={stpaNode} aspect={node.aspect}
                     class-sprotty-node={sprottyNode}
                     class-sprotty-port={node instanceof SPort}
                     class-mouseover={node.hoverFeedback} class-selected={node.selected}>
-                    {element}
+                    <g class-parent-node={node.children.filter(x=>x.type == STPA_NODE_TYPE).length!=0}>{element}</g>
                     {context.renderChildren(node)}
                 </g>;
     }

@@ -18,12 +18,14 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
 
     protected nodeOptions(snode: SNode, index: SModelIndex): LayoutOptions {
         return {
-            'org.eclipse.elk.direction': 'DOWN',
+            'org.eclipse.elk.direction': 'UP',
             'org.eclipse.elk.separateConnectedComponents': 'false',
             'org.eclipse.elk.algorithm': 'layered',
             'org.eclipse.elk.layered.crossingMinimization.semiInteractive': 'true',
             'cycleBreaking.strategy': 'INTERACTIVE',
-            'layering.strategy': 'INTERACTIVE'
+            'layering.strategy': 'INTERACTIVE',
+            'org.eclipse.elk.hierarchyHandling': 'INCLUDE_CHILDREN',
+            'org.eclipse.elk.edgeRouting': 'ORTHOGONAL'
         };
     }
 
@@ -44,17 +46,20 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
                     (element as SShapeElement).position = {x: 100 * layer, y: 100 * layer}
                     return {
                         'org.eclipse.elk.port.side': 'DOWN',
-                        'org.eclipse.elk.port.borderOffset': '3.0'
+                        'org.eclipse.elk.port.borderOffset': '3.0',
+                        'org.eclipse.elk.hierarchyHandling': 'INCLUDE_CHILDREN',
+                        'org.eclipse.elk.edgeRouting': 'ORTHOGONAL'
                     }
                 } else if (element.type == CS_NODE_TYPE) {
-                    //const layer = element.layer
                     const layer = (element as CSNode).level;
                     if (layer) {
                         (element as SShapeElement).position = {x: 100 * layer, y: 100 * layer}
                     }
                     return {
                         'org.eclipse.elk.port.side': 'DOWN',
-                        'org.eclipse.elk.port.borderOffset': '3.0'
+                        'org.eclipse.elk.port.borderOffset': '3.0',
+                        'org.eclipse.elk.hierarchyHandling': 'INCLUDE_CHILDREN',
+                        'org.eclipse.elk.edgeRouting': 'ORTHOGONAL'
                     }
                 } else if (element.type == PARENT_TYPE) {
                     return this.nodeOptions(element as SNode, index)

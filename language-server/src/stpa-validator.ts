@@ -42,17 +42,18 @@ export class StpaValidator {
     checkModel(model: Model, accept: ValidationAcceptor): void {
         this.checkAllAspectsPresent(model, accept)
         // collect all defined elements that have an identifier in order to check the uniqueness
-        const allHazards = this.collectHazards(model)
-        const allSysCons = this.collectSystemConstrainta(model)
-        let allNodes: AstNode[] =  (model.losses as AstNode[]).concat(allHazards, allSysCons, model.controlStructure?.nodes, 
-            model.controlStructure?.edges)
-        for (const resp of model.responsibilities) {
-            allNodes = allNodes.concat(resp.responsiblitiesForOneSystem)
-        }
-        for (const systemUCAs of model.allUCAs) {
-            allNodes = allNodes.concat(systemUCAs.ucas)
-        }
-        allNodes = allNodes.concat(model.controllerConstraints, model.scenarios, model.safetyCons)
+        let allNodes: AstNode[] =  [
+            ...model.losses,
+            ...this.collectElementsWithSubComps(model.hazards),
+            ...this.collectElementsWithSubComps(model.systemLevelConstraints),
+            ...model.controlStructure?.nodes,
+            ...model.controlStructure?.edges,
+            ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1),
+            ...model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1),
+            ...model.controllerConstraints,
+            ...model.scenarios,
+            ...model.safetyCons
+        ]
         this.checkIDsAreUnique(allNodes, accept)
     }
 
@@ -62,9 +63,9 @@ export class StpaValidator {
      * @param accept 
      */
     checkHazard(hazard: Hazard, accept: ValidationAcceptor): void {
-        if (hazard.subHazards) {
-            this.checkPrefixOfSubElements(hazard.name, hazard.subHazards, accept)
-            this.checkReferencedLossesOfSubHazard(hazard.refs, hazard.subHazards, accept)
+        if (hazard.subComps) {
+            this.checkPrefixOfSubElements(hazard.name, hazard.subComps, accept)
+            this.checkReferencedLossesOfSubHazard(hazard.refs, hazard.subComps, accept)
         }
         this.checkReferenceListForDuplicates(hazard, hazard.refs, accept)
     }
@@ -75,8 +76,8 @@ export class StpaValidator {
      * @param accept 
      */
     checkSystemConstraint(sysCons: SystemConstraint, accept: ValidationAcceptor): void {
-        if (sysCons.systemSubConstraints) {
-            this.checkPrefixOfSubElements(sysCons.name, sysCons.systemSubConstraints, accept)
+        if (sysCons.subComps) {
+            this.checkPrefixOfSubElements(sysCons.name, sysCons.subComps, accept)
         }
         this.checkReferenceListForDuplicates(sysCons, sysCons.refs, accept)
     }
@@ -158,7 +159,7 @@ export class StpaValidator {
                 let name = node.name
                 if (name != "") {
                     if(names.has(name)) {
-                        accept('warning', 'All identifiers should be unique.', { node: node, property: 'name' });
+                        accept('error', 'All identifiers must be unique.', { node: node, property: 'name' });
                     } else {
                         names.add(name)
                     }
@@ -222,28 +223,25 @@ export class StpaValidator {
     }
 
     /**
-     * Checks whether in a reference list are duplicated.
+     * Checks whether IDs are mentioned more than once in a reference list.
      * @param main The AstNode containing the {@code list}.
      * @param list The list of the references to check.
      * @param accept 
      */
-     private checkReferenceListForDuplicates(main: AstNode, list: Reference<AstNode>[], accept: ValidationAcceptor): void {
-        // need to be checked in order to use the property "refs" later
-        if (isHazard(main) || isContConstraint(main) || isResponsibility(main) || isHazardList(main)) {
-            const names = new Set()
-            for (let i = 0; i < list.length; i++) {
-                const ref = list[i]
-                const element = ref.ref
-                // needs to be checked in order to get the name
-                if (isLoss(element)|| isHazard(element) || isSystemConstraint(element) || isContConstraint(element) 
-                    || isLossScenario(element) || isSafetyConstraint(element) || isResponsibility(element) || isUCA(element)){
-                    let name = element.name
-                    if (name != "") {
-                        if(names.has(name)) {
-                            accept('warning', 'Duplicate reference.', { node: main, property: 'refs', index: i});
-                        } else {
-                            names.add(name)
-                        }
+     private checkReferenceListForDuplicates(main: Hazard|ContConstraint|Responsibility|HazardList, list: Reference<AstNode>[], accept: ValidationAcceptor): void {
+        const names = new Set()
+        for (let i = 0; i < list.length; i++) {
+            const ref = list[i]
+            const element = ref.ref
+            // needs to be checked in order to get the name
+            if (isLoss(element)|| isHazard(element) || isSystemConstraint(element) || isContConstraint(element) 
+                || isLossScenario(element) || isSafetyConstraint(element) || isResponsibility(element) || isUCA(element)){
+                let name = element.name
+                if (name != "") {
+                    if(names.has(name)) {
+                        accept('warning', 'Duplicate reference.', { node: main, property: 'refs', index: i});
+                    } else {
+                        names.add(name)
                     }
                 }
             }
@@ -256,12 +254,10 @@ export class StpaValidator {
      * @param subElements List of the subelements to check.
      * @param accept 
      */
-    private checkPrefixOfSubElements(name: string, subElements: AstNode[], accept: ValidationAcceptor): void {
+    private checkPrefixOfSubElements(name: string, subElements: (Hazard | SystemConstraint)[], accept: ValidationAcceptor): void {
         for (const element of subElements) {
-            if (isHazard(element) || isSystemConstraint(element)) {
-                if (!element.name.startsWith(name + '.')) {
-                    accept('warning', 'Subelements should have as prefix the name of the parent', { node: element, property: 'name' });
-                }
+            if (!element.name.startsWith(name + '.')) {
+                accept('warning', 'Subelements should have as prefix the name of the parent', { node: element, property: 'name' });
             }
         }
     }
@@ -292,36 +288,18 @@ export class StpaValidator {
     }
 
     /**
-     * Collects all existing hazards.
-     * @param model The model containing the hazards
-     * @returns A list with the existing hazards.
+     * Collects the {@code topElements}, their children, their children's children and so on.
+     * @param topElements The top elements that possbible have children.
+     * @returns A list with the existing elements.
      */
-    private collectHazards(model: Model): AstNode[] {
-        let result: AstNode[] = model.hazards
-        let todo = model.hazards
+    private collectElementsWithSubComps(topElements: (Hazard|SystemConstraint)[]): AstNode[] {
+        let result = topElements
+        let todo = topElements
         for (let i = 0; i < todo.length; i++) {
             let current = todo[i]
-            if (current.subHazards) {
-                result = result.concat(current.subHazards)
-                todo = todo.concat(current.subHazards)
-            }
-        }
-        return result
-    }
-
-    /**
-     * Collects all existing system-level constraints.
-     * @param model The model containing the constraints
-     * @returns A list with the existing system constraints.
-     */
-    private collectSystemConstrainta(model: Model): AstNode[] {
-        let result: AstNode[] = model.systemLevelConstraints
-        let todo = model.systemLevelConstraints
-        for (let i = 0; i < todo.length; i++) {
-            let current = todo[i]
-            if (current.systemSubConstraints) {
-                result = result.concat(current.systemSubConstraints)
-                todo = todo.concat(current.systemSubConstraints)
+            if (current.subComps) {
+                result = result.concat(current.subComps)
+                todo = todo.concat(current.subComps)
             }
         }
         return result

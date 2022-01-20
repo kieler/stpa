@@ -31,6 +31,12 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
     protected registerCommands() {
         super.registerCommands();
         this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.hierarchy', (...commandArgs: any) => {
+                const lC = this.languageClient;
+                if (lC)
+                    lC.sendNotification('hierarchy')
+            }));
+        this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color', (...commandArgs: any) => {
                 const activeWebview = this.findActiveWebview();
                 if (activeWebview)

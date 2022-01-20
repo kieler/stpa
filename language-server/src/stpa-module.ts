@@ -5,6 +5,7 @@ import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILay
 import { STPADiagramGenerator } from './diagram-generator';
 import { StpaGeneratedModule, STPAGeneratedSharedModule } from './generated/module';
 import { STPALayoutConfigurator } from './layout-config';
+import { Options } from './options';
 import { STPAScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 
@@ -23,6 +24,9 @@ export type StpaAddedServices = {
         ElkFactory: ElkFactory,
         ElementFilter: IElementFilter,
         LayoutConfigurator: ILayoutConfigurator
+    },
+    options: {
+        Options: Options
     }
 }
 
@@ -54,6 +58,9 @@ export const StpaModule: Module<StpaServices, PartialLangiumServices & SprottyDi
         ElkFactory: () => () => new ElkConstructor({ algorithms: ['layered'] }),
         ElementFilter: () => new DefaultElementFilter,
         LayoutConfigurator: () => new STPALayoutConfigurator
+    },
+    options: {
+        Options: () => new Options()
     }
 };
 
@@ -72,7 +79,7 @@ export function createStpaServices(context?: DefaultSharedModuleContext): { shar
     const states = inject(
         createDefaultModule({shared}),
         StpaGeneratedModule,
-        StpaModule
+        StpaModule,
     )
     shared.ServiceRegistry.register(states)
     return { shared, states }

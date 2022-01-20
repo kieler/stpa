@@ -75,14 +75,14 @@ export function determineLayerForCSNodes(nodes: CSNode[]): void {
  * @param node The STPAAspect which tracings should be returned.
  * @returns The objects {@code node} is traceable to.
  */
-export function getTargets(node: AstNode): AstNode[] {
+export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
     if (node) {
         if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) { 
             const targets: AstNode[] = []
             for (const ref of node.refs) {
                 if (ref?.ref) targets.push(ref.ref)
             }
-            if ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container))) {
+            if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
                 targets.push(node.$container)
             }
             return targets
