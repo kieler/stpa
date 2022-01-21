@@ -1,6 +1,6 @@
 import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isEdge, isGraph, isHazard, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
+import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isGraph, isHazard, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
 import { StpaServices } from './stpa-module';
 
 /**
@@ -47,7 +47,7 @@ export class StpaValidator {
             ...this.collectElementsWithSubComps(model.hazards),
             ...this.collectElementsWithSubComps(model.systemLevelConstraints),
             ...model.controlStructure?.nodes,
-            ...model.controlStructure?.edges,
+            //...model.controlStructure?.edges,
             ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1),
             ...model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1),
             ...model.controllerConstraints,
@@ -154,7 +154,7 @@ export class StpaValidator {
         for (const node of allNodes) {
             // needs to be checked in order to get the name
             if (isLoss(node)|| isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node) 
-                    || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isNode(node) || isEdge(node) 
+                    || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isNode(node) /* || isEdge(node) */ 
                     || isCommand(node) || isGraph(node) || isVariable(node)){
                 let name = node.name
                 if (name != "") {

@@ -28,7 +28,7 @@ SystemConstraint:
     ('{' (header=STRING? subComps+=SystemConstraint+)*'}')?;
 
 Graph:
-    name=ID '{'(nodes+=Node | edges+=Edge)*'}';
+    name=ID '{'(nodes+=Node /* | edges+=Edge */)*'}';
 
 Node:
     name=ID '{'
@@ -39,11 +39,11 @@ Node:
         ('feedback' '{'feedbacks+=VE*'}')?
     '}';
 
-Edge:
+/* Edge:
     name=ID '{'
         source=[Node] '->' target=[Node]
         ('label' label=STRING)?
-    '}';
+    '}'; */
 
 Variable:
     name=ID':' '['values+=STRING (',' values+=STRING)*']';

@@ -1,7 +1,7 @@
 import { AstNode } from 'langium';
 import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty'
 import { SModelRoot, SLabel, SEdge, SModelElement } from 'sprotty-protocol';
-import { Edge, isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint, 
+import { isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint, 
     isSystemConstraint, isUCA, Model, Node } from './generated/ast';
 import { Options } from './options';
 import { CSEdge, CSNode, STPANode } from './STPA-interfaces';
@@ -47,7 +47,7 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
             const CSChildren= [
                 ...model.controlStructure?.nodes.map(n => this.generateCSNode(n, args)),
                 ...this.generateVerticalCSEdges(model.controlStructure.nodes, args),
-                ...this.generateHorizontalCSEdges(model.controlStructure.edges, args)
+                //...this.generateHorizontalCSEdges(model.controlStructure.edges, args)
             ] 
             return {
                 type: 'graph',
@@ -120,7 +120,7 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
         return edges
     }
 
-    protected generateHorizontalCSEdges(edges: Edge[], args: GeneratorContext<Model>): SEdge[]{
+/*     private generateHorizontalCSEdges(edges: Edge[], args: GeneratorContext<Model>): SEdge[]{
         const idCache = args.idCache
         let genEdges: SEdge[] = []
         for (const edge of edges) {
@@ -132,7 +132,7 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
             genEdges.push(e)
         }
         return genEdges
-    }
+    } */
 
     private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label:string, direction: EdgeDirection, { idCache }: GeneratorContext<Model>): CSEdge {
         return {
