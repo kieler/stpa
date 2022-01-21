@@ -2,6 +2,7 @@ import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegi
 import { Position } from 'vscode-languageserver-types';
 import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isGraph, isHazard, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
 import { StpaServices } from './stpa-module';
+import { collectElementsWithSubComps } from './utils';
 
 /**
  * Map AST node types to validation checks.
@@ -44,8 +45,8 @@ export class StpaValidator {
         // collect all defined elements that have an identifier in order to check the uniqueness
         let allNodes: AstNode[] =  [
             ...model.losses,
-            ...this.collectElementsWithSubComps(model.hazards),
-            ...this.collectElementsWithSubComps(model.systemLevelConstraints),
+            ...collectElementsWithSubComps(model.hazards),
+            ...collectElementsWithSubComps(model.systemLevelConstraints),
             ...model.controlStructure?.nodes,
             //...model.controlStructure?.edges,
             ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1),
@@ -287,21 +288,4 @@ export class StpaValidator {
         }
     }
 
-    /**
-     * Collects the {@code topElements}, their children, their children's children and so on.
-     * @param topElements The top elements that possbible have children.
-     * @returns A list with the existing elements.
-     */
-    private collectElementsWithSubComps(topElements: (Hazard|SystemConstraint)[]): AstNode[] {
-        let result = topElements
-        let todo = topElements
-        for (let i = 0; i < todo.length; i++) {
-            let current = todo[i]
-            if (current.subComps) {
-                result = result.concat(current.subComps)
-                todo = todo.concat(current.subComps)
-            }
-        }
-        return result
-    }
 }

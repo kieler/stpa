@@ -107,31 +107,39 @@ export class STPAScopeProvider extends DefaultScopeProvider {
      * @param precomputed Precomputed Scope of the document.
      * @returns Scope containing all hazards.
      */
-    getHazards(node: AstNode, precomputed: PrecomputedScopes): Scope {
+    private getHazards(node: AstNode, precomputed: PrecomputedScopes): Scope {
         let model = node.$container
         while (!isModel(model)) {
             model=model?.$container
         }
-        const scopes: Array<Stream<AstNodeDescription>> = [];
-        let hazards = model.hazards
-        // TODO: does not work for several hierarchy levels
-        for (const hazard of hazards) {
-            let currentNode: AstNode | undefined = hazard;
-            do {
-                const allDescriptions = precomputed.get(currentNode);
-                if (allDescriptions) {
-                    scopes.push(stream(allDescriptions).filter(
-                        desc => this.reflection.isSubtype(desc.type, this.HAZARD_TYPE)));
-                }
-                currentNode = currentNode.$container;
-            } while (currentNode);
-        }
-
+        // todo: statt eigene methode einfach collectElementsWithSubComps aufrufen und dan wie in den andern methoden ne for schleife  nutzen
+        // todo: hazard und syscons methode zsmfassen?
+        const scopes: Array<Stream<AstNodeDescription>> = this.getNestedComps(model.hazards, precomputed, this.HAZARD_TYPE)
+        
         let result: Scope = EMPTY_SCOPE;
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);
         }
         return result;
+    }
+
+    private getNestedComps(nodes: (Hazard | SystemConstraint)[], precomputed: PrecomputedScopes, type: string): Array<Stream<AstNodeDescription>> {
+        let scopes: Array<Stream<AstNodeDescription>> = [];
+        for (const node of nodes) {
+            let currentNode: AstNode | undefined = node;
+            if (node.subComps.length!=0) {
+                scopes = this.getNestedComps(node.subComps, precomputed, type)
+            }
+            do {
+                const allDescriptions = precomputed.get(currentNode);
+                if (allDescriptions) {
+                    scopes.push(stream(allDescriptions).filter(
+                        desc => this.reflection.isSubtype(desc.type, type)));
+                }
+                currentNode = currentNode.$container;
+            } while (currentNode);
+        }
+        return scopes
     }
         
 
@@ -146,21 +154,8 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         while (!isModel(model)) {
             model=model?.$container
         }
-        const scopes: Array<Stream<AstNodeDescription>> = [];
-        let constraints = model.systemLevelConstraints
-        // TODO: does not work for several hierarchy levels
-        for (const cons of constraints) {
-            let currentNode: AstNode | undefined = cons;
-            do {
-                const allDescriptions = precomputed.get(currentNode);
-                if (allDescriptions) {
-                    scopes.push(stream(allDescriptions).filter(
-                        desc => this.reflection.isSubtype(desc.type, this.SYS_CONSTRAINT_TYPE)));
-                }
-                currentNode = currentNode.$container;
-            } while (currentNode);
-        }
 
+        const scopes: Array<Stream<AstNodeDescription>> = this.getNestedComps(model.systemLevelConstraints, precomputed, this.SYS_CONSTRAINT_TYPE)
         let result: Scope = EMPTY_SCOPE;
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = new SimpleScope(scopes[i], result);

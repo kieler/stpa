@@ -1,5 +1,5 @@
 import { AstNode } from "langium";
-import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, isLoss } from "./generated/ast"
+import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, isLoss, Hazard, SystemConstraint } from "./generated/ast"
 import { STPAAspect } from "./STPA-model"
 import { STPANode, CSNode } from "./STPA-interfaces";
 
@@ -13,15 +13,10 @@ export function determineLayerForSTPANode(node: STPANode): number {
         case STPAAspect.LOSS: 
             return 0
         case STPAAspect.HAZARD:
-            if (node.subcomp) {
-                return 1.5
-            }
-            return 1
+            // TODO: only works for max hierarchy lvl 10
+            return 1 + (0.1 * node.hierarchyLvl)
         case STPAAspect.SYSTEMCONSTRAINT:
-            if (node.subcomp) {
-                return 2.5
-            }
-            return 2
+            return 2 + (0.1 * node.hierarchyLvl)
         case STPAAspect.RESPONSIBILITY:
             return 3
         case STPAAspect.UCA:
@@ -131,4 +126,23 @@ export function getAspect(node: AstNode): STPAAspect {
         return STPAAspect.SAFETYREQUIREMENT
     }
     return STPAAspect.UNDEFINED
+}
+
+
+/**
+ * Collects the {@code topElements}, their children, their children's children and so on.
+ * @param topElements The top elements that possbible have children.
+ * @returns A list with the existing elements.
+ */
+export function collectElementsWithSubComps(topElements: (Hazard|SystemConstraint)[]): AstNode[] {
+    let result = topElements
+    let todo = topElements
+    for (let i = 0; i < todo.length; i++) {
+        let current = todo[i]
+        if (current.subComps) {
+            result = result.concat(current.subComps)
+            todo = todo.concat(current.subComps)
+        }
+    }
+    return result
 }

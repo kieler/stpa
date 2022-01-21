@@ -26,8 +26,7 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
             'cycleBreaking.strategy': 'INTERACTIVE',
             'layering.strategy': 'INTERACTIVE',
             // needed for cross-hierarchy edges
-            'org.eclipse.elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-            'org.eclipse.elk.edgeRouting': 'ORTHOGONAL'
+            'org.eclipse.elk.hierarchyHandling': 'INCLUDE_CHILDREN'
         };
     }
 
@@ -35,12 +34,12 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
         if (element.type == STPA_NODE_TYPE) {
             // each aspect gets its own layer
             const layer: number = determineLayerForSTPANode(element as STPANode);
-            (element as SShapeElement).position = {x: 100 * layer, y: 100 * layer}
+            (element as SShapeElement).position = {x: 0, y: 1000 * layer}
         } else if (element.type == CS_NODE_TYPE) {
             const layer = (element as CSNode).level;
             if (layer) {
                 // each hierarchy level in the control structure gets its own layer
-                (element as SShapeElement).position = {x: 100 * layer, y: 100 * layer}
+                (element as SShapeElement).position = {x: 0, y: 100 * layer}
             }
         } 
         // special options for parent nodes

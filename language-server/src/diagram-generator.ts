@@ -7,7 +7,7 @@ import { Options } from './options';
 import { CSEdge, CSNode, STPANode } from './STPA-interfaces';
 import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE } from './STPA-model'
 import { StpaServices } from './stpa-module';
-import { getAspect, getTargets } from './utils';
+import { collectElementsWithSubComps, getAspect, getTargets } from './utils';
 
 
 export class STPADiagramGenerator extends LangiumDiagramGenerator {
@@ -23,18 +23,20 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
         const { document } = args;
         const model: Model = document.parseResult.value;
 
-        let stpaChildren = [
-            ...model.losses?.map(l => this.generateSTPANode(l, args)),
-            ...model.hazards?.map(h => this.generateAspectWithEdges(h, args)).flat(1),
-            ...model.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc, args)).flat(1),
-        ]
+        let stpaChildren: SModelElement[] = model.losses?.map(l => this.generateSTPANode(l, args))
         if (!this.options.getHierarchy()) {
+            const hazards = collectElementsWithSubComps(model.hazards)
+            const sysCons = collectElementsWithSubComps(model.systemLevelConstraints)
             stpaChildren = stpaChildren.concat([
-                    ...model.hazards?.map(h => h.subComps?.map(sh => this.generateAspectWithEdges(sh, args))).flat(2),
-                    ...model.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateAspectWithEdges(ssc, args))).flat(2)
+                    ...hazards.map(sh => this.generateAspectWithEdges(sh, args)).flat(1),
+                    ...sysCons.map(ssc => this.generateAspectWithEdges(ssc, args)).flat(1)
                 ])
         } else {
-            stpaChildren = stpaChildren.concat(model.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateEdgesForSTPANode(ssc, args))).flat(2))
+            stpaChildren = stpaChildren.concat([
+                    ...model.hazards?.map(h => this.generateAspectWithEdges(h, args)).flat(1),
+                    ...model.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc, args)).flat(1),
+                    ...model.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateEdgesForSTPANode(ssc, args))).flat(2)
+                ])
         }
         stpaChildren = stpaChildren.concat([
             ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
@@ -230,7 +232,12 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
         if (isLoss(node)|| isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node) 
                     || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node)){
             const nodeId = idCache.uniqueId(node.name, node);
-            const subcomp = isHazard(node.$container) || isSystemConstraint(node.$container)
+            let lvl = 0
+            let container = node.$container
+            while (isHazard(container) || isSystemConstraint(container)) {
+                lvl++
+                container = container.$container
+            }
             let children: SModelElement[] = [
                 <SLabel>{
                     type: 'label',
@@ -249,7 +256,7 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
                 id: nodeId,
                 aspect: getAspect(node),
                 description: node.description,
-                subcomp: subcomp,
+                hierarchyLvl: lvl,
                 children: children,
                 layout: 'stack',
                 layoutOptions: {
