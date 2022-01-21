@@ -37,13 +37,31 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
                 if (lC)
                     lC.sendNotification('hierarchy')
             }));
-        // command to change the colors in the STPA diagram
+        // command to set the colors in the STPA diagram to colorful
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color', (...commandArgs: any) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color.colorful', (...commandArgs: any) => {
                 const activeWebview = this.findActiveWebview();
                 if (activeWebview)
                     activeWebview.dispatch({
-                        kind: 'color'
+                        kind: 'colorful'
+                    } as Action);
+            }));
+        // command to set the colors in the STPA diagram to print style
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color.printStyle', (...commandArgs: any) => {
+                const activeWebview = this.findActiveWebview();
+                if (activeWebview)
+                    activeWebview.dispatch({
+                        kind: 'printStyle'
+                    } as Action);
+            }));
+        // command to set the colors in the STPA diagram to standard
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color.standard', (...commandArgs: any) => {
+                const activeWebview = this.findActiveWebview();
+                if (activeWebview)
+                    activeWebview.dispatch({
+                        kind: 'standardColor'
                     } as Action);
             }));
         // command to change the forms in the STPA diagram
@@ -53,15 +71,6 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
                 if (activeWebview)
                     activeWebview.dispatch({
                         kind: 'forms'
-                    } as Action);
-            }));
-        // command to toggle the color style for printing purposes
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.printStyle', (...commandArgs: any) => {
-                const activeWebview = this.findActiveWebview();
-                if (activeWebview)
-                    activeWebview.dispatch({
-                        kind: 'printStyle'
                     } as Action);
             }));
     }

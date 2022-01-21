@@ -58,18 +58,23 @@
                 "category": "STPA Diagram"
             },
             {
-                "command": "stpa.diagram.color",
-                "title": "Toggle STPA diagram colors",
+                "command": "stpa.diagram.color.colorful",
+                "title": "Set colors to colorful",
+                "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.color.printStyle",
+                "title": "Set colors to print stlye",
+                "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.diagram.color.standard",
+                "title": "Set colors to standard",
                 "category": "STPA Diagram"
             },
             {
                 "command": "stpa.diagram.forms",
                 "title": "Toggle STPA diagram forms",
-                "category": "STPA Diagram"
-            },
-            {
-                "command": "stpa.diagram.printStyle",
-                "title": "Toggle diagram print style",
                 "category": "STPA Diagram"
             },
             {
@@ -101,15 +106,19 @@
                     "when": "stpa-diagram-focused"
                 },
                 {
-                    "command": "stpa.diagram.color",
+                    "command": "stpa.diagram.color.colorful",
+                    "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.diagram.color.printStyle",
+                    "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.diagram.color.standard",
                     "when": "stpa-diagram-focused"
                 },
                 {
                     "command": "stpa.diagram.forms",
-                    "when": "stpa-diagram-focused"
-                },
-                {
-                    "command": "stpa.diagram.printStyle",
                     "when": "stpa-diagram-focused"
                 },
                 {

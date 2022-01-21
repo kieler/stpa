@@ -20,7 +20,7 @@ import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, 
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE } from './STPA-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
-import { Options } from './options';
+import { ColorOption, Options } from './options';
 import { inject } from 'inversify'
 
 
@@ -38,19 +38,19 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             path += ` L ${p.x},${p.y}`;
         }
    
-        const printEdge = this.options.getPrintStyle()
-        const stpaEdge = this.options.getColored() && !printEdge
-        return <path class-print-edge={printEdge} class-stpa-edge={stpaEdge} aspect={(edge.source as STPANode).aspect} d={path} />;
+        const printEdge = this.options.getColor() == ColorOption.PRINT
+        const coloredEdge = this.options.getColor() == ColorOption.COLORED
+        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge} aspect={(edge.source as STPANode).aspect} d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
-        const printEdge = this.options.getPrintStyle()
-        const stpaEdge = this.options.getColored() && !printEdge
-        const sprottyEdge = !printEdge && !stpaEdge
+        const printEdge = this.options.getColor() == ColorOption.PRINT
+        const coloredEdge = this.options.getColor() == ColorOption.COLORED
+        const sprottyEdge = this.options.getColor() == ColorOption.STANDARD
         return [
-            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={stpaEdge} aspect={(edge.source as STPANode).aspect}
+            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge} aspect={(edge.source as STPANode).aspect}
                   class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
                   transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`}/>
         ];
@@ -75,19 +75,22 @@ export class STPANodeView extends RectangularNodeView  {
                     element = renderTrapez(node)
                     break
                 case 1: 
-                    element = renderCircle(node)
+                    element = renderRectangle(node)
                     break
                 case 2: 
-                    element = renderTriangle(node)
+                    element = renderHexagon(node)
                     break
                 case 3:
                     element = renderPentagon(node)
+                    break
+                case 4:
+                    element = renderCircle(node)
                     break
                 case 5:
                     element = renderMirroredTriangle(node)
                     break
                 case 6:
-                    element = renderHexagon(node)
+                    element = renderTriangle(node)
                     break
                 case 7:
                     element = renderDiamond(node)
@@ -100,12 +103,12 @@ export class STPANodeView extends RectangularNodeView  {
             element = renderRectangle(node)
         }
 
-        const printNode = this.options.getPrintStyle()
-        const stpaNode = this.options.getColored() && !printNode
-        const sprottyNode = !printNode && !stpaNode
+        const printNode = this.options.getColor() == ColorOption.PRINT
+        const coloredNode = this.options.getColor() == ColorOption.COLORED
+        const sprottyNode = this.options.getColor() == ColorOption.STANDARD
         return  <g  
                     class-print-node={printNode}
-                    class-stpa-node={stpaNode} aspect={node.aspect}
+                    class-stpa-node={coloredNode} aspect={node.aspect}
                     class-sprotty-node={sprottyNode}
                     class-sprotty-port={node instanceof SPort}
                     class-mouseover={node.hoverFeedback} class-selected={node.selected}>
@@ -122,8 +125,8 @@ export class CSNodeView extends RectangularNodeView {
     protected readonly options: Options
 
     render(node: SNode, context: RenderingContext): VNode {
-        const printNode = this.options.getPrintStyle()
-        const sprottyNode = !printNode && node instanceof SNode
+        const printNode = this.options.getColor() == ColorOption.PRINT
+        const sprottyNode = this.options.getColor() != ColorOption.PRINT
         return <g>
             <rect class-parent-node={node.type == PARENT_TYPE} class-print-node={printNode}
                   class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}

@@ -1,31 +1,101 @@
 import { Command, CommandExecutionContext, CommandReturn, TYPES } from "sprotty";
 import { injectable, inject } from 'inversify'
 import { Action } from 'sprotty-protocol'
-import { Options } from "./options";
+import { ColorOption, Options } from "./options";
 
-export interface ColorToggleAction extends Action {
-    kind: typeof ColorToggleAction.KIND
+export interface ColorfulAction extends Action {
+    kind: typeof ColorfulAction.KIND
 }
-export namespace ColorToggleAction {
-    export const KIND = 'color';
+export namespace ColorfulAction {
+    export const KIND = 'colorful';
 
-    export function is(action: Action): action is ColorToggleAction {
+    export function is(action: Action): action is ColorfulAction {
         return action.kind === KIND;
     }
 }
 
 @injectable()
-export class ColorToggleCommand extends Command {
-    static readonly KIND = ColorToggleAction.KIND;
+export class ColorfulCommand extends Command {
+    static readonly KIND = ColorfulAction.KIND;
 
     @inject(Options) protected readonly options: Options
 
-    constructor(@inject(TYPES.Action) readonly action: ColorToggleAction) {
+    constructor(@inject(TYPES.Action) readonly action: ColorfulAction) {
         super();
     }
 
     execute(context: CommandExecutionContext): CommandReturn {
-        this.options.toggleColored()
+        this.options.setColor(ColorOption.COLORED)
+        return context.root;
+    }
+
+    undo(context: CommandExecutionContext): CommandReturn {
+        return context.root;
+    }
+
+    redo(context: CommandExecutionContext): CommandReturn {
+        return context.root;
+    }
+}
+
+export interface StandardColorAction extends Action {
+    kind: typeof StandardColorAction.KIND
+}
+export namespace StandardColorAction {
+    export const KIND = 'standardColor';
+
+    export function is(action: Action): action is StandardColorAction {
+        return action.kind === KIND;
+    }
+}
+
+@injectable()
+export class StandardColorCommand extends Command {
+    static readonly KIND = StandardColorAction.KIND;
+
+    @inject(Options) protected readonly options: Options
+
+    constructor(@inject(TYPES.Action) readonly action: StandardColorAction) {
+        super();
+    }
+
+    execute(context: CommandExecutionContext): CommandReturn {
+        this.options.setColor(ColorOption.STANDARD)
+        return context.root;
+    }
+
+    undo(context: CommandExecutionContext): CommandReturn {
+        return context.root;
+    }
+
+    redo(context: CommandExecutionContext): CommandReturn {
+        return context.root;
+    }
+}
+
+export interface PrintStyleAction extends Action {
+    kind: typeof PrintStyleAction.KIND
+}
+export namespace PrintStyleAction {
+    export const KIND = 'printStyle';
+
+    export function is(action: Action): action is PrintStyleAction {
+        return action.kind === KIND;
+    }
+}
+
+@injectable()
+export class PrintStyleCommand extends Command {
+    static readonly KIND = PrintStyleAction.KIND;
+
+    @inject(Options) protected readonly options: Options
+
+    constructor(@inject(TYPES.Action) readonly action: PrintStyleAction) {
+        super();
+    }
+
+    execute(context: CommandExecutionContext): CommandReturn {
+        this.options.setColor(ColorOption.PRINT)
         return context.root;
     }
 
@@ -61,41 +131,6 @@ export class FormToggleCommand extends Command {
 
     execute(context: CommandExecutionContext): CommandReturn {
         this.options.toggleForms()
-        return context.root;
-    }
-
-    undo(context: CommandExecutionContext): CommandReturn {
-        return context.root;
-    }
-
-    redo(context: CommandExecutionContext): CommandReturn {
-        return context.root;
-    }
-}
-
-export interface PrintStyleToggleAction extends Action {
-    kind: typeof PrintStyleToggleAction.KIND
-}
-export namespace PrintStyleToggleAction {
-    export const KIND = 'printStyle';
-
-    export function is(action: Action): action is PrintStyleToggleAction {
-        return action.kind === KIND;
-    }
-}
-
-@injectable()
-export class PrintStyleToggleCommand extends Command {
-    static readonly KIND = PrintStyleToggleAction.KIND;
-
-    @inject(Options) protected readonly options: Options
-
-    constructor(@inject(TYPES.Action) readonly action: PrintStyleToggleAction) {
-        super();
-    }
-
-    execute(context: CommandExecutionContext): CommandReturn {
-        this.options.togglePrintStyle()
         return context.root;
     }
 

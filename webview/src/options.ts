@@ -1,38 +1,34 @@
 import { injectable } from 'inversify';
 
+export enum ColorOption {
+    STANDARD,
+    COLORED,
+    PRINT
+}
+
 @injectable()
 export class Options {
-    private colored: boolean
+    private color: ColorOption
     private forms: boolean
-    private printStyle: boolean
 
     constructor(){
-        this.colored = true
+        this.color = ColorOption.COLORED
         this.forms = false
-        this.printStyle = false
     }
 
-    toggleColored() {
-        this.colored = !this.colored
+    setColor(color: ColorOption) {
+        this.color = color
     }
 
     toggleForms() {
         this.forms = !this.forms
     }
 
-    togglePrintStyle() {
-        this.printStyle = !this.printStyle
-    }
-
-    getColored() {
-        return this.colored
+    getColor() {
+        return this.color
     }
 
     getForms() {
         return this.forms
-    }
-
-    getPrintStyle() {
-        return this.printStyle
     }
 }
