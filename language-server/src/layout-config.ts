@@ -17,8 +17,14 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected parentNodeOptions(snode: SNode, index: SModelIndex): LayoutOptions {
+        let children = 'INCLUDE_CHILDREN'
+        let direction = 'UP'
+        if (snode.children && snode.children[0].type == CS_NODE_TYPE) {
+            children = 'SEPARATE_CHILDREN'
+            direction = 'DOWN'
+        }
         return {
-            'org.eclipse.elk.direction': 'UP',
+            'org.eclipse.elk.direction': direction,
             'org.eclipse.elk.algorithm': 'layered',
             // interactive strategies are used to be able to assign layers to nodes through positioning
             'org.eclipse.elk.separateConnectedComponents': 'false',
@@ -26,7 +32,7 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
             'cycleBreaking.strategy': 'INTERACTIVE',
             'layering.strategy': 'INTERACTIVE',
             // needed for cross-hierarchy edges
-            'org.eclipse.elk.hierarchyHandling': 'INCLUDE_CHILDREN'
+            'org.eclipse.elk.hierarchyHandling': children
         };
     }
 

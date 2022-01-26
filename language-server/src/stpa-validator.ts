@@ -47,7 +47,6 @@ export class StpaValidator {
             ...model.losses,
             ...collectElementsWithSubComps(model.hazards),
             ...collectElementsWithSubComps(model.systemLevelConstraints),
-            ...model.controlStructure?.nodes,
             //...model.controlStructure?.edges,
             ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1),
             ...model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1),
@@ -55,6 +54,8 @@ export class StpaValidator {
             ...model.scenarios,
             ...model.safetyCons
         ]
+        // causes an error when stated with the others above
+        allNodes = allNodes.concat(model.controlStructure?.nodes)
         this.checkIDsAreUnique(allNodes, accept)
     }
 
@@ -186,35 +187,39 @@ export class StpaValidator {
         let missing = false
 
         // check which aspects of STPA are not defined
-        if (model.losses.length == 0) {
+        if (!model.losses || model.losses?.length == 0) {
             text+="Losses\n"
             missing = true
         }
-        if (model.hazards.length == 0) {
+        if (!model.hazards || model.hazards?.length == 0) {
             text+="Hazards\n"
             missing = true
         }
-        if (model.systemLevelConstraints.length == 0) {
+        if (!model.systemLevelConstraints || model.systemLevelConstraints?.length == 0) {
             text+="SystemConstraints\n"
             missing = true
         }
-        if (model.responsibilities.length == 0) {
+        if (!model.controlStructure || model.controlStructure?.nodes?.length == 0) {
+            text+="ControlStructure\n"
+            missing = true
+        }
+        if (!model.responsibilities || model.responsibilities?.length == 0) {
             text+="Responsibilities\n"
             missing = true
         }
-        if (model.allUCAs.length == 0) {
+        if (!model.allUCAs || model.allUCAs?.length == 0) {
             text+="UCAs\n"
             missing = true
         }
-        if (model.controllerConstraints.length == 0) {
+        if (!model.controllerConstraints || model.controllerConstraints?.length == 0) {
             text+="ControllerConstraints\n"
             missing = true
         }
-        if (model.scenarios.length == 0) {
+        if (!model.scenarios || model.scenarios?.length == 0) {
             text+="LossScenarios\n"
             missing = true
         }
-        if (model.safetyCons.length == 0) {
+        if (!model.safetyCons || model.safetyCons?.length == 0) {
             text+="SafetyRequirements\n"
             missing = true
         }

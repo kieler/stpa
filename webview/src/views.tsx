@@ -18,7 +18,7 @@
 import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees} from 'sprotty';
 import { injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE } from './STPA-model';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE } from './STPA-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { ColorOption, Options } from './options';
 import { inject } from 'inversify'
@@ -47,8 +47,8 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
         const printEdge = this.options.getColor() == ColorOption.PRINT
-        const coloredEdge = this.options.getColor() == ColorOption.COLORED
-        const sprottyEdge = this.options.getColor() == ColorOption.STANDARD
+        const coloredEdge = this.options.getColor() == ColorOption.COLORED && edge.type != CS_EDGE_TYPE
+        const sprottyEdge = this.options.getColor() == ColorOption.STANDARD || (edge.type == CS_EDGE_TYPE && !printEdge)
         return [
             <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge} aspect={(edge.source as STPANode).aspect}
                   class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
@@ -71,6 +71,7 @@ export class STPANodeView extends RectangularNodeView  {
         let element: VNode
         if (this.options.getForms()) {
             switch(node.aspect) {
+                //TODO: zahlen durch enum ersetzen
                 case 0: 
                     element = renderTrapez(node)
                     break
