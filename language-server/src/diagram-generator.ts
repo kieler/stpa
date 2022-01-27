@@ -7,7 +7,7 @@ import { Options } from './options';
 import { CSEdge, CSNode, STPANode } from './stpa-interfaces';
 import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE } from './stpa-model'
 import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps, getAspect, getTargets } from './utils';
+import { collectElementsWithSubComps, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
 
 
 export class STPADiagramGenerator extends LangiumDiagramGenerator {
@@ -45,10 +45,19 @@ export class STPADiagramGenerator extends LangiumDiagramGenerator {
             ...model.scenarios?.map(s => this.generateAspectWithEdges(s, args)).flat(1),
             ...model.safetyCons?.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
         ])
-        
+
+        const stpaNodes: STPANode[] = []
+        for (const node of stpaChildren) {
+            if (node.type == STPA_NODE_TYPE) {
+                stpaNodes.push(node as STPANode)
+            }
+        }
+        setPositionsForSTPANodes(stpaNodes)
         if (model.controlStructure) {
+            const csNodes = model.controlStructure?.nodes.map(n => this.generateCSNode(n, args))
+            setPositionsForCSNodes(csNodes)
             const CSChildren= [
-                ...model.controlStructure?.nodes.map(n => this.generateCSNode(n, args)),
+                ...csNodes,
                 ...this.generateVerticalCSEdges(model.controlStructure.nodes, args),
                 //...this.generateHorizontalCSEdges(model.controlStructure.edges, args)
             ] 

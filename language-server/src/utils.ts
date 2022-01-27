@@ -1,7 +1,9 @@
 import { AstNode } from "langium";
-import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, isLoss, Hazard, SystemConstraint } from "./generated/ast"
+import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, 
+    isLoss, Hazard, SystemConstraint } from "./generated/ast"
 import { STPAAspect } from "./stpa-model"
-import { STPANode } from "./stpa-interfaces";
+import { CSNode, STPANode } from "./stpa-interfaces";
+import { SShapeElement } from 'sprotty-protocol';
 
 /**
  * Determines the layer for each node and sets their layer attribute.
@@ -121,30 +123,54 @@ export function collectElementsWithSubComps(topElements: (Hazard|SystemConstrain
 /**
  * Determines the layer {@code node} should be in depending on the STPA aspect it represents.
  * @param node STPANode for which the layer should be determined.
+ * @param hazardDepth Maxmal depth of the hazard hierarchy.
+ * @param sysConsDepth Maximal depth of the system-level constraint hierarchy.
  * @returns The number of the layer the node should be in.
  */
- export function determineLayerForSTPANode(node: STPANode): number {
+function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number): number {
     switch(node.aspect) {
         case STPAAspect.LOSS: 
             return 0
         case STPAAspect.HAZARD:
-            // TODO: only works for max hierarchy lvl 10
-            return 1 + (0.1 * node.hierarchyLvl)
+            return 1 + node.hierarchyLvl
         case STPAAspect.SYSTEMCONSTRAINT:
-            return 2 + (0.1 * node.hierarchyLvl)
+            return 2 + hazardDepth + node.hierarchyLvl
         case STPAAspect.RESPONSIBILITY:
-            return 3
+            return 3 + hazardDepth + sysConsDepth
         case STPAAspect.UCA:
-            return 4
+            return 4 + hazardDepth + sysConsDepth
         case STPAAspect.CONTROLLERCONSTRAINT:
-            return 5
+            return 5 + hazardDepth + sysConsDepth
         case STPAAspect.SCENARIO:
-            return 6
+            return 6 + hazardDepth + sysConsDepth
         case STPAAspect.SAFETYREQUIREMENT:
-            return 7
+            return 7 + hazardDepth + sysConsDepth
         default:
             return -1
     }
 }
 
-export function setPositionsForLayerAssignment
+export function setPositionsForSTPANodes(nodes: STPANode[]) {
+    let maxHazardDepth = -1
+    let maxSysConsDepth = -1
+    for (const node of nodes) {
+        if (node.aspect == STPAAspect.HAZARD) {
+            maxHazardDepth = maxHazardDepth > node.hierarchyLvl ? maxHazardDepth : node.hierarchyLvl
+        }
+        if (node.aspect == STPAAspect.SYSTEMCONSTRAINT) {
+            maxSysConsDepth = maxSysConsDepth > node.hierarchyLvl ? maxSysConsDepth : node.hierarchyLvl
+        }
+    }
+    for (const node of nodes) {
+        const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth);
+        (node as SShapeElement).position = {x: 0, y: 100 * layer}
+    }
+}
+
+export function setPositionsForCSNodes(nodes: CSNode[]) {
+    for (const node of nodes) {
+        if (node.level) {
+            (node as SShapeElement).position = {x: 0, y: 100 * node.level}
+        }
+    }
+}

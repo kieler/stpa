@@ -64,13 +64,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
     }
 
     private getUCAHazards(node: HazardList, parent: LossScenario, model: Model, precomputed: PrecomputedScopes): Scope {
-        const names = parent.uca?.ref?.list.refs.map(x => x.ref?.name)
-        if (names){
-            for (let i = 0; i<names?.length; i++) {
-                console.log(names[i])
-            }
-        }
-        
+        const names = parent.uca?.ref?.list.refs.map(x => x.ref?.name)        
         const allDescriptions = this.getHazardSysCompsDescriptions(model.hazards, precomputed, this.HAZARD_TYPE)  
         const filtered = allDescriptions.filter(desc => names?.includes(desc.name))
         return this.descriptionsToScope(filtered)

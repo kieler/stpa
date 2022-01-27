@@ -1,9 +1,7 @@
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import { SGraph, SModelElement, SModelIndex, SNode, SShapeElement } from 'sprotty-protocol';
-import { CSNode, STPANode } from './stpa-interfaces';
-import { CS_NODE_TYPE, PARENT_TYPE, STPA_NODE_TYPE } from './stpa-model';
-import { determineLayerForSTPANode } from './utils';
+import { SGraph, SModelElement, SModelIndex, SNode } from 'sprotty-protocol';
+import { CS_NODE_TYPE, PARENT_TYPE } from './stpa-model';
 
 
 export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
@@ -37,17 +35,6 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     apply(element: SModelElement, index: SModelIndex): LayoutOptions | undefined {
-        if (element.type == STPA_NODE_TYPE) {
-            // each aspect gets its own layer
-            const layer: number = determineLayerForSTPANode(element as STPANode);
-            (element as SShapeElement).position = {x: 0, y: 1000 * layer}
-        } else if (element.type == CS_NODE_TYPE) {
-            const layer = (element as CSNode).level;
-            if (layer) {
-                // each hierarchy level in the control structure gets its own layer
-                (element as SShapeElement).position = {x: 0, y: 100 * layer}
-            }
-        } 
         // special options for parent nodes
         if (element.type == PARENT_TYPE) {
             return this.parentNodeOptions(element as SNode, index)
