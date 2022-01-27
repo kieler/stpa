@@ -1,44 +1,15 @@
 import { AstNode } from "langium";
 import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, isLoss, Hazard, SystemConstraint } from "./generated/ast"
-import { STPAAspect } from "./STPA-model"
-import { STPANode, CSNode } from "./STPA-interfaces";
-
-/**
- * Determines the layer {@code node} should be in depending on the STPA aspect it represents.
- * @param node STPANode for which the layer should be determined.
- * @returns The number of the layer the node should be in.
- */
-export function determineLayerForSTPANode(node: STPANode): number {
-    switch(node.aspect) {
-        case STPAAspect.LOSS: 
-            return 0
-        case STPAAspect.HAZARD:
-            // TODO: only works for max hierarchy lvl 10
-            return 1 + (0.1 * node.hierarchyLvl)
-        case STPAAspect.SYSTEMCONSTRAINT:
-            return 2 + (0.1 * node.hierarchyLvl)
-        case STPAAspect.RESPONSIBILITY:
-            return 3
-        case STPAAspect.UCA:
-            return 4
-        case STPAAspect.CONTROLLERCONSTRAINT:
-            return 5
-        case STPAAspect.SCENARIO:
-            return 6
-        case STPAAspect.SAFETYREQUIREMENT:
-            return 7
-        default:
-            return -1
-    }
-}
+import { STPAAspect } from "./stpa-model"
+import { STPANode } from "./stpa-interfaces";
 
 /**
  * Determines the layer for each node and sets their layer attribute.
  * Thereby, the nodes without control actions are at the bottom/last layer.
  * @param nodes All nodes of the control structure.
  */
-export function determineLayerForCSNodes(nodes: CSNode[]): void {
-    /* let layer = nodes.length
+/* export function determineLayerForCSNodes(nodes: CSNode[]): void {
+    let layer = nodes.length
     let sinks: CSNode[] = []
     while (true) {
         for (let n of nodes) {
@@ -62,8 +33,8 @@ export function determineLayerForCSNodes(nodes: CSNode[]): void {
         }
         layer--
         sinks = []
-    } */
-}
+    }
+} */
 
 /**
  * Getter for the tracing of {@code node}.
@@ -146,3 +117,34 @@ export function collectElementsWithSubComps(topElements: (Hazard|SystemConstrain
     }
     return result
 }
+
+/**
+ * Determines the layer {@code node} should be in depending on the STPA aspect it represents.
+ * @param node STPANode for which the layer should be determined.
+ * @returns The number of the layer the node should be in.
+ */
+ export function determineLayerForSTPANode(node: STPANode): number {
+    switch(node.aspect) {
+        case STPAAspect.LOSS: 
+            return 0
+        case STPAAspect.HAZARD:
+            // TODO: only works for max hierarchy lvl 10
+            return 1 + (0.1 * node.hierarchyLvl)
+        case STPAAspect.SYSTEMCONSTRAINT:
+            return 2 + (0.1 * node.hierarchyLvl)
+        case STPAAspect.RESPONSIBILITY:
+            return 3
+        case STPAAspect.UCA:
+            return 4
+        case STPAAspect.CONTROLLERCONSTRAINT:
+            return 5
+        case STPAAspect.SCENARIO:
+            return 6
+        case STPAAspect.SAFETYREQUIREMENT:
+            return 7
+        default:
+            return -1
+    }
+}
+
+export function setPositionsForLayerAssignment

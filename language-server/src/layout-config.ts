@@ -1,8 +1,8 @@
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { SGraph, SModelElement, SModelIndex, SNode, SShapeElement } from 'sprotty-protocol';
-import { CSNode, STPANode } from './STPA-interfaces';
-import { CS_NODE_TYPE, PARENT_TYPE, STPA_NODE_TYPE } from './STPA-model';
+import { CSNode, STPANode } from './stpa-interfaces';
+import { CS_NODE_TYPE, PARENT_TYPE, STPA_NODE_TYPE } from './stpa-model';
 import { determineLayerForSTPANode } from './utils';
 
 

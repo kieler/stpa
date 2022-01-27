@@ -1,5 +1,5 @@
 import { SNode, SEdge } from "sprotty-protocol";
-import { EdgeDirection, STPAAspect } from "./STPA-model";
+import { EdgeDirection, STPAAspect } from "./stpa-model";
 
 export interface STPANode extends SNode {
 

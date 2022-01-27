@@ -18,7 +18,7 @@
 import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees} from 'sprotty';
 import { injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE } from './STPA-model';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { ColorOption, Options } from './options';
 import { inject } from 'inversify'
