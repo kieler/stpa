@@ -24,28 +24,28 @@ body[class='vscode-dark'] .stpa-node[aspect="7"], body[class='vscode-dark'] .stp
 }
 
 body[class='vscode-light'] .stpa-node[aspect="0"], body[class='vscode-light'] .stpa-edge-arrow[aspect="0"] {
-    fill: #ff6666
+    fill: #ff7a7a
 }
 body[class='vscode-light'] .stpa-node[aspect="1"], body[class='vscode-light'] .stpa-edge-arrow[aspect="1"] {
-    fill: #ff9933
+    fill: #ffa852
 }
 body[class='vscode-light'] .stpa-node[aspect="2"], body[class='vscode-light'] .stpa-edge-arrow[aspect="2"] {
-    fill: #00db00
+    fill: #00eb00
 }
 body[class='vscode-light'] .stpa-node[aspect="3"], body[class='vscode-light'] .stpa-edge-arrow[aspect="3"] {
-    fill: #ff33ff
+    fill: #ff6bff
 }
 body[class='vscode-light'] .stpa-node[aspect="4"], body[class='vscode-light'] .stpa-edge-arrow[aspect="4"] {
-    fill: #3399ff
+    fill: #66b3ff
 }
 body[class='vscode-light'] .stpa-node[aspect="5"], body[class='vscode-light'] .stpa-edge-arrow[aspect="5"] {
-    fill: #00d6d6
+    fill: #00cccc
 }
 body[class='vscode-light'] .stpa-node[aspect="6"], body[class='vscode-light'] .stpa-edge-arrow[aspect="6"] {
-    fill: #adad00
+    fill: #cccc00
 }
 body[class='vscode-light'] .stpa-node[aspect="7"], body[class='vscode-light'] .stpa-edge-arrow[aspect="7"] {
-    fill: #66a3a3
+    fill: #8fbcbc
 }
 
 .stpa-node {
@@ -78,28 +78,28 @@ body[class='vscode-dark'] .stpa-edge[aspect="7"], body[class='vscode-dark'] .stp
 }
 
 body[class='vscode-light'] .stpa-edge[aspect="0"], body[class='vscode-light'] .stpa-edge-arrow[aspect="0"] {
-    stroke: #ff6666
+    stroke: #ff7a7a
 }
 body[class='vscode-light'] .stpa-edge[aspect="1"], body[class='vscode-light'] .stpa-edge-arrow[aspect="1"] {
-    stroke: #ff9933
+    stroke: #ffa852
 }
 body[class='vscode-light'] .stpa-edge[aspect="2"], body[class='vscode-light'] .stpa-edge-arrow[aspect="2"] {
-    stroke: #00db00
+    stroke: #00eb00
 }
 body[class='vscode-light'] .stpa-edge[aspect="3"], body[class='vscode-light'] .stpa-edge-arrow[aspect="3"] {
-    stroke: #ff33ff
+    stroke: #ff6bff
 }
 body[class='vscode-light'] .stpa-edge[aspect="4"], body[class='vscode-light'] .stpa-edge-arrow[aspect="4"] {
-    stroke: #3399ff
+    stroke: #66b3ff
 }
 body[class='vscode-light'] .stpa-edge[aspect="5"], body[class='vscode-light'] .stpa-edge-arrow[aspect="5"] {
-    stroke: #00d6d6
+    stroke: #00cccc
 }
 body[class='vscode-light'] .stpa-edge[aspect="6"], body[class='vscode-light'] .stpa-edge-arrow[aspect="6"]{
-    stroke: #adad00
+    stroke: #cccc00
 }
 body[class='vscode-light'] .stpa-edge[aspect="7"], body[class='vscode-light'] .stpa-edge-arrow[aspect="7"] {
-    stroke: #66a3a3
+    stroke: #8fbcbc
 }
 
 body[class='vscode-light'] .print-node {
