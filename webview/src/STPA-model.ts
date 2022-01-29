@@ -1,11 +1,15 @@
 import { SNode, SEdge, connectableFeature, selectFeature, layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature } from "sprotty";
 
+// The types of diagram elements
 export const STPA_NODE_TYPE = 'node:stpa'
 export const PARENT_TYPE= 'node:parent'
 export const CS_NODE_TYPE = 'node:cs'
 export const EDGE_TYPE = 'edge'
 export const CS_EDGE_TYPE = 'edge:controlStructure'
 
+/**
+ * Node representing a STPA component.
+ */
 export class STPANode extends SNode {
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
         layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
@@ -15,6 +19,9 @@ export class STPANode extends SNode {
     hierarchyLvl: number = 0
 }
 
+/**
+ * Node representing a system component in the control structure.
+ */
 export class CSNode extends SNode {
     level?: number
     // processmodel?
@@ -22,10 +29,16 @@ export class CSNode extends SNode {
         layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
 }
 
+/**
+ * Edge representing control actions and feedback in the control structure.
+ */
 export class CSEdge extends SEdge {
     direction: EdgeDirection = EdgeDirection.UNDEFINED
 }
 
+/**
+ * The different aspects of STPA.
+ */
 export enum STPAAspect {
     LOSS,
     HAZARD,
@@ -38,6 +51,9 @@ export enum STPAAspect {
     UNDEFINED
 }
 
+/**
+ * Possible edge directions.
+ */
 export enum EdgeDirection {
     UP,
     DOWN,

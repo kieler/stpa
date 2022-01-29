@@ -31,6 +31,7 @@ export class STPASprottyStarter extends SprottyLspEditStarter {
 
     addVscodeBindings(container: Container, diagramIdentifier: SprottyDiagramIdentifier): void {
         super.addVscodeBindings(container, diagramIdentifier)
+        // commands must be configured
         configureCommand(container, ColorfulCommand);
         configureCommand(container, StandardColorCommand);
         configureCommand(container, PrintStyleCommand);

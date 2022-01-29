@@ -48,9 +48,8 @@ body[class='vscode-light'] .stpa-node[aspect="7"], body[class='vscode-light'] .s
     fill: #8fbcbc
 }
 
-.stpa-node {
-    stroke: black
-}
+
+
 
 body[class='vscode-dark'] .stpa-edge[aspect="0"], body[class='vscode-dark'] .stpa-edge-arrow[aspect="0"] {
     stroke: #AD0000
@@ -102,6 +101,8 @@ body[class='vscode-light'] .stpa-edge[aspect="7"], body[class='vscode-light'] .s
     stroke: #8fbcbc
 }
 
+
+
 body[class='vscode-light'] .print-node {
     fill: white;
     stroke: black
@@ -125,6 +126,12 @@ body[class='vscode-light'] .print-edge-arrow {
 body[class='vscode-dark'] .print-edge-arrow {
     fill: white;
     stroke: white
+}
+
+
+
+.stpa-node {
+    stroke: black
 }
 
 .parent-node {

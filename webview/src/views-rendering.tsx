@@ -2,6 +2,11 @@
 import { VNode } from 'snabbdom';
 import { SNode, svg } from 'sprotty';
 
+/**
+ * Creates a circle for {@code node}.
+ * @param node The node whch should be represented by a circle.
+ * @returns A circle for {@code node}.
+ */
 export function renderCircle(node: SNode): VNode {
     return <circle 
                 r={Math.max(node.size.width, 0)/2.0} 
@@ -9,6 +14,11 @@ export function renderCircle(node: SNode): VNode {
             />
 }
 
+/**
+ * Creates a rectangle for {@code node}.
+ * @param node The node whch should be represented by a rectangle.
+ * @returns A rectangle for {@code node}.
+ */
 export function renderRectangle(node: SNode): VNode {
     return <rect 
                 x="0" y="0" 
@@ -16,6 +26,11 @@ export function renderRectangle(node: SNode): VNode {
            />
 }
 
+/**
+ * Creates a triangle for {@code node}.
+ * @param node The node whch should be represented by a triangle.
+ * @returns A triangle for {@code node}.
+ */
 export function renderTriangle(node: SNode): VNode {
     const leftX = 0
     const midX = Math.max(node.size.width, 0)/2.0
@@ -28,6 +43,11 @@ export function renderTriangle(node: SNode): VNode {
             />
 }
 
+/**
+ * Creates a mirrored triangle for {@code node}.
+ * @param node The node whch should be represented by a mirrored triangle.
+ * @returns A mrrored triangle for {@code node}.
+ */
 export function renderMirroredTriangle(node: SNode): VNode {
     const leftX = 0
     const midX = Math.max(node.size.width, 0)/2.0
@@ -40,6 +60,11 @@ export function renderMirroredTriangle(node: SNode): VNode {
             />
 }
 
+/**
+ * Creates a trapez for {@code node}.
+ * @param node The node whch should be represented by a trapez.
+ * @returns A trapez for {@code node}.
+ */
 export function renderTrapez(node: SNode): VNode {
     const leftX = 0
     const midX1 = Math.max(node.size.width, 0)/4.0
@@ -54,6 +79,11 @@ export function renderTrapez(node: SNode): VNode {
             />
 }
 
+/**
+ * Creates a diamond for {@code node}.
+ * @param node The node whch should be represented by a diamond.
+ * @returns A diamond for {@code node}.
+ */
 export function renderDiamond(node: SNode): VNode {
     const leftX = 0
     const midX = Math.max(node.size.width, 0)/2.0
@@ -68,6 +98,11 @@ export function renderDiamond(node: SNode): VNode {
             />
 }
 
+/**
+ * Creates a pentagon for {@code node}.
+ * @param node The node whch should be represented by a pentagon.
+ * @returns A pentagon for {@code node}.
+ */
 export function renderPentagon(node: SNode): VNode {
     const startX = 5
     const leftX= 0
@@ -84,6 +119,11 @@ export function renderPentagon(node: SNode): VNode {
             />
 }
 
+/**
+ * Creates a hexagon for {@code node}.
+ * @param node The node whch should be represented by a hexagon.
+ * @returns A hexagon for {@code node}.
+ */
 export function renderHexagon(node: SNode): VNode {
     const leftX= 0
     const midX1 = 5

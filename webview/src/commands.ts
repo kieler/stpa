@@ -14,6 +14,9 @@ export namespace ColorfulAction {
     }
 }
 
+/**
+ * Command to set the coloring of the STPA graph to colorful.
+ */
 @injectable()
 export class ColorfulCommand extends Command {
     static readonly KIND = ColorfulAction.KIND;
@@ -49,6 +52,9 @@ export namespace StandardColorAction {
     }
 }
 
+/**
+ * Command to set the coloring of the STPA graph to standard.
+ */
 @injectable()
 export class StandardColorCommand extends Command {
     static readonly KIND = StandardColorAction.KIND;
@@ -84,6 +90,9 @@ export namespace PrintStyleAction {
     }
 }
 
+/**
+ * Command to set the coloring of the STPA graph to print-style.
+ */
 @injectable()
 export class PrintStyleCommand extends Command {
     static readonly KIND = PrintStyleAction.KIND;
@@ -119,6 +128,9 @@ export namespace FormToggleAction {
     }
 }
 
+/**
+ * Command to toggle the forms of the nodes in the STPA graph.
+ */
 @injectable()
 export class FormToggleCommand extends Command {
     static readonly KIND = FormToggleAction.KIND;

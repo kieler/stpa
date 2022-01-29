@@ -1,13 +1,20 @@
 import { injectable } from 'inversify';
 
+/**
+ * options for the colors of the STPA graph.
+ */
 export enum ColorOption {
     STANDARD,
     COLORED,
     PRINT
 }
 
+/**
+ * Options for the visualization of the graph.
+ */
 @injectable()
 export class Options {
+
     private color: ColorOption
     private forms: boolean
 
@@ -16,10 +23,12 @@ export class Options {
         this.forms = false
     }
 
+    // set color of the diagram
     setColor(color: ColorOption) {
         this.color = color
     }
 
+    // toggle forms of the diagram
     toggleForms() {
         this.forms = !this.forms
     }

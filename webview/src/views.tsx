@@ -18,7 +18,7 @@
 import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees} from 'sprotty';
 import { injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE } from './stpa-model';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { ColorOption, Options } from './options';
 import { inject } from 'inversify'
@@ -68,32 +68,32 @@ export class STPANodeView extends RectangularNodeView  {
     protected readonly options: Options
 
     render(node: STPANode, context: RenderingContext): VNode {
+        // create the element based on the option and the aspect of the node
         let element: VNode
         if (this.options.getForms()) {
             switch(node.aspect) {
-                //TODO: zahlen durch enum ersetzen
-                case 0: 
+                case STPAAspect.LOSS: 
                     element = renderTrapez(node)
                     break
-                case 1: 
+                case STPAAspect.HAZARD: 
                     element = renderRectangle(node)
                     break
-                case 2: 
+                case STPAAspect.SYSTEMCONSTRAINT: 
                     element = renderHexagon(node)
                     break
-                case 3:
+                case STPAAspect.RESPONSIBILITY:
                     element = renderPentagon(node)
                     break
-                case 4:
+                case STPAAspect.UCA:
                     element = renderCircle(node)
                     break
-                case 5:
+                case STPAAspect.CONTROLLERCONSTRAINT:
                     element = renderMirroredTriangle(node)
                     break
-                case 6:
+                case STPAAspect.SCENARIO:
                     element = renderTriangle(node)
                     break
-                case 7:
+                case STPAAspect.SAFETYREQUIREMENT:
                     element = renderDiamond(node)
                     break
                 default: 
@@ -104,6 +104,7 @@ export class STPANodeView extends RectangularNodeView  {
             element = renderRectangle(node)
         }
 
+        // determines the color of the node
         const printNode = this.options.getColor() == ColorOption.PRINT
         const coloredNode = this.options.getColor() == ColorOption.COLORED
         const sprottyNode = this.options.getColor() == ColorOption.STANDARD
