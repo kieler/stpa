@@ -10,7 +10,7 @@
     },
     {
       "name": "keyword.control.stpa",
-      "match": "\\b(controlActions|ControllerConstraints|ControlStructure|feedback|for|Hazards|label|Losses|LossScenarios|notProviding|processModel|providing|Responsibilities|SafetyRequirements|stoppedTooSoon|SystemConstraints|tooEarly/Late|UCAs)\\b"
+      "match": "\\b(controlActions|ControllerConstraints|ControlStructure|feedback|for|Hazards|hierarchyLevel|label|Losses|LossScenarios|notProviding|processModel|providing|Responsibilities|SafetyRequirements|stoppedTooSoon|SystemConstraints|tooEarly/Late|UCAs)\\b"
     },
     {
       "name": "string.quoted.double.stpa",
