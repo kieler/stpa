@@ -24,13 +24,13 @@ import {Action} from 'sprotty-protocol'
 
 export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
  
-    constructor(context: vscode.ExtensionContext) {
+    constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
     }
 
     protected registerCommands() {
-        // command to change hiararchy visualization in the STPA diagram
         super.registerCommands();
+        // command to change hiararchy visualization in the STPA diagram
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.diagram.hierarchy', (...commandArgs: any) => {
                 const lC = this.languageClient;
@@ -75,7 +75,7 @@ export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
             }));
     }
 
-    protected getDiagramType(commandArgs: any[]): string | undefined {
+    protected getDiagramType(commandArgs: any[]): string | undefined {
         if (commandArgs.length === 0
             || commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
             return 'stpa-diagram';

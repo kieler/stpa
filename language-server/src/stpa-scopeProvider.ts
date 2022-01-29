@@ -1,7 +1,7 @@
 import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, 
     EMPTY_SCOPE } from "langium";
 import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, 
-    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, HazardList} from "./generated/ast";
+    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -20,20 +20,21 @@ export class STPAScopeProvider extends DefaultScopeProvider {
     getScope(node: AstNode, referenceId: string): Scope {
         const referenceType = this.reflection.getReferenceType(referenceId);
         const precomputed = getDocument(node).precomputedScopes;
+        // get the root container which should be the Model
         let model = node.$container
         while (model && !isModel(model)) {
             model = model?.$container
         }
         if (precomputed && model) {
-            // determine the scope for the different reference types
+            // determine the scope for the different aspects & reference types
             if ((isContConstraint(node) || isLossScenario(node)) && referenceType == this.UCA_TYPE) {
-                return this.getUCAs(node, model, precomputed)
+                return this.getUCAs(model, precomputed)
             } else if (isHazardList(node) && isLossScenario(node.$container) && node.$container.uca && referenceType == this.HAZARD_TYPE) {
-                return this.getUCAHazards(node, node.$container, model, precomputed)
+                return this.getUCAHazards(node.$container, model, precomputed)
             } else if (isResponsibility(node) && referenceType == this.SYS_CONSTRAINT_TYPE) {
-                return this.getSystemConstraints(node, model, precomputed)
+                return this.getSystemConstraints(model, precomputed)
             } else if ((isSystemConstraint(node) || isHazardList(node)) && referenceType == this.HAZARD_TYPE) {
-                return this.getHazards(node, model, precomputed)
+                return this.getHazards(model, precomputed)
             } else if (isActionUCAs(node) && referenceType == this.CA_TYPE) {
                 return this.getCAs(node, precomputed)
             } else {
@@ -45,7 +46,7 @@ export class STPAScopeProvider extends DefaultScopeProvider {
     }
 
     /**
-     * Determines the standard scope.
+     * Creates the standard scope.
      * @param node Current AstNode.
      * @param referenceType Type of the reference.
      * @param precomputed Precomputed Scope of the document.
@@ -63,15 +64,22 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         return this.descriptionsToScope(allDescriptions)
     }
 
-    private getUCAHazards(node: HazardList, parent: LossScenario, model: Model, precomputed: PrecomputedScopes): Scope {
-        const names = parent.uca?.ref?.list.refs.map(x => x.ref?.name)        
+    /**
+     * Creates scope containing hazards that are referenced by the UCA {@code scenario} references.
+     * @param scenario Current loss scenario.
+     * @param model Root of the STPA model.
+     * @param precomputed Precomputed Scope of the document.
+     * @returns Scope containing the hazards referenced by the UCA.
+     */
+    private getUCAHazards(scenario: LossScenario, model: Model, precomputed: PrecomputedScopes): Scope {
+        const names = scenario.uca?.ref?.list.refs.map(x => x.ref?.name)        
         const allDescriptions = this.getHazardSysCompsDescriptions(model.hazards, precomputed, this.HAZARD_TYPE)  
         const filtered = allDescriptions.filter(desc => names?.includes(desc.name))
         return this.descriptionsToScope(filtered)
     }
 
     /**
-     * Collects all definitions of VerticalEdges (controlActions&Feedback) for the referenced system.
+     * Creates scope containing controlActions of the system component {@code node} references.
      * @param node Current ActionUCAs.
      * @param precomputed Precomputed Scope of the document.
      * @returns Scope containing all VerticalEdges.
@@ -91,49 +99,57 @@ export class STPAScopeProvider extends DefaultScopeProvider {
     }
 
     /**
-     * Collects all definitions of hazards.
-     * @param node Current AstNode.
-     * @param model Model containing {@code node}.
+     * Creates scope containing all hazards.
+     * @param model Root of the STPA model.
      * @param precomputed Precomputed Scope of the document.
      * @returns Scope containing all hazards.
      */
-    private getHazards(node: AstNode, model: Model, precomputed: PrecomputedScopes): Scope {
+    private getHazards(model: Model, precomputed: PrecomputedScopes): Scope {
         const allDescriptions = this.getHazardSysCompsDescriptions(model.hazards, precomputed, this.HAZARD_TYPE)
         return this.descriptionsToScope(allDescriptions)
     }
 
     /**
-     * Collects all definitions of system constraints.
-     * @param node Current AstNode.
-     * @param model Model containing {@code node}.
+     * Creates scope containing all system constraints.
+     * @param model Root of the STPA model.
      * @param precomputed Precomputed Scope of the document.
      * @returns Scope containing all system-level constraints.
      */
-    private getSystemConstraints(node: AstNode, model: Model, precomputed: PrecomputedScopes): Scope {
+    private getSystemConstraints(model: Model, precomputed: PrecomputedScopes): Scope {
         const allDescriptions = this.getHazardSysCompsDescriptions(model.systemLevelConstraints, precomputed, this.SYS_CONSTRAINT_TYPE)
         return this.descriptionsToScope(allDescriptions)
     }
 
+    /**
+     * Collects, depending on {@code type}, all definitions of hazards or system-level constraints including subcomponents
+     * @param nodes The list of hazards or constraints
+     * @param precomputed Precomputed Scope of the document.
+     * @param type Type of the seacrhed aspect. Either hazard or system constraint.
+     * @returns All defnitions of hazards or constraints depending on {@code type}.
+     */
     private getHazardSysCompsDescriptions(nodes: (Hazard | SystemConstraint)[], precomputed: PrecomputedScopes, type: string): AstNodeDescription[] {
-        let res: AstNodeDescription[] = []
-        for (const node of nodes) {
-            let currentNode: AstNode | undefined = node;
-            if (node.subComps.length!=0) {
-                res = this.getHazardSysCompsDescriptions(node.subComps, precomputed, type)
+        if (type == this.HAZARD_TYPE || type == this.SYS_CONSTRAINT_TYPE) {
+            let res: AstNodeDescription[] = []
+            for (const node of nodes) {
+                let currentNode: AstNode | undefined = node;
+                if (node.subComps.length!=0) {
+                    res = this.getHazardSysCompsDescriptions(node.subComps, precomputed, type)
+                }
+                res = res.concat(this.getDescriptions(currentNode, type, precomputed))
             }
-            res = res.concat(this.getDescriptions(currentNode, type, precomputed))
+            return res
+        } else {
+            throw new Error("ScopeProvider: The search type should be hazard or system-level constraint.")
         }
-        return res
     }
 
     /**
-     * Collects all definitions of UCAs.
-     * @param node Current AstNode.
-     * @param model Model containing {@code node}.
+     * Creates scope containing all UCAs.
+     * @param model Root of the STPA model.
      * @param precomputed Precomputed Scope of the document.
      * @returns Scope containing all UCAs.
      */
-    private getUCAs(node: AstNode, model: Model, precomputed: PrecomputedScopes): Scope {
+    private getUCAs(model: Model, precomputed: PrecomputedScopes): Scope {
         let allDescriptions: AstNodeDescription[] = []
         const allUCAs = model.allUCAs
         for (const systemUCAs of allUCAs) {
@@ -144,6 +160,13 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         return this.descriptionsToScope(allDescriptions)
     }
 
+    /**
+     * Collects node descriptions for {@code currentNode}.
+     * @param currentNode AstNode for which the descriptions should be collected.
+     * @param type The type the descriptions should have.
+     * @param precomputed Precomputed Scope of the document.
+     * @returns Descriptions of type {@code type} for {@code currentNode}.
+     */
     private getDescriptions(currentNode: AstNode | undefined, type: string, precomputed: PrecomputedScopes): AstNodeDescription[] {
         let res: AstNodeDescription[] = []
         while (currentNode) {
@@ -156,6 +179,11 @@ export class STPAScopeProvider extends DefaultScopeProvider {
         return res
     }
 
+    /**
+     * Creates a scope contaning {@code descs}.
+     * @param descs The node descriptions that should be contained in the Scope.
+     * @returns Scope containing {@code descs}.
+     */
     private descriptionsToScope(descs: AstNodeDescription[]): Scope {
         const scopes: Array<Stream<AstNodeDescription>> = []
         scopes.push(stream(descs))

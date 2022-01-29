@@ -7,6 +7,7 @@ import { CS_NODE_TYPE, PARENT_TYPE } from './stpa-model';
 export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
 
     protected graphOptions(sgraph: SGraph, index: SModelIndex): LayoutOptions {
+        // options for the whole graph containing the control structure and the STPA graph
         return {
             'org.eclipse.elk.direction': 'DOWN',
             'org.eclipse.elk.spacing.nodeNode': '30.0',
@@ -15,22 +16,24 @@ export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected parentNodeOptions(snode: SNode, index: SModelIndex): LayoutOptions {
-        let children = 'INCLUDE_CHILDREN'
+        // in the STPA graph this is necessary for hierarchy-crossing edges to be better layouted
+        let hierarchyHandling = 'INCLUDE_CHILDREN'
         let direction = 'UP'
+
         if (snode.children && snode.children[0].type == CS_NODE_TYPE) {
-            children = 'SEPARATE_CHILDREN'
+            // options for the control structure
+            hierarchyHandling = 'SEPARATE_CHILDREN'
             direction = 'DOWN'
         }
         return {
             'org.eclipse.elk.direction': direction,
             'org.eclipse.elk.algorithm': 'layered',
+            'org.eclipse.elk.hierarchyHandling': hierarchyHandling,
             // interactive strategies are used to be able to assign layers to nodes through positioning
             'org.eclipse.elk.separateConnectedComponents': 'false',
             'org.eclipse.elk.layered.crossingMinimization.semiInteractive': 'true',
             'cycleBreaking.strategy': 'INTERACTIVE',
-            'layering.strategy': 'INTERACTIVE',
-            // needed for cross-hierarchy edges
-            'org.eclipse.elk.hierarchyHandling': children
+            'layering.strategy': 'INTERACTIVE'
         };
     }
 

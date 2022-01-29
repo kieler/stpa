@@ -5,11 +5,6 @@ import { STPAAspect } from "./stpa-model"
 import { CSNode, STPANode } from "./stpa-interfaces";
 import { SShapeElement } from 'sprotty-protocol';
 
-/**
- * Determines the layer for each node and sets their layer attribute.
- * Thereby, the nodes without control actions are at the bottom/last layer.
- * @param nodes All nodes of the control structure.
- */
 /* export function determineLayerForCSNodes(nodes: CSNode[]): void {
     let layer = nodes.length
     let sinks: CSNode[] = []
@@ -39,7 +34,7 @@ import { SShapeElement } from 'sprotty-protocol';
 } */
 
 /**
- * Getter for the tracing of {@code node}.
+ * Getter for the references contained in {@code node}.
  * @param node The STPAAspect which tracings should be returned.
  * @returns The objects {@code node} is traceable to.
  */
@@ -50,6 +45,7 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
             for (const ref of node.refs) {
                 if (ref?.ref) targets.push(ref.ref)
             }
+            // for subcomponents the parents must be declared as targets too, if hierarchy is false
             if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
                 targets.push(node.$container)
             }
@@ -76,9 +72,9 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
 }
 
 /**
- * Getter for the aspect of a STPA component
- * @param node AstNode, which aspect should determined
- * @returns the aspect of {@code node}
+ * Getter for the aspect of a STPA component.
+ * @param node AstNode which aspect should determined.
+ * @returns the aspect of {@code node}.
  */
 export function getAspect(node: AstNode): STPAAspect {
     if (isLoss(node)) {
@@ -101,11 +97,10 @@ export function getAspect(node: AstNode): STPAAspect {
     return STPAAspect.UNDEFINED
 }
 
-
 /**
  * Collects the {@code topElements}, their children, their children's children and so on.
  * @param topElements The top elements that possbible have children.
- * @returns A list with the existing elements.
+ * @returns A list with the given {@code topElements} and their descendants.
  */
 export function collectElementsWithSubComps(topElements: (Hazard|SystemConstraint)[]): AstNode[] {
     let result = topElements
@@ -123,9 +118,9 @@ export function collectElementsWithSubComps(topElements: (Hazard|SystemConstrain
 /**
  * Determines the layer {@code node} should be in depending on the STPA aspect it represents.
  * @param node STPANode for which the layer should be determined.
- * @param hazardDepth Maxmal depth of the hazard hierarchy.
+ * @param hazardDepth Maximal depth of the hazard hierarchy.
  * @param sysConsDepth Maximal depth of the system-level constraint hierarchy.
- * @returns The number of the layer the node should be in.
+ * @returns The number of the layer {@code node} should be in.
  */
 function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number): number {
     switch(node.aspect) {
@@ -150,7 +145,12 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
     }
 }
 
-export function setPositionsForSTPANodes(nodes: STPANode[]) {
+/**
+ * Sets the position for {@code nodes} depending on the layer they should be in.
+ * @param nodes The nodes representing the stpa components.
+ */
+export function setPositionsForSTPANodes(nodes: STPANode[]): void {
+    // determines the maximal hierarchy depth of hazards and system constraints
     let maxHazardDepth = -1
     let maxSysConsDepth = -1
     for (const node of nodes) {
@@ -161,12 +161,17 @@ export function setPositionsForSTPANodes(nodes: STPANode[]) {
             maxSysConsDepth = maxSysConsDepth > node.hierarchyLvl ? maxSysConsDepth : node.hierarchyLvl
         }
     }
+    // sets positions according to the layer of the nodes.
     for (const node of nodes) {
         const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth);
         (node as SShapeElement).position = {x: 0, y: 100 * layer}
     }
 }
 
+/**
+ * Sets the position for {@code nodes} depending on their hierarchy level in the control structure.
+ * @param nodes The nodes of the control structure.
+ */
 export function setPositionsForCSNodes(nodes: CSNode[]) {
     for (const node of nodes) {
         if (node.level) {

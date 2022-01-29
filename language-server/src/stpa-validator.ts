@@ -1,6 +1,6 @@
 import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ActionUCAs, ContConstraint, Hazard, HazardList, isContConstraint, isGraph, isHazard, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
+import { ContConstraint, Hazard, HazardList, isContConstraint, isGraph, isHazard, isLoss, isLossScenario, isNode, isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, Responsibility, STPAAstType, SystemConstraint } from './generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
 
@@ -23,7 +23,6 @@ export class StpaValidationRegistry extends ValidationRegistry {
             Responsibility: validator.checkResponsibility,
             ContConstraint: validator.checkControllerConstraints,
             HazardList: validator.checkHazardList,
-            ActionUCAs: validator.checkActionUCAs,
             Node: validator.checkNode
         };
         this.register(checks, validator);
@@ -73,7 +72,7 @@ export class StpaValidator {
     }
 
     /**
-     * Executes validation checks for a system-level constraints.
+     * Executes validation checks for a system-level constraint.
      * @param sysCons The SystemConstraint to check.
      * @param accept 
      */
@@ -102,30 +101,6 @@ export class StpaValidator {
         this.checkIDsAreUnique(node.variables, accept)
         this.checkIDsAreUnique(node.actions, accept)
         this.checkIDsAreUnique(node.feedbacks, accept)
-    }
-
-    /**
-     * Executes validation checks for an ActionUCAs.
-     * @param actionUCA The actionUCAs to check.
-     * @param accept 
-     */
-    checkActionUCAs(actionUCA: ActionUCAs, accept: ValidationAcceptor): void {
-        // checks whether the referenced action is a defined control action for the referenced system
-        const system = actionUCA.system.ref
-        const searchName = actionUCA.action.ref?.name
-        let found = false
-        if (system && searchName) {
-            for (const act of system?.actions) {
-                for (const com of act.comms) {
-                    if (com.name == searchName) {
-                        found = true
-                    }
-                }
-            }
-            if(!found) {
-                accept('error', 'This is not a control action of ' + system.name, { node: actionUCA, property: 'action' });
-            }
-        }
     }
 
     /**
@@ -287,7 +262,8 @@ export class StpaValidator {
                     }
                 }
                 if (!found) {
-                    accept('warning', 'SubHazards should only reference losses the parent references too', { node: hazard, property: 'refs', index: i });
+                    //TODO: should be in the scope provider?
+                    accept('error', 'SubHazards are only allowed to reference losses the parent references too', { node: hazard, property: 'refs', index: i });
                 }
             }
         }

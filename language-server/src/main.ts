@@ -13,4 +13,5 @@ const { shared, states } = createStpaServices({ connection });
 startLanguageServer(shared);
 addDiagramHandler(connection, shared)
 
+// reaction to the hierarchy notification
 connection.onNotification('hierarchy', (message: string) => states.options.Options.toggleHierarchy())
