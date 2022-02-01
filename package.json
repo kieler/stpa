@@ -1,0 +1,16 @@
+{
+    "private": true,
+    "scripts": {
+      "prepare": "lerna run prepare",
+      "clean": "lerna run clean",
+      "publish:next": "lerna publish --canary --npm-tag next"
+    },
+    "devDependencies": {
+      "lerna": "^3.20.2"
+    },
+    "workspaces": [
+      "language-server",
+      "webview",
+      "extension"
+    ]
+  }
