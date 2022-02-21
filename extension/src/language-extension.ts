@@ -22,7 +22,7 @@ import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import {Action} from 'sprotty-protocol'
 
-export class STPALspVscodeExtension extends SprottyLspEditVscodeExtension {
+export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
  
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);

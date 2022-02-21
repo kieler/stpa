@@ -2,11 +2,11 @@ import ElkConstructor from 'elkjs/lib/elk.bundled'
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices } from 'langium';
 import { LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedModule } from 'langium-sprotty';
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import { STPADiagramGenerator } from './diagram-generator';
-import { StpaGeneratedModule, STPAGeneratedSharedModule } from './generated/module';
-import { STPALayoutConfigurator } from './layout-config';
-import { Options } from './options';
-import { STPAScopeProvider } from './stpa-scopeProvider';
+import { StpaDiagramGenerator } from './diagram-generator';
+import { StpaGeneratedModule, StpaGeneratedSharedModule } from './generated/module';
+import { StpaLayoutConfigurator } from './layout-config';
+import { StpaOptions } from './stpa-options';
+import { StpaScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 
 
@@ -15,7 +15,7 @@ import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
  */
 export type StpaAddedServices = {
     references: {
-        STPAScopeProvider: STPAScopeProvider
+        StpaScopeProvider: StpaScopeProvider
     },
     validation: {
         StpaValidator: StpaValidator
@@ -26,7 +26,7 @@ export type StpaAddedServices = {
         LayoutConfigurator: ILayoutConfigurator
     },
     options: {
-        Options: Options
+        Options: StpaOptions
     }
 }
 
@@ -41,14 +41,14 @@ export type StpaServices = LangiumSprottyServices & StpaAddedServices
  * declared custom services. The Langium defaults can be partially specified to override only
  * selected services, while the custom services must be fully specified.
  */
-export const StpaModule: Module<StpaServices, PartialLangiumServices & SprottyDiagramServices & StpaAddedServices> = {
+export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDiagramServices & StpaAddedServices> = {
     diagram: {
-        DiagramGenerator: services => new STPADiagramGenerator(services),
+        DiagramGenerator: services => new StpaDiagramGenerator(services),
         ModelLayoutEngine: services => new ElkLayoutEngine(services.layout.ElkFactory, services.layout.ElementFilter, services.layout.LayoutConfigurator) as any
     },
     references: {
-        ScopeProvider: services => new STPAScopeProvider(services),
-        STPAScopeProvider: services => new STPAScopeProvider(services)
+        ScopeProvider: services => new StpaScopeProvider(services),
+        StpaScopeProvider: services => new StpaScopeProvider(services)
     },
     validation: {
         ValidationRegistry: services => new StpaValidationRegistry(services),
@@ -57,10 +57,10 @@ export const StpaModule: Module<StpaServices, PartialLangiumServices & SprottyDi
     layout: {
         ElkFactory: () => () => new ElkConstructor({ algorithms: ['layered'] }),
         ElementFilter: () => new DefaultElementFilter,
-        LayoutConfigurator: () => new STPALayoutConfigurator
+        LayoutConfigurator: () => new StpaLayoutConfigurator
     },
     options: {
-        Options: () => new Options()
+        Options: () => new StpaOptions()
     }
 };
 
@@ -82,13 +82,13 @@ export const StpaModule: Module<StpaServices, PartialLangiumServices & SprottyDi
 export function createStpaServices(context?: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, states: StpaServices} {
     const shared = inject(
         createDefaultSharedModule(context),
-        STPAGeneratedSharedModule,
+        StpaGeneratedSharedModule,
         SprottySharedModule
     )
     const states = inject(
         createDefaultModule({shared}),
         StpaGeneratedModule,
-        StpaModule,
+        STPAModule,
     )
     shared.ServiceRegistry.register(states)
     return { shared, states }

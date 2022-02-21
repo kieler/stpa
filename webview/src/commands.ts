@@ -1,7 +1,7 @@
 import { Command, CommandExecutionContext, CommandReturn, TYPES } from "sprotty";
 import { injectable, inject } from 'inversify'
 import { Action } from 'sprotty-protocol'
-import { ColorOption, Options } from "./options";
+import { ColorOption, DiagramOptions } from "./diagram-options";
 
 export interface ColorfulAction extends Action {
     kind: typeof ColorfulAction.KIND
@@ -21,7 +21,7 @@ export namespace ColorfulAction {
 export class ColorfulCommand extends Command {
     static readonly KIND = ColorfulAction.KIND;
 
-    @inject(Options) protected readonly options: Options
+    @inject(DiagramOptions) protected readonly options: DiagramOptions
 
     constructor(@inject(TYPES.Action) readonly action: ColorfulAction) {
         super();
@@ -59,7 +59,7 @@ export namespace StandardColorAction {
 export class StandardColorCommand extends Command {
     static readonly KIND = StandardColorAction.KIND;
 
-    @inject(Options) protected readonly options: Options
+    @inject(DiagramOptions) protected readonly options: DiagramOptions
 
     constructor(@inject(TYPES.Action) readonly action: StandardColorAction) {
         super();
@@ -97,7 +97,7 @@ export namespace PrintStyleAction {
 export class PrintStyleCommand extends Command {
     static readonly KIND = PrintStyleAction.KIND;
 
-    @inject(Options) protected readonly options: Options
+    @inject(DiagramOptions) protected readonly options: DiagramOptions
 
     constructor(@inject(TYPES.Action) readonly action: PrintStyleAction) {
         super();
@@ -135,7 +135,7 @@ export namespace FormToggleAction {
 export class FormToggleCommand extends Command {
     static readonly KIND = FormToggleAction.KIND;
 
-    @inject(Options) protected readonly options: Options
+    @inject(DiagramOptions) protected readonly options: DiagramOptions
 
     constructor(@inject(TYPES.Action) readonly action: FormToggleAction) {
         super();

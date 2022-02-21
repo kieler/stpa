@@ -4,7 +4,7 @@ import { SGraph, SModelElement, SModelIndex, SNode } from 'sprotty-protocol';
 import { CS_NODE_TYPE, PARENT_TYPE } from './stpa-model';
 
 
-export class STPALayoutConfigurator extends DefaultLayoutConfigurator {
+export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
 
     protected graphOptions(sgraph: SGraph, index: SModelIndex): LayoutOptions {
         // options for the whole graph containing the control structure and the STPA graph

@@ -20,15 +20,15 @@ import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, 
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
-import { ColorOption, Options } from './options';
+import { ColorOption, DiagramOptions } from './diagram-options';
 import { inject } from 'inversify'
 
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
 
-    @inject(Options)
-    protected readonly options: Options
+    @inject(DiagramOptions)
+    protected readonly options: DiagramOptions
 
     protected renderLine(edge: SEdge, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
@@ -64,8 +64,8 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 @injectable()
 export class STPANodeView extends RectangularNodeView  {
 
-    @inject(Options)
-    protected readonly options: Options
+    @inject(DiagramOptions)
+    protected readonly options: DiagramOptions
 
     render(node: STPANode, context: RenderingContext): VNode {
         // create the element based on the option and the aspect of the node
@@ -123,8 +123,8 @@ export class STPANodeView extends RectangularNodeView  {
 @injectable()
 export class CSNodeView extends RectangularNodeView {
 
-    @inject(Options)
-    protected readonly options: Options
+    @inject(DiagramOptions)
+    protected readonly options: DiagramOptions
 
     render(node: SNode, context: RenderingContext): VNode {
         const printNode = this.options.getColor() == ColorOption.PRINT

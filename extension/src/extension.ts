@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import { STPALspVscodeExtension } from './language-extension';
+import { StpaLspVscodeExtension } from './language-extension';
 import { SprottyLspVscodeExtension } from 'sprotty-vscode/lib/lsp';
 
 let extension: SprottyLspVscodeExtension;
 
 export function activate(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage('Activating STPA extension');
-    extension = new STPALspVscodeExtension(context);
+    extension = new StpaLspVscodeExtension(context);
 }
 
 export function deactivate(): Thenable<void> {

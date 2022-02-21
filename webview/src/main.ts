@@ -23,7 +23,7 @@ import { SprottyLspEditStarter } from 'sprotty-vscode-webview/lib/lsp/editing'
 import { ColorfulCommand, FormToggleCommand, PrintStyleCommand, StandardColorCommand } from './commands';
 import { configureCommand } from 'sprotty';
 
-export class STPASprottyStarter extends SprottyLspEditStarter {
+export class StpaSprottyStarter extends SprottyLspEditStarter {
 
     createContainer(diagramIdentifier: SprottyDiagramIdentifier) {
         return createSTPADiagramContainer(diagramIdentifier.clientId);
@@ -39,4 +39,4 @@ export class STPASprottyStarter extends SprottyLspEditStarter {
     }
 }
 
-new STPASprottyStarter();
+new StpaSprottyStarter();

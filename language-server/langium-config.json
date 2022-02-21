@@ -1,5 +1,5 @@
 {
-    "projectName": "STPA",
+    "projectName": "Stpa",
     "languages": [{
         "id": "stpa",
         "grammar": "src/stpa.langium",

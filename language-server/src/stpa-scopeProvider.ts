@@ -5,7 +5,7 @@ import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Nod
 import { StpaServices } from "./stpa-module";
 
 
-export class STPAScopeProvider extends DefaultScopeProvider {
+export class StpaScopeProvider extends DefaultScopeProvider {
 
     /* the types of the different aspects */
     private CA_TYPE = Command

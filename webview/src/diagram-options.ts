@@ -13,7 +13,7 @@ export enum ColorOption {
  * Options for the visualization of the graph.
  */
 @injectable()
-export class Options {
+export class DiagramOptions {
 
     private color: ColorOption
     private forms: boolean
