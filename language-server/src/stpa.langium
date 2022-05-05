@@ -78,7 +78,7 @@ ContConstraint:
     name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
 
 LossScenario:
-    (name=ID description=STRING (list=HazardList)?) |
+    (name=ID description=STRING list=HazardList) |
     (name=ID 'for' uca=[UCA] description=STRING (list=HazardList)?);
 
 HazardList:

@@ -1,7 +1,7 @@
 import { Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
 import { ContConstraint, Hazard, HazardList, Loss, Model, Node, 
-    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command } from './generated/ast';
+    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel } from './generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
 
@@ -93,6 +93,14 @@ export class StpaValidator {
             this.checkReferencedLossesOfSubHazard(hazard.refs, hazard.subComps, accept)
         }
         this.checkReferenceListForDuplicates(hazard, hazard.refs, accept)
+        // a top-level hazard should reference loss(es)
+        if (isModel(hazard.$container) && hazard.refs.length == 0) {
+            const range = hazard.$cstNode?.range
+            if (range) {
+                range.start.character = range.end.character-1
+            }
+            accept('warning', 'A hazard should reference loss(es)', { node: hazard, range: range });
+        }
     }
 
     /**
@@ -153,7 +161,7 @@ export class StpaValidator {
     private checkIDsAreUnique(allElements: elementWithName[], accept: ValidationAcceptor): void {
         const names = new Set()
         for (const node of allElements) {
-            let name = node.name
+            let name = node?.name
             if (name != "") {
                 if(names.has(name)) {
                     accept('error', 'All identifiers must be unique.', { node: node, property: 'name' });
