@@ -12,6 +12,13 @@ export interface STPANode extends SNode {
 }
 
 /**
+ * Edge representing an edge in the relationship graph.
+ */
+ export interface STPAEdge extends SEdge {
+    connected?: boolean
+}
+
+/**
  * Node representing a system component in the control structure.
  */
 export interface CSNode extends SNode {

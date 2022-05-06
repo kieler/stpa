@@ -18,11 +18,11 @@
 import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph} from 'sprotty';
 import { injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect } from './stpa-model';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { ColorOption, DiagramOptions } from './diagram-options';
 import { inject } from 'inversify'
-import { collectAllChildren, getConnectedNodes, getSelectedNode } from './helper-methods';
+import { collectAllChildren, flagConnectedElements, getSelectedNode } from './helper-methods';
 
 let selectedNode: SNode | undefined
 
@@ -39,20 +39,29 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             const p = segments[i];
             path += ` L ${p.x},${p.y}`;
         }
+
+        // if an STPANode is selected, the components not connected to it should fade out
+        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected
    
         const printEdge = this.options.getColor() == ColorOption.PRINT
         const coloredEdge = this.options.getColor() == ColorOption.COLORED
-        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge} aspect={(edge.source as STPANode).aspect} d={path} />;
+        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge} class-hidden={hidden} aspect={(edge.source as STPANode).aspect } d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
+        // if an STPANode is selected, the components not connected to it should fade out
+        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected
+        if (edge.type == STPA_EDGE_TYPE) {
+            (edge as STPAEdge).connected = false
+        }
+
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
         const printEdge = this.options.getColor() == ColorOption.PRINT
         const coloredEdge = this.options.getColor() == ColorOption.COLORED && edge.type != CS_EDGE_TYPE
         const sprottyEdge = this.options.getColor() == ColorOption.STANDARD || (edge.type == CS_EDGE_TYPE && !printEdge)
         return [
-            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge} aspect={(edge.source as STPANode).aspect}
+            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge} class-hidden={hidden} aspect={(edge.source as STPANode).aspect}
                   class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
                   transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`}/>
         ];
@@ -153,15 +162,12 @@ export class CSNodeView extends RectangularNodeView {
 export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
 
     render(model: Readonly<SGraph>, context: RenderingContext, args?: IRenderingArgs): VNode {
-        // if an STPANode is selected, the "connected" attribute is set for the nodes connected to the selected one
+        // if an STPANode is selected, the "connected" attribute is set for the nodes and edges connected to the selected node
         let allNodes: SNode[] = []
         collectAllChildren(model.children as SNode[], allNodes)
         selectedNode = getSelectedNode(allNodes)
         if (selectedNode instanceof STPANode) {
-            const connectedNodes = getConnectedNodes(selectedNode)
-            for (const node of connectedNodes) {
-                (node as STPANode).connected = true
-            }
+            flagConnectedElements(selectedNode)
         }
 
         return super.render(model, context, args)

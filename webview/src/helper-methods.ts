@@ -1,5 +1,5 @@
 import { SNode, SEdge } from "sprotty"
-import { STPAAspect, STPANode, STPA_NODE_TYPE } from "./STPA-model"
+import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./STPA-model"
 
 /**
  * Collects all children of the nodes in {@code nodes}.
@@ -31,74 +31,77 @@ export function collectAllChildren(nodes: SNode[], children: SNode[]): void {
 }
 
 /**
- * Collectes the nodes connected to {@code node}
- * @param node The node for which the connected nodes should be determined.
- * @returns The nodes connected to {@code node}
+ * Sets the connected attribute of the nodes and egde connected to {@code node}.
+ * @param node The node for which the connected elements should be determined.
  */
-export function getConnectedNodes(node: SNode): Set<SNode> {
-    const conNodes: Set<SNode> = new Set([node])
+export function flagConnectedElements(node: SNode): void {
+    (node as STPANode).connected = true
     if (isSubConstraint(node)) {
-        addSubConsParent(conNodes, node)
+        flagSubConsParent(node as STPANode)
     }
     if (isSubHazard(node)) {
-        conNodes.add(node.parent as STPANode)
+        (node.parent as STPANode).connected = true
         for (const outEdge of (node.parent as STPANode).outgoingEdges) {
-            collectSuccNodes(conNodes, outEdge)
+            (outEdge as STPAEdge).connected = true
+            flagSuccNodes(outEdge)
         }
     }
     for (const edge of node.incomingEdges) {
-        collectPredNodes(conNodes, edge)
+        (edge as STPAEdge).connected = true
+        flagPredNodes(edge)
     }
     for (const edge of node.outgoingEdges) {
-        collectSuccNodes(conNodes, edge)
+        (edge as STPAEdge).connected = true
+        flagSuccNodes(edge)
     }
-    return conNodes
 }
 
 /**
- * Collect the predecessor nodes based on the {@code edge}.
- * @param nodes Set to which the predecessor nodes should be added.
+ * Sets the connected attribute of the predecessor nodes and edges based on the {@code edge}.
  * @param edge The edge which source and further predecessors should be inspected.
  */
-function collectPredNodes(nodes: Set<SNode>, edge: SEdge): void {
+function flagPredNodes(edge: SEdge): void {
     const node = edge.source as SNode
-    nodes.add(node)
+    (node as STPANode).connected = true
     if (isSubConstraint(node)) {
-        addSubConsParent(nodes, node)
+        flagSubConsParent(node as STPANode)
     }
     if (node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.HAZARD) {
         const subHazards = node.children.filter(child => child.type == STPA_NODE_TYPE) as STPANode[]
         for (const subH of subHazards) {
-            nodes.add(subH)
+            subH.connected = true
             for (const inEdge of subH.incomingEdges) {
-                collectPredNodes(nodes, inEdge)
+                (inEdge as STPAEdge).connected = true
+                flagPredNodes(inEdge)
             }
         }
     }
     for (const inEdge of node.incomingEdges) {
-        collectPredNodes(nodes, inEdge)
+        (inEdge as STPAEdge).connected = true
+        flagPredNodes(inEdge)
     }
 }
 
 /**
- * Collect the successor nodes based on the {@code edge}.
- * @param nodes Set to which the successor nodes should be added.
+ * Sets the connected attribute of the successor nodes and edges based on the {@code edge}.
  * @param edge The edge which target and further successors should be inspected.
  */
-function collectSuccNodes(nodes: Set<SNode>, edge: SEdge): void {
+function flagSuccNodes(edge: SEdge): void {
     const node = edge.target as SNode
-    nodes.add(node)
+    (node as STPANode).connected = true
     if (isSubConstraint(node)) {
-        addSubConsParent(nodes, node)
+        flagSubConsParent(node as STPANode)
     }
     if (isSubHazard(node)) {
-        nodes.add(node.parent as STPANode)
+        (node.parent as STPANode).connected = true
         for (const outEdge of (node.parent as STPANode).outgoingEdges) {
-            collectSuccNodes(nodes, outEdge)
+            (outEdge as STPAEdge).connected = true
+            flagSuccNodes(outEdge)
         }
     }
     for (const outEdge of node.outgoingEdges) {
-        collectSuccNodes(nodes, outEdge)
+        (outEdge as STPAEdge).connected = true
+        flagSuccNodes(outEdge)
     }
 }
 
@@ -123,14 +126,13 @@ function isSubHazard(node: SNode): boolean {
 }
 
 /**
- * Adds the parents of the system constraint {@code node} to {@code nodes}.
- * @param nodes The set the parents should be added to.
+ * Sets the connected attribute of the parents of the system constraint {@code node}.
  * @param node The node, which parents should be added.
  */
-function addSubConsParent(nodes: Set<SNode>, node: SNode): void {
+function flagSubConsParent(node: STPANode): void {
     let parent = node
     while (parent.parent.type == STPA_NODE_TYPE && (parent.parent as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT) {
         parent = parent.parent as STPANode
-        nodes.add(parent)
+        parent.connected = true
     }
 }

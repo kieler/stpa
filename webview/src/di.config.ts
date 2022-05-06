@@ -25,7 +25,7 @@ import {
     TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge
 } from 'sprotty';
 import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView} from './views';
-import { EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE} from './stpa-model';
+import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE} from './stpa-model';
 import { DiagramOptions } from './diagram-options';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
@@ -41,7 +41,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
     configureModelElement(context, 'label', SLabel, SLabelView);
     configureModelElement(context, 'label:xref', SLabel, SLabelView);
-    configureModelElement(context, EDGE_TYPE, SEdge, PolylineArrowEdgeView);
+    configureModelElement(context, STPA_EDGE_TYPE, SEdge, PolylineArrowEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
     configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
