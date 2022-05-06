@@ -16,13 +16,15 @@
 
 /** @jsx svg */
 import { VNode } from 'snabbdom';
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees} from 'sprotty';
+import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph} from 'sprotty';
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { ColorOption, DiagramOptions } from './diagram-options';
 import { inject } from 'inversify'
+import { collectAllChildren, getConnectedNodes, getSelectedNode } from './helper-methods';
 
+let selectedNode: SNode | undefined
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
@@ -104,17 +106,24 @@ export class STPANodeView extends RectangularNodeView  {
             element = renderRectangle(node)
         }
 
+        // if an STPANode is selected, the components not connected to it should fade out
+        const hidden = (selectedNode instanceof STPANode) && !node.connected
+        const parentNode = node.children.filter(child => child.type == STPA_NODE_TYPE).length != 0 && !hidden
+        node.connected = false
+
         // determines the color of the node
         const printNode = this.options.getColor() == ColorOption.PRINT
         const coloredNode = this.options.getColor() == ColorOption.COLORED
         const sprottyNode = this.options.getColor() == ColorOption.STANDARD
+
         return  <g  
                     class-print-node={printNode}
                     class-stpa-node={coloredNode} aspect={node.aspect}
                     class-sprotty-node={sprottyNode}
                     class-sprotty-port={node instanceof SPort}
-                    class-mouseover={node.hoverFeedback} class-selected={node.selected}>
-                    <g class-parent-node={node.children.filter(x=>x.type == STPA_NODE_TYPE).length!=0}>{element}</g>
+                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                    class-hidden={hidden}>
+                    <g class-parent-node={parentNode}>{element}</g>
                     {context.renderChildren(node)}
                 </g>;
     }
@@ -138,4 +147,24 @@ export class CSNodeView extends RectangularNodeView {
             {context.renderChildren(node)}
         </g>;
     }
+}
+
+@injectable()
+export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
+
+    render(model: Readonly<SGraph>, context: RenderingContext, args?: IRenderingArgs): VNode {
+        // if an STPANode is selected, the "connected" attribute is set for the nodes connected to the selected one
+        let allNodes: SNode[] = []
+        collectAllChildren(model.children as SNode[], allNodes)
+        selectedNode = getSelectedNode(allNodes)
+        if (selectedNode instanceof STPANode) {
+            const connectedNodes = getConnectedNodes(selectedNode)
+            for (const node of connectedNodes) {
+                (node as STPANode).connected = true
+            }
+        }
+
+        return super.render(model, context, args)
+    }
+
 }

@@ -8,6 +8,7 @@ export interface STPANode extends SNode {
     aspect: STPAAspect
     description: string
     hierarchyLvl: number
+    connected?: boolean
 }
 
 /**

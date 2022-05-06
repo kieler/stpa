@@ -17,6 +17,7 @@ export class STPANode extends SNode {
     aspect: STPAAspect = STPAAspect.UNDEFINED
     description: string = ""
     hierarchyLvl: number = 0
+    connected?: boolean
 }
 
 /**

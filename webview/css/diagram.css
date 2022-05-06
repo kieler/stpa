@@ -159,6 +159,10 @@
     stroke: var(--vscode-button-hover-background);
 }
 
+.hidden {
+    opacity: 0.3;
+}
+
 body[class='vscode-light'] .sprotty-label {
     fill: black;
     stroke-width: 0;
