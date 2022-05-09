@@ -22,16 +22,18 @@ import {
     configureModelElement, ConsoleLogger, HtmlRoot,
     HtmlRootView, LogLevel, overrideViewerOptions, PreRenderedElement,
     PreRenderedView, SLabelView,
-    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge
+    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge, ModelViewer
 } from 'sprotty';
 import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView} from './views';
 import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE} from './stpa-model';
-import { DiagramOptions } from './diagram-options';
+import { sidebarModule } from './sidebar';
+import { optionsModule } from './options/options-module';
+import { StpaModelViewer } from './model-viewer';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
-    bind(DiagramOptions).toSelf().inSingletonScope();
+    rebind(ModelViewer).to(StpaModelViewer).inSingletonScope()
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
@@ -50,7 +52,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
 export function createSTPADiagramContainer(widgetId: string): Container {
     const container = new Container();
     loadDefaultModules(container);
-    container.load(stpaDiagramModule);
+    container.load(stpaDiagramModule, sidebarModule, optionsModule);
     overrideViewerOptions(container, {
         needsClientLayout: true,
         needsServerLayout: true,

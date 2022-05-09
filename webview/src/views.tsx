@@ -20,17 +20,17 @@ import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, 
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
-import { ColorOption, DiagramOptions } from './diagram-options';
 import { inject } from 'inversify'
 import { collectAllChildren, flagConnectedElements, getSelectedNode } from './helper-methods';
+import { DISymbol } from './di.symbols';
+import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from './options/render-options-registry';
 
 let selectedNode: SNode | undefined
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
 
-    @inject(DiagramOptions)
-    protected readonly options: DiagramOptions
+    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry
 
     protected renderLine(edge: SEdge, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
@@ -43,8 +43,9 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         // if an STPANode is selected, the components not connected to it should fade out
         const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected
    
-        const printEdge = this.options.getColor() == ColorOption.PRINT
-        const coloredEdge = this.options.getColor() == ColorOption.COLORED
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
+        const printEdge = colorStyle == "print"
+        const coloredEdge = colorStyle == "colorful"
         return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge} class-hidden={hidden} aspect={(edge.source as STPANode).aspect } d={path} />;
     }
 
@@ -57,9 +58,11 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
-        const printEdge = this.options.getColor() == ColorOption.PRINT
-        const coloredEdge = this.options.getColor() == ColorOption.COLORED && edge.type != CS_EDGE_TYPE
-        const sprottyEdge = this.options.getColor() == ColorOption.STANDARD || (edge.type == CS_EDGE_TYPE && !printEdge)
+
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
+        const printEdge = colorStyle == "print"
+        const coloredEdge = colorStyle == "colorful" && edge.type != CS_EDGE_TYPE
+        const sprottyEdge = colorStyle == "standard" || (edge.type == CS_EDGE_TYPE && !printEdge)
         return [
             <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge} class-hidden={hidden} aspect={(edge.source as STPANode).aspect}
                   class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
@@ -74,14 +77,13 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
 @injectable()
 export class STPANodeView extends RectangularNodeView  {
-
-    @inject(DiagramOptions)
-    protected readonly options: DiagramOptions
+    
+    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry
 
     render(node: STPANode, context: RenderingContext): VNode {
         // create the element based on the option and the aspect of the node
         let element: VNode
-        if (this.options.getForms()) {
+        if (this.renderOptionsRegistry.getValue(DifferentFormsOption)) {
             switch(node.aspect) {
                 case STPAAspect.LOSS: 
                     element = renderTrapez(node)
@@ -121,9 +123,10 @@ export class STPANodeView extends RectangularNodeView  {
         node.connected = false
 
         // determines the color of the node
-        const printNode = this.options.getColor() == ColorOption.PRINT
-        const coloredNode = this.options.getColor() == ColorOption.COLORED
-        const sprottyNode = this.options.getColor() == ColorOption.STANDARD
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
+        const printNode = colorStyle == "print"
+        const coloredNode = colorStyle == "colorful"
+        const sprottyNode = colorStyle == "standard"
 
         return  <g  
                     class-print-node={printNode}
@@ -140,13 +143,14 @@ export class STPANodeView extends RectangularNodeView  {
 
 @injectable()
 export class CSNodeView extends RectangularNodeView {
-
-    @inject(DiagramOptions)
-    protected readonly options: DiagramOptions
+    
+    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry
 
     render(node: SNode, context: RenderingContext): VNode {
-        const printNode = this.options.getColor() == ColorOption.PRINT
-        const sprottyNode = this.options.getColor() != ColorOption.PRINT
+
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
+        const printNode = colorStyle == "print"
+        const sprottyNode = colorStyle != "print"
         return <g>
             <rect class-parent-node={node.type == PARENT_TYPE} class-print-node={printNode}
                   class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
