@@ -20,6 +20,7 @@ import { inject, injectable, postConstruct } from "inversify";
 import { VNode } from "snabbdom";
 import { html } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { DISymbol } from "../di.symbols";
+import { FeatherIcon } from "../feather-icons-snabbdom/feather-icons-snabbdom";
 import { SidebarPanel } from "../sidebar";
 import { OptionsRenderer } from "./options-renderer";
 import { RenderOptionsRegistry } from "./render-options-registry";
@@ -66,6 +67,6 @@ export class GeneralPanel extends SidebarPanel {
     }
 
     get icon(): VNode {
-        return <rect width="20" height="10"/>;
+        return <FeatherIcon iconId={"settings"}/>;
     }
 }

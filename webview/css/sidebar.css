@@ -1,0 +1,104 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2021 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+ .sidebar {
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    /* Sidebar should consume at least ~1/3th of the screen but not forced to be wider than 400px. */
+    min-width: min(400px, 35vw);
+    /* Sidebar should consume at max 3/4th of the screen. */
+    max-width: 75vw;
+    width: fit-content;
+    border-radius: var(--kdc-border-radius-default) 0 0 var(--kdc-border-radius-default);
+
+    background-color: var(--kdc-color-sidebar-background);
+    box-shadow: var(--kdc-sidebar-shadow);
+    color: var(--kdc-color-sidebar-font-primary);
+    font-size: var(--kdc-font-size-base);
+
+    transition: transform var(--kdc-transition);
+    transform: translateX(100%);
+}
+
+.sidebar--open {
+    transform: translateX(0%);
+}
+
+.sidebar__content {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+
+    width: 100%;
+    height: 100%;
+}
+
+/* Overflow container for the content provided by panels */
+.sidebar__panel-content {
+    box-sizing: border-box;
+    overflow-y: auto;
+
+    /* Consume all available height in the sidebar */
+    flex-grow: 2;
+}
+
+.sidebar__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.sidebar__toggle-container {
+    position: absolute;
+    left: 0;
+    top: 16px;
+    transform: translateX(-100%);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar__toggle-button {
+    --background: var(--kdc-color-sidebar-trigger-background);
+    padding: 8px;
+    border: none;
+    border-radius: var(--kdc-border-radius-default) 0 0 var(--kdc-border-radius-default);
+
+    cursor: pointer;
+    outline: none;
+    background: var(--background);
+    color: var(--kdc-color-sidebar-icon-primary);
+    box-shadow: var(--kdc-sidebar-button-shadow);
+
+    transition: background var(--kdc-transition);
+}
+
+.sidebar__toggle-button:hover,
+.sidebar__toggle-button:focus-visible {
+    --background: var(--kdc-color-sidebar-trigger-background-hover);
+}
+
+.sidebar__toggle-button--active {
+    --background: var(--kdc-color-sidebar-trigger-background-active);
+}

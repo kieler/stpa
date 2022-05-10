@@ -1,0 +1,187 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2021 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+ .options__section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.options__section:last-of-type {
+    margin-bottom: 0;
+}
+
+.options__heading {
+    margin: 0;
+    font-size: 1.12rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+/*********************************** BUTTON ***********************************/
+
+.options__button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 0 4px;
+}
+
+.options__icon-button {
+    --background: transparent;
+    box-sizing: border-box;
+    appearance: none;
+    border: none;
+    border-radius: var(--kdc-border-radius-default);
+    padding: 4px;
+
+    color: var(--kdc-color-sidebar-icon-primary);
+    background: var(--background);
+    transition: background var(--kdc-transition);
+    cursor: pointer;
+}
+
+.options__icon-button:hover {
+    --background: var(--kdc-color-sidebar-hover-background);
+}
+
+.options__button {
+    box-sizing: border-box;
+    appearance: none;
+    border: none;
+    border-radius: var(--kdc-border-radius-default);
+    padding: 6px 12px;
+
+    font-size: 1rem;
+    font-weight: 400;
+
+    box-shadow: none;
+    color: var(--kdc-color-sidebar-font-primary);
+    background: var(--kdc-color-sidebar-trigger-background-active);
+    transition: box-shadow var(--kdc-transition);
+    cursor: pointer;
+}
+
+.options__button:hover {
+    box-shadow: var(--kdc-sidebar-button-shadow);
+}
+
+/*********************************** INPUTS ***********************************/
+
+/* Group that renders children in a column */
+.options__column {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Group that renders children in a column and indents the children */
+.options__input-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Indent content except the legend inside an input group */
+.options__input-container > :not(legend) {
+    margin-left: 12px;
+}
+
+.options__separator {
+    display: block;
+    font-weight: 700;
+}
+
+.options__category {
+    display: flex;
+    flex-direction: column;
+    /* This should also have a gap just like .options__section. However, it
+    appears like the gap is not applied for details. Therefore, we use margin on the children. */
+}
+
+.options__category > summary {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.options__category > :not(summary) {
+    margin: 0 0 4px 12px;
+}
+
+.options__input {
+    margin: 0 4px 0 0;
+    vertical-align: baseline;
+}
+
+.options__text-field {
+    padding: 2px 4px;
+    font-size: 1rem;
+
+    border: 2px solid var(--kdc-color-sidebar-trigger-background-hover);
+    border-radius: var(--kdc-border-radius-default);
+    background: var(--kdc-color-sidebar-trigger-background-active);
+    color: var(--kdc-color-sidebar-font-primary);
+}
+
+.options__text-field:focus,
+.options__text-field:focus-visible {
+    /* 
+    Text Field should use their border as their focus indicator. Without "!important"
+    the rule for all inputs ".options__input:focus-visible" takes precedence when the
+    styles are applied.
+    */
+    outline: none !important;
+    border-color: var(--kdc-color-primary);
+}
+
+/* Don't show outlines when a user interacts with different options... */
+.options__input,
+.options__category > summary,
+.options__button,
+.options__icon-button {
+    outline: none;
+}
+
+/* ...only show an outline if the user interacts with the options using a keyboard */
+.options__input:focus-visible,
+.options__category > summary:focus-visible,
+.options__button:focus-visible,
+.options__icon-button:focus-visible {
+    /* Chromium has this thing where an outline is colored and white. This just colors it. */
+    --outline-size: 2px;
+    outline: var(--outline-size) solid var(--kdc-color-primary);
+    outline-offset: calc(-1 * var(--outline-size));
+}
+
+.options__selection {
+    padding: 4px 6px;
+
+    border: 2px solid var(--kdc-color-sidebar-trigger-background-hover);
+    border-radius: var(--kdc-border-radius-default);
+    background: var(--kdc-color-sidebar-trigger-background-active);
+    color: var(--kdc-color-sidebar-font-primary);
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.options__selection:focus {
+    outline: none;
+    border-color: var(--kdc-color-primary);
+}
+
+.options__hidden {
+    display: none;
+}

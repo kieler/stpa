@@ -42,10 +42,12 @@
   ],
   "dependencies": {
     "reflect-metadata": "^0.1.13",
+    "feather-icons": "^4.28.0",
     "sprotty": "~0.11.1",
     "sprotty-vscode-webview": "^0.2.0"
   },
   "devDependencies": {
+    "@types/feather-icons": "^4.7.0",
     "css-loader": "^6.5.1",
     "file-loader": "^6.2.0",
     "rimraf": "latest",
