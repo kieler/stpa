@@ -18,12 +18,12 @@
 import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph} from 'sprotty';
 import { injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE } from './stpa-model';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { inject } from 'inversify'
 import { collectAllChildren, flagConnectedElements, getSelectedNode } from './helper-methods';
 import { DISymbol } from './di.symbols';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from './options/render-options-registry';
+import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
 
 let selectedNode: SNode | undefined
 
@@ -147,6 +147,11 @@ export class CSNodeView extends RectangularNodeView {
     @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry
 
     render(node: SNode, context: RenderingContext): VNode {
+        // hides the control structure and/or relationship graph if the corresponding option is set to false
+        if (!this.renderOptionsRegistry.getValue(ShowCSOption) && (node.type == CS_NODE_TYPE || node.type == PARENT_TYPE && node.children.filter(child => child instanceof SNode)[0].type == CS_NODE_TYPE)
+                || !this.renderOptionsRegistry.getValue(ShowRelationshipGraphOption) && (node.type == STPA_NODE_TYPE || node.type == PARENT_TYPE && node.children.filter(child => child instanceof SNode)[0].type == STPA_NODE_TYPE)){
+            return <g></g>
+        }
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
         const printNode = colorStyle == "print"
