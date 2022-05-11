@@ -303,9 +303,11 @@ export class StpaValidator {
     private collectReferences(allElements: elementWithRefs[]): Set<string> {
         let refs = new Set<string>()
         for (const node of allElements) {
-            for (const ref of node.refs) {
-                if (ref.ref) {
-                    refs.add(ref.ref?.name)
+            if (node) {
+                for (const ref of node.refs) {
+                    if (ref.ref) {
+                        refs.add(ref.ref?.name)
+                    }
                 }
             }
         }
