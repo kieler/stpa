@@ -6,9 +6,10 @@ export const PARENT_TYPE= 'node:parent'
 export const CS_NODE_TYPE = 'node:cs'
 export const EDGE_TYPE = 'edge'
 export const CS_EDGE_TYPE = 'edge:controlStructure'
+export const STPA_EDGE_TYPE = 'edge:stpa'
 
 /**
- * Node representing a STPA component.
+ * Node representing an STPA component.
  */
 export class STPANode extends SNode {
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
@@ -17,6 +18,14 @@ export class STPANode extends SNode {
     aspect: STPAAspect = STPAAspect.UNDEFINED
     description: string = ""
     hierarchyLvl: number = 0
+    connected?: boolean
+}
+
+/**
+ * Edge representing an edge in the relationship graph.
+ */
+ export class STPAEdge extends SEdge {
+    connected?: boolean
 }
 
 /**

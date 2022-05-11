@@ -8,6 +8,14 @@ export interface STPANode extends SNode {
     aspect: STPAAspect
     description: string
     hierarchyLvl: number
+    connected?: boolean
+}
+
+/**
+ * Edge representing an edge in the relationship graph.
+ */
+ export interface STPAEdge extends SEdge {
+    connected?: boolean
 }
 
 /**

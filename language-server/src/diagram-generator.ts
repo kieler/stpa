@@ -1,11 +1,11 @@
 import { AstNode } from 'langium';
 import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty'
-import { SModelRoot, SLabel, SEdge, SModelElement } from 'sprotty-protocol';
+import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
 import { isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint, 
     isSystemConstraint, isUCA, Model, Node } from './generated/ast';
 import { StpaOptions } from './stpa-options';
-import { CSEdge, CSNode, STPANode } from './stpa-interfaces';
-import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE } from './stpa-model'
+import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
+import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE } from './stpa-model'
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
 
@@ -263,7 +263,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             let targetId = idCache.getId(target)
             const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined)
             if (sourceId && targetId) {
-                const e = this.generateSEdge(edgeId, sourceId, targetId, '', args)
+                const e = this.generateSTPAEdge(edgeId, sourceId, targetId, '', args)
                 elements.push(e)
             }
         }
@@ -271,15 +271,15 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     }
 
     /**
-     * Generates a single SEdge based on the gven arguments.
+     * Generates a single STPAEdge based on the given arguments.
      * @param edgeId The ID of the edge that should be created.
      * @param sourceId The ID of the source of the edge.
      * @param targetId The ID of the target of the edge.
      * @param label The label of the edge.
      * @param param4 GeneratorContext of the STPA model.
-     * @returns A SEdge.
+     * @returns An STPAEdge.
      */
-    private generateSEdge(edgeId: string, sourceId: string, targetId: string, label:string, { idCache }: GeneratorContext<Model>): SEdge {
+    private generateSTPAEdge(edgeId: string, sourceId: string, targetId: string, label:string, { idCache }: GeneratorContext<Model>): STPAEdge {
         let children: SModelElement[] = []
         if (label != '') {
             children = [
@@ -291,7 +291,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             ]
         }
         return {
-            type: 'edge',
+            type: STPA_EDGE_TYPE,
             id: edgeId,
             sourceId: sourceId,
             targetId: targetId,
