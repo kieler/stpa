@@ -225,7 +225,7 @@
 }
 
 .parent-node {
-    fill-opacity: 0.3;
+    fill-opacity: 0.1;
 }
 
 .sprotty-node.selected {
@@ -234,7 +234,7 @@
 }
 
 .hidden {
-    opacity: 0.3;
+    opacity: 0.4;
 }
 
 body[class='vscode-light'] .sprotty-label {
