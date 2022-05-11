@@ -1,18 +1,19 @@
-/********************************************************************************
- * Copyright (c) 2018-2021 TypeFox and others.
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2021 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
  *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v. 2.0 which is available at
+ * terms of the Eclipse Public License 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0.
  *
- * This Source Code may also be made available under the following Secondary
- * Licenses when the conditions for such availability set forth in the Eclipse
- * Public License v. 2.0 are satisfied: GNU General Public License, version 2
- * with the GNU Classpath Exception which is available at
- * https://www.gnu.org/software/classpath/license.html.
- *
- * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- ********************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0
+ */
 
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -20,7 +21,7 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
-import { Action, ActionMessage, RequestModelAction, JsonMap } from 'sprotty-protocol'
+import { ActionMessage, RequestModelAction, JsonMap } from 'sprotty-protocol'
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
  
@@ -36,42 +37,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 const lC = this.languageClient;
                 if (lC)
                     lC.sendNotification('hierarchy')
-            }));
-        // command to set the colors in the STPA diagram to colorful
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color.colorful', (...commandArgs: any) => {
-                const activeWebview = this.findActiveWebview();
-                if (activeWebview)
-                    activeWebview.dispatch({
-                        kind: 'colorful'
-                    } as Action);
-            }));
-        // command to set the colors in the STPA diagram to print style
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color.printStyle', (...commandArgs: any) => {
-                const activeWebview = this.findActiveWebview();
-                if (activeWebview)
-                    activeWebview.dispatch({
-                        kind: 'printStyle'
-                    } as Action);
-            }));
-        // command to set the colors in the STPA diagram to standard
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.color.standard', (...commandArgs: any) => {
-                const activeWebview = this.findActiveWebview();
-                if (activeWebview)
-                    activeWebview.dispatch({
-                        kind: 'standardColor'
-                    } as Action);
-            }));
-        // command to change the forms in the STPA diagram
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.forms', (...commandArgs: any) => {
-                const activeWebview = this.findActiveWebview();
-                if (activeWebview)
-                    activeWebview.dispatch({
-                        kind: 'forms'
-                    } as Action);
             }));
     }
 

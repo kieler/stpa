@@ -1,18 +1,19 @@
-/********************************************************************************
- * Copyright (c) 2020 TypeFox and others.
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2021 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
  *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v. 2.0 which is available at
+ * terms of the Eclipse Public License 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0.
  *
- * This Source Code may also be made available under the following Secondary
- * Licenses when the conditions for such availability set forth in the Eclipse
- * Public License v. 2.0 are satisfied: GNU General Public License, version 2
- * with the GNU Classpath Exception which is available at
- * https://www.gnu.org/software/classpath/license.html.
- *
- * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- ********************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0
+ */
 
 import '../css/diagram.css';
 import 'sprotty/css/sprotty.css';
@@ -21,27 +22,29 @@ import { Container, ContainerModule } from 'inversify';
 import {
     configureModelElement, ConsoleLogger, HtmlRoot,
     HtmlRootView, LogLevel, overrideViewerOptions, PreRenderedElement,
-    PreRenderedView, SGraphView, SLabelView,
-    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge
+    PreRenderedView, SLabelView,
+    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge, ModelViewer
 } from 'sprotty';
-import { PolylineArrowEdgeView, STPANodeView, CSNodeView } from './views';
-import { EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE} from './stpa-model';
-import { DiagramOptions } from './diagram-options';
+import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView} from './views';
+import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE} from './stpa-model';
+import { sidebarModule } from './sidebar';
+import { optionsModule } from './options/options-module';
+import { StpaModelViewer } from './model-viewer';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
-    bind(DiagramOptions).toSelf().inSingletonScope();
+    rebind(ModelViewer).to(StpaModelViewer).inSingletonScope()
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
-    configureModelElement(context, 'graph', SGraph, SGraphView);
+    configureModelElement(context, 'graph', SGraph, STPAGraphView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
     configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
     configureModelElement(context, 'label', SLabel, SLabelView);
     configureModelElement(context, 'label:xref', SLabel, SLabelView);
-    configureModelElement(context, EDGE_TYPE, SEdge, PolylineArrowEdgeView);
+    configureModelElement(context, STPA_EDGE_TYPE, SEdge, PolylineArrowEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
     configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
@@ -50,7 +53,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
 export function createSTPADiagramContainer(widgetId: string): Container {
     const container = new Container();
     loadDefaultModules(container);
-    container.load(stpaDiagramModule);
+    container.load(stpaDiagramModule, sidebarModule, optionsModule);
     overrideViewerOptions(container, {
         needsClientLayout: true,
         needsServerLayout: true,

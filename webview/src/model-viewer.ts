@@ -15,27 +15,17 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-/**
- * Contains options regarding the layout of the STPA graph.
- */
-export class StpaOptions {
-    // true: subcomponents are contained in their parents
-    // false: subcomponents have edges to their parents
-    private hierarchy: boolean
+import { inject, postConstruct } from "inversify";
+import { ModelViewer } from "sprotty";
+import { DISymbol } from "./di.symbols";
 
-    constructor(){
-        this.hierarchy = true
-    }
+export class StpaModelViewer extends ModelViewer {
+    // @ts-ignore
+    @inject(DISymbol.Sidebar) private sidebar: unknown;
 
-    /**
-     * Toggles the hierarchy option.
-     */
-    toggleHierarchy() {
-        this.hierarchy = !this.hierarchy
-    }
-
-    getHierarchy() {
-        return this.hierarchy
+    @postConstruct()
+    init(): void {
+        
     }
 
 }
