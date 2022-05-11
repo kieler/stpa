@@ -1,8 +1,7 @@
-import { AstNode, Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
+import { Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ContConstraint, Hazard, HazardList, isContConstraint, isGraph, isHazard, isLoss, isLossScenario, isNode, 
-    isResponsibility, isSafetyConstraint, isSystemConstraint, isUCA, isVariable, isCommand, Loss, Model, Node, 
-    Responsibility, StpaAstType, SystemConstraint } from './generated/ast';
+import { ContConstraint, Hazard, HazardList, Loss, Model, Node, 
+    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel } from './generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
 
@@ -31,6 +30,9 @@ export class StpaValidationRegistry extends ValidationRegistry {
     }
 }
 
+type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command
+type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint
+
 /**
  * Implementation of custom validations.
  */
@@ -43,21 +45,41 @@ export class StpaValidator {
      */
     checkModel(model: Model, accept: ValidationAcceptor): void {
         this.checkAllAspectsPresent(model, accept)
-        // collect all defined elements that have an identifier in order to check the uniqueness
-        let allNodes: AstNode[] =  [
+
+        const hazards = collectElementsWithSubComps(model.hazards) as Hazard[]
+        const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[]
+        const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1)
+        const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1)
+        
+        // collect elements that have an identifier and should be referenced
+        let allElements: elementWithName[] = [
             ...model.losses,
-            ...collectElementsWithSubComps(model.hazards),
-            ...collectElementsWithSubComps(model.systemLevelConstraints),
-            //...model.controlStructure?.edges,
-            ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1),
-            ...model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1),
-            ...model.controllerConstraints,
-            ...model.scenarios,
-            ...model.safetyCons
+            ...hazards,
+            ...sysCons,
+            ...ucas,
         ]
-        // causes an error when stated with the others above
-        allNodes = allNodes.concat(model.controlStructure?.nodes)
-        this.checkIDsAreUnique(allNodes, accept)
+
+        // collect all elements that have a reference list
+        let elementsWithRefs: elementWithRefs[] = [
+            ...hazards,
+            ...sysCons,
+            ...responsibilities,
+            ...ucas.map(uca => uca.list),
+            ...model.controllerConstraints,
+            ...model.scenarios.map(scenario => scenario.list)
+        ]
+        // get all reference names
+        const references = this.collectReferences(elementsWithRefs)
+        // check if all elements are referenced at least once
+        for (const node of allElements) {
+            if (!references.has(node.name)) {
+                accept('warning', 'This element is nowhere referenced', { node: node, property: 'name' });
+            }
+        }
+
+        // add missing elements that have an ID to check uniques of all IDs
+        allElements = allElements.concat(responsibilities, model.controllerConstraints, model.scenarios, model.safetyCons, model.controlStructure?.nodes/*, model.controlStructure?.edges*/)
+        this.checkIDsAreUnique(allElements, accept)
     }
 
     /**
@@ -71,6 +93,14 @@ export class StpaValidator {
             this.checkReferencedLossesOfSubHazard(hazard.refs, hazard.subComps, accept)
         }
         this.checkReferenceListForDuplicates(hazard, hazard.refs, accept)
+        // a top-level hazard should reference loss(es)
+        if (isModel(hazard.$container) && hazard.refs.length == 0) {
+            const range = hazard.$cstNode?.range
+            if (range) {
+                range.start.character = range.end.character-1
+            }
+            accept('warning', 'A hazard should reference loss(es)', { node: hazard, range: range });
+        }
     }
 
     /**
@@ -101,8 +131,8 @@ export class StpaValidator {
      */
     checkNode(node: Node, accept: ValidationAcceptor): void {
         this.checkIDsAreUnique(node.variables, accept)
-        this.checkIDsAreUnique(node.actions, accept)
-        this.checkIDsAreUnique(node.feedbacks, accept)
+        this.checkIDsAreUnique(node.actions.map(ve => ve.comms).flat(1), accept)
+        this.checkIDsAreUnique(node.feedbacks.map(ve => ve.comms).flat(1), accept)
     }
 
     /**
@@ -125,23 +155,18 @@ export class StpaValidator {
 
     /**
      * Controls whether the ids of the given elements are unique.
-     * @param allNodes The elements which IDs should be checked.
+     * @param allElements The elements which IDs should be checked.
      * @param accept 
      */
-    private checkIDsAreUnique(allNodes: AstNode[], accept: ValidationAcceptor): void {
+    private checkIDsAreUnique(allElements: elementWithName[], accept: ValidationAcceptor): void {
         const names = new Set()
-        for (const node of allNodes) {
-            // needs to be checked in order to get the name
-            if (isLoss(node)|| isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node) 
-                    || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isNode(node) /* || isEdge(node) */ 
-                    || isCommand(node) || isGraph(node) || isVariable(node)){
-                let name = node.name
-                if (name != "") {
-                    if(names.has(name)) {
-                        accept('error', 'All identifiers must be unique.', { node: node, property: 'name' });
-                    } else {
-                        names.add(name)
-                    }
+        for (const node of allElements) {
+            let name = node?.name
+            if (name != "") {
+                if(names.has(name)) {
+                    accept('error', 'All identifiers must be unique.', { node: node, property: 'name' });
+                } else {
+                    names.add(name)
                 }
             }
         }
@@ -211,14 +236,13 @@ export class StpaValidator {
      * @param list The list of the references to check.
      * @param accept 
      */
-     private checkReferenceListForDuplicates(main: Hazard|ContConstraint|Responsibility|HazardList|SystemConstraint, list: Reference<AstNode>[], accept: ValidationAcceptor): void {
+     private checkReferenceListForDuplicates(main: elementWithRefs, list: Reference<elementWithName>[], accept: ValidationAcceptor): void {
         const names = new Set()
         for (let i = 0; i < list.length; i++) {
             const ref = list[i]
             const element = ref.ref
             // needs to be checked in order to get the name
-            if (isLoss(element)|| isHazard(element) || isSystemConstraint(element) || isContConstraint(element) 
-                || isLossScenario(element) || isSafetyConstraint(element) || isResponsibility(element) || isUCA(element)){
+            if (element){
                 let name = element.name
                 if (name != "") {
                     if(names.has(name)) {
@@ -269,6 +293,25 @@ export class StpaValidator {
                 }
             }
         }
+    }
+
+    /**
+     * Collects all IDs that are referenced by any element.
+     * @param allElements All Elements with a reference list.
+     * @returns A set with all referenced IDs.
+     */
+    private collectReferences(allElements: elementWithRefs[]): Set<string> {
+        let refs = new Set<string>()
+        for (const node of allElements) {
+            if (node) {
+                for (const ref of node.refs) {
+                    if (ref.ref) {
+                        refs.add(ref.ref?.name)
+                    }
+                }
+            }
+        }
+        return refs
     }
 
 }
