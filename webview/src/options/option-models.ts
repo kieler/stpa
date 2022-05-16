@@ -30,6 +30,31 @@ export interface ChoiceRenderOption extends RenderOption {
 }
 
 /**
+ * Holds an option defined by the diagram synthesis.
+ * This is the counterpart to the language server implementation of the SynthesisOption.
+ */
+ export interface SynthesisOption extends RenderOption {
+    values: any[]
+    category?: SynthesisOption
+}
+
+/**
+ * This is just a SynthesisOption with the ability to represent its current value.
+ */
+export interface ValuedSynthesisOption {
+    synthesisOption: SynthesisOption
+    currentValue: any
+}
+
+/**
+ * A SynthesisOption with the RANGE type.
+ */
+export interface RangeOption extends SynthesisOption {
+    range: Range
+    stepSize: number
+}
+
+/**
  * The different types a SynthesisOption can have.
  */
 export enum TransformationOptionType {

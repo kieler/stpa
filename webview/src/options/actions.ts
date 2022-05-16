@@ -16,6 +16,7 @@
  */
 
 import { Action } from "sprotty-protocol";
+import { SynthesisOption, ValuedSynthesisOption } from "./option-models";
 
 /** Change the value of one or multiple render options. */
 export interface SetRenderOptionAction extends Action {
@@ -56,5 +57,53 @@ export namespace ResetRenderOptionsAction {
 
     export function isThisAction(action: Action): action is ResetRenderOptionsAction {
         return action.kind === ResetRenderOptionsAction.KIND;
+    }
+}
+
+/** Request message from the server to update the diagram options widget on the client. */
+export interface UpdateOptionsAction extends Action {
+    kind: typeof UpdateOptionsAction.KIND
+    valuedSynthesisOptions: ValuedSynthesisOption[]
+    clientId: string
+}
+
+export namespace UpdateOptionsAction {
+    export const KIND = "updateOptions"
+
+    export function create(
+        valuedSynthesisOptions: ValuedSynthesisOption[],
+        clientId: string,
+    ): UpdateOptionsAction {
+        return {
+            kind: KIND,
+            valuedSynthesisOptions,
+            clientId,
+        }
+    }
+
+    export function isThisAction(action: Action): action is UpdateOptionsAction {
+        return action.kind === UpdateOptionsAction.KIND;
+    }
+}
+
+
+/** Change the value of one or multiple synthesis options. */
+export interface SetSynthesisOptionsAction extends Action {
+    kind: typeof SetSynthesisOptionsAction.KIND
+    options: SynthesisOption[]
+}
+
+export namespace SetSynthesisOptionsAction {
+    export const KIND = "setSynthesisOptions"
+
+    export function create(options: SynthesisOption[]): SetSynthesisOptionsAction {
+        return {
+            kind: KIND,
+            options,
+        }
+    }
+
+    export function isThisAction(action: Action): action is SetSynthesisOptionsAction {
+        return action.kind === SetSynthesisOptionsAction.KIND;
     }
 }
