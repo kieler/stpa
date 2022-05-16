@@ -15,17 +15,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { inject, postConstruct } from "inversify";
-import { ModelViewer } from "sprotty";
-import { DISymbol } from "./di.symbols";
+import { injectable } from "inversify";
+import { ActionMessage } from "sprotty-protocol";
+import { VscodeLspEditDiagramServer } from "sprotty-vscode-webview/lib/lsp/editing";
 
-export class StpaModelViewer extends ModelViewer {
-    // @ts-ignore
-    @inject(DISymbol.Sidebar) private sidebar: unknown;
+@injectable()
+export class StpaDiagramServer extends VscodeLspEditDiagramServer {
 
-    @postConstruct()
-    init(): void {
-        
+    protected sendMessage(message: ActionMessage): void {
+        console.log("send to server: " + message.action.kind)
+        super.sendMessage(message)
     }
 
 }

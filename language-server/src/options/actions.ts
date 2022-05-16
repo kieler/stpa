@@ -18,48 +18,6 @@
 import { Action } from "sprotty-protocol";
 import { SynthesisOption, ValuedSynthesisOption } from "./option-models";
 
-/** Change the value of one or multiple render options. */
-export interface SetRenderOptionAction extends Action {
-    kind: typeof SetRenderOptionAction.KIND
-    id: string
-    value: unknown
-}
-
-export namespace SetRenderOptionAction {
-    export const KIND = "setRenderOption"
-
-    export function create(id: string, value: unknown): SetRenderOptionAction {
-        return {
-            kind: KIND,
-            id,
-            value
-        }
-    }
-
-    export function isThisAction(action: Action): action is SetRenderOptionAction {
-        return action.kind === SetRenderOptionAction.KIND;
-    }
-}
-
-/** Resets all render options to default. */
-export interface ResetRenderOptionsAction extends Action {
-    kind: typeof ResetRenderOptionsAction.KIND
-}
-
-export namespace ResetRenderOptionsAction {
-    export const KIND = "resetRenderOptions"
-
-    export function create(): ResetRenderOptionsAction {
-        return {
-            kind: KIND,
-        }
-    }
-
-    export function isThisAction(action: Action): action is ResetRenderOptionsAction {
-        return action.kind === ResetRenderOptionsAction.KIND;
-    }
-}
-
 /** Request message from the server to update the diagram options widget on the client. */
 export interface UpdateOptionsAction extends Action {
     kind: typeof UpdateOptionsAction.KIND

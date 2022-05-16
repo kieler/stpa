@@ -31,7 +31,6 @@ export interface ChoiceRenderOption extends RenderOption {
 
 /**
  * Holds an option defined by the diagram synthesis.
- * This is the counterpart to the language server implementation of the SynthesisOption.
  */
  export interface SynthesisOption extends RenderOption {
     values: any[]
