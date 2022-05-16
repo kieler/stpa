@@ -21,23 +21,137 @@ import { VNode } from "snabbdom";
 import { html, IActionDispatcher, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import {
     SetRenderOptionAction,
+    SetSynthesisOptionsAction,
 } from "./actions";
 import {
-    CheckOption, ChoiceOption,
+    CategoryOption,
+    CheckOption, ChoiceOption, RangeOption, SeparatorOption, TextOption,
 } from "./components/option-inputs";
 import {
     ChoiceRenderOption,
     RenderOption,
+    RangeOption as RangeOptionData,
+    SynthesisOption,
     TransformationOptionType
 } from "./option-models";
 
+interface AllOptions {
+    synthesisOptions: SynthesisOption[];
+}
 
 /** Renderer that is capable of rendering different option models to jsx. */
 @injectable()
 export class OptionsRenderer {
     @inject(TYPES.IActionDispatcher) actionDispatcher: IActionDispatcher;
 
-    /** Renders render options that are stored in the client. An example would be "show constraints" */
+    /**
+     * Renders all diagram options that are provided by the server. This includes
+     * at the moment only the synthesis options.
+     */
+    renderServerOptions(options: AllOptions): VNode {
+        return (
+            <div class-options="true">
+                {options.synthesisOptions.length === 0 ? (
+                    ""
+                ) : (
+                    <div class-options__section="true">
+                        <h5 class-options__heading="true">Synthesis Options</h5>
+                        {this.renderSynthesisOptions(options.synthesisOptions, null)}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    /**
+     * Renders all synthesis options that are part of a given category. Renders all
+     * synthesisOptions that belong to no category if the category is null.
+     */
+    private renderSynthesisOptions(synthesisOptions: SynthesisOption[], category: SynthesisOption | null): (VNode | "")[] | "" {
+        return synthesisOptions
+            .filter((option) => option.category?.id === category?.id)
+            .map((option) => {
+                switch (option.type) {
+                    case TransformationOptionType.CHECK:
+                        return (
+                            <CheckOption
+                                key={option.id}
+                                id={option.id}
+                                name={option.name}
+                                value={option.currentValue}
+                                description={option.description}
+                                onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                            />
+                        );
+                    case TransformationOptionType.CHOICE:
+                        return (
+                            <ChoiceOption
+                                key={option.id}
+                                id={option.id}
+                                name={option.name}
+                                value={option.currentValue}
+                                availableValues={option.values}
+                                description={option.description}
+                                onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                            />
+                        );
+                    case TransformationOptionType.RANGE:
+                        return (
+                            <RangeOption
+                                key={option.id}
+                                id={option.id}
+                                name={option.name}
+                                value={option.currentValue}
+                                minValue={(option as RangeOptionData).range.first}
+                                maxValue={(option as RangeOptionData).range.second}
+                                stepSize={(option as RangeOptionData).stepSize}
+                                description={option.description}
+                                onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                            />
+                        );
+                    case TransformationOptionType.TEXT:
+                        return (
+                            <TextOption
+                                key={option.id}
+                                id={option.id}
+                                name={option.name}
+                                value={option.currentValue}
+                                description={option.description}
+                                onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                            />
+                        );
+                    case TransformationOptionType.SEPARATOR:
+                        return <SeparatorOption key={option.id} name={option.name} />;
+                    case TransformationOptionType.CATEGORY:
+                        return (
+                            <CategoryOption
+                                key={option.id}
+                                id={option.id}
+                                name={option.name}
+                                value={option.currentValue}
+                                description={option.description}
+                                onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                            >
+                                {/* Skip rendering the children if the category is closed */}
+                                {!option.currentValue
+                                    ? ""
+                                    : this.renderSynthesisOptions(synthesisOptions, option)}
+                            </CategoryOption>
+                        );
+                    default:
+                        console.error("Unsupported option type for option:", option.name);
+                        return "";
+                }
+            });
+    }
+
+    private handleSynthesisOptionChange(option: SynthesisOption, newValue: any) {
+        this.actionDispatcher.dispatch(
+            SetSynthesisOptionsAction.create([{ ...option, currentValue: newValue }])
+        );
+    }
+
+    /** Renders render options that are stored in the client. */
     renderRenderOptions(renderOptions: RenderOption[]): (VNode | "")[] | "" {
         if (renderOptions.length === 0) return "";
 

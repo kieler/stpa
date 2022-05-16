@@ -16,19 +16,26 @@
  */
 
 import { ContainerModule } from "inversify";
-import { configureActionHandler } from "sprotty";
+import { configureActionHandler, TYPES } from "sprotty";
 import { DISymbol } from "../di.symbols";
 import { SetRenderOptionAction, ResetRenderOptionsAction } from "./actions";
 import { OptionsRenderer } from "./options-renderer";
 import { GeneralPanel } from "./general-panel";
 import { RenderOptionsRegistry } from "./render-options-registry";
+import { OptionsRegistry } from "./options-registry";
+import { OptionsPanel } from "./options-panel";
 
 /** Module that configures option related panels and registries. */
 export const optionsModule = new ContainerModule((bind, _, isBound) => {
     bind(GeneralPanel).toSelf().inSingletonScope();
     bind(DISymbol.SidebarPanel).toService(GeneralPanel);
 
+    bind(OptionsPanel).toSelf().inSingletonScope();
+    bind(DISymbol.SidebarPanel).toService(OptionsPanel);
+
     bind(DISymbol.OptionsRenderer).to(OptionsRenderer);
+    bind(DISymbol.OptionsRegistry).to(OptionsRegistry).inSingletonScope();
+    bind(TYPES.IActionHandlerInitializer).toService(DISymbol.OptionsRegistry);
 
     bind(DISymbol.RenderOptionsRegistry).to(RenderOptionsRegistry).inSingletonScope();
 

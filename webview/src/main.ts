@@ -18,14 +18,21 @@
 import 'reflect-metadata';
 import 'sprotty-vscode-webview/css/sprotty-vscode.css';
 
-import { SprottyDiagramIdentifier } from 'sprotty-vscode-webview';
+import { SprottyDiagramIdentifier, VscodeDiagramServer } from 'sprotty-vscode-webview';
 import { createSTPADiagramContainer } from './di.config';
 import { SprottyLspEditStarter } from 'sprotty-vscode-webview/lib/lsp/editing'
+import { Container } from 'inversify';
+import { StpaDiagramServer } from './diagram-server';
 
 export class StpaSprottyStarter extends SprottyLspEditStarter {
 
     createContainer(diagramIdentifier: SprottyDiagramIdentifier) {
         return createSTPADiagramContainer(diagramIdentifier.clientId);
+    }
+
+    protected addVscodeBindings(container: Container, diagramIdentifier: SprottyDiagramIdentifier): void {
+        super.addVscodeBindings(container, diagramIdentifier)
+        container.rebind(VscodeDiagramServer).to(StpaDiagramServer);
     }
 }
 
