@@ -20,19 +20,19 @@ import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty'
 import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
 import { isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint, 
     isSystemConstraint, isUCA, Model, Node } from './generated/ast';
-import { StpaOptions } from './stpa-options';
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
 import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE } from './stpa-model'
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
+import { StpaSynthesisOptions } from './options/synthesis-options';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
-    protected readonly options: StpaOptions
+    protected readonly options: StpaSynthesisOptions
 
     constructor(services: StpaServices) {
         super(services);
-        this.options = services.options.Options
+        this.options = services.options.StpaSynthesisOptions
     }
 
     /**

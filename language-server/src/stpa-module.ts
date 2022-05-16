@@ -23,11 +23,11 @@ import { StpaDiagramGenerator } from './diagram-generator';
 import { StpaGeneratedModule, StpaGeneratedSharedModule } from './generated/module';
 import { StpaLayoutConfigurator } from './layout-config';
 import { StpaDiagramServer } from './stpa-diagramServer';
-import { StpaOptions } from './stpa-options';
 import { StpaScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 import { URI } from 'vscode-uri';
 import { DiagramOptions } from 'sprotty-protocol'
+import { StpaSynthesisOptions } from './options/synthesis-options';
 
 
 /**
@@ -46,7 +46,7 @@ export type StpaAddedServices = {
         LayoutConfigurator: ILayoutConfigurator
     },
     options: {
-        Options: StpaOptions
+        StpaSynthesisOptions: StpaSynthesisOptions
     }
 }
 
@@ -80,7 +80,7 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
         LayoutConfigurator: () => new StpaLayoutConfigurator
     },
     options: {
-        Options: () => new StpaOptions()
+        StpaSynthesisOptions: () => new StpaSynthesisOptions()
     }
 };
 
@@ -93,13 +93,13 @@ export const stpaDiagramServerFactory =
         if (!sourceUri) {
             throw new Error("Missing 'sourceUri' option in request.");
         }
-        const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as LangiumSprottyServices;
+        const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as StpaServices;
         if (!language.diagram) {
             throw new Error(`The '${language.LanguageMetaData.languageId}' language does not support diagrams.`);
         }
         return new StpaDiagramServer(async action => {
             connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
-        }, language.diagram);
+        }, language.diagram, language.options.StpaSynthesisOptions, clientId, options);
     };
 };
 
