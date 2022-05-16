@@ -16,12 +16,14 @@
  */
 
 import { Action } from "sprotty-protocol";
+import { Template } from "../templates/templates";
 import { SynthesisOption, ValuedSynthesisOption } from "./option-models";
 
 /** Request message from the server to update the diagram options widget on the client. */
 export interface UpdateOptionsAction extends Action {
     kind: typeof UpdateOptionsAction.KIND
     valuedSynthesisOptions: ValuedSynthesisOption[]
+    templates: Template[]
     clientId: string
 }
 
@@ -30,11 +32,13 @@ export namespace UpdateOptionsAction {
 
     export function create(
         valuedSynthesisOptions: ValuedSynthesisOption[],
+        templates: Template[],
         clientId: string,
     ): UpdateOptionsAction {
         return {
             kind: KIND,
             valuedSynthesisOptions,
+            templates,
             clientId,
         }
     }

@@ -32,7 +32,8 @@ import {
     RenderOption,
     RangeOption as RangeOptionData,
     SynthesisOption,
-    TransformationOptionType
+    TransformationOptionType,
+    Template
 } from "./option-models";
 
 interface AllOptions {
@@ -149,6 +150,45 @@ export class OptionsRenderer {
         this.actionDispatcher.dispatch(
             SetSynthesisOptionsAction.create([{ ...option, currentValue: newValue }])
         );
+    }
+
+    renderTemplates(templates: Template[]): (VNode | "")[] | "" {
+        if (templates.length === 0) return "";
+
+        /* const test = <svg 
+        style={{
+          width: '24',
+          height: '24',
+          fill: 'none',
+          stroke: 'currentColor',
+          strokeWidth: '2',
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        }}
+        
+        props={{innerHTML: "<polyline points=\"16 18 22 12 16 6\"></polyline>"}}
+      ></svg>
+        return templates.map(template => 
+            <g>
+                {test}
+            </g>); */
+
+        //const polyline = "<polyline points=\"16 18 22 12 16 6\"></polyline>";
+        return templates.map(template =>
+            <svg 
+                style={{
+             /*    width: '24',
+                height: '24', */
+                fill: 'blue',
+                stroke: 'currentColor',
+                strokeWidth: '2',
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round'
+                }}
+                
+                props={{innerHTML: template.svg}}
+            ></svg>
+            );
     }
 
     /** Renders render options that are stored in the client. */

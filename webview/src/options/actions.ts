@@ -16,7 +16,7 @@
  */
 
 import { Action } from "sprotty-protocol";
-import { SynthesisOption, ValuedSynthesisOption } from "./option-models";
+import { SynthesisOption, Template, ValuedSynthesisOption } from "./option-models";
 
 /** Change the value of one or multiple render options. */
 export interface SetRenderOptionAction extends Action {
@@ -64,6 +64,7 @@ export namespace ResetRenderOptionsAction {
 export interface UpdateOptionsAction extends Action {
     kind: typeof UpdateOptionsAction.KIND
     valuedSynthesisOptions: ValuedSynthesisOption[]
+    templates: Template[]
     clientId: string
 }
 
@@ -72,11 +73,13 @@ export namespace UpdateOptionsAction {
 
     export function create(
         valuedSynthesisOptions: ValuedSynthesisOption[],
+        templates: Template[],
         clientId: string,
     ): UpdateOptionsAction {
         return {
             kind: KIND,
             valuedSynthesisOptions,
+            templates,
             clientId,
         }
     }

@@ -24,6 +24,7 @@ import { GeneralPanel } from "./general-panel";
 import { RenderOptionsRegistry } from "./render-options-registry";
 import { OptionsRegistry } from "./options-registry";
 import { OptionsPanel } from "./options-panel";
+import { TemplatePanel } from "../template/template-panel";
 
 /** Module that configures option related panels and registries. */
 export const optionsModule = new ContainerModule((bind, _, isBound) => {
@@ -32,6 +33,9 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
 
     bind(OptionsPanel).toSelf().inSingletonScope();
     bind(DISymbol.SidebarPanel).toService(OptionsPanel);
+
+    bind(TemplatePanel).toSelf().inSingletonScope();
+    bind(DISymbol.SidebarPanel).toService(TemplatePanel);
 
     bind(DISymbol.OptionsRenderer).to(OptionsRenderer);
     bind(DISymbol.OptionsRegistry).to(OptionsRegistry).inSingletonScope();

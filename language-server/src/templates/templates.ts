@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2022 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,14 +15,15 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-/** DI Symbols for Services provided by the STPA-DSL DI container. */
-export const DISymbol = {
-    Sidebar: Symbol("Sidebar"),
-    SidebarPanel: Symbol("SidebarPanel"),
-    SidebarPanelRegistry: Symbol("SidebarPanelRegistry"),
 
-    OptionsRenderer: Symbol("OptionsRenderer"),
-    OptionsRegistry: Symbol("OptionsRegistry"),
-    RenderOptionsRegistry: Symbol("RenderOptionsRegistry"),
-    TemplateRegistry: Symbol("TemplateRegistry"),
-};
+
+export interface Template {
+    svg: string;
+    code: string;
+}
+
+
+export class TestTemplate implements Template {
+    svg: string = "<rect width=\"50\" height=\"20\"></rect>";
+    code: string = 'testString';
+}

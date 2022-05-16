@@ -24,7 +24,7 @@ import {
     UpdateOptionsAction,
 } from "./actions";
 import {
-    SynthesisOption,
+    SynthesisOption, Template,
 } from "./option-models";
 import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
 
@@ -39,6 +39,7 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
 
     private _clientId = "";
     private _synthesisOptions: SynthesisOption[] = [];
+    private _templates: Template[] = [];
 
     get clientId(): string {
         return this._clientId;
@@ -48,11 +49,19 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
         return this._synthesisOptions;
     }
 
+    get templates(): Template[] {
+        return this._templates;
+    }
+
     /** Returns `true` when the registry contains options and is therefore not empty. */
     hasOptions(): boolean {
         return (
             this._synthesisOptions.length !== 0
         );
+    }
+
+    hasTemplateOptions(): boolean {
+        return this._templates.length !== 0;
     }
 
     initialize(registry: ActionHandlerRegistry): void {
@@ -78,7 +87,7 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
                 currentValue:
                     valuedOption.currentValue ?? valuedOption.synthesisOption.initialValue,
             }));
-
+        this._templates = action.templates;
         this.notifyListeners();
     }
 

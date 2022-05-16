@@ -81,3 +81,8 @@ export interface Pair<K, V> {
     k: K
     v: V
 }
+
+export interface Template {
+    svg: string;
+    code: string;
+}
