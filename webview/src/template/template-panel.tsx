@@ -23,21 +23,22 @@ import { SidebarPanel } from "../sidebar";
 import { DISymbol } from "../di.symbols";
 import { OptionsRenderer } from "../options/options-renderer";
 import { FeatherIcon } from "../feather-icons-snabbdom/feather-icons-snabbdom";
-import { OptionsRegistry } from "../options/options-registry";
+import { TemplateRegistry } from "./template-registry";
 
 /** Sidebar panel that displays server provided STPA-DSL templates.  */
 @injectable()
 export class TemplatePanel extends SidebarPanel {
 
-    @inject(DISymbol.OptionsRegistry) private optionsRegistry: OptionsRegistry;
+    @inject(DISymbol.TemplateRegistry) private tempRegistry: TemplateRegistry;
     @inject(DISymbol.OptionsRenderer) private optionsRenderer: OptionsRenderer;
 
     @postConstruct()
     init(): void {
-        this.optionsRegistry.onChange(() => this.update());
+        this.tempRegistry.onChange(() => this.update());
     }
 
     get id(): string {
+        console.log(this.tempRegistry);
         return 'template-panel';
     }
 
@@ -50,8 +51,8 @@ export class TemplatePanel extends SidebarPanel {
     }
 
     render(): VNode {
-        return this.optionsRegistry.hasTemplateOptions() ? (
-            this.optionsRenderer.renderTemplates(this.optionsRegistry.templates)
+        return this.tempRegistry.hasTemplateOptions() ? (
+            this.optionsRenderer.renderTemplates(this.tempRegistry.templates)
         ) : (
             <span>No templates provided by the diagram server.</span>
         );

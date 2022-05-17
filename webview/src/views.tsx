@@ -17,7 +17,7 @@
 
 /** @jsx svg */
 import { VNode } from 'snabbdom';
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph} from 'sprotty';
+import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph, TYPES, IActionDispatcher, ModelRenderer} from 'sprotty';
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
@@ -25,6 +25,7 @@ import { inject } from 'inversify'
 import { collectAllChildren, flagConnectedElements, getSelectedNode } from './helper-methods';
 import { DISymbol } from './di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
+import { SendModelRendererAction } from './template/actions';
 
 let selectedNode: SNode | undefined
 
@@ -171,7 +172,10 @@ export class CSNodeView extends RectangularNodeView {
 @injectable()
 export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
 
+    @inject(TYPES.IActionDispatcher) private actionDispatcher: IActionDispatcher;
+
     render(model: Readonly<SGraph>, context: RenderingContext, args?: IRenderingArgs): VNode {
+        this.actionDispatcher.dispatch(SendModelRendererAction.create(context as ModelRenderer))
         // if an STPANode is selected, the "connected" attribute is set for the nodes and edges connected to the selected node
         let allNodes: SNode[] = []
         collectAllChildren(model.children as SNode[], allNodes)

@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SGraph } from "sprotty-protocol";
+import { SModelElement } from "sprotty";
 
 /** Base option that can be rendered as an ui input*/
 export interface RenderOption {
@@ -84,7 +84,7 @@ export interface Pair<K, V> {
     v: V
 }
 
-export interface Template {
-    svg: Readonly<SGraph>;
+export class Template {
+    graph: Readonly<SModelElement>;
     code: string;
 }

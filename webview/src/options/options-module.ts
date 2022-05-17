@@ -25,6 +25,7 @@ import { RenderOptionsRegistry } from "./render-options-registry";
 import { OptionsRegistry } from "./options-registry";
 import { OptionsPanel } from "./options-panel";
 import { TemplatePanel } from "../template/template-panel";
+import { TemplateRegistry } from "../template/template-registry";
 
 /** Module that configures option related panels and registries. */
 export const optionsModule = new ContainerModule((bind, _, isBound) => {
@@ -37,11 +38,13 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     bind(TemplatePanel).toSelf().inSingletonScope();
     bind(DISymbol.SidebarPanel).toService(TemplatePanel);
 
-    bind(DISymbol.OptionsRenderer).to(OptionsRenderer);
+    bind(DISymbol.OptionsRenderer).to(OptionsRenderer).inSingletonScope();
     bind(DISymbol.OptionsRegistry).to(OptionsRegistry).inSingletonScope();
     bind(TYPES.IActionHandlerInitializer).toService(DISymbol.OptionsRegistry);
 
     bind(DISymbol.RenderOptionsRegistry).to(RenderOptionsRegistry).inSingletonScope();
+    bind(DISymbol.TemplateRegistry).to(TemplateRegistry).inSingletonScope();
+    bind(TYPES.IActionHandlerInitializer).toService(DISymbol.TemplateRegistry);
 
     const ctx = { bind, isBound };
     configureActionHandler(ctx, SetRenderOptionAction.KIND, DISymbol.RenderOptionsRegistry);

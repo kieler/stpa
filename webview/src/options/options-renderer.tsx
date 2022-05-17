@@ -18,7 +18,7 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IActionDispatcher, ModelRenderer, SModelElement, TYPES, ViewRegistry } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { html, IActionDispatcher, ModelRenderer, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import {
     SetRenderOptionAction,
     SetSynthesisOptionsAction,
@@ -45,14 +45,12 @@ interface AllOptions {
 export class OptionsRenderer {
     @inject(TYPES.IActionDispatcher) actionDispatcher: IActionDispatcher;
 
-    viewer: ViewRegistry;
     renderer: ModelRenderer;
 
-    constructor(@inject(TYPES.ViewRegistry) viewer: ViewRegistry) {
-        this.viewer = viewer
-        this.renderer = new ModelRenderer(this.viewer, "main", []); 
+    setRenderer(renderer: ModelRenderer) {
+        //this.renderer = renderer
+        this.renderer = new ModelRenderer(renderer.viewRegistry, renderer.targetKind, [])
     }
-
 
     /**
      * Renders all diagram options that are provided by the server. This includes
@@ -163,8 +161,11 @@ export class OptionsRenderer {
 
     renderTemplates(templates: Template[]): (VNode | "")[] | "" {
         if (templates.length === 0) return "";
+
+/*         const g: SModelElement = templates[0].graph as SModelElement
+        g.hasFeature(Symbol('isSelectable')) */
         return templates.map(template =>
-            <div>{this.renderer?.renderElement(template.svg as any as Readonly<SModelElement>)}</div>);
+            <div>{this.renderer?.renderElement(template.graph)}</div>);
     }
 
     /** Renders render options that are stored in the client. */
