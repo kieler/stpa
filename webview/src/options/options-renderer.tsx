@@ -18,7 +18,7 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IActionDispatcher, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { html, IActionDispatcher, ModelRenderer, SModelElement, TYPES, ViewRegistry } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import {
     SetRenderOptionAction,
     SetSynthesisOptionsAction,
@@ -44,6 +44,15 @@ interface AllOptions {
 @injectable()
 export class OptionsRenderer {
     @inject(TYPES.IActionDispatcher) actionDispatcher: IActionDispatcher;
+
+    viewer: ViewRegistry;
+    renderer: ModelRenderer;
+
+    constructor(@inject(TYPES.ViewRegistry) viewer: ViewRegistry) {
+        this.viewer = viewer
+        this.renderer = new ModelRenderer(this.viewer, "main", []); 
+    }
+
 
     /**
      * Renders all diagram options that are provided by the server. This includes
@@ -154,41 +163,8 @@ export class OptionsRenderer {
 
     renderTemplates(templates: Template[]): (VNode | "")[] | "" {
         if (templates.length === 0) return "";
-
-        /* const test = <svg 
-        style={{
-          width: '24',
-          height: '24',
-          fill: 'none',
-          stroke: 'currentColor',
-          strokeWidth: '2',
-          strokeLinecap: 'round',
-          strokeLinejoin: 'round'
-        }}
-        
-        props={{innerHTML: "<polyline points=\"16 18 22 12 16 6\"></polyline>"}}
-      ></svg>
-        return templates.map(template => 
-            <g>
-                {test}
-            </g>); */
-
-        //const polyline = "<polyline points=\"16 18 22 12 16 6\"></polyline>";
         return templates.map(template =>
-            <svg 
-                style={{
-             /*    width: '24',
-                height: '24', */
-                fill: 'blue',
-                stroke: 'currentColor',
-                strokeWidth: '2',
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round'
-                }}
-                
-                props={{innerHTML: template.svg}}
-            ></svg>
-            );
+            <div>{this.renderer?.renderElement(template.svg as any as Readonly<SModelElement>)}</div>);
     }
 
     /** Renders render options that are stored in the client. */
