@@ -27,12 +27,12 @@ import { DISymbol } from './di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
 import { SendModelRendererAction } from './template/actions';
 
-let selectedNode: SNode | undefined
+let selectedNode: SNode | undefined;
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
 
-    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry
+    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
     protected renderLine(edge: SEdge, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
@@ -43,28 +43,28 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected
+        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected;
    
-        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
-        const printEdge = colorStyle == "print"
-        const coloredEdge = colorStyle == "colorful"
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
+        const printEdge = colorStyle == "print";
+        const coloredEdge = colorStyle == "colorful";
         return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge} class-hidden={hidden} aspect={(edge.source as STPANode).aspect } d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected
+        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected;
         if (edge.type == STPA_EDGE_TYPE) {
-            (edge as STPAEdge).connected = false
+            (edge as STPAEdge).connected = false;
         }
 
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
 
-        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
-        const printEdge = colorStyle == "print"
-        const coloredEdge = colorStyle == "colorful" && edge.type != CS_EDGE_TYPE
-        const sprottyEdge = colorStyle == "standard" || (edge.type == CS_EDGE_TYPE && !printEdge)
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
+        const printEdge = colorStyle == "print";
+        const coloredEdge = colorStyle == "colorful" && edge.type != CS_EDGE_TYPE;
+        const sprottyEdge = colorStyle == "standard" || (edge.type == CS_EDGE_TYPE && !printEdge);
         return [
             <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge} class-hidden={hidden} aspect={(edge.source as STPANode).aspect}
                   class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
@@ -80,7 +80,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 @injectable()
 export class STPANodeView extends RectangularNodeView  {
     
-    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry
+    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
     render(node: STPANode, context: RenderingContext): VNode {
         // create the element based on the option and the aspect of the node
@@ -88,47 +88,47 @@ export class STPANodeView extends RectangularNodeView  {
         if (this.renderOptionsRegistry.getValue(DifferentFormsOption)) {
             switch(node.aspect) {
                 case STPAAspect.LOSS: 
-                    element = renderTrapez(node)
+                    element = renderTrapez(node);
                     break
                 case STPAAspect.HAZARD: 
-                    element = renderRectangle(node)
+                    element = renderRectangle(node);
                     break
                 case STPAAspect.SYSTEMCONSTRAINT: 
-                    element = renderHexagon(node)
+                    element = renderHexagon(node);
                     break
                 case STPAAspect.RESPONSIBILITY:
-                    element = renderPentagon(node)
+                    element = renderPentagon(node);
                     break
                 case STPAAspect.UCA:
-                    element = renderCircle(node)
+                    element = renderCircle(node);
                     break
                 case STPAAspect.CONTROLLERCONSTRAINT:
-                    element = renderMirroredTriangle(node)
+                    element = renderMirroredTriangle(node);
                     break
                 case STPAAspect.SCENARIO:
-                    element = renderTriangle(node)
+                    element = renderTriangle(node);
                     break
                 case STPAAspect.SAFETYREQUIREMENT:
-                    element = renderDiamond(node)
+                    element = renderDiamond(node);
                     break
                 default: 
-                    element = renderRectangle(node)
+                    element = renderRectangle(node);
                     break
             }
         } else {
-            element = renderRectangle(node)
+            element = renderRectangle(node);
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = (selectedNode instanceof STPANode) && !node.connected
-        const parentNode = node.children.filter(child => child.type == STPA_NODE_TYPE).length != 0 && !hidden
-        node.connected = false
+        const hidden = (selectedNode instanceof STPANode) && !node.connected;
+        const parentNode = node.children.filter(child => child.type == STPA_NODE_TYPE).length != 0 && !hidden;
+        node.connected = false;
 
         // determines the color of the node
-        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
-        const printNode = colorStyle == "print"
-        const coloredNode = colorStyle == "colorful"
-        const sprottyNode = colorStyle == "standard"
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
+        const printNode = colorStyle == "print";
+        const coloredNode = colorStyle == "colorful";
+        const sprottyNode = colorStyle == "standard";
 
         return  <g  
                     class-print-node={printNode}
@@ -146,18 +146,18 @@ export class STPANodeView extends RectangularNodeView  {
 @injectable()
 export class CSNodeView extends RectangularNodeView {
     
-    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry
+    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
     render(node: SNode, context: RenderingContext): VNode {
         // hides the control structure and/or relationship graph if the corresponding option is set to false
         if (!this.renderOptionsRegistry.getValue(ShowCSOption) && (node.type == CS_NODE_TYPE || node.type == PARENT_TYPE && node.children.filter(child => child instanceof SNode)[0].type == CS_NODE_TYPE)
                 || !this.renderOptionsRegistry.getValue(ShowRelationshipGraphOption) && (node.type == STPA_NODE_TYPE || node.type == PARENT_TYPE && node.children.filter(child => child instanceof SNode)[0].type == STPA_NODE_TYPE)){
-            return <g></g>
+            return <g></g>;
         }
 
-        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption)
-        const printNode = colorStyle == "print"
-        const sprottyNode = colorStyle != "print"
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
+        const printNode = colorStyle == "print";
+        const sprottyNode = colorStyle != "print";
         return <g>
             <rect class-parent-node={node.type == PARENT_TYPE} class-print-node={printNode}
                   class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
@@ -175,16 +175,17 @@ export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
     @inject(TYPES.IActionDispatcher) private actionDispatcher: IActionDispatcher;
 
     render(model: Readonly<SGraph>, context: RenderingContext, args?: IRenderingArgs): VNode {
-        this.actionDispatcher.dispatch(SendModelRendererAction.create(context as ModelRenderer))
+        // to render the template panel the modelrenderer and the canvasbounds are needed
+        this.actionDispatcher.dispatch(SendModelRendererAction.create(context as ModelRenderer, model.canvasBounds));
         // if an STPANode is selected, the "connected" attribute is set for the nodes and edges connected to the selected node
-        let allNodes: SNode[] = []
-        collectAllChildren(model.children as SNode[], allNodes)
-        selectedNode = getSelectedNode(allNodes)
+        let allNodes: SNode[] = [];
+        collectAllChildren(model.children as SNode[], allNodes);
+        selectedNode = getSelectedNode(allNodes);
         if (selectedNode instanceof STPANode) {
-            flagConnectedElements(selectedNode)
+            flagConnectedElements(selectedNode);
         }
 
-        return super.render(model, context, args)
+        return super.render(model, context, args);
     }
 
 }

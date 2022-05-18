@@ -38,7 +38,6 @@ export class TemplatePanel extends SidebarPanel {
     }
 
     get id(): string {
-        console.log(this.tempRegistry);
         return 'template-panel';
     }
 
@@ -47,7 +46,7 @@ export class TemplatePanel extends SidebarPanel {
     }
 
     get icon(): VNode {
-        return <FeatherIcon iconId={"code"}/>
+        return <FeatherIcon iconId={"code"}/>;
     }
 
     render(): VNode {

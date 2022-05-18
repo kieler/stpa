@@ -18,7 +18,7 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IActionDispatcher, ModelRenderer, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { html, IActionDispatcher, IModelFactory, ModelRenderer, SGraph, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import {
     SetRenderOptionAction,
     SetSynthesisOptionsAction,
@@ -35,6 +35,7 @@ import {
     TransformationOptionType,
     Template
 } from "./option-models";
+import { Bounds } from 'sprotty-protocol'
 
 interface AllOptions {
     synthesisOptions: SynthesisOption[];
@@ -43,13 +44,17 @@ interface AllOptions {
 /** Renderer that is capable of rendering different option models to jsx. */
 @injectable()
 export class OptionsRenderer {
-    @inject(TYPES.IActionDispatcher) actionDispatcher: IActionDispatcher;
-
-    renderer: ModelRenderer;
+    @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;
+    @inject(TYPES.IModelFactory) protected modelFactory: IModelFactory;
+    protected renderer: ModelRenderer;
+    protected bounds: Bounds;
 
     setRenderer(renderer: ModelRenderer) {
-        //this.renderer = renderer
-        this.renderer = new ModelRenderer(renderer.viewRegistry, renderer.targetKind, [])
+        this.renderer = renderer;
+    }
+    
+    setBounds(bounds: Bounds) {
+        this.bounds = bounds;
     }
 
     /**
@@ -159,13 +164,20 @@ export class OptionsRenderer {
         );
     }
 
+    /**
+     * Renders all templates provided by the server.
+     */
     renderTemplates(templates: Template[]): (VNode | "")[] | "" {
         if (templates.length === 0) return "";
 
-/*         const g: SModelElement = templates[0].graph as SModelElement
-        g.hasFeature(Symbol('isSelectable')) */
-        return templates.map(template =>
-            <div>{this.renderer?.renderElement(template.graph)}</div>);
+        // labels and edges are only visible if they are within the canvas bounds
+        for (const temp of templates) {
+            (temp.graph as SGraph).canvasBounds = this.bounds;
+        }
+
+        const res = templates.map(template =>
+            <div>{this.renderer?.renderElement(this.modelFactory.createRoot(template.graph))}</div>);
+        return res;
     }
 
     /** Renders render options that are stored in the client. */

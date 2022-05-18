@@ -15,23 +15,25 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action } from "sprotty-protocol";
+import { Action, Bounds } from "sprotty-protocol";
 import { ModelRenderer } from "sprotty"
 
 /** Sent from the view. */
 export interface SendModelRendererAction extends Action {
-    kind: typeof SendModelRendererAction.KIND
-    renderer: ModelRenderer
+    kind: typeof SendModelRendererAction.KIND;
+    renderer: ModelRenderer;
+    bounds: Bounds;
 }
 
 export namespace SendModelRendererAction {
-    export const KIND = 'sendModelRendererAction'
+    export const KIND = 'sendModelRendererAction';
 
-    export function create(renderer: ModelRenderer): SendModelRendererAction {
+    export function create(renderer: ModelRenderer, bounds: Bounds): SendModelRendererAction {
         return {
             kind: KIND,
-            renderer
-        }
+            renderer,
+            bounds
+        };
     }
     
     export function isThisAction(action: Action): action is SendModelRendererAction {

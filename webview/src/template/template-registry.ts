@@ -25,6 +25,11 @@ import { Template } from "../options/option-models";
 import { OptionsRenderer } from "../options/options-renderer";
 import { SendModelRendererAction } from "./actions";
 
+/**
+ * {@link Registry} that stores and manages STPA-DSL templates provided by the server.
+ *
+ * Acts as an action handler that handles UpdateOptionsActions. 
+ */
 @injectable()
 export class TemplateRegistry extends Registry implements IActionHandlerInitializer {
 
@@ -49,7 +54,7 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
         if (UpdateOptionsAction.isThisAction(action)) {
             this.handleUpdateOptions(action);
         } else if (SendModelRendererAction.isThisAction(action)) {
-            this.handleSendModelRenderer(action)
+            this.handleSendModelRenderer(action);
         }
     }
 
@@ -57,12 +62,13 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
         this._templates = action.templates.map<Template>(temp => ({
             graph: temp.graph,
             code: temp.code
-        }))
+        }));
         this.notifyListeners();
     }
 
     private handleSendModelRenderer(action: SendModelRendererAction) {
-        this.optionsRenderer.setRenderer((action as SendModelRendererAction).renderer)
+        this.optionsRenderer.setRenderer((action as SendModelRendererAction).renderer);
+        this.optionsRenderer.setBounds((action as SendModelRendererAction).bounds);
     }
 
 }
