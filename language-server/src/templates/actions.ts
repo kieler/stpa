@@ -15,32 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, Bounds } from "sprotty-protocol";
-import { ModelRenderer } from "sprotty"
-import { Template } from "./template-models";
-
-/** Sent from the view. */
-export interface SendModelRendererAction extends Action {
-    kind: typeof SendModelRendererAction.KIND;
-    renderer: ModelRenderer;
-    bounds: Bounds;
-}
-
-export namespace SendModelRendererAction {
-    export const KIND = 'sendModelRendererAction';
-
-    export function create(renderer: ModelRenderer, bounds: Bounds): SendModelRendererAction {
-        return {
-            kind: KIND,
-            renderer,
-            bounds
-        };
-    }
-    
-    export function isThisAction(action: Action): action is SendModelRendererAction {
-        return action.kind === SendModelRendererAction.KIND;
-    }
-}
+import { Action } from "sprotty-protocol";
+import { Template } from "../templates/templates";
 
 /** Request message from the server to update the diagram options widget on the client. */
 export interface UpdateTemplatesAction extends Action {

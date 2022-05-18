@@ -16,24 +16,24 @@
  */
 
 import { Action } from "sprotty-protocol";
-import { SynthesisOption, Template, ValuedSynthesisOption } from "./option-models";
+import { SynthesisOption, ValuedSynthesisOption } from "./option-models";
 
 /** Change the value of one or multiple render options. */
 export interface SetRenderOptionAction extends Action {
-    kind: typeof SetRenderOptionAction.KIND
-    id: string
-    value: unknown
+    kind: typeof SetRenderOptionAction.KIND;
+    id: string;
+    value: unknown;
 }
 
 export namespace SetRenderOptionAction {
-    export const KIND = "setRenderOption"
+    export const KIND = "setRenderOption";
 
     export function create(id: string, value: unknown): SetRenderOptionAction {
         return {
             kind: KIND,
             id,
             value
-        }
+        };
     }
 
     export function isThisAction(action: Action): action is SetRenderOptionAction {
@@ -43,16 +43,16 @@ export namespace SetRenderOptionAction {
 
 /** Resets all render options to default. */
 export interface ResetRenderOptionsAction extends Action {
-    kind: typeof ResetRenderOptionsAction.KIND
+    kind: typeof ResetRenderOptionsAction.KIND;
 }
 
 export namespace ResetRenderOptionsAction {
-    export const KIND = "resetRenderOptions"
+    export const KIND = "resetRenderOptions";
 
     export function create(): ResetRenderOptionsAction {
         return {
             kind: KIND,
-        }
+        };
     }
 
     export function isThisAction(action: Action): action is ResetRenderOptionsAction {
@@ -62,26 +62,23 @@ export namespace ResetRenderOptionsAction {
 
 /** Request message from the server to update the diagram options widget on the client. */
 export interface UpdateOptionsAction extends Action {
-    kind: typeof UpdateOptionsAction.KIND
-    valuedSynthesisOptions: ValuedSynthesisOption[]
-    templates: Template[]
-    clientId: string
+    kind: typeof UpdateOptionsAction.KIND;
+    valuedSynthesisOptions: ValuedSynthesisOption[];
+    clientId: string;
 }
 
 export namespace UpdateOptionsAction {
-    export const KIND = "updateOptions"
+    export const KIND = "updateOptions";
 
     export function create(
         valuedSynthesisOptions: ValuedSynthesisOption[],
-        templates: Template[],
         clientId: string,
     ): UpdateOptionsAction {
         return {
             kind: KIND,
             valuedSynthesisOptions,
-            templates,
             clientId,
-        }
+        };
     }
 
     export function isThisAction(action: Action): action is UpdateOptionsAction {
@@ -92,18 +89,18 @@ export namespace UpdateOptionsAction {
 
 /** Change the value of one or multiple synthesis options. */
 export interface SetSynthesisOptionsAction extends Action {
-    kind: typeof SetSynthesisOptionsAction.KIND
-    options: SynthesisOption[]
+    kind: typeof SetSynthesisOptionsAction.KIND;
+    options: SynthesisOption[];
 }
 
 export namespace SetSynthesisOptionsAction {
-    export const KIND = "setSynthesisOptions"
+    export const KIND = "setSynthesisOptions";
 
     export function create(options: SynthesisOption[]): SetSynthesisOptionsAction {
         return {
             kind: KIND,
             options,
-        }
+        };
     }
 
     export function isThisAction(action: Action): action is SetSynthesisOptionsAction {

@@ -21,16 +21,16 @@ import { html } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unu
 import { inject, injectable, postConstruct } from "inversify";
 import { SidebarPanel } from "../sidebar";
 import { DISymbol } from "../di.symbols";
-import { OptionsRenderer } from "../options/options-renderer";
 import { FeatherIcon } from "../feather-icons-snabbdom/feather-icons-snabbdom";
 import { TemplateRegistry } from "./template-registry";
+import { TemplateRenderer } from "./template-renderer";
 
-/** Sidebar panel that displays server provided STPA-DSL templates.  */
+/** Sidebar panel that displays server provided templates.  */
 @injectable()
 export class TemplatePanel extends SidebarPanel {
 
     @inject(DISymbol.TemplateRegistry) private tempRegistry: TemplateRegistry;
-    @inject(DISymbol.OptionsRenderer) private optionsRenderer: OptionsRenderer;
+    @inject(DISymbol.TemplateRenderer) private templateRenderer: TemplateRenderer;
 
     @postConstruct()
     init(): void {
@@ -51,7 +51,7 @@ export class TemplatePanel extends SidebarPanel {
 
     render(): VNode {
         return this.tempRegistry.hasTemplateOptions() ? (
-            this.optionsRenderer.renderTemplates(this.tempRegistry.templates)
+            this.templateRenderer.renderTemplates(this.tempRegistry.templates)
         ) : (
             <span>No templates provided by the diagram server.</span>
         );

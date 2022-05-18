@@ -20,20 +20,20 @@ import { ActionHandlerRegistry, IActionHandlerInitializer, ICommand } from "spro
 import { Action } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { DISymbol } from "../di.symbols";
-import { UpdateOptionsAction } from "../options/actions";
-import { Template } from "../options/option-models";
-import { OptionsRenderer } from "../options/options-renderer";
-import { SendModelRendererAction } from "./actions";
+import { SendModelRendererAction, UpdateTemplatesAction } from "./actions";
+import { Template } from "./template-models";
+import { TemplateRenderer } from "./template-renderer";
 
 /**
- * {@link Registry} that stores and manages STPA-DSL templates provided by the server.
+ * {@link Registry} that stores and manages templates provided by the server.
  *
- * Acts as an action handler that handles UpdateOptionsActions. 
+ * Acts as an action handler that handles UpdateTemplateActions. 
  */
 @injectable()
 export class TemplateRegistry extends Registry implements IActionHandlerInitializer {
+    readonly position = -10;
 
-    @inject(DISymbol.OptionsRenderer) private optionsRenderer: OptionsRenderer;
+    @inject(DISymbol.TemplateRenderer) private templateRenderer: TemplateRenderer;
     
     private _templates: Template[] = [];
 
@@ -46,19 +46,19 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
     }
 
     initialize(registry: ActionHandlerRegistry): void {
-        registry.register(UpdateOptionsAction.KIND, this);
+        registry.register(UpdateTemplatesAction.KIND, this);
         registry.register(SendModelRendererAction.KIND, this);
     }
 
     handle(action: Action): void | Action | ICommand {
-        if (UpdateOptionsAction.isThisAction(action)) {
+        if (UpdateTemplatesAction.isThisAction(action)) {
             this.handleUpdateOptions(action);
         } else if (SendModelRendererAction.isThisAction(action)) {
             this.handleSendModelRenderer(action);
         }
     }
 
-    private handleUpdateOptions(action: UpdateOptionsAction): void {
+    private handleUpdateOptions(action: UpdateTemplatesAction): void {
         this._templates = action.templates.map<Template>(temp => ({
             graph: temp.graph,
             code: temp.code
@@ -67,8 +67,8 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
     }
 
     private handleSendModelRenderer(action: SendModelRendererAction) {
-        this.optionsRenderer.setRenderer((action as SendModelRendererAction).renderer);
-        this.optionsRenderer.setBounds((action as SendModelRendererAction).bounds);
+        this.templateRenderer.setRenderer((action as SendModelRendererAction).renderer);
+        this.templateRenderer.setBounds((action as SendModelRendererAction).bounds);
     }
 
 }

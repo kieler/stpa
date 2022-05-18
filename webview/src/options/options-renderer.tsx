@@ -18,7 +18,7 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IActionDispatcher, IModelFactory, ModelRenderer, SGraph, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { html, IActionDispatcher, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import {
     SetRenderOptionAction,
     SetSynthesisOptionsAction,
@@ -32,10 +32,8 @@ import {
     RenderOption,
     RangeOption as RangeOptionData,
     SynthesisOption,
-    TransformationOptionType,
-    Template
+    TransformationOptionType
 } from "./option-models";
-import { Bounds } from 'sprotty-protocol'
 
 interface AllOptions {
     synthesisOptions: SynthesisOption[];
@@ -45,17 +43,6 @@ interface AllOptions {
 @injectable()
 export class OptionsRenderer {
     @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;
-    @inject(TYPES.IModelFactory) protected modelFactory: IModelFactory;
-    protected renderer: ModelRenderer;
-    protected bounds: Bounds;
-
-    setRenderer(renderer: ModelRenderer) {
-        this.renderer = renderer;
-    }
-    
-    setBounds(bounds: Bounds) {
-        this.bounds = bounds;
-    }
 
     /**
      * Renders all diagram options that are provided by the server. This includes
@@ -164,22 +151,6 @@ export class OptionsRenderer {
         );
     }
 
-    /**
-     * Renders all templates provided by the server.
-     */
-    renderTemplates(templates: Template[]): (VNode | "")[] | "" {
-        if (templates.length === 0) return "";
-
-        // labels and edges are only visible if they are within the canvas bounds
-        for (const temp of templates) {
-            (temp.graph as SGraph).canvasBounds = this.bounds;
-        }
-
-        const res = templates.map(template =>
-            <div>{this.renderer?.renderElement(this.modelFactory.createRoot(template.graph))}</div>);
-        return res;
-    }
-
     /** Renders render options that are stored in the client. */
     renderRenderOptions(renderOptions: RenderOption[]): (VNode | "")[] | "" {
         if (renderOptions.length === 0) return "";
@@ -208,7 +179,7 @@ export class OptionsRenderer {
                             onChange={this.handleRenderOptionChange.bind(this, option)}
                             availableValues = {(option as ChoiceRenderOption).availableValues}
                         />
-                    )
+                    );
                 default:
                     console.error("Unsupported option type for option:", option.name);
                     return "";

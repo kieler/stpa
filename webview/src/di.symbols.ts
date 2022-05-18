@@ -22,6 +22,7 @@ export const DISymbol = {
     SidebarPanelRegistry: Symbol("SidebarPanelRegistry"),
 
     OptionsRenderer: Symbol("OptionsRenderer"),
+    TemplateRenderer: Symbol("TemplateRenderer"),
     OptionsRegistry: Symbol("OptionsRegistry"),
     RenderOptionsRegistry: Symbol("RenderOptionsRegistry"),
     TemplateRegistry: Symbol("TemplateRegistry"),

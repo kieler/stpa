@@ -18,7 +18,8 @@
 import { Action, applyBounds, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction, RequestBoundsAction, ComputedBoundsAction } from 'sprotty-protocol'
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions'
 import { StpaSynthesisOptions } from './options/synthesis-options';
-import { Template, TestTemplate } from './templates/templates';
+import { UpdateTemplatesAction } from './templates/actions';
+import { Template, TestTemplate1, TestTemplate2 } from './templates/templates';
 
 export class StpaDiagramServer extends DiagramServer {
 
@@ -33,7 +34,8 @@ export class StpaDiagramServer extends DiagramServer {
         this.stpaOptions = synthesisOptions;
         this.clientId = clientId;
         this.options = options;
-        this.templates = [TestTemplate]
+        //TODO: more generic
+        this.templates = [TestTemplate1, TestTemplate2];
     }
 
     accept(action: Action): Promise<void> {
@@ -72,20 +74,18 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
-        // send the avaiable syntheses options to the client before handling the request model action
-        const test =this.templates[0].graph
-/*         this.dispatch({
-            kind: RequestBoundsAction.KIND,
-            newRoot: this.templates[0].graph
-        } as RequestBoundsAction) */
-
+        // TODO: generic code + size computation
+        const test = this.templates[0].graph;
         const request = RequestBoundsAction.create(test);
         const response = await this.request<ComputedBoundsAction>(request);
         applyBounds(test, response);
         const newRoot = await this.layoutEngine?.layout(test);
         this.templates[0].graph = newRoot!
 
-        this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), templates: this.templates, clientId: this.clientId });
+        // send the avaiable templates to the client before handling the request model action
+        this.dispatch({ kind: UpdateTemplatesAction.KIND, templates: this.templates });
+        // send the avaiable syntheses options to the client before handling the request model action
+        this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
         super.handleRequestModel(action);
     }
 
