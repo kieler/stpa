@@ -25,7 +25,7 @@ import { collectElementsWithSubComps } from './utils';
 /**
  * Map AST node types to validation checks.
  */
-type StpaChecks = { [type in StpaAstType]?: ValidationCheck | ValidationCheck[] }
+type StpaChecks = { [type in StpaAstType]?: ValidationCheck | ValidationCheck[] };
 
 /**
  * Registry for validation checks.
@@ -47,8 +47,8 @@ export class StpaValidationRegistry extends ValidationRegistry {
     }
 }
 
-type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command
-type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint
+type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command;
+type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint;
 
 /**
  * Implementation of custom validations.
@@ -61,12 +61,12 @@ export class StpaValidator {
      * @param accept 
      */
     checkModel(model: Model, accept: ValidationAcceptor): void {
-        this.checkAllAspectsPresent(model, accept)
+        this.checkAllAspectsPresent(model, accept);
 
-        const hazards = collectElementsWithSubComps(model.hazards) as Hazard[]
-        const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[]
-        const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1)
-        const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1)
+        const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
+        const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
+        const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
+        const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1);
         
         // collect elements that have an identifier and should be referenced
         let allElements: elementWithName[] = [
@@ -74,7 +74,7 @@ export class StpaValidator {
             ...hazards,
             ...sysCons,
             ...ucas,
-        ]
+        ];
 
         // collect all elements that have a reference list
         let elementsWithRefs: elementWithRefs[] = [
@@ -84,9 +84,9 @@ export class StpaValidator {
             ...ucas.map(uca => uca.list),
             ...model.controllerConstraints,
             ...model.scenarios.map(scenario => scenario.list)
-        ]
+        ];
         // get all reference names
-        const references = this.collectReferences(elementsWithRefs)
+        const references = this.collectReferences(elementsWithRefs);
         // check if all elements are referenced at least once
         for (const node of allElements) {
             if (!references.has(node.name)) {
@@ -95,8 +95,8 @@ export class StpaValidator {
         }
 
         // add missing elements that have an ID to check uniques of all IDs
-        allElements = allElements.concat(responsibilities, model.controllerConstraints, model.scenarios, model.safetyCons, model.controlStructure?.nodes/*, model.controlStructure?.edges*/)
-        this.checkIDsAreUnique(allElements, accept)
+        allElements = allElements.concat(responsibilities, model.controllerConstraints, model.scenarios, model.safetyCons, model.controlStructure?.nodes/*, model.controlStructure?.edges*/);
+        this.checkIDsAreUnique(allElements, accept);
     }
 
     /**
@@ -106,15 +106,15 @@ export class StpaValidator {
      */
     checkHazard(hazard: Hazard, accept: ValidationAcceptor): void {
         if (hazard.subComps) {
-            this.checkPrefixOfSubElements(hazard.name, hazard.subComps, accept)
-            this.checkReferencedLossesOfSubHazard(hazard.refs, hazard.subComps, accept)
+            this.checkPrefixOfSubElements(hazard.name, hazard.subComps, accept);
+            this.checkReferencedLossesOfSubHazard(hazard.refs, hazard.subComps, accept);
         }
-        this.checkReferenceListForDuplicates(hazard, hazard.refs, accept)
+        this.checkReferenceListForDuplicates(hazard, hazard.refs, accept);
         // a top-level hazard should reference loss(es)
-        if (isModel(hazard.$container) && hazard.refs.length == 0) {
-            const range = hazard.$cstNode?.range
+        if (isModel(hazard.$container) && hazard.refs.length === 0) {
+            const range = hazard.$cstNode?.range;
             if (range) {
-                range.start.character = range.end.character-1
+                range.start.character = range.end.character - 1;
             }
             accept('warning', 'A hazard should reference loss(es)', { node: hazard, range: range });
         }
@@ -127,9 +127,9 @@ export class StpaValidator {
      */
     checkSystemConstraint(sysCons: SystemConstraint, accept: ValidationAcceptor): void {
         if (sysCons.subComps) {
-            this.checkPrefixOfSubElements(sysCons.name, sysCons.subComps, accept)
+            this.checkPrefixOfSubElements(sysCons.name, sysCons.subComps, accept);
         }
-        this.checkReferenceListForDuplicates(sysCons, sysCons.refs, accept)
+        this.checkReferenceListForDuplicates(sysCons, sysCons.refs, accept);
     }
 
     /**
@@ -138,7 +138,7 @@ export class StpaValidator {
      * @param accept 
      */
     checkResponsibility(resp: Responsibility, accept: ValidationAcceptor): void {
-        this.checkReferenceListForDuplicates(resp, resp.refs, accept)
+        this.checkReferenceListForDuplicates(resp, resp.refs, accept);
     }
 
     /**
@@ -147,9 +147,9 @@ export class StpaValidator {
      * @param accept 
      */
     checkNode(node: Node, accept: ValidationAcceptor): void {
-        this.checkIDsAreUnique(node.variables, accept)
-        this.checkIDsAreUnique(node.actions.map(ve => ve.comms).flat(1), accept)
-        this.checkIDsAreUnique(node.feedbacks.map(ve => ve.comms).flat(1), accept)
+        this.checkIDsAreUnique(node.variables, accept);
+        this.checkIDsAreUnique(node.actions.map(ve => ve.comms).flat(1), accept);
+        this.checkIDsAreUnique(node.feedbacks.map(ve => ve.comms).flat(1), accept);
     }
 
     /**
@@ -158,7 +158,7 @@ export class StpaValidator {
      * @param accept 
      */
     checkControllerConstraints(contCons: ContConstraint, accept: ValidationAcceptor): void {
-        this.checkReferenceListForDuplicates(contCons, contCons.refs, accept)
+        this.checkReferenceListForDuplicates(contCons, contCons.refs, accept);
     }
 
     /**
@@ -167,7 +167,7 @@ export class StpaValidator {
      * @param accept 
      */
     checkHazardList(hazardList: HazardList, accept: ValidationAcceptor): void {
-        this.checkReferenceListForDuplicates(hazardList, hazardList.refs, accept)
+        this.checkReferenceListForDuplicates(hazardList, hazardList.refs, accept);
     }
 
     /**
@@ -176,14 +176,14 @@ export class StpaValidator {
      * @param accept 
      */
     private checkIDsAreUnique(allElements: elementWithName[], accept: ValidationAcceptor): void {
-        const names = new Set()
+        const names = new Set();
         for (const node of allElements) {
-            let name = node?.name
-            if (name != "") {
+            let name = node?.name;
+            if (name !== "") {
                 if(names.has(name)) {
                     accept('error', 'All identifiers must be unique.', { node: node, property: 'name' });
                 } else {
-                    names.add(name)
+                    names.add(name);
                 }
             }
         }
@@ -196,51 +196,51 @@ export class StpaValidator {
      */
     private checkAllAspectsPresent(model: Model, accept: ValidationAcceptor): void {
         // determine position of info
-        let lineCount = model.$document?.textDocument.lineCount
-        if (lineCount == undefined) {
-            lineCount = 0
+        let lineCount = model.$document?.textDocument.lineCount;
+        if (lineCount === undefined) {
+            lineCount = 0;
         }
-        const start: Position = {line:lineCount, character:0}
-        const end: Position = {line:lineCount+1, character:0}
-        let text = "The following aspects are missing:\n"
-        let missing = false
+        const start: Position = {line:lineCount, character:0};
+        const end: Position = {line:lineCount + 1, character:0};
+        let text = "The following aspects are missing:\n";
+        let missing = false;
 
         // check which aspects of STPA are not defined
-        if (!model.losses || model.losses?.length == 0) {
-            text+="Losses\n"
-            missing = true
+        if (!model.losses || model.losses?.length === 0) {
+            text+="Losses\n";
+            missing = true;
         }
-        if (!model.hazards || model.hazards?.length == 0) {
-            text+="Hazards\n"
-            missing = true
+        if (!model.hazards || model.hazards?.length === 0) {
+            text+="Hazards\n";
+            missing = true;
         }
-        if (!model.systemLevelConstraints || model.systemLevelConstraints?.length == 0) {
-            text+="SystemConstraints\n"
-            missing = true
+        if (!model.systemLevelConstraints || model.systemLevelConstraints?.length === 0) {
+            text+="SystemConstraints\n";
+            missing = true;
         }
-        if (!model.controlStructure || model.controlStructure?.nodes?.length == 0) {
-            text+="ControlStructure\n"
-            missing = true
+        if (!model.controlStructure || model.controlStructure?.nodes?.length === 0) {
+            text+="ControlStructure\n";
+            missing = true;
         }
-        if (!model.responsibilities || model.responsibilities?.length == 0) {
-            text+="Responsibilities\n"
-            missing = true
+        if (!model.responsibilities || model.responsibilities?.length === 0) {
+            text+="Responsibilities\n";
+            missing = true;
         }
-        if (!model.allUCAs || model.allUCAs?.length == 0) {
-            text+="UCAs\n"
-            missing = true
+        if (!model.allUCAs || model.allUCAs?.length === 0) {
+            text+="UCAs\n";
+            missing = true;
         }
-        if (!model.controllerConstraints || model.controllerConstraints?.length == 0) {
-            text+="ControllerConstraints\n"
-            missing = true
+        if (!model.controllerConstraints || model.controllerConstraints?.length === 0) {
+            text+="ControllerConstraints\n";
+            missing = true;
         }
-        if (!model.scenarios || model.scenarios?.length == 0) {
-            text+="LossScenarios\n"
-            missing = true
+        if (!model.scenarios || model.scenarios?.length === 0) {
+            text+="LossScenarios\n";
+            missing = true;
         }
-        if (!model.safetyCons || model.safetyCons?.length == 0) {
-            text+="SafetyRequirements\n"
-            missing = true
+        if (!model.safetyCons || model.safetyCons?.length === 0) {
+            text+="SafetyRequirements\n";
+            missing = true;
         }
         if (missing) {
             accept('info', text, { node: model, range: {start: start, end: end} });
@@ -254,18 +254,18 @@ export class StpaValidator {
      * @param accept 
      */
      private checkReferenceListForDuplicates(main: elementWithRefs, list: Reference<elementWithName>[], accept: ValidationAcceptor): void {
-        const names = new Set()
+        const names = new Set();
         for (let i = 0; i < list.length; i++) {
-            const ref = list[i]
-            const element = ref.ref
+            const ref = list[i];
+            const element = ref.ref;
             // needs to be checked in order to get the name
             if (element){
-                let name = element.name
-                if (name != "") {
+                let name = element.name;
+                if (name !== "") {
                     if(names.has(name)) {
                         accept('warning', 'Duplicate reference.', { node: main, property: 'refs', index: i});
                     } else {
-                        names.add(name)
+                        names.add(name);
                     }
                 }
             }
@@ -295,13 +295,13 @@ export class StpaValidator {
     private checkReferencedLossesOfSubHazard(losses: Reference<Loss>[], subHazards: Hazard[], accept: ValidationAcceptor): void {
         for (const hazard of subHazards) {
             for (let i = 0; i < hazard.refs.length; i++) {
-                const loss = hazard.refs[i]
-                let found = false
-                const lossName = loss.ref?.name
+                const loss = hazard.refs[i];
+                let found = false;
+                const lossName = loss.ref?.name;
                 for (const parentLoss of losses) {
-                    const parentLossName = parentLoss.ref?.name
-                    if (lossName == parentLossName) {
-                        found = true
+                    const parentLossName = parentLoss.ref?.name;
+                    if (lossName === parentLossName) {
+                        found = true;
                     }
                 }
                 if (!found) {
@@ -318,17 +318,17 @@ export class StpaValidator {
      * @returns A set with all referenced IDs.
      */
     private collectReferences(allElements: elementWithRefs[]): Set<string> {
-        let refs = new Set<string>()
+        let refs = new Set<string>();
         for (const node of allElements) {
             if (node) {
                 for (const ref of node.refs) {
                     if (ref.ref) {
-                        refs.add(ref.ref?.name)
+                        refs.add(ref.ref?.name);
                     }
                 }
             }
         }
-        return refs
+        return refs;
     }
 
 }
