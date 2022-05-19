@@ -27,6 +27,39 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
  
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
+        this.languageClient.onReady().then(() => {
+            this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this))
+        })
+    }
+
+    /**
+     * Handle WorkSpaceEdit notifications form the langauge server
+     * @param msg Message contianing the uri of the document, the text to insert, and the position in the document ot insert it to.
+     */
+    private async handleWorkSpaceEdit(msg: {uri: string, text: string, position: vscode.Position}) {
+        const textDocument = vscode.workspace.textDocuments.find(
+            (doc) => doc.uri.toString() === vscode.Uri.parse(msg.uri).toString()
+        );
+        if(!textDocument) {
+            console.error(
+                `Server requested a text edit but the requested uri was not found among the known documents: ${msg.uri}`
+            );
+            return;
+        }
+        const workSpaceEdit = new vscode.WorkspaceEdit();
+        const pos = this.languageClient.protocol2CodeConverter.asPosition(msg.position);
+        const edits: vscode.TextEdit[] = [vscode.TextEdit.insert(pos, msg.text)];
+        workSpaceEdit.set(textDocument.uri, edits);
+
+        // Apply and save the edit. Report possible failures.
+        const edited = await vscode.workspace.applyEdit(workSpaceEdit);
+        if (!edited) {
+            console.error("Workspace edit could not be applied!");
+            return;
+        }
+
+        //await textDocument.save();
+        return;
     }
 
     protected registerCommands() {
@@ -60,7 +93,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
         webview.addActionHandler(WorkspaceEditActionHandler);
         webview.addActionHandler(LspLabelEditActionHandler);
-        this.singleton = webview
+        this.singleton = webview;
         return webview;
     }
 
@@ -100,6 +133,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
         // Start the client. This will also launch the server
         context.subscriptions.push(languageClient.start());
+        // TODO: should already work automatically. does not work on windows due to representation of path -> '%3A' is used instead of ':' in one of the uris.
         // diagram is updated when file changes
         fileSystemWatcher.onDidChange(() => 
             {

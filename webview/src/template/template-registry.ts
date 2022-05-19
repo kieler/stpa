@@ -33,6 +33,12 @@ import { TemplateRenderer } from "./template-renderer";
 export class TemplateRegistry extends Registry implements IActionHandlerInitializer {
     readonly position = -10;
 
+    private _clientId = "";
+
+    get clientId(): string {
+        return this._clientId;
+    }
+
     @inject(DISymbol.TemplateRenderer) private templateRenderer: TemplateRenderer;
     
     private _templates: Template[] = [];
@@ -59,10 +65,8 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
     }
 
     private handleUpdateOptions(action: UpdateTemplatesAction): void {
-        this._templates = action.templates.map<Template>(temp => ({
-            graph: temp.graph,
-            code: temp.code
-        }));
+        this._clientId = action.clientId;
+        this._templates = action.templates;
         this.notifyListeners();
     }
 

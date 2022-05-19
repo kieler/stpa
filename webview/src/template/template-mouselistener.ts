@@ -15,13 +15,25 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { inject } from 'inversify'
 import { MouseListener, SModelElement } from "sprotty";
 import { Action } from "sprotty-protocol";
+import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
+import { DISymbol } from '../di.symbols';
+import { ExecuteTemplateAction } from './actions';
+import { TemplateRegistry } from './template-registry';
 
 export class TemplateMouseListener extends MouseListener {
 
+    @inject(DISymbol.TemplateRegistry) private tempRegistry: TemplateRegistry;
+
     mouseDown(target: SModelElement, event: MouseEvent): (Action | Promise<Action>)[] {
-        console.log("test");
+        // TODO: determine template that is clicked on
+        const action: ExecuteTemplateAction = {
+            kind: ExecuteTemplateAction.KIND,
+            code: "test"
+        };
+        vscodeApi.postMessage({clientId: this.tempRegistry.clientId, action: action});
         return [];
     }
 

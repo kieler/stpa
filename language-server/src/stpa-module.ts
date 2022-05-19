@@ -99,7 +99,7 @@ export const stpaDiagramServerFactory =
         }
         return new StpaDiagramServer(async action => {
             connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
-        }, language.diagram, language.options.StpaSynthesisOptions, clientId, options);
+        }, language.diagram, language.options.StpaSynthesisOptions, clientId, options, connection);
     };
 };
 

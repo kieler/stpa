@@ -22,6 +22,7 @@ import { Template } from "../templates/templates";
 export interface UpdateTemplatesAction extends Action {
     kind: typeof UpdateTemplatesAction.KIND;
     templates: Template[];
+    clientId: string;
 }
 
 export namespace UpdateTemplatesAction {
@@ -29,14 +30,38 @@ export namespace UpdateTemplatesAction {
 
     export function create(
         templates: Template[],
+        clientId: string
     ): UpdateTemplatesAction {
         return {
             kind: KIND,
             templates,
+            clientId
         };
     }
 
     export function isThisAction(action: Action): action is UpdateTemplatesAction {
         return action.kind === UpdateTemplatesAction.KIND;
+    }
+}
+
+export interface ExecuteTemplateAction extends Action {
+    kind: typeof ExecuteTemplateAction.KIND;
+    code: string;
+}
+
+export namespace ExecuteTemplateAction {
+    export const KIND = "executeTemplate";
+
+    export function create(
+        code: string
+    ): ExecuteTemplateAction {
+        return {
+            kind: KIND,
+            code
+        };
+    }
+
+    export function isThisAction(action: Action): action is ExecuteTemplateAction {
+        return action.kind === ExecuteTemplateAction.KIND;
     }
 }

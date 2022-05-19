@@ -27,7 +27,7 @@ import { OptionsPanel } from "./options-panel";
 import { TemplatePanel } from "../template/template-panel";
 import { TemplateRenderer } from "../template/template-renderer";
 import { TemplateRegistry } from "../template/template-registry";
-import { TemplateMouseListener } from "../template/mouselistener";
+import { TemplateMouseListener } from "../template/template-mouselistener";
 
 /** Module that configures option related panels and registries. */
 export const optionsModule = new ContainerModule((bind, _, isBound) => {

@@ -15,27 +15,22 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, applyBounds, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction, RequestBoundsAction, ComputedBoundsAction } from 'sprotty-protocol'
+import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol'
+import { Connection } from 'vscode-languageserver';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions'
 import { StpaSynthesisOptions } from './options/synthesis-options';
-import { UpdateTemplatesAction } from './templates/actions';
-import { Template, TestTemplate1, TestTemplate2 } from './templates/templates';
+import { TemplateDiagramServer } from './templates/template-diagram-server';
+import { TestTemplate1, TestTemplate2 } from './templates/templates';
 
-export class StpaDiagramServer extends DiagramServer {
+export class StpaDiagramServer extends TemplateDiagramServer {
 
     private stpaOptions: StpaSynthesisOptions;
-    private clientId: string;
-    private options: JsonMap | undefined;
-    private templates: Template[];
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined) {
-        super(dispatch, services);
+        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined, connection: Connection | undefined) {
+        // TODO: replace testtemplates with generic/default templates
+        super(dispatch, services, clientId, [TestTemplate1, TestTemplate2], options, connection);
         this.stpaOptions = synthesisOptions;
-        this.clientId = clientId;
-        this.options = options;
-        //TODO: more generic
-        this.templates = [TestTemplate1, TestTemplate2];
     }
 
     accept(action: Action): Promise<void> {
@@ -74,16 +69,6 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
-        // TODO: generic code + size computation
-        const test = this.templates[0].graph;
-        const request = RequestBoundsAction.create(test);
-        const response = await this.request<ComputedBoundsAction>(request);
-        applyBounds(test, response);
-        const newRoot = await this.layoutEngine?.layout(test);
-        this.templates[0].graph = newRoot!
-
-        // send the avaiable templates to the client before handling the request model action
-        this.dispatch({ kind: UpdateTemplatesAction.KIND, templates: this.templates });
         // send the avaiable syntheses options to the client before handling the request model action
         this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
         super.handleRequestModel(action);
