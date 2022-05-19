@@ -17,12 +17,12 @@
 
 import { TransformationOptionType, ValuedSynthesisOption } from "./option-models";
 
-const hierarchyID = "hierarchy"
+const hierarchyID = "hierarchy";
 
 /**
  * Boolean option to toggle the hierarchy representation in the relationship graph.
  */
- const hierarchicalGraphOption: ValuedSynthesisOption = {
+const hierarchicalGraphOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hierarchyID,
         name: "hierarchy",
@@ -32,23 +32,23 @@ const hierarchyID = "hierarchy"
         values: [true, false]
         },
     currentValue: true
-}
+};
 
 
 export class StpaSynthesisOptions {
 
-    private options: ValuedSynthesisOption[]
+    private options: ValuedSynthesisOption[];
 
     constructor() {
         this.options = [hierarchicalGraphOption];
     }
 
     getSynthesisOptions(): ValuedSynthesisOption[] {
-        return this.options
+        return this.options;
     }
 
     getHierarchy(): boolean {
-        const option = this.options.find(option => option.synthesisOption.id == hierarchyID);
-        return option?.currentValue
+        const option = this.options.find(option => option.synthesisOption.id === hierarchyID);
+        return option?.currentValue;
     }
 }

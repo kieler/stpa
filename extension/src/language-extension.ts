@@ -62,17 +62,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         return;
     }
 
-    protected registerCommands() {
-        super.registerCommands();
-        // command to change hiararchy visualization in the STPA diagram
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.diagram.hierarchy', (...commandArgs: any) => {
-                const lC = this.languageClient;
-                if (lC)
-                    lC.sendNotification('hierarchy')
-            }));
-    }
-
     protected getDiagramType(commandArgs: any[]): string | undefined {
         if (commandArgs.length === 0
             || commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
