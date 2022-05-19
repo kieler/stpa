@@ -71,6 +71,8 @@ export class TemplateDiagramServer extends DiagramServer {
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
+        // options must be updated since the request could be for another source model
+        this.options = action.options;
         super.handleRequestModel(action);
     }
 
