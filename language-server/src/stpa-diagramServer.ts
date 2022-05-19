@@ -15,22 +15,23 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol'
+import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
 import { Connection } from 'vscode-languageserver';
-import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions'
+import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 import { TemplateDiagramServer } from './templates/template-diagram-server';
-import { TestTemplate1, TestTemplate2 } from './templates/templates';
+import { Template } from './templates/template-model';
 
 export class StpaDiagramServer extends TemplateDiagramServer {
 
     private stpaOptions: StpaSynthesisOptions;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined, connection: Connection | undefined) {
-        // TODO: replace testtemplates with generic/default templates
-        super(dispatch, services, clientId, [TestTemplate1, TestTemplate2], options, connection);
+        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined, connection: Connection | undefined, templates: Template[]) {
+        super(dispatch, services, clientId, templates, options, connection);
         this.stpaOptions = synthesisOptions;
+        // send the avaiable syntheses options to the client
+        this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
     }
 
     accept(action: Action): Promise<void> {
@@ -54,7 +55,7 @@ export class StpaDiagramServer extends TemplateDiagramServer {
     handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
         // update syntheses options
         for (const option of action.options) {
-            const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id == option.id);
+            const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
                 opt.currentValue = option.currentValue;
             }
@@ -69,8 +70,6 @@ export class StpaDiagramServer extends TemplateDiagramServer {
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
-        // send the avaiable syntheses options to the client before handling the request model action
-        this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
         super.handleRequestModel(action);
     }
 

@@ -15,13 +15,28 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { /* ModelLayoutOptions, */ SGraph, SLabel, SModelElement } from 'sprotty-protocol'
-import { CSEdge, CSNode } from '../STPA-interfaces';
-import { CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection } from '../stpa-model';
+import { /* ModelLayoutOptions, */ SGraph, SLabel, SModelElement } from 'sprotty-protocol';
+import { Position } from 'vscode-languageserver';
+import { CSEdge, CSNode } from './STPA-interfaces';
+import { CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection } from './stpa-model';
+import { Template } from './templates/template-model';
+import { LangiumDocuments, LangiumServices } from 'langium';
 
-export interface Template {
-    graph: Readonly<SModelElement>;
-    code: string;
+export class StpaTemplates {
+
+    protected readonly langiumDocuments: LangiumDocuments;
+    protected defaultTemplates = [testTemplate1, testTemplate2];
+    protected templates: Template[];
+
+    constructor(services: LangiumServices) {
+        this.langiumDocuments = services.shared.workspace.LangiumDocuments;
+        this.templates = this.defaultTemplates;
+    }
+
+    getTemplates() {
+        return this.templates;
+    }
+
 }
 
 const testGraph1: Readonly<SModelElement> = {
@@ -91,12 +106,16 @@ const testGraph1: Readonly<SModelElement> = {
     ] as SModelElement[],
     zoom: 0.8,
     scroll: {x:0, y:0},
-} as SGraph
+} as SGraph;
 
-export const TestTemplate1: Template = {
+const testTemplate1: Template = {
     graph: testGraph1,
-    code: 'testString1'
-}
+    code: 'testString1',
+
+    getPosition: function (): Position {
+        throw new Error('Function not implemented.');
+    }
+};
 
 const testGraph2: Readonly<SModelElement> = {
     type: 'graph',
@@ -117,9 +136,13 @@ const testGraph2: Readonly<SModelElement> = {
     ] as SModelElement[],
     zoom: 0.8,
     scroll: {x:0, y:0},
-} as SGraph
+} as SGraph;
 
-export const TestTemplate2: Template = {
+const testTemplate2: Template = {
     graph: testGraph2,
-    code: 'testString2'
-}
+    code: 'testString2',
+    
+    getPosition: function (): Position {
+        throw new Error('Function not implemented.');
+    }
+};

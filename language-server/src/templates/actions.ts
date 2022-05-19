@@ -16,7 +16,7 @@
  */
 
 import { Action } from "sprotty-protocol";
-import { Template } from "../templates/templates";
+import { Template } from "./template-model";
 
 /** Request message from the server to update the diagram options widget on the client. */
 export interface UpdateTemplatesAction extends Action {

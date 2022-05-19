@@ -15,9 +15,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SModelElement } from "sprotty";
+import { SModelElement } from 'sprotty-protocol';
+import { Position } from 'vscode-languageserver';
 
 export interface Template {
     graph: Readonly<SModelElement>;
     code: string;
+
+    getPosition(x: number, y: number): Position
 }

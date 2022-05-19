@@ -15,10 +15,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, applyBounds, ComputedBoundsAction, DiagramServer, DiagramServices, JsonMap, RequestBoundsAction, RequestModelAction } from 'sprotty-protocol'
+import { Action, applyBounds, ComputedBoundsAction, DiagramServer, DiagramServices, JsonMap, RequestBoundsAction, RequestModelAction } from 'sprotty-protocol';
 import { Connection } from 'vscode-languageserver';
 import { ExecuteTemplateAction, UpdateTemplatesAction } from './actions';
-import { Template } from './templates';
+import { Template } from './template-model';
 
 export class TemplateDiagramServer extends DiagramServer {
 
@@ -33,8 +33,23 @@ export class TemplateDiagramServer extends DiagramServer {
         this.clientId = clientId;
         this.options = options;
         this.connection = connection;
-        //TODO: more generic
         this.templates = templates;
+        this.sendTemplates();
+    }
+
+    /**
+     * Send the templates provided by the server to the client.
+     */
+    private async sendTemplates() {
+        // TODO: generic code + size computation + correct ordering of nodes
+        const test = this.templates[0].graph;
+        const request = RequestBoundsAction.create(test);
+        const response = await this.request<ComputedBoundsAction>(request);
+        applyBounds(test, response);
+        const newRoot = await this.layoutEngine?.layout(test);
+        this.templates[0].graph = newRoot!;
+        // send the avaiable templates to the client
+        this.dispatch({ kind: UpdateTemplatesAction.KIND, templates: this.templates, clientId: this.clientId });
     }
 
     protected handleAction(action: Action): Promise<void> {
@@ -51,22 +66,11 @@ export class TemplateDiagramServer extends DiagramServer {
         };
         const uri = this.options?.sourceUri;
 
-        this.connection?.sendNotification('editor/add', {uri: uri, text: action.code, position: pos})
-        console.log('test');
+        this.connection?.sendNotification('editor/add', {uri: uri, text: action.code, position: pos});
         return;
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
-        // TODO: generic code + size computation
-        const test = this.templates[0].graph;
-        const request = RequestBoundsAction.create(test);
-        const response = await this.request<ComputedBoundsAction>(request);
-        applyBounds(test, response);
-        const newRoot = await this.layoutEngine?.layout(test);
-        this.templates[0].graph = newRoot!
-
-        // send the avaiable templates to the client before handling the request model action
-        this.dispatch({ kind: UpdateTemplatesAction.KIND, templates: this.templates, clientId: this.clientId });
         super.handleRequestModel(action);
     }
 
