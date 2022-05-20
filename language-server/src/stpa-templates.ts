@@ -21,15 +21,17 @@ import { CSEdge, CSNode } from './STPA-interfaces';
 import { CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection } from './stpa-model';
 import { Template } from './templates/template-model';
 import { LangiumDocuments, LangiumServices } from 'langium';
+//import { URI } from 'vscode-uri';
 
 export class StpaTemplates {
 
     protected readonly langiumDocuments: LangiumDocuments;
-    protected defaultTemplates = [testTemplate1, testTemplate2];
+    protected defaultTemplates: Template[];
     protected templates: Template[];
 
     constructor(services: LangiumServices) {
         this.langiumDocuments = services.shared.workspace.LangiumDocuments;
+        this.defaultTemplates =  [new SimpleCSTemplate(), new TestTemplate2()];
         this.templates = this.defaultTemplates;
     }
 
@@ -39,9 +41,9 @@ export class StpaTemplates {
 
 }
 
-const testGraph1: Readonly<SModelElement> = {
+const simpleCSTemplateGraph: Readonly<SModelElement> = {
     type: 'graph',
-    id: 'tempGraph',
+    id: 'simpleCSTemplate',
 /*     layoutOptions: {
         'org.eclipse.elk.separateConnectedComponents': 'false',
         'org.eclipse.elk.layered.crossingMinimization.semiInteractive': 'true',
@@ -108,15 +110,6 @@ const testGraph1: Readonly<SModelElement> = {
     scroll: {x:0, y:0},
 } as SGraph;
 
-const testTemplate1: Template = {
-    graph: testGraph1,
-    code: 'testString1',
-
-    getPosition: function (): Position {
-        throw new Error('Function not implemented.');
-    }
-};
-
 const testGraph2: Readonly<SModelElement> = {
     type: 'graph',
     id: 'tempGraph2',
@@ -138,11 +131,63 @@ const testGraph2: Readonly<SModelElement> = {
     scroll: {x:0, y:0},
 } as SGraph;
 
-const testTemplate2: Template = {
-    graph: testGraph2,
-    code: 'testString2',
+const simpleCSTemplateCode: string = 'Controller {\n    hierarchyLevel 0\n    controlActions {\n        [ca "control action"] -> ControlledProcess\n    }\n}\nControlledProcess {\n    hierarchyLevel 1\n    feedback {\n        [fb "feedback"] -> Controller\n    }\n}\n';
+
+export class SimpleCSTemplate implements Template {
+    graph = simpleCSTemplateGraph;
+    code = simpleCSTemplateCode;
+    //documents: LangiumDocuments;
+    id: string = 'simpleCSTemplate';
+    insertText = simpleCSTemplateCode;
+
+    /* constructor(documents: LangiumDocuments) {
+        this.documents = documents;
+    } */
+
+    getPosition (uri: string, x: number, y: number): Position {
+        // TODO: x and y should be considered when placing the text in the editor
+        // TODO: title could be written but no graph name
+        /* const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        const docText = document.getText();
+
+        // if there is not contorl structure so far, the title and a graph name must be added too
+        const titleIndex = docText.indexOf('ControlStructure');
+        if (titleIndex === -1) {
+            this.code = 'ControlStructure\nCS {\n' + this.insertText + '}';
+        } else {
+            this.code = this.insertText;
+        }
+        // determine position for the text to insert
+        const nextTitleIndex = docText.indexOf('Responsibilities');
+        const endIndex = nextTitleIndex !== -1 ? nextTitleIndex - 1 : docText.length - 1;
+        if (titleIndex === -1) {
+            return document.positionAt(endIndex);
+        } else {
+            const csText = docText.substring(titleIndex, endIndex);
+            const bracketIndex = csText.lastIndexOf('}');
+            return document.positionAt(bracketIndex -1);
+        } */
+        return {
+            line: 0,
+            character: 0
+        };
+    }
+};
+
+export class TestTemplate2 implements Template {
+    graph = testGraph2;
+    code = 'testString2';
+    //documents: LangiumDocuments;
+    id: string = 'tempGraph2';
+
+    /* constructor(documents: LangiumDocuments) {
+        this.documents = documents;
+    } */
     
-    getPosition: function (): Position {
-        throw new Error('Function not implemented.');
+    getPosition (uri: string, x: number, y: number): Position {
+        return {
+            line: 0,
+            character: 0
+        };
     }
 };
