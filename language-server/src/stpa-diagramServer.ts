@@ -20,14 +20,14 @@ import { Connection } from 'vscode-languageserver';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 import { TemplateDiagramServer } from './templates/template-diagram-server';
-import { Template } from './templates/template-model';
+import { LanguageTemplate } from './templates/template-model';
 
 export class StpaDiagramServer extends TemplateDiagramServer {
 
     private stpaOptions: StpaSynthesisOptions;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined, connection: Connection | undefined, templates: Template[]) {
+        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined, connection: Connection | undefined, templates: LanguageTemplate[]) {
         super(dispatch, services, clientId, templates, options, connection);
         this.stpaOptions = synthesisOptions;
         // send the avaiable syntheses options to the client

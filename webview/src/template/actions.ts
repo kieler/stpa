@@ -17,7 +17,7 @@
 
 import { Action, Bounds } from "sprotty-protocol";
 import { ModelRenderer } from "sprotty"
-import { Template } from "./template-models";
+import { WebviewTemplate } from "./template-models";
 
 /** Sent from the view. */
 export interface SendModelRendererAction extends Action {
@@ -45,7 +45,7 @@ export namespace SendModelRendererAction {
 /** Request message from the server to update the diagram options widget on the client. */
 export interface UpdateTemplatesAction extends Action {
     kind: typeof UpdateTemplatesAction.KIND;
-    templates: Template[];
+    templates: WebviewTemplate[];
     clientId: string;
 }
 
@@ -53,7 +53,7 @@ export namespace UpdateTemplatesAction {
     export const KIND = "updateTemplates";
 
     export function create(
-        templates: Template[],
+        templates: WebviewTemplate[],
         clientId: string
     ): UpdateTemplatesAction {
         return {

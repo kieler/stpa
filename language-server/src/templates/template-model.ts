@@ -18,10 +18,15 @@
 import { SModelElement } from 'sprotty-protocol';
 import { Position } from 'vscode-languageserver';
 
-export interface Template {
-    graph: Readonly<SModelElement>;
+export interface LanguageTemplate {
     code: string;
     id: string;
 
-    getPosition(uri: string, x: number, y: number): Position
+    generateGraph(): Readonly<SModelElement>;
+    getPosition(uri: string, x: number, y: number): Position;
+}
+
+export interface WebviewTemplate {
+    graph: Readonly<SModelElement>;
+    id: string;
 }

@@ -21,7 +21,7 @@ import { Action } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { DISymbol } from "../di.symbols";
 import { SendModelRendererAction, UpdateTemplatesAction } from "./actions";
-import { Template } from "./template-models";
+import { WebviewTemplate } from "./template-models";
 import { TemplateRenderer } from "./template-renderer";
 
 /**
@@ -41,9 +41,9 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
 
     @inject(DISymbol.TemplateRenderer) private templateRenderer: TemplateRenderer;
     
-    private _templates: Template[] = [];
+    private _templates: WebviewTemplate[] = [];
 
-    get templates(): Template[] {
+    get templates(): WebviewTemplate[] {
         return this._templates;
     }
     

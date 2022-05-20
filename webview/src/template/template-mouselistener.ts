@@ -29,7 +29,7 @@ export class TemplateMouseListener extends MouseListener {
 
     mouseDown(target: SModelElement, event: MouseEvent): (Action | Promise<Action>)[] {
         const root = target.root;
-        const selectedTemp = this.tempRegistry.templates.find(template => template.id === root.id)
+        const selectedTemp = this.tempRegistry.templates.find(template => template.graph.id === root.id)
         // TODO: maybe x and y should be the top left corner of the moved template instead of the event
         if (selectedTemp) {
             const action: ExecuteTemplateAction = {

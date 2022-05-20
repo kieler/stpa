@@ -16,12 +16,12 @@
  */
 
 import { Action } from "sprotty-protocol";
-import { Template } from "./template-model";
+import { WebviewTemplate } from "./template-model";
 
 /** Request message from the server to update the diagram options widget on the client. */
 export interface UpdateTemplatesAction extends Action {
     kind: typeof UpdateTemplatesAction.KIND;
-    templates: Template[];
+    templates: WebviewTemplate[];
     clientId: string;
 }
 
@@ -29,7 +29,7 @@ export namespace UpdateTemplatesAction {
     export const KIND = "updateTemplates";
 
     export function create(
-        templates: Template[],
+        templates: WebviewTemplate[],
         clientId: string
     ): UpdateTemplatesAction {
         return {

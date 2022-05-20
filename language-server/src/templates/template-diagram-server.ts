@@ -18,17 +18,17 @@
 import { Action, applyBounds, ComputedBoundsAction, DiagramServer, DiagramServices, JsonMap, RequestBoundsAction, RequestModelAction } from 'sprotty-protocol';
 import { Connection } from 'vscode-languageserver';
 import { ExecuteTemplateAction, UpdateTemplatesAction } from './actions';
-import { Template } from './template-model';
+import { LanguageTemplate, WebviewTemplate } from './template-model';
 
 export class TemplateDiagramServer extends DiagramServer {
 
     protected clientId: string;
-    protected templates: Template[];    
+    protected templates: LanguageTemplate[];    
     protected options: JsonMap | undefined;
     protected connection: Connection | undefined;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, clientId: string, templates: Template[], options: JsonMap | undefined, connection: Connection | undefined) {
+        services: DiagramServices, clientId: string, templates: LanguageTemplate[], options: JsonMap | undefined, connection: Connection | undefined) {
         super(dispatch, services);
         this.clientId = clientId;
         this.options = options;
@@ -41,15 +41,26 @@ export class TemplateDiagramServer extends DiagramServer {
      * Send the templates provided by the server to the client.
      */
     private async sendTemplates() {
-        // TODO: generic code + size computation + correct ordering of nodes
-        const test = this.templates[0].graph;
-        const request = RequestBoundsAction.create(test);
-        const response = await this.request<ComputedBoundsAction>(request);
-        applyBounds(test, response);
-        const newRoot = await this.layoutEngine?.layout(test);
-        this.templates[0].graph = newRoot!;
+        const webviewTemplates: WebviewTemplate[] = []
+        for (const template of this.templates) {
+            // TODO: size computation + correct ordering of nodes
+            let graph = template.generateGraph();
+            const request = RequestBoundsAction.create(graph);
+            const response = await this.request<ComputedBoundsAction>(request);
+            applyBounds(graph, response);
+            const newRoot = await this.layoutEngine?.layout(graph);
+            if (newRoot) {
+                graph = newRoot;
+            }
+            const webTemp = {
+                graph: graph,
+                id: template.id
+            };
+            webviewTemplates.push(webTemp);
+        }
+
         // send the avaiable templates to the client
-        this.dispatch({ kind: UpdateTemplatesAction.KIND, templates: this.templates, clientId: this.clientId });
+        this.dispatch({ kind: UpdateTemplatesAction.KIND, templates: webviewTemplates, clientId: this.clientId });
     }
 
     protected handleAction(action: Action): Promise<void> {

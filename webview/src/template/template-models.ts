@@ -17,8 +17,7 @@
 
 import { SModelElement } from "sprotty";
 
-export interface Template {
+export interface WebviewTemplate {
     graph: Readonly<SModelElement>;
-    code: string;
     id: string;
 }

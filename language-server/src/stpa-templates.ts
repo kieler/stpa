@@ -19,19 +19,19 @@ import { /* ModelLayoutOptions, */ SGraph, SLabel, SModelElement } from 'sprotty
 import { Position } from 'vscode-languageserver';
 import { CSEdge, CSNode } from './STPA-interfaces';
 import { CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection } from './stpa-model';
-import { Template } from './templates/template-model';
+import { LanguageTemplate } from './templates/template-model';
 import { LangiumDocuments, LangiumServices } from 'langium';
 //import { URI } from 'vscode-uri';
 
 export class StpaTemplates {
 
     protected readonly langiumDocuments: LangiumDocuments;
-    protected defaultTemplates: Template[];
-    protected templates: Template[];
+    protected defaultTemplates: LanguageTemplate[];
+    protected templates: LanguageTemplate[];
 
     constructor(services: LangiumServices) {
         this.langiumDocuments = services.shared.workspace.LangiumDocuments;
-        this.defaultTemplates =  [new SimpleCSTemplate(), new TestTemplate2()];
+        this.defaultTemplates =  [new SimpleCSTemplate(this.langiumDocuments), new TestTemplate2(this.langiumDocuments)];
         this.templates = this.defaultTemplates;
     }
 
@@ -133,16 +133,19 @@ const testGraph2: Readonly<SModelElement> = {
 
 const simpleCSTemplateCode: string = 'Controller {\n    hierarchyLevel 0\n    controlActions {\n        [ca "control action"] -> ControlledProcess\n    }\n}\nControlledProcess {\n    hierarchyLevel 1\n    feedback {\n        [fb "feedback"] -> Controller\n    }\n}\n';
 
-export class SimpleCSTemplate implements Template {
-    graph = simpleCSTemplateGraph;
+export class SimpleCSTemplate implements LanguageTemplate {
     code = simpleCSTemplateCode;
-    //documents: LangiumDocuments;
+    documents: LangiumDocuments;
     id: string = 'simpleCSTemplate';
     insertText = simpleCSTemplateCode;
 
-    /* constructor(documents: LangiumDocuments) {
+    constructor(documents: LangiumDocuments) {
         this.documents = documents;
-    } */
+    }
+
+    generateGraph(): Readonly<SModelElement> {
+        return simpleCSTemplateGraph
+    }
 
     getPosition (uri: string, x: number, y: number): Position {
         // TODO: x and y should be considered when placing the text in the editor
@@ -174,15 +177,17 @@ export class SimpleCSTemplate implements Template {
     }
 };
 
-export class TestTemplate2 implements Template {
-    graph = testGraph2;
+export class TestTemplate2 implements LanguageTemplate {
     code = 'testString2';
-    //documents: LangiumDocuments;
+    documents: LangiumDocuments;
     id: string = 'tempGraph2';
 
-    /* constructor(documents: LangiumDocuments) {
+    constructor(documents: LangiumDocuments) {
         this.documents = documents;
-    } */
+    }
+    generateGraph(): Readonly<SModelElement> {
+        return testGraph2
+    }
     
     getPosition (uri: string, x: number, y: number): Position {
         return {
