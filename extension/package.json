@@ -70,6 +70,10 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
+                    "command": "contextTable.open",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
                     "command": "stpa.diagram.fit",
                     "when": "stpa-diagram-focused"
                 },
@@ -141,7 +145,8 @@
     },
     "activationEvents": [
         "onLanguage:stpa",
-        "onCommand:stpa.diagram.open"
+        "onCommand:stpa.diagram.open",
+        "onCommand:contextTable.open"
     ],
     "files": [
         "lib",

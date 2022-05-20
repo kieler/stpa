@@ -39,7 +39,8 @@ Aircraft {
     FlightCrew {
         hierarchyLevel 0
         processModel {
-            BCSUmode: ["on", "off"]
+            BCSUmode        : ["on", "off"]
+            aircraftPosition: ["docked", "taxiing", "takeoff", "air", "landing"]
         }
         controlActions {
             [mc "Manual Controls" ]-> OtherSubsystems
