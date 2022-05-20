@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import ElkConstructor from 'elkjs/lib/elk.bundled'
+import ElkConstructor from 'elkjs/lib/elk.bundled';
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices } from 'langium';
 import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
@@ -26,7 +26,7 @@ import { StpaDiagramServer } from './stpa-diagramServer';
 import { StpaScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 import { URI } from 'vscode-uri';
-import { DiagramOptions } from 'sprotty-protocol'
+import { DiagramOptions } from 'sprotty-protocol';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 
 
@@ -48,13 +48,13 @@ export type StpaAddedServices = {
     options: {
         StpaSynthesisOptions: StpaSynthesisOptions
     }
-}
+};
 
 /**
  * Union of Langium default services and your custom services - use this as constructor parameter
  * of custom service classes.
  */
-export type StpaServices = LangiumSprottyServices & StpaAddedServices
+export type StpaServices = LangiumSprottyServices & StpaAddedServices;
 
 /**
  * Dependency injection module that overrides Langium default services and contributes the
@@ -135,12 +135,12 @@ export function createStpaServices(context?: DefaultSharedModuleContext): { shar
         createDefaultSharedModule(context),
         StpaGeneratedSharedModule,
         StpaSprottySharedModule
-    )
+    );
     const states = inject(
         createDefaultModule({shared}),
         StpaGeneratedModule,
         STPAModule,
-    )
-    shared.ServiceRegistry.register(states)
-    return { shared, states }
+    );
+    shared.ServiceRegistry.register(states);
+    return { shared, states };
 }

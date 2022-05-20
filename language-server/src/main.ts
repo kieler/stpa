@@ -16,7 +16,7 @@
  */
 
 import { startLanguageServer } from 'langium';
-import { addDiagramHandler } from 'langium-sprotty'
+import { addDiagramHandler } from 'langium-sprotty';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
 import { createStpaServices } from './stpa-module';
 
@@ -28,4 +28,4 @@ const { shared } = createStpaServices({ connection });
 
 // Start the language server with the language-specific services
 startLanguageServer(shared);
-addDiagramHandler(connection, shared)
+addDiagramHandler(connection, shared);
