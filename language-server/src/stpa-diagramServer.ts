@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol'
-import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions'
+import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
+import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {
@@ -53,7 +53,7 @@ export class StpaDiagramServer extends DiagramServer {
 
     handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
         for (const option of action.options) {
-            const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id == option.id);
+            const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
                 opt.currentValue = option.currentValue;
             }
