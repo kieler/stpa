@@ -30,6 +30,11 @@
             "outFiles": [
                 "${workspaceFolder}/extension/pack/language-server.js"
             ],
+            "sourceMapPathOverrides": {
+				"meteor://💻app/*": "${workspaceFolder}/*",
+				"webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+				"webpack://?:*/*": "${workspaceFolder}/language-server/*"
+			},
             "type": "pwa-node"
         }
     ]
