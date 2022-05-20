@@ -70,18 +70,24 @@ export namespace UpdateTemplatesAction {
 
 export interface ExecuteTemplateAction extends Action {
     kind: typeof ExecuteTemplateAction.KIND;
-    code: string;
+    id: string;
+    x: number;
+    y: number;
 }
 
 export namespace ExecuteTemplateAction {
     export const KIND = "executeTemplate";
 
     export function create(
-        code: string
+        id: string,
+        x: number,
+        y: number
     ): ExecuteTemplateAction {
         return {
             kind: KIND,
-            code
+            id,
+            x,
+            y
         };
     }
 

@@ -61,13 +61,13 @@ export class TemplateDiagramServer extends DiagramServer {
     }
 
     async handleExecuteTemplate(action: ExecuteTemplateAction): Promise<void> {
-        const pos = {
-            line: 0, character : 0
-        };
         const uri = this.options?.sourceUri;
-
-        this.connection?.sendNotification('editor/add', {uri: uri, text: action.code, position: pos});
-        return;
+        const temp = this.templates.find(temp => temp.id === action.id);
+        if (temp) {
+            this.connection?.sendNotification('editor/add', {uri: uri, text: temp.code, position: temp.getPosition(uri as string, action.x, action.y)});
+        } else {
+            console.error('There is no Template with id ' + action.id);
+        }
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {

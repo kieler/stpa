@@ -20,4 +20,5 @@ import { SModelElement } from "sprotty";
 export interface Template {
     graph: Readonly<SModelElement>;
     code: string;
+    id: string;
 }

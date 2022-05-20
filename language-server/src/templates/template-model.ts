@@ -21,6 +21,7 @@ import { Position } from 'vscode-languageserver';
 export interface Template {
     graph: Readonly<SModelElement>;
     code: string;
+    id: string;
 
-    getPosition(x: number, y: number): Position
+    getPosition(uri: string, x: number, y: number): Position
 }

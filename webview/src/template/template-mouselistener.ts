@@ -28,12 +28,18 @@ export class TemplateMouseListener extends MouseListener {
     @inject(DISymbol.TemplateRegistry) private tempRegistry: TemplateRegistry;
 
     mouseDown(target: SModelElement, event: MouseEvent): (Action | Promise<Action>)[] {
-        // TODO: determine template that is clicked on
-        const action: ExecuteTemplateAction = {
-            kind: ExecuteTemplateAction.KIND,
-            code: "test"
-        };
-        vscodeApi.postMessage({clientId: this.tempRegistry.clientId, action: action});
+        const root = target.root;
+        const selectedTemp = this.tempRegistry.templates.find(template => template.id === root.id)
+        // TODO: maybe x and y should be the top left corner of the moved template instead of the event
+        if (selectedTemp) {
+            const action: ExecuteTemplateAction = {
+                kind: ExecuteTemplateAction.KIND,
+                id: selectedTemp.id,
+                x: event.x,
+                y: event.y
+            };
+            vscodeApi.postMessage({clientId: this.tempRegistry.clientId, action: action});
+        }
         return [];
     }
 
