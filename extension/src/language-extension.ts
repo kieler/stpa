@@ -29,6 +29,20 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         super('stpa', context);
     }
 
+    protected registerCommands(): void {
+        super.registerCommands();
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand('contextTable.open', () => {
+                vscode.window.createWebviewPanel(
+                    'contextTable',
+                    'Context Table',
+                    vscode.ViewColumn.Two,
+                    {}
+                )
+            })
+        )
+    }
+
     protected getDiagramType(commandArgs: any[]): string | undefined {
         if (commandArgs.length === 0
             || commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {

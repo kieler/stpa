@@ -38,6 +38,11 @@
                 "category": "STPA Diagram"
             },
             {
+                "command": "contextTable.open",
+                "title": "Show Context Tables",
+                "category": "Context Table"
+            },
+            {
                 "command": "stpa.diagram.fit",
                 "title": "Fit to Screen",
                 "category": "STPA Diagram"
@@ -62,10 +67,6 @@
             "commandPalette": [
                 {
                     "command": "stpa.diagram.open",
-                    "when": "editorLangId == 'stpa'"
-                },
-                {
-                    "command": "contextTable.open",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
