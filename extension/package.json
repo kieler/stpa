@@ -56,11 +56,6 @@
                 "command": "stpa.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "STPA Diagram"
-            },
-            {
-                "command": "stpa.diagram.hierarchy",
-                "title": "Toggle STPA diagram hierarchy style",
-                "category": "STPA Diagram"
             }
         ],
         "menus": {
@@ -87,10 +82,6 @@
                 },
                 {
                     "command": "stpa.diagram.export",
-                    "when": "stpa-diagram-focused"
-                },
-                {
-                    "command": "stpa.diagram.hierarchy",
                     "when": "stpa-diagram-focused"
                 }
             ],

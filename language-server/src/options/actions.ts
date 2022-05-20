@@ -26,7 +26,7 @@ export interface UpdateOptionsAction extends Action {
 }
 
 export namespace UpdateOptionsAction {
-    export const KIND = "updateOptions"
+    export const KIND = "updateOptions";
 
     export function create(
         valuedSynthesisOptions: ValuedSynthesisOption[],
@@ -36,7 +36,7 @@ export namespace UpdateOptionsAction {
             kind: KIND,
             valuedSynthesisOptions,
             clientId,
-        }
+        };
     }
 
     export function isThisAction(action: Action): action is UpdateOptionsAction {
@@ -52,13 +52,13 @@ export interface SetSynthesisOptionsAction extends Action {
 }
 
 export namespace SetSynthesisOptionsAction {
-    export const KIND = "setSynthesisOptions"
+    export const KIND = "setSynthesisOptions";
 
     export function create(options: SynthesisOption[]): SetSynthesisOptionsAction {
         return {
             kind: KIND,
             options,
-        }
+        };
     }
 
     export function isThisAction(action: Action): action is SetSynthesisOptionsAction {
