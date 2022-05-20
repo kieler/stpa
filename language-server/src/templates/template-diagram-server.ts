@@ -75,7 +75,8 @@ export class TemplateDiagramServer extends DiagramServer {
         const uri = this.options?.sourceUri;
         const temp = this.templates.find(temp => temp.id === action.id);
         if (temp) {
-            this.connection?.sendNotification('editor/add', {uri: uri, text: temp.code, position: temp.getPosition(uri as string, action.x, action.y)});
+            const pos = temp.getPosition(uri as string, action.x, action.y);
+            this.connection?.sendNotification('editor/add', {uri: uri, text: temp.code, position: pos});
         } else {
             console.error('There is no Template with id ' + action.id);
         }

@@ -21,7 +21,7 @@ import { CSEdge, CSNode } from './STPA-interfaces';
 import { CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection } from './stpa-model';
 import { LanguageTemplate } from './templates/template-model';
 import { LangiumDocuments, LangiumServices } from 'langium';
-//import { URI } from 'vscode-uri';
+import { URI } from 'vscode-uri';
 
 export class StpaTemplates {
 
@@ -131,7 +131,7 @@ const testGraph2: Readonly<SModelElement> = {
     scroll: {x:0, y:0},
 } as SGraph;
 
-const simpleCSTemplateCode: string = 'Controller {\n    hierarchyLevel 0\n    controlActions {\n        [ca "control action"] -> ControlledProcess\n    }\n}\nControlledProcess {\n    hierarchyLevel 1\n    feedback {\n        [fb "feedback"] -> Controller\n    }\n}\n';
+const simpleCSTemplateCode: string = '\nController {\n    hierarchyLevel 0\n    controlActions {\n        [ca "control action"] -> ControlledProcess\n    }\n}\nControlledProcess {\n    hierarchyLevel 1\n    feedback {\n        [fb "feedback"] -> Controller\n    }\n}\n';
 
 export class SimpleCSTemplate implements LanguageTemplate {
     code = simpleCSTemplateCode;
@@ -150,13 +150,13 @@ export class SimpleCSTemplate implements LanguageTemplate {
     getPosition (uri: string, x: number, y: number): Position {
         // TODO: x and y should be considered when placing the text in the editor
         // TODO: title could be written but no graph name
-        /* const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         const docText = document.getText();
 
         // if there is not contorl structure so far, the title and a graph name must be added too
         const titleIndex = docText.indexOf('ControlStructure');
         if (titleIndex === -1) {
-            this.code = 'ControlStructure\nCS {\n' + this.insertText + '}';
+            this.code = 'ControlStructure\nCS {' + this.insertText + '}';
         } else {
             this.code = this.insertText;
         }
@@ -168,12 +168,8 @@ export class SimpleCSTemplate implements LanguageTemplate {
         } else {
             const csText = docText.substring(titleIndex, endIndex);
             const bracketIndex = csText.lastIndexOf('}');
-            return document.positionAt(bracketIndex -1);
-        } */
-        return {
-            line: 0,
-            character: 0
-        };
+            return document.positionAt(titleIndex + bracketIndex -1);
+        }
     }
 };
 
