@@ -22,6 +22,7 @@ import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVs
 import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import { ActionMessage, RequestModelAction, JsonMap } from 'sprotty-protocol'
+import { ContextTablePanel } from './ContextTablePanel';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
  
@@ -33,12 +34,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         super.registerCommands();
         this.context.subscriptions.push(
             vscode.commands.registerCommand('contextTable.open', () => {
-                vscode.window.createWebviewPanel(
-                    'contextTable',
-                    'Context Table',
-                    vscode.ViewColumn.Two,
-                    {}
-                )
+                ContextTablePanel.createOrShow(this.context.extensionUri);
             })
         )
     }

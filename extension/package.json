@@ -40,6 +40,7 @@
             {
                 "command": "contextTable.open",
                 "title": "Show Context Tables",
+                "icon": "$(server-process)",
                 "category": "Context Table"
             },
             {
@@ -70,6 +71,10 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
+                    "command": "contextTable.open",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
                     "command": "stpa.diagram.fit",
                     "when": "stpa-diagram-focused"
                 },
@@ -96,6 +101,11 @@
             "editor/title": [
                 {
                     "command": "stpa.diagram.open",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },     
+                {
+                    "command": "contextTable.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }
