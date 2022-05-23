@@ -29,14 +29,14 @@ export class ContextTablePanel {
     const panel = vscode.window.createWebviewPanel(
       ContextTablePanel.viewType,
       "Context Table",
-      column || vscode.ViewColumn.Two,
+      vscode.ViewColumn.Two,
       {
         // Enable javascript in the webview
         enableScripts: true,
 
         // And restrict the webview to only loading content from our extension's `css` directory.
         localResourceRoots: [
-          vscode.Uri.joinPath(extensionUri, "css"),
+          vscode.Uri.joinPath(extensionUri, "./"),
           vscode.Uri.joinPath(extensionUri, "out/compiled"),
         ],
       }
