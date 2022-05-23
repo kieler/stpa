@@ -54,8 +54,7 @@ const simpleCSTemplateGraph: Readonly<SModelElement> = {
         {
             type: CS_NODE_TYPE,
             id: 'tempnode1',
-            size: {width: 10, height: 10},
-            //position: {x: 0, y: 0},
+            layout: 'stack',
             children: [
                 {
                     type:'label',
@@ -67,8 +66,7 @@ const simpleCSTemplateGraph: Readonly<SModelElement> = {
         {
             type: CS_NODE_TYPE,
             id: 'tempnode2',
-            size: {width: 10, height: 10},
-            //position: {x: 0, y: 100},
+            layout: 'stack',
             children: [
                 {
                     type:'label',
@@ -117,12 +115,12 @@ const testGraph2: Readonly<SModelElement> = {
         {
             type: CS_NODE_TYPE,
             id: 'tempnode21',
-            size: {width: 10, height: 10},
+            layout: 'stack',
             children: [
                 {
                     type:'label',
                     id: 'tempLabel21',
-                    text: 'Controller'
+                    text: 'Component'
                 } as SLabel
             ]
         } as CSNode
@@ -144,12 +142,14 @@ export class SimpleCSTemplate implements LanguageTemplate {
     }
 
     generateGraph(): Readonly<SModelElement> {
-        return simpleCSTemplateGraph
+        // TODO: generate graph automatically based on the code
+        return simpleCSTemplateGraph;
     }
 
     getPosition (uri: string, x: number, y: number): Position {
         // TODO: x and y should be considered when placing the text in the editor
         // TODO: title could be written but no graph name
+        // TODO: IDs must be unique even if the template is used more than once
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         const docText = document.getText();
 
@@ -182,7 +182,7 @@ export class TestTemplate2 implements LanguageTemplate {
         this.documents = documents;
     }
     generateGraph(): Readonly<SModelElement> {
-        return testGraph2
+        return testGraph2;
     }
     
     getPosition (uri: string, x: number, y: number): Position {
