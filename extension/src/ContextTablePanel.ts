@@ -69,9 +69,9 @@ export class ContextTablePanel {
     // Dispose of no longer needed data.
     this._panel.dispose();
     while (this._disposables.length) {
-      const x = this._disposables.pop();
-      if (x) {
-        x.dispose();
+      const trash = this._disposables.pop();
+      if (trash) {
+        trash.dispose();
       }
     }
   }
@@ -85,12 +85,12 @@ export class ContextTablePanel {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     // Get the style sheets to be used for the HTML data
-    const stylesResetUri = webview.asWebviewUri(vscode.Uri.joinPath(
+    const resetterUri = webview.asWebviewUri(vscode.Uri.joinPath(
       this._extensionUri,
       "src",
       "resetter.css"
     ));
-    const stylesMainUri = webview.asWebviewUri(vscode.Uri.joinPath(
+    const vscStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(
       this._extensionUri,
       "src",
       "vscode-style.css"
@@ -101,8 +101,8 @@ export class ContextTablePanel {
 			<head>
 				<meta charset="UTF-8">
 		    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		    <link href="${stylesResetUri}" rel="stylesheet">
-		    <link href="${stylesMainUri}" rel="stylesheet">
+		    <link href="${resetterUri}" rel="stylesheet">
+		    <link href="${vscStyleUri}" rel="stylesheet">
 		  </head>
       <body>
         <h1>Test!</h1>
