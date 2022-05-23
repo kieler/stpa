@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { getNonce } from "./getNonce";
 
 export class ContextTablePanel {
   // Track the current panel. Only allow a single panel to exist. 
@@ -96,22 +95,14 @@ export class ContextTablePanel {
       "src",
       "vscode-style.css"
     ));
-    // Use a nonce for script security.
-    const nonce = getNonce();
     // HTML
     return `<!DOCTYPE html>
 		<html lang="en">
 			<head>
 				<meta charset="UTF-8">
-				<!--
-					Only allow scripts that have a established nonce.
-        -->
-        <meta script-src 'nonce-${nonce}';">
 		    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 		    <link href="${stylesResetUri}" rel="stylesheet">
 		    <link href="${stylesMainUri}" rel="stylesheet">
-        <script nonce="${nonce}">
-        </script>
 		  </head>
       <body>
         <h1>Test!</h1>
