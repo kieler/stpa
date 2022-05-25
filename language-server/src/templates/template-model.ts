@@ -19,7 +19,7 @@ import { SModelElement } from 'sprotty-protocol';
 import { Position } from 'vscode-languageserver';
 
 export interface LanguageTemplate {
-    code: string;
+    insertText: string;
     id: string;
 
     generateGraph(): Readonly<SModelElement>;

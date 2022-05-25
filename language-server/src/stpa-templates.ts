@@ -18,7 +18,7 @@
 import { /* ModelLayoutOptions, */ SGraph, SLabel, SModelElement } from 'sprotty-protocol';
 import { Position } from 'vscode-languageserver';
 import { CSEdge, CSNode } from './STPA-interfaces';
-import { CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection } from './stpa-model';
+import { CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection, PARENT_TYPE } from './stpa-model';
 import { LanguageTemplate } from './templates/template-model';
 import { LangiumDocuments, LangiumServices } from 'langium';
 import { URI } from 'vscode-uri';
@@ -52,57 +52,63 @@ const simpleCSTemplateGraph: Readonly<SModelElement> = {
     } as ModelLayoutOptions, */
     children: [
         {
-            type: CS_NODE_TYPE,
-            id: 'tempnode1',
-            layout: 'stack',
+            type: PARENT_TYPE,
+            id: 'tempparentnode1',
             children: [
                 {
-                    type:'label',
-                    id: 'tempLabel1',
-                    text: 'Controller'
-                } as SLabel
-            ]
-        } as CSNode,
-        {
-            type: CS_NODE_TYPE,
-            id: 'tempnode2',
-            layout: 'stack',
-            children: [
+                    type: CS_NODE_TYPE,
+                    id: 'tempnode1',
+                    layout: 'stack',
+                    children: [
+                        {
+                            type:'label',
+                            id: 'tempLabel1',
+                            text: 'Controller'
+                        } as SLabel
+                    ]
+                } as CSNode,
                 {
-                    type:'label',
-                    id: 'tempLabel2',
-                    text: 'Controlled Process'
-                } as SLabel
-            ]
-        } as CSNode,
-        {
-            type: CS_EDGE_TYPE,
-            id: 'tempedge1',
-            sourceId: 'tempnode1',
-            targetId: 'tempnode2',
-            direction: EdgeDirection.DOWN,
-            children: [
+                    type: CS_NODE_TYPE,
+                    id: 'tempnode2',
+                    layout: 'stack',
+                    children: [
+                        {
+                            type:'label',
+                            id: 'tempLabel2',
+                            text: 'Controlled Process'
+                        } as SLabel
+                    ]
+                } as CSNode,
                 {
-                    type:'label:xref',
-                    id: 'tempLabel3',
-                    text: 'control action'
-                } as SLabel
-            ]
-        } as CSEdge,
-        {
-            type: CS_EDGE_TYPE,
-            id: 'tempedge2',
-            sourceId: 'tempnode2',
-            targetId: 'tempnode1',
-            direction: EdgeDirection.UP,
-            children: [
+                    type: CS_EDGE_TYPE,
+                    id: 'tempedge1',
+                    sourceId: 'tempnode1',
+                    targetId: 'tempnode2',
+                    direction: EdgeDirection.DOWN,
+                    children: [
+                        {
+                            type:'label:xref',
+                            id: 'tempLabel3',
+                            text: 'control action'
+                        } as SLabel
+                    ]
+                } as CSEdge,
                 {
-                    type:'label:xref',
-                    id: 'tempLabel4',
-                    text: 'feedback'
-                } as SLabel
-            ]
-        } as CSEdge
+                    type: CS_EDGE_TYPE,
+                    id: 'tempedge2',
+                    sourceId: 'tempnode2',
+                    targetId: 'tempnode1',
+                    direction: EdgeDirection.UP,
+                    children: [
+                        {
+                            type:'label:xref',
+                            id: 'tempLabel4',
+                            text: 'feedback'
+                        } as SLabel
+                    ]
+                } as CSEdge
+            ] as SModelElement[]
+        }  
     ] as SModelElement[],
     zoom: 0.8,
     scroll: {x:0, y:0},
@@ -120,7 +126,7 @@ const testGraph2: Readonly<SModelElement> = {
                 {
                     type:'label',
                     id: 'tempLabel21',
-                    text: 'Component'
+                    text: 'TestGraph'
                 } as SLabel
             ]
         } as CSNode
@@ -132,10 +138,10 @@ const testGraph2: Readonly<SModelElement> = {
 const simpleCSTemplateCode: string = '\nController {\n    hierarchyLevel 0\n    controlActions {\n        [ca "control action"] -> ControlledProcess\n    }\n}\nControlledProcess {\n    hierarchyLevel 1\n    feedback {\n        [fb "feedback"] -> Controller\n    }\n}\n';
 
 export class SimpleCSTemplate implements LanguageTemplate {
-    code = simpleCSTemplateCode;
+    insertText = simpleCSTemplateCode;
     documents: LangiumDocuments;
     id: string = 'simpleCSTemplate';
-    insertText = simpleCSTemplateCode;
+    baseCode = simpleCSTemplateCode;
 
     constructor(documents: LangiumDocuments) {
         this.documents = documents;
@@ -156,9 +162,9 @@ export class SimpleCSTemplate implements LanguageTemplate {
         // if there is not contorl structure so far, the title and a graph name must be added too
         const titleIndex = docText.indexOf('ControlStructure');
         if (titleIndex === -1) {
-            this.code = 'ControlStructure\nCS {' + this.insertText + '}';
+            this.insertText = 'ControlStructure\nCS {' + this.baseCode + '}';
         } else {
-            this.code = this.insertText;
+            this.insertText = this.baseCode;
         }
         // determine position for the text to insert
         const nextTitleIndex = docText.indexOf('Responsibilities');
@@ -174,7 +180,7 @@ export class SimpleCSTemplate implements LanguageTemplate {
 };
 
 export class TestTemplate2 implements LanguageTemplate {
-    code = 'testString2';
+    insertText = 'testString2';
     documents: LangiumDocuments;
     id: string = 'tempGraph2';
 

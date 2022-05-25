@@ -47,7 +47,7 @@ export class TemplateRenderer {
 
         // labels and edges are only visible if they are within the canvas bounds
         for (const temp of templates) {
-            (temp.graph as SGraph).canvasBounds = this.bounds;
+            (temp.graph as SGraph).canvasBounds = {width: this.bounds.width + 20, height: this.bounds.height, x: this.bounds.x, y: this.bounds.y};
         }
 
         const res = templates.map(template =>
