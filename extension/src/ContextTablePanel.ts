@@ -95,18 +95,50 @@ export class ContextTablePanel {
       "src",
       "vscode-style.css"
     ));
+    const tableStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(
+      this._extensionUri,
+      "src",
+      "table.css"
+    ));
     // HTML
     return `<!DOCTYPE html>
 		<html lang="en">
 			<head>
 				<meta charset="UTF-8">
 		    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		    <link href="${resetterUri}" rel="stylesheet">
-		    <link href="${vscStyleUri}" rel="stylesheet">
+		    <link href="${resetterUri}"   rel="stylesheet">
+		    <link href="${vscStyleUri}"   rel="stylesheet">
+        <link href="${tableStyleUri}" rel="stylesheet">
 		  </head>
       <body>
-        <h1>Test!</h1>
-        <button>Style Test!</button>
+        <table>
+          <tr>
+            <th rowspan = "2">Control Action</th>
+            <th colspan = "2">Context Variables</th>
+            <th colspan = "3">Hazardous?</th>
+          </tr>
+          <tr>
+            <th>Variable A</th>
+            <th>Variable B</th>
+            <th>Anytime</th>
+            <th>Too Early</th>
+            <th>Too Late</th>
+          </tr>
+          <tr>
+            <td>CA</td>
+            <td>0</td>
+            <td>0</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td>CA</td>
+            <td>0</td>
+            <td>1</td>
+            <td colspan = "3">Yes</td>
+          </tr>
+        </table>
 		  </body>
 		</html>`;
   }
