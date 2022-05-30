@@ -85,7 +85,7 @@ export class ContextTablePanel {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     // Get the style sheets to be used for the HTML data
-    const resetterUri = webview.asWebviewUri(vscode.Uri.joinPath(
+    /*const resetterUri = webview.asWebviewUri(vscode.Uri.joinPath(
       this._extensionUri,
       "src",
       "resetter.css"
@@ -94,7 +94,7 @@ export class ContextTablePanel {
       this._extensionUri,
       "src",
       "vscode-style.css"
-    ));
+    ));*/
     const tableStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(
       this._extensionUri,
       "src",
@@ -106,11 +106,21 @@ export class ContextTablePanel {
 			<head>
 				<meta charset="UTF-8">
 		    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		    <link href="${resetterUri}"   rel="stylesheet">
-		    <link href="${vscStyleUri}"   rel="stylesheet">
         <link href="${tableStyleUri}" rel="stylesheet">
 		  </head>
       <body>
+        <label for "controlAction">Control Action</label>
+        <select name = "controlAction" id = "controlAction">
+          <option value = "manBrake">Manual Braking</option>
+          <option value = "onBSCU">Power On BSCU</option>
+          <option value = "offBSCU">Power Off BSCU</option>
+        </select>
+        <label for "type">, Type</label>
+        <select name = "type" id = "type">
+          <option value = "prov">provided</option>
+          <option value = "noProv">not provided</option>
+        </select>
+        <button type = "button" class = "catButton">Submit</button>
         <table>
           <tr>
             <th rowspan = "2">Control Action</th>
