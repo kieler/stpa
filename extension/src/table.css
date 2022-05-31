@@ -4,9 +4,8 @@ table {
 }
 
 th {
-    text-align: left;
     color: white;
-    background-color: darkslateblue;
+    background-color: midnightblue;
 }
 
 table, th, td {
@@ -23,9 +22,10 @@ tr:nth-child(odd){
 }
 
 tr:nth-child(even) {
-    background-color: beige;
+    background-color: aliceblue;
 }
 
 td {
     color: black;
+    text-align: center;
 }
