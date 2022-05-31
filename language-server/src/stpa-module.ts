@@ -1,13 +1,33 @@
-import ElkConstructor from 'elkjs/lib/elk.bundled'
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2021 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+import ElkConstructor from 'elkjs/lib/elk.bundled';
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices } from 'langium';
-import { LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedModule } from 'langium-sprotty';
+import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { StpaDiagramGenerator } from './diagram-generator';
 import { StpaGeneratedModule, StpaGeneratedSharedModule } from './generated/module';
 import { StpaLayoutConfigurator } from './layout-config';
-import { StpaOptions } from './stpa-options';
+import { StpaDiagramServer } from './stpa-diagramServer';
 import { StpaScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
+import { URI } from 'vscode-uri';
+import { DiagramOptions } from 'sprotty-protocol';
+import { StpaSynthesisOptions } from './options/synthesis-options';
 
 
 /**
@@ -26,15 +46,15 @@ export type StpaAddedServices = {
         LayoutConfigurator: ILayoutConfigurator
     },
     options: {
-        Options: StpaOptions
+        StpaSynthesisOptions: StpaSynthesisOptions
     }
-}
+};
 
 /**
  * Union of Langium default services and your custom services - use this as constructor parameter
  * of custom service classes.
  */
-export type StpaServices = LangiumSprottyServices & StpaAddedServices
+export type StpaServices = LangiumSprottyServices & StpaAddedServices;
 
 /**
  * Dependency injection module that overrides Langium default services and contributes the
@@ -60,9 +80,40 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
         LayoutConfigurator: () => new StpaLayoutConfigurator
     },
     options: {
-        Options: () => new StpaOptions()
+        StpaSynthesisOptions: () => new StpaSynthesisOptions()
     }
 };
+
+export const stpaDiagramServerFactory =
+(services: LangiumSprottySharedServices): ((clientId: string, options?: DiagramOptions) => StpaDiagramServer) => {
+    const connection = services.lsp.Connection;
+    const serviceRegistry = services.ServiceRegistry;
+    return (clientId, options) => {
+        const sourceUri = options?.sourceUri;
+        if (!sourceUri) {
+            throw new Error("Missing 'sourceUri' option in request.");
+        }
+        const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as StpaServices;
+        if (!language.diagram) {
+            throw new Error(`The '${language.LanguageMetaData.languageId}' language does not support diagrams.`);
+        }
+        return new StpaDiagramServer(async action => {
+            connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
+        }, language.diagram, language.options.StpaSynthesisOptions, clientId, options);
+    };
+};
+
+/**
+ * instead of the default diagram server the stpa-diagram server is sued
+ */
+ export const StpaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
+    diagram: {
+        diagramServerFactory: stpaDiagramServerFactory,
+        DiagramServerManager: services => new DefaultDiagramServerManager(services)
+    }
+};
+
+
 
 /**
  * Create the full set of services required by Langium.
@@ -83,13 +134,13 @@ export function createStpaServices(context?: DefaultSharedModuleContext): { shar
     const shared = inject(
         createDefaultSharedModule(context),
         StpaGeneratedSharedModule,
-        SprottySharedModule
-    )
+        StpaSprottySharedModule
+    );
     const states = inject(
         createDefaultModule({shared}),
         StpaGeneratedModule,
         STPAModule,
-    )
-    shared.ServiceRegistry.register(states)
-    return { shared, states }
+    );
+    shared.ServiceRegistry.register(states);
+    return { shared, states };
 }

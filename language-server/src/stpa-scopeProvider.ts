@@ -1,3 +1,20 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2021 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, 
     EMPTY_SCOPE } from "langium";
 import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, 
@@ -8,10 +25,10 @@ import { StpaServices } from "./stpa-module";
 export class StpaScopeProvider extends DefaultScopeProvider {
 
     /* the types of the different aspects */
-    private CA_TYPE = Command
-    private HAZARD_TYPE = Hazard
-    private SYS_CONSTRAINT_TYPE = SystemConstraint
-    private UCA_TYPE = UCA
+    private CA_TYPE = Command;
+    private HAZARD_TYPE = Hazard;
+    private SYS_CONSTRAINT_TYPE = SystemConstraint;
+    private UCA_TYPE = UCA;
 
     constructor(services: StpaServices) {
         super(services);
@@ -21,27 +38,27 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         const referenceType = this.reflection.getReferenceType(referenceId);
         const precomputed = getDocument(node).precomputedScopes;
         // get the root container which should be the Model
-        let model = node.$container
+        let model = node.$container;
         while (model && !isModel(model)) {
-            model = model?.$container
+            model = model?.$container;
         }
         if (precomputed && model) {
             // determine the scope for the different aspects & reference types
-            if ((isContConstraint(node) || isLossScenario(node)) && referenceType == this.UCA_TYPE) {
-                return this.getUCAs(model, precomputed)
-            } else if (isHazardList(node) && isLossScenario(node.$container) && node.$container.uca && referenceType == this.HAZARD_TYPE) {
-                return this.getUCAHazards(node.$container, model, precomputed)
-            } else if (isResponsibility(node) && referenceType == this.SYS_CONSTRAINT_TYPE) {
-                return this.getSystemConstraints(model, precomputed)
-            } else if ((isSystemConstraint(node) || isHazardList(node)) && referenceType == this.HAZARD_TYPE) {
-                return this.getHazards(model, precomputed)
-            } else if (isActionUCAs(node) && referenceType == this.CA_TYPE) {
-                return this.getCAs(node, precomputed)
+            if ((isContConstraint(node) || isLossScenario(node)) && referenceType === this.UCA_TYPE) {
+                return this.getUCAs(model, precomputed);
+            } else if (isHazardList(node) && isLossScenario(node.$container) && node.$container.uca && referenceType === this.HAZARD_TYPE) {
+                return this.getUCAHazards(node.$container, model, precomputed);
+            } else if (isResponsibility(node) && referenceType === this.SYS_CONSTRAINT_TYPE) {
+                return this.getSystemConstraints(model, precomputed);
+            } else if ((isSystemConstraint(node) || isHazardList(node)) && referenceType === this.HAZARD_TYPE) {
+                return this.getHazards(model, precomputed);
+            } else if (isActionUCAs(node) && referenceType === this.CA_TYPE) {
+                return this.getCAs(node, precomputed);
             } else {
-                return this.getStandardScope(node, referenceType, precomputed)
+                return this.getStandardScope(node, referenceType, precomputed);
             }
         }
-        return EMPTY_SCOPE
+        return EMPTY_SCOPE;
         //return this.getGlobalScope(referenceType);
     }
 
@@ -55,13 +72,13 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     private getStandardScope(node: AstNode, referenceType: string, precomputed: PrecomputedScopes): Scope {
         let currentNode: AstNode | undefined = node;
         // responsibilities and UCAs should have references to the nodes in the control structure
-        if ((isResps(node) || isActionUCAs(node)) && referenceType == Node) {
-            const model = node.$container as Model
-            currentNode = model.controlStructure
+        if ((isResps(node) || isActionUCAs(node)) && referenceType === Node) {
+            const model = node.$container as Model;
+            currentNode = model.controlStructure;
         }
 
-        const allDescriptions = this.getDescriptions(currentNode, referenceType, precomputed)
-        return this.descriptionsToScope(allDescriptions)
+        const allDescriptions = this.getDescriptions(currentNode, referenceType, precomputed);
+        return this.descriptionsToScope(allDescriptions);
     }
 
     /**
@@ -72,10 +89,10 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing the hazards referenced by the UCA.
      */
     private getUCAHazards(scenario: LossScenario, model: Model, precomputed: PrecomputedScopes): Scope {
-        const names = scenario.uca?.ref?.list.refs.map(x => x.ref?.name)        
-        const allDescriptions = this.getHazardSysCompsDescriptions(model.hazards, precomputed, this.HAZARD_TYPE)  
-        const filtered = allDescriptions.filter(desc => names?.includes(desc.name))
-        return this.descriptionsToScope(filtered)
+        const names = scenario.uca?.ref?.list.refs.map(x => x.ref?.name);
+        const allDescriptions = this.getHazardSysCompsDescriptions(model.hazards, precomputed, this.HAZARD_TYPE);
+        const filtered = allDescriptions.filter(desc => names?.includes(desc.name));
+        return this.descriptionsToScope(filtered);
     }
 
     /**
@@ -85,17 +102,17 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing all VerticalEdges.
      */
     private getCAs(node: ActionUCAs, precomputed: PrecomputedScopes): Scope {
-        let allDescriptions: AstNodeDescription[] = []
-        let actionLists = node.system.ref?.actions
+        let allDescriptions: AstNodeDescription[] = [];
+        let actionLists = node.system.ref?.actions;
 
         if (actionLists) {
             for (const actionList of actionLists) {
                 let currentNode: AstNode | undefined = actionList;
-                const descs = this.getDescriptions(currentNode, this.CA_TYPE, precomputed)
-                allDescriptions = allDescriptions.concat(descs)
+                const descs = this.getDescriptions(currentNode, this.CA_TYPE, precomputed);
+                allDescriptions = allDescriptions.concat(descs);
             }
         }
-        return this.descriptionsToScope(allDescriptions)
+        return this.descriptionsToScope(allDescriptions);
     }
 
     /**
@@ -105,8 +122,8 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing all hazards.
      */
     private getHazards(model: Model, precomputed: PrecomputedScopes): Scope {
-        const allDescriptions = this.getHazardSysCompsDescriptions(model.hazards, precomputed, this.HAZARD_TYPE)
-        return this.descriptionsToScope(allDescriptions)
+        const allDescriptions = this.getHazardSysCompsDescriptions(model.hazards, precomputed, this.HAZARD_TYPE);
+        return this.descriptionsToScope(allDescriptions);
     }
 
     /**
@@ -116,8 +133,8 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing all system-level constraints.
      */
     private getSystemConstraints(model: Model, precomputed: PrecomputedScopes): Scope {
-        const allDescriptions = this.getHazardSysCompsDescriptions(model.systemLevelConstraints, precomputed, this.SYS_CONSTRAINT_TYPE)
-        return this.descriptionsToScope(allDescriptions)
+        const allDescriptions = this.getHazardSysCompsDescriptions(model.systemLevelConstraints, precomputed, this.SYS_CONSTRAINT_TYPE);
+        return this.descriptionsToScope(allDescriptions);
     }
 
     /**
@@ -128,18 +145,18 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @returns All defnitions of hazards or constraints depending on {@code type}.
      */
     private getHazardSysCompsDescriptions(nodes: (Hazard | SystemConstraint)[], precomputed: PrecomputedScopes, type: string): AstNodeDescription[] {
-        if (type == this.HAZARD_TYPE || type == this.SYS_CONSTRAINT_TYPE) {
-            let res: AstNodeDescription[] = []
+        if (type === this.HAZARD_TYPE || type === this.SYS_CONSTRAINT_TYPE) {
+            let res: AstNodeDescription[] = [];
             for (const node of nodes) {
                 let currentNode: AstNode | undefined = node;
-                if (node.subComps.length!=0) {
-                    res = this.getHazardSysCompsDescriptions(node.subComps, precomputed, type)
+                if (node.subComps.length !== 0) {
+                    res = this.getHazardSysCompsDescriptions(node.subComps, precomputed, type);
                 }
-                res = res.concat(this.getDescriptions(currentNode, type, precomputed))
+                res = res.concat(this.getDescriptions(currentNode, type, precomputed));
             }
-            return res
+            return res;
         } else {
-            throw new Error("ScopeProvider: The search type should be hazard or system-level constraint.")
+            throw new Error("ScopeProvider: The search type should be hazard or system-level constraint.");
         }
     }
 
@@ -150,14 +167,14 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing all UCAs.
      */
     private getUCAs(model: Model, precomputed: PrecomputedScopes): Scope {
-        let allDescriptions: AstNodeDescription[] = []
-        const allUCAs = model.allUCAs
+        let allDescriptions: AstNodeDescription[] = [];
+        const allUCAs = model.allUCAs;
         for (const systemUCAs of allUCAs) {
             let currentNode: AstNode | undefined = systemUCAs;
-            const descs = this.getDescriptions(currentNode, this.UCA_TYPE, precomputed)
-            allDescriptions = allDescriptions.concat(descs)
+            const descs = this.getDescriptions(currentNode, this.UCA_TYPE, precomputed);
+            allDescriptions = allDescriptions.concat(descs);
         }
-        return this.descriptionsToScope(allDescriptions)
+        return this.descriptionsToScope(allDescriptions);
     }
 
     /**
@@ -168,15 +185,15 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @returns Descriptions of type {@code type} for {@code currentNode}.
      */
     private getDescriptions(currentNode: AstNode | undefined, type: string, precomputed: PrecomputedScopes): AstNodeDescription[] {
-        let res: AstNodeDescription[] = []
+        let res: AstNodeDescription[] = [];
         while (currentNode) {
             const allDescriptions = precomputed.get(currentNode);
             if (allDescriptions) {
-                res = res.concat(allDescriptions.filter(desc => this.reflection.isSubtype(desc.type, type)))
+                res = res.concat(allDescriptions.filter(desc => this.reflection.isSubtype(desc.type, type)));
             }
             currentNode = currentNode.$container;
         }
-        return res
+        return res;
     }
 
     /**
@@ -185,8 +202,8 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @returns Scope containing {@code descs}.
      */
     private descriptionsToScope(descs: AstNodeDescription[]): Scope {
-        const scopes: Array<Stream<AstNodeDescription>> = []
-        scopes.push(stream(descs))
+        const scopes: Array<Stream<AstNodeDescription>> = [];
+        scopes.push(stream(descs));
         let result: Scope = EMPTY_SCOPE;
         for (let i = scopes.length - 1; i >= 0; i--) {
             result = this.createScope(scopes[i], result);

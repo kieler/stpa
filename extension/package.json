@@ -38,6 +38,12 @@
                 "category": "STPA Diagram"
             },
             {
+                "command": "contextTable.open",
+                "title": "Show Context Tables",
+                "icon": "$(server-process)",
+                "category": "Context Table"
+            },
+            {
                 "command": "stpa.diagram.fit",
                 "title": "Fit to Screen",
                 "category": "STPA Diagram"
@@ -56,37 +62,16 @@
                 "command": "stpa.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "STPA Diagram"
-            },
-            {
-                "command": "stpa.diagram.color.colorful",
-                "title": "Set colors to colorful",
-                "category": "STPA Diagram"
-            },
-            {
-                "command": "stpa.diagram.color.printStyle",
-                "title": "Set colors to print stlye",
-                "category": "STPA Diagram"
-            },
-            {
-                "command": "stpa.diagram.color.standard",
-                "title": "Set colors to standard",
-                "category": "STPA Diagram"
-            },
-            {
-                "command": "stpa.diagram.forms",
-                "title": "Toggle STPA diagram forms",
-                "category": "STPA Diagram"
-            },
-            {
-                "command": "stpa.diagram.hierarchy",
-                "title": "Toggle STPA diagram hierarchy style",
-                "category": "STPA Diagram"
             }
         ],
         "menus": {
             "commandPalette": [
                 {
                     "command": "stpa.diagram.open",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "contextTable.open",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
@@ -104,26 +89,6 @@
                 {
                     "command": "stpa.diagram.export",
                     "when": "stpa-diagram-focused"
-                },
-                {
-                    "command": "stpa.diagram.color.colorful",
-                    "when": "stpa-diagram-focused"
-                },
-                {
-                    "command": "stpa.diagram.color.printStyle",
-                    "when": "stpa-diagram-focused"
-                },
-                {
-                    "command": "stpa.diagram.color.standard",
-                    "when": "stpa-diagram-focused"
-                },
-                {
-                    "command": "stpa.diagram.forms",
-                    "when": "stpa-diagram-focused"
-                },
-                {
-                    "command": "stpa.diagram.hierarchy",
-                    "when": "stpa-diagram-focused"
                 }
             ],
             "editor/context": [
@@ -136,6 +101,11 @@
             "editor/title": [
                 {
                     "command": "stpa.diagram.open",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },     
+                {
+                    "command": "contextTable.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }
@@ -177,7 +147,8 @@
     },
     "activationEvents": [
         "onLanguage:stpa",
-        "onCommand:stpa.diagram.open"
+        "onCommand:stpa.diagram.open",
+        "onCommand:contextTable.open"
     ],
     "files": [
         "lib",

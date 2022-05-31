@@ -1,3 +1,20 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2021 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { SGraph, SModelElement, SModelIndex, SNode } from 'sprotty-protocol';
@@ -17,13 +34,13 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
 
     protected parentNodeOptions(snode: SNode, index: SModelIndex): LayoutOptions {
         // in the STPA graph this is necessary for hierarchy-crossing edges to be better layouted
-        let hierarchyHandling = 'INCLUDE_CHILDREN'
-        let direction = 'UP'
+        let hierarchyHandling = 'INCLUDE_CHILDREN';
+        let direction = 'UP';
 
-        if (snode.children && snode.children[0].type == CS_NODE_TYPE) {
+        if (snode.children && snode.children[0].type === CS_NODE_TYPE) {
             // options for the control structure
-            hierarchyHandling = 'SEPARATE_CHILDREN'
-            direction = 'DOWN'
+            hierarchyHandling = 'SEPARATE_CHILDREN';
+            direction = 'DOWN';
         }
         return {
             'org.eclipse.elk.direction': direction,
@@ -39,10 +56,10 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
 
     apply(element: SModelElement, index: SModelIndex): LayoutOptions | undefined {
         // special options for parent nodes
-        if (element.type == PARENT_TYPE) {
-            return this.parentNodeOptions(element as SNode, index)
+        if (element.type === PARENT_TYPE) {
+            return this.parentNodeOptions(element as SNode, index);
         } else {
-            return super.apply(element, index)
+            return super.apply(element, index);
         }
     }
 

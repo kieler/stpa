@@ -2,7 +2,8 @@
   "name": "stpa-sprotty-webview",
   "version": "0.0.8",
   "description": "Sprotty diagram for the STPA DSL",
-  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
+  "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+  "license": "EPL-2.0",
   "keywords": [
     "vscode",
     "graph",
@@ -10,31 +11,11 @@
     "layout",
     "sprotty"
   ],
-  "homepage": "https://github.com/eclipse/sprotty-vscode",
-  "bugs": "https://github.com/eclipse/sprotty-vscode/issues",
-  "author": {
-    "name": "Eclipse Sprotty"
-  },
-  "contributors": [
-    {
-      "name": "Jan Köhnlein",
-      "email": "jan.koehnlein@typefox.io",
-      "url": "http://typefox.io"
-    },
-    {
-      "name": "Miro Spönemann",
-      "email": "miro.spoenemann@typefox.io",
-      "url": "http://typefox.io"
-    },
-    {
-      "name": "Jette Petzold",
-      "email": "jette.petzold@gmx.de"
-    }
-  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/eclipse/sprotty-vscode.git"
-  },
+    "url": "https://github.com/kieler/stpa",
+    "directory": "webview"
+},
   "files": [
     "lib",
     "src",
@@ -42,10 +23,12 @@
   ],
   "dependencies": {
     "reflect-metadata": "^0.1.13",
+    "feather-icons": "^4.28.0",
     "sprotty": "~0.11.1",
     "sprotty-vscode-webview": "^0.2.0"
   },
   "devDependencies": {
+    "@types/feather-icons": "^4.7.0",
     "css-loader": "^6.5.1",
     "file-loader": "^6.2.0",
     "rimraf": "latest",
