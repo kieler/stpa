@@ -18,7 +18,7 @@
 grammar Stpa
 
 entry Model:
-    'Losses' losses+=Loss*  
+    ('Losses' losses+=Loss*)?
     ('Hazards' hazards+=Hazard*)?
     ('SystemConstraints' systemLevelConstraints+=SystemConstraint*)?
     ('ControlStructure' controlStructure=Graph)?
