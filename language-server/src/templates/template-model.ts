@@ -23,7 +23,7 @@ export interface LanguageTemplate {
     id: string;
 
     generateGraph(): Readonly<SModelElement>;
-    getPosition(uri: string, x: number, y: number): Position;
+    getPosition(uri: string): Position;
 }
 
 export interface WebviewTemplate {

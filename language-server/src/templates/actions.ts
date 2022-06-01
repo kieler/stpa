@@ -47,8 +47,6 @@ export namespace UpdateTemplatesAction {
 export interface ExecuteTemplateAction extends Action {
     kind: typeof ExecuteTemplateAction.KIND;
     id: string;
-    x: number;
-    y: number;
 }
 
 export namespace ExecuteTemplateAction {
@@ -56,14 +54,10 @@ export namespace ExecuteTemplateAction {
 
     export function create(
         id: string,
-        x: number,
-        y: number
     ): ExecuteTemplateAction {
         return {
             kind: KIND,
             id,
-            x,
-            y
         };
     }
 

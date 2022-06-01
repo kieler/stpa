@@ -148,12 +148,11 @@ export class SimpleCSTemplate implements LanguageTemplate {
     }
 
     generateGraph(): Readonly<SModelElement> {
-        // TODO: generate graph automatically based on the code
+        // TODO: generate graph automatically based on the code -> generateTempalteRoot
         return simpleCSTemplateGraph;
     }
 
-    getPosition (uri: string, x: number, y: number): Position {
-        // TODO: x and y should be considered when placing the text in the editor
+    getPosition (uri: string): Position {
         // TODO: title could be written but no graph name
         // TODO: IDs must be unique even if the template is used more than once
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
@@ -191,7 +190,7 @@ export class TestTemplate2 implements LanguageTemplate {
         return testGraph2;
     }
     
-    getPosition (uri: string, x: number, y: number): Position {
+    getPosition (uri: string): Position {
         return {
             line: 0,
             character: 0
