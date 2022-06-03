@@ -150,8 +150,11 @@ export class CSNodeView extends RectangularNodeView {
 
     render(node: SNode, context: RenderingContext): VNode {
         // hides the control structure and/or relationship graph if the corresponding option is set to false
-        if (!this.renderOptionsRegistry.getValue(ShowCSOption) && (node.type == CS_NODE_TYPE || node.type == PARENT_TYPE && node.children.filter(child => child instanceof SNode)[0].type == CS_NODE_TYPE)
-                || !this.renderOptionsRegistry.getValue(ShowRelationshipGraphOption) && (node.type == STPA_NODE_TYPE || node.type == PARENT_TYPE && node.children.filter(child => child instanceof SNode)[0].type == STPA_NODE_TYPE)){
+        if (context.targetKind !== 'hidden' && 
+                (!this.renderOptionsRegistry.getValue(ShowCSOption) && (node.type == CS_NODE_TYPE || node.type == PARENT_TYPE 
+                    && node.children.filter(child => child instanceof SNode).length !== 0 && node.children.filter(child => child instanceof SNode)[0].type == CS_NODE_TYPE)
+                || !this.renderOptionsRegistry.getValue(ShowRelationshipGraphOption) && (node.type == STPA_NODE_TYPE || node.type == PARENT_TYPE 
+                    && node.children.filter(child => child instanceof SNode).length !== 0 && node.children.filter(child => child instanceof SNode)[0].type == STPA_NODE_TYPE))){
             return <g></g>;
         }
 

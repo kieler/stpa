@@ -18,7 +18,7 @@
 import { Action, applyBounds, ComputedBoundsAction, DiagramServer, DiagramServices, JsonMap, RequestBoundsAction, RequestModelAction } from 'sprotty-protocol';
 import { Connection } from 'vscode-languageserver';
 import { ExecuteTemplateAction, UpdateTemplatesAction } from './actions';
-import { LanguageTemplate, WebviewTemplate } from './template-model';
+import { LanguageTemplate, TemplateGraphGenerator, WebviewTemplate } from './template-model';
 
 export class TemplateDiagramServer extends DiagramServer {
 
@@ -26,6 +26,7 @@ export class TemplateDiagramServer extends DiagramServer {
     protected templates: LanguageTemplate[];    
     protected options: JsonMap | undefined;
     protected connection: Connection | undefined;
+    protected templateGraphGenerator: TemplateGraphGenerator;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
         services: DiagramServices, clientId: string, templates: LanguageTemplate[], options: JsonMap | undefined, connection: Connection | undefined) {
@@ -34,6 +35,7 @@ export class TemplateDiagramServer extends DiagramServer {
         this.options = options;
         this.connection = connection;
         this.templates = templates;
+        this.templateGraphGenerator = services.DiagramGenerator as TemplateGraphGenerator;
         this.sendTemplates();
     }
 
@@ -41,10 +43,10 @@ export class TemplateDiagramServer extends DiagramServer {
      * Send the templates provided by the server to the client.
      */
     private async sendTemplates() {
-        const webviewTemplates: WebviewTemplate[] = []
+        const webviewTemplates: WebviewTemplate[] = [];
         for (const template of this.templates) {
-            // TODO: size computation + correct ordering of nodes
-            let graph = template.generateGraph();
+            // TODO: correct ordering of nodes
+            let graph = await this.templateGraphGenerator.generateTemplateRoot(template);
             const request = RequestBoundsAction.create(graph);
             const response = await this.request<ComputedBoundsAction>(request);
             applyBounds(graph, response);

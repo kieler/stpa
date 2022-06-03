@@ -15,8 +15,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+
+import { TextDocuments } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import ElkConstructor from 'elkjs/lib/elk.bundled';
-import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices } from 'langium';
+import { createDefaultModule, DefaultServiceRegistry, DefaultLangiumDocumentFactory, LangiumDefaultSharedServices, DefaultIndexManager, LangiumSharedServices, DefaultSharedModuleContext, DefaultLangiumDocuments, 
+    inject, Module, DefaultTextDocumentFactory, PartialLangiumServices } from 'langium';
 import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { StpaDiagramGenerator } from './diagram-generator';
@@ -29,6 +33,7 @@ import { URI } from 'vscode-uri';
 import { DiagramOptions } from 'sprotty-protocol';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 import { StpaTemplates } from './stpa-templates';
+import { StpaDocumentBuilder } from './stpa-document-builder';
 
 
 /**
@@ -91,6 +96,9 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
     }
 };
 
+/**
+ * creates the diagram server for STPA.
+ */
 export const stpaDiagramServerFactory =
 (services: LangiumSprottySharedServices): ((clientId: string, options?: DiagramOptions) => StpaDiagramServer) => {
     const connection = services.lsp.Connection;
@@ -113,13 +121,35 @@ export const stpaDiagramServerFactory =
 /**
  * instead of the default diagram server the stpa-diagram server is sued
  */
- export const StpaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
+export const StpaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
     diagram: {
         diagramServerFactory: stpaDiagramServerFactory,
         DiagramServerManager: services => new DefaultDiagramServerManager(services)
     }
 };
 
+
+/**
+ * Create a dependency injection module for the default shared services. This is the set of
+ * services that are shared between multiple languages.
+ * Instead the default DocumentBuilder a custom StpaDocumentBuilder is used.
+ */
+ function createSharedModule(context: DefaultSharedModuleContext = {}): Module<LangiumSharedServices, LangiumDefaultSharedServices> {
+    return {
+        ServiceRegistry: () => new DefaultServiceRegistry(),
+        lsp: {
+            Connection: () => context.connection
+        },
+        workspace: {
+            LangiumDocuments: (services) => new DefaultLangiumDocuments(services),
+            LangiumDocumentFactory: (services) => new DefaultLangiumDocumentFactory(services),
+            DocumentBuilder: (services) => new StpaDocumentBuilder(services),
+            TextDocuments: () => new TextDocuments(TextDocument),
+            TextDocumentFactory: (services) => new DefaultTextDocumentFactory(services),
+            IndexManager: (services) => new DefaultIndexManager(services)
+        }
+    };
+}
 
 
 /**
@@ -139,7 +169,7 @@ export const stpaDiagramServerFactory =
  */
 export function createStpaServices(context?: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, states: StpaServices} {
     const shared = inject(
-        createDefaultSharedModule(context),
+        createSharedModule(context),
         StpaGeneratedSharedModule,
         StpaSprottySharedModule
     );

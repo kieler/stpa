@@ -15,10 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { /* ModelLayoutOptions, */ SGraph, SLabel, SModelElement } from 'sprotty-protocol';
 import { Position } from 'vscode-languageserver';
-import { CSEdge, CSNode } from './STPA-interfaces';
-import { CS_EDGE_TYPE, CS_NODE_TYPE, EdgeDirection, PARENT_TYPE } from './stpa-model';
 import { LanguageTemplate } from './templates/template-model';
 import { LangiumDocuments, LangiumServices } from 'langium';
 import { URI } from 'vscode-uri';
@@ -31,8 +28,19 @@ export class StpaTemplates {
 
     constructor(services: LangiumServices) {
         this.langiumDocuments = services.shared.workspace.LangiumDocuments;
-        this.defaultTemplates =  [new SimpleCSTemplate(this.langiumDocuments), new TestTemplate2(this.langiumDocuments)];
+        this.defaultTemplates = this.generateDefaultTemplates();
         this.templates = this.defaultTemplates;
+    }
+
+    /**
+     * Creates the default templates.
+     * @returns A list with the default templates.
+     */
+    protected generateDefaultTemplates() {
+        return [
+            new SimpleCSTemplate(this.langiumDocuments),
+            new TestTemplate2(this.langiumDocuments)
+        ];
     }
 
     getTemplates() {
@@ -41,102 +49,28 @@ export class StpaTemplates {
 
 }
 
-const simpleCSTemplateGraph: Readonly<SModelElement> = {
-    type: 'graph',
-    id: 'simpleCSTemplate',
-/*     layoutOptions: {
-        'org.eclipse.elk.separateConnectedComponents': 'false',
-        'org.eclipse.elk.layered.crossingMinimization.semiInteractive': 'true',
-        'cycleBreaking.strategy': 'INTERACTIVE',
-        'layering.strategy': 'INTERACTIVE'
-    } as ModelLayoutOptions, */
-    children: [
-        {
-            type: PARENT_TYPE,
-            id: 'tempparentnode1',
-            children: [
-                {
-                    type: CS_NODE_TYPE,
-                    id: 'tempnode1',
-                    layout: 'stack',
-                    children: [
-                        {
-                            type:'label',
-                            id: 'tempLabel1',
-                            text: 'Controller'
-                        } as SLabel
-                    ]
-                } as CSNode,
-                {
-                    type: CS_NODE_TYPE,
-                    id: 'tempnode2',
-                    layout: 'stack',
-                    children: [
-                        {
-                            type:'label',
-                            id: 'tempLabel2',
-                            text: 'Controlled Process'
-                        } as SLabel
-                    ]
-                } as CSNode,
-                {
-                    type: CS_EDGE_TYPE,
-                    id: 'tempedge1',
-                    sourceId: 'tempnode1',
-                    targetId: 'tempnode2',
-                    direction: EdgeDirection.DOWN,
-                    children: [
-                        {
-                            type:'label:xref',
-                            id: 'tempLabel3',
-                            text: 'control action'
-                        } as SLabel
-                    ]
-                } as CSEdge,
-                {
-                    type: CS_EDGE_TYPE,
-                    id: 'tempedge2',
-                    sourceId: 'tempnode2',
-                    targetId: 'tempnode1',
-                    direction: EdgeDirection.UP,
-                    children: [
-                        {
-                            type:'label:xref',
-                            id: 'tempLabel4',
-                            text: 'feedback'
-                        } as SLabel
-                    ]
-                } as CSEdge
-            ] as SModelElement[]
-        }  
-    ] as SModelElement[],
-    zoom: 0.8,
-    scroll: {x:0, y:0},
-} as SGraph;
+const simpleCSTemplateCode: string = 
+`
+ControlStructure 
+CS {
+    Controller {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> ControlledProcess
+        }
+    }
+    ControlledProcess {
+        hierarchyLevel 1
+        feedback {
+            [fb "feedback"] -> Controller
+        }
+    }
+}
+`;
 
-const testGraph2: Readonly<SModelElement> = {
-    type: 'graph',
-    id: 'tempGraph2',
-    children: [
-        {
-            type: CS_NODE_TYPE,
-            id: 'tempnode21',
-            layout: 'stack',
-            children: [
-                {
-                    type:'label',
-                    id: 'tempLabel21',
-                    text: 'TestGraph'
-                } as SLabel
-            ]
-        } as CSNode
-    ] as SModelElement[],
-    zoom: 0.8,
-    scroll: {x:0, y:0},
-} as SGraph;
-
-const simpleCSTemplateCode: string = '\nController {\n    hierarchyLevel 0\n    controlActions {\n        [ca "control action"] -> ControlledProcess\n    }\n}\nControlledProcess {\n    hierarchyLevel 1\n    feedback {\n        [fb "feedback"] -> Controller\n    }\n}\n';
-
+/**
+ * Template for a control structure with one controller and one controlled process.
+ */
 export class SimpleCSTemplate implements LanguageTemplate {
     insertText = simpleCSTemplateCode;
     documents: LangiumDocuments;
@@ -147,21 +81,16 @@ export class SimpleCSTemplate implements LanguageTemplate {
         this.documents = documents;
     }
 
-    generateGraph(): Readonly<SModelElement> {
-        // TODO: generate graph automatically based on the code -> generateTempalteRoot
-        return simpleCSTemplateGraph;
-    }
-
     getPosition (uri: string): Position {
         // TODO: title could be written but no graph name
         // TODO: IDs must be unique even if the template is used more than once
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         const docText = document.getText();
 
-        // if there is not contorl structure so far, the title and a graph name must be added too
+        // if there is already a control structure, the title and a graph name must be deleted
         const titleIndex = docText.indexOf('ControlStructure');
-        if (titleIndex === -1) {
-            this.insertText = 'ControlStructure\nCS {' + this.baseCode + '}';
+        if (titleIndex !== -1) {
+            this.insertText = this.baseCode.substring(23, this.baseCode.length-3);
         } else {
             this.insertText = this.baseCode;
         }
@@ -178,16 +107,17 @@ export class SimpleCSTemplate implements LanguageTemplate {
     }
 };
 
+/**
+ * Template for tests
+ */
 export class TestTemplate2 implements LanguageTemplate {
-    insertText = 'testString2';
+    insertText = 'Losses\nL1 "test"';
+    baseCode = 'Losses\nL1 "test"';
     documents: LangiumDocuments;
     id: string = 'tempGraph2';
 
     constructor(documents: LangiumDocuments) {
         this.documents = documents;
-    }
-    generateGraph(): Readonly<SModelElement> {
-        return testGraph2;
     }
     
     getPosition (uri: string): Position {

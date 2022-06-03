@@ -15,18 +15,23 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SModelElement } from 'sprotty-protocol';
+import { LangiumDiagramGenerator } from 'langium-sprotty';
+import { SModelElement, SModelRoot } from 'sprotty-protocol';
 import { Position } from 'vscode-languageserver';
 
 export interface LanguageTemplate {
+    baseCode: string;
     insertText: string;
     id: string;
 
-    generateGraph(): Readonly<SModelElement>;
     getPosition(uri: string): Position;
 }
 
 export interface WebviewTemplate {
     graph: Readonly<SModelElement>;
     id: string;
+}
+
+export abstract class TemplateGraphGenerator extends LangiumDiagramGenerator {
+    abstract generateTemplateRoot(template: LanguageTemplate): Promise<SModelRoot>;
 }

@@ -18,7 +18,7 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IActionDispatcher, IModelFactory, ModelRenderer, SGraph, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { html, IModelFactory, ModelRenderer, SGraph, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Bounds } from 'sprotty-protocol'
 import { WebviewTemplate } from "./template-models";
 
@@ -26,7 +26,6 @@ import { WebviewTemplate } from "./template-models";
 /** Renderer that is capable of rendering templates to jsx. */
 @injectable()
 export class TemplateRenderer {
-    @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;
     @inject(TYPES.IModelFactory) protected modelFactory: IModelFactory;
     protected renderer: ModelRenderer;
     protected bounds: Bounds;
