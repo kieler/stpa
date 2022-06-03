@@ -57,7 +57,6 @@ export class StpaTemplates {
  * @returns The position where the tempalte should be added to the {@code document}.
  */
 function getPositionForCSTemplate(document: TextDocument, template: LanguageTemplate): Position {
-    // TODO: IDs must be unique even if the template is used more than once
     const docText = document.getText();
 
     // determine range of already existing definition of control structure
@@ -66,7 +65,6 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
     const nextTitleIndex = docText.indexOf('Responsibilities');
     const endIndex = nextTitleIndex !== -1 ? nextTitleIndex - 1 : docText.length - 1;
     if (titleIndex === -1) {
-        template.insertText = template.baseCode;
         return document.positionAt(endIndex);
     } else {
         // check whether a graph ID already exist
@@ -74,10 +72,10 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
         const graphIndex = csText.indexOf('{');
         // TODO: starting positions 19 and 23 may be incorrect for user provided templates
         if (graphIndex === -1) {
-            template.insertText = template.baseCode.substring(19, template.baseCode.length);
+            template.insertText = template.insertText.substring(18, template.insertText.length);
             return document.positionAt(endIndex);
         } else {
-            template.insertText = template.baseCode.substring(23, template.baseCode.length-3);
+            template.insertText = template.insertText.substring(22, template.insertText.length-3);
             const bracketIndex = csText.lastIndexOf('}');
             return document.positionAt(titleIndex + bracketIndex -1);
         }
@@ -85,9 +83,16 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
     
 }
 
-const simpleCSTemplateCode: string = 
-`
-ControlStructure 
+/**
+ * Template for a control structure with one controller and one controlled process.
+ */
+export class SimpleCSTemplate implements LanguageTemplate {
+    insertText: string;
+    documents: LangiumDocuments;
+    id: string = 'simpleCSTemplate';
+    protected counter: number = 0;
+    baseCode: string = `
+ControlStructure
 CS {
     Controller {
         hierarchyLevel 0
@@ -104,9 +109,48 @@ CS {
 }
 `;
 
-const simpleCSWithActuatorsTemplateCode: string = 
-`
-ControlStructure 
+    constructor(documents: LangiumDocuments) {
+        this.documents = documents;
+    }
+
+    protected generateCode(): string {
+        return `
+ControlStructure
+CS {
+    Controller` + this.counter +` {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> ControlledProcess` + this.counter +`
+        }
+    }
+    ControlledProcess` + this.counter +` {
+        hierarchyLevel 1
+        feedback {
+            [fb "feedback"] -> Controller` + this.counter +`
+        }
+    }
+}
+`;
+    }
+
+    getPosition (uri: string): Position {
+        this.insertText = this.generateCode();
+        this.counter++;
+        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        return getPositionForCSTemplate(document, this);
+    }
+};
+
+/**
+ * Template for tests
+ */
+export class TestTemplate2 implements LanguageTemplate {
+    insertText: string;
+    documents: LangiumDocuments;
+    id: string = 'simpleCSWithAcsTemplate';
+    protected counter: number = 0;
+    baseCode: string = `
+ControlStructure
 CS {
     Controller {
         hierarchyLevel 0
@@ -135,39 +179,45 @@ CS {
 }
 `;
 
-/**
- * Template for a control structure with one controller and one controlled process.
- */
-export class SimpleCSTemplate implements LanguageTemplate {
-    insertText = simpleCSTemplateCode;
-    documents: LangiumDocuments;
-    id: string = 'simpleCSTemplate';
-    baseCode = simpleCSTemplateCode;
-
     constructor(documents: LangiumDocuments) {
         this.documents = documents;
     }
 
-    getPosition (uri: string): Position {
-        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSTemplate(document, this);
+    protected generateCode(): string {
+        return `
+ControlStructure
+CS {
+    Controller` + this.counter +` {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> Actuator` + this.counter +`
+        }
     }
-};
-
-/**
- * Template for tests
- */
-export class TestTemplate2 implements LanguageTemplate {
-    insertText = simpleCSWithActuatorsTemplateCode;
-    baseCode = simpleCSWithActuatorsTemplateCode;
-    documents: LangiumDocuments;
-    id: string = 'simpleCSWithAcsTemplate';
-
-    constructor(documents: LangiumDocuments) {
-        this.documents = documents;
+    Actuator` + this.counter +` {
+        hierarchyLevel 1
+        controlActions {
+            [caAc "control action"] -> ControlledProcess` + this.counter +`
+        }
+    }
+    Sensor` + this.counter +` {
+        hierarchyLevel 1
+        feedback {
+            [fbS "feedback"] -> Controller` + this.counter +`
+        }
+    }
+    ControlledProcess` + this.counter +` {
+        hierarchyLevel 2
+        feedback {
+            [fb "feedback"] -> Sensor` + this.counter +`
+        }
+    }
+}
+`;
     }
     
     getPosition (uri: string): Position {
+        this.insertText = this.generateCode();
+        this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);
     }
