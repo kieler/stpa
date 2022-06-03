@@ -18,7 +18,7 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IModelFactory, ModelRenderer, SGraph, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { html, IModelFactory, ModelRenderer, SGraph, SNode, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Bounds } from 'sprotty-protocol'
 import { WebviewTemplate } from "./template-models";
 
@@ -49,8 +49,22 @@ export class TemplateRenderer {
             (temp.graph as SGraph).canvasBounds = {width: this.bounds.width + 20, height: this.bounds.height, x: this.bounds.x, y: this.bounds.y};
         }
 
-        const res = templates.map(template =>
-            <div>{this.renderer?.renderElement(this.modelFactory.createRoot(template.graph))}</div>);
+        const res = templates.map(template => {
+            const graph = this.renderer?.renderElement(this.modelFactory.createRoot(template.graph));
+            // padding of sidebar content is 16px
+            const width = ((template.graph as SGraph).children[0] as SNode).size.width + 30;
+            const height = ((template.graph as SGraph).children[0] as SNode).size.height + 30;
+            if (graph?.data?.attrs) {
+                graph.data.attrs["width"] = width;
+                graph.data.attrs["height"] = height;
+            }
+            const result: VNode = <div>{graph}</div>;
+            /* if (result.data) {
+                const blubb = (width/368.0 * 100) + "%"
+                result.data.style = {width: blubb}
+            } */
+            return result
+        });
         return res;
     }
 

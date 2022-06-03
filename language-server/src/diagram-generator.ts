@@ -127,6 +127,8 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
         // each node should be placed in a specific layer based on the aspect. therefore positions must be set
         setPositionsForSTPANodes(stpaNodes);
 
+        const graphChildren = [];
+
         if (model.controlStructure) {
             // determine the nodes of the control structure graph
             const csNodes = model.controlStructure?.nodes.map(n => this.generateCSNode(n));
@@ -138,37 +140,25 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
                 ...this.generateVerticalCSEdges(model.controlStructure.nodes),
                 //...this.generateHorizontalCSEdges(model.controlStructure.edges, args)
             ];
-            // SGraph containing the STPA graph and the control structure
-            return {
-                type: 'graph',
-                id: 'root',
-                children: [
-                    {
-                        type: PARENT_TYPE,
-                        id: 'controlStructure',
-                        children: CSChildren
-                    },
-                    {
-                        type: PARENT_TYPE,
-                        id: 'relationships',
-                        children: stpaChildren
-                    }
-                ]
-            };
-        } else {
-            // SGrpah containing the STPA graph
-            return {
-                type: 'graph',
-                id: 'root',
-                children: [
-                    {
-                        type: PARENT_TYPE,
-                        id: 'relationships',
-                        children: stpaChildren
-                    }
-                ]
-            };
+            graphChildren.push({
+                type: PARENT_TYPE,
+                id: 'controlStructure',
+                children: CSChildren
+            });
         }
+        if (stpaChildren.length !== 0) {
+            graphChildren.push({
+                type: PARENT_TYPE,
+                id: 'relationships',
+                children: stpaChildren
+            });
+        }
+        // SGraph containing the relationship graph and the control structure if they exist
+        return {
+            type: 'graph',
+            id: 'root',
+            children: graphChildren
+        };
     }
     
     /**
