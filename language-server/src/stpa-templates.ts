@@ -40,7 +40,10 @@ export class StpaTemplates {
     protected generateDefaultTemplates() {
         return [
             new SimpleCSTemplate(this.langiumDocuments, "T0"),
-            new TestTemplate2(this.langiumDocuments, "T1")
+            new SimpleCSWithAcsTemplate(this.langiumDocuments, "T1"),
+            new ConsControllersTemplate(this.langiumDocuments, "T3"),
+            new ParallelContsTemplate(this.langiumDocuments, "T4"),
+            new ConsContsWithLoopTemplate(this.langiumDocuments, "T5")
         ];
     }
 
@@ -144,9 +147,9 @@ CS {
 };
 
 /**
- * Template for tests
+ * Template for a control structure with one controller, one controlled process, one actuator, and one sensor.
  */
-export class TestTemplate2 implements LanguageTemplate {
+export class SimpleCSWithAcsTemplate implements LanguageTemplate {
     insertText: string;
     documents: LangiumDocuments;
     id: string = 'simpleCSWithAcsTemplate';
@@ -213,6 +216,240 @@ CS {
         hierarchyLevel 2
         feedback {
             [fb "feedback"] -> Sensor` + this.shortId + this.counter +`
+        }
+    }
+}
+`;
+    }
+    
+    getPosition (uri: string): Position {
+        this.insertText = this.generateCode();
+        this.counter++;
+        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        return getPositionForCSTemplate(document, this);
+    }
+};
+
+/**
+ * Template for a control structure with two consecutive controllers and one controlled process.
+ */
+ export class ConsControllersTemplate implements LanguageTemplate {
+    insertText: string;
+    documents: LangiumDocuments;
+    id: string = 'consControllerTemplate';
+    protected counter: number = 0;
+    protected shortId: string;
+    baseCode: string = `
+ControlStructure
+CS {
+    ControllerA {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> ControllerB
+        }
+    }
+    ControllerB {
+        hierarchyLevel 1
+        controlActions {
+            [ca "control action"] -> ControlledProcess
+        }
+        feedback {
+            [fb "feedback"] -> ControllerA
+        }
+    }
+    ControlledProcess {
+        hierarchyLevel 2
+        feedback {
+            [fb "feedback"] -> ControllerB
+        }
+    }
+}
+`;
+
+    constructor(documents: LangiumDocuments, shortId: string) {
+        this.documents = documents;
+        this.shortId = shortId;
+    }
+
+    protected generateCode(): string {
+        return `
+ControlStructure
+CS {
+    ControllerA` + this.shortId + this.counter +` {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> ControllerB` + this.shortId + this.counter +`
+        }
+    }
+    ControllerB` + this.shortId + this.counter +` {
+        hierarchyLevel 1
+        controlActions {
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+        }
+        feedback {
+            [fb "feedback"] -> ControllerA` + this.shortId + this.counter +`
+        }
+    }
+    ControlledProcess` + this.shortId + this.counter +` {
+        hierarchyLevel 2
+        feedback {
+            [fb "feedback"] -> ControllerB` + this.shortId + this.counter +`
+        }
+    }
+}
+`;
+    }
+    
+    getPosition (uri: string): Position {
+        this.insertText = this.generateCode();
+        this.counter++;
+        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        return getPositionForCSTemplate(document, this);
+    }
+};
+
+/**
+ * Template for a control structure with two parallel controllers and one controlled process.
+ */
+ export class ParallelContsTemplate implements LanguageTemplate {
+    insertText: string;
+    documents: LangiumDocuments;
+    id: string = 'parallelContsTemplate';
+    protected counter: number = 0;
+    protected shortId: string;
+    baseCode: string = `
+ControlStructure
+CS {
+    ControllerA {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> ControlledProcess
+        }
+    }
+    ControllerB {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> ControlledProcess
+        }
+    }
+    ControlledProcess {
+        hierarchyLevel 1
+        feedback {
+            [fbA "feedback"] -> ControllerA
+            [fbB "feedback"] -> ControllerB
+        }
+    }
+}
+`;
+
+    constructor(documents: LangiumDocuments, shortId: string) {
+        this.documents = documents;
+        this.shortId = shortId;
+    }
+
+    protected generateCode(): string {
+        return `
+ControlStructure
+CS {
+    ControllerA` + this.shortId + this.counter +` {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+        }
+    }
+    ControllerB` + this.shortId + this.counter +` {
+        hierarchyLevel 0
+        controlActions {
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+        }
+    }
+    ControlledProcess` + this.shortId + this.counter +` {
+        hierarchyLevel 1
+        feedback {
+            [fbA "feedback"] -> ControllerA` + this.shortId + this.counter +`
+            [fbB "feedback"] -> ControllerB` + this.shortId + this.counter +`
+        }
+    }
+}
+`;
+    }
+    
+    getPosition (uri: string): Position {
+        this.insertText = this.generateCode();
+        this.counter++;
+        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        return getPositionForCSTemplate(document, this);
+    }
+};
+
+/**
+ * Template for a control structure with two consecutive controllers, one controlled process.
+ */
+ export class ConsContsWithLoopTemplate implements LanguageTemplate {
+    insertText: string;
+    documents: LangiumDocuments;
+    id: string = 'consContsWithLoopTemplate';
+    protected counter: number = 0;
+    protected shortId: string;
+    baseCode: string = `
+ControlStructure
+CS {
+    ControllerA {
+        hierarchyLevel 0
+        controlActions {
+            [caC "control action"] -> ControlledProcess
+            [caB "control action"] -> ControllerB
+        }
+    }
+    ControllerB {
+        hierarchyLevel 1
+        controlActions {
+            [ca "control action"] -> ControlledProcess
+        }
+        feedback {
+            [fb "feedback"] -> ControllerA
+        }
+    }
+    ControlledProcess {
+        hierarchyLevel 2
+        feedback {
+            [fbA "feedback"] -> ControllerA
+            [fbB "feedback"] -> ControllerB
+        }
+    }
+}
+`;
+
+    constructor(documents: LangiumDocuments, shortId: string) {
+        this.documents = documents;
+        this.shortId = shortId;
+    }
+
+    protected generateCode(): string {
+        return `
+ControlStructure
+CS {
+    ControllerA` + this.shortId + this.counter +` {
+        hierarchyLevel 0
+        controlActions {
+            [caC "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+            [caB "control action"] -> ControllerB` + this.shortId + this.counter +`
+        }
+    }
+    ControllerB` + this.shortId + this.counter +` {
+        hierarchyLevel 1
+        controlActions {
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+        }
+        feedback {
+            [fb "feedback"] -> ControllerA` + this.shortId + this.counter +`
+        }
+    }
+    ControlledProcess` + this.shortId + this.counter +` {
+        hierarchyLevel 2
+        feedback {
+            [fbA "feedback"] -> ControllerA` + this.shortId + this.counter +`
+            [fbB "feedback"] -> ControllerB` + this.shortId + this.counter +`
         }
     }
 }
