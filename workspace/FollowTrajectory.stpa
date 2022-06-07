@@ -1,11 +1,3 @@
-Losses
-L1 ""
-
-Hazards
-
-SystemConstraints
-
-
 ControlStructure
 Trajectory {
     OperatorSafety {
@@ -26,7 +18,7 @@ Trajectory {
             [notaus "Notaus"] -> AutoBox
             [nothalt "Nothalt"] -> DriveBox
         }
-    }
+    } 
     Teletrimetrie {
         hierarchyLevel 1
         controlActions {
@@ -80,7 +72,7 @@ Trajectory {
         hierarchyLevel 4
         feedback {
             [zustand "Ladezustand"] -> AutoBox
-            [zustand "Ladezustand"] -> DriveBox
+            [zustand2 "Ladezustand"] -> DriveBox
         }
     }
     IMU {

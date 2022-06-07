@@ -39,8 +39,8 @@ export class StpaTemplates {
      */
     protected generateDefaultTemplates() {
         return [
-            new SimpleCSTemplate(this.langiumDocuments),
-            new TestTemplate2(this.langiumDocuments)
+            new SimpleCSTemplate(this.langiumDocuments, "T0"),
+            new TestTemplate2(this.langiumDocuments, "T1")
         ];
     }
 
@@ -91,6 +91,7 @@ export class SimpleCSTemplate implements LanguageTemplate {
     documents: LangiumDocuments;
     id: string = 'simpleCSTemplate';
     protected counter: number = 0;
+    protected shortId: string;
     baseCode: string = `
 ControlStructure
 CS {
@@ -109,24 +110,25 @@ CS {
 }
 `;
 
-    constructor(documents: LangiumDocuments) {
+    constructor(documents: LangiumDocuments, shortId: string) {
         this.documents = documents;
+        this.shortId = shortId;
     }
 
     protected generateCode(): string {
         return `
 ControlStructure
 CS {
-    Controller` + this.counter +` {
+    Controller` + this.shortId + this.counter +` {
         hierarchyLevel 0
         controlActions {
-            [ca "control action"] -> ControlledProcess` + this.counter +`
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
         }
     }
-    ControlledProcess` + this.counter +` {
+    ControlledProcess` + this.shortId + this.counter +` {
         hierarchyLevel 1
         feedback {
-            [fb "feedback"] -> Controller` + this.counter +`
+            [fb "feedback"] -> Controller` + this.shortId + this.counter +`
         }
     }
 }
@@ -149,6 +151,7 @@ export class TestTemplate2 implements LanguageTemplate {
     documents: LangiumDocuments;
     id: string = 'simpleCSWithAcsTemplate';
     protected counter: number = 0;
+    protected shortId: string;
     baseCode: string = `
 ControlStructure
 CS {
@@ -179,36 +182,37 @@ CS {
 }
 `;
 
-    constructor(documents: LangiumDocuments) {
+    constructor(documents: LangiumDocuments, shortId: string) {
         this.documents = documents;
+        this.shortId = shortId;
     }
 
     protected generateCode(): string {
         return `
 ControlStructure
 CS {
-    Controller` + this.counter +` {
+    Controller` + this.shortId + this.counter +` {
         hierarchyLevel 0
         controlActions {
-            [ca "control action"] -> Actuator` + this.counter +`
+            [ca "control action"] -> Actuator` + this.shortId + this.counter +`
         }
     }
-    Actuator` + this.counter +` {
+    Actuator` + this.shortId + this.counter +` {
         hierarchyLevel 1
         controlActions {
-            [caAc "control action"] -> ControlledProcess` + this.counter +`
+            [caAc "control action"] -> ControlledProcess` + this.shortId + this.counter +`
         }
     }
-    Sensor` + this.counter +` {
+    Sensor` + this.shortId + this.counter +` {
         hierarchyLevel 1
         feedback {
-            [fbS "feedback"] -> Controller` + this.counter +`
+            [fbS "feedback"] -> Controller` + this.shortId + this.counter +`
         }
     }
-    ControlledProcess` + this.counter +` {
+    ControlledProcess` + this.shortId + this.counter +` {
         hierarchyLevel 2
         feedback {
-            [fb "feedback"] -> Sensor` + this.counter +`
+            [fb "feedback"] -> Sensor` + this.shortId + this.counter +`
         }
     }
 }
