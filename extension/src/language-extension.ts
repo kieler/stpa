@@ -21,7 +21,8 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
-import { ActionMessage, RequestModelAction, JsonMap } from 'sprotty-protocol'
+import { ActionMessage, JsonMap } from 'sprotty-protocol';
+import { UpdateViewAction } from './actions';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
  
@@ -96,14 +97,14 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                     const mes: ActionMessage = {
                         clientId: this.singleton?.diagramIdentifier.clientId,
                         action: {
-                            kind: RequestModelAction.KIND,
+                            kind: UpdateViewAction.KIND,
                             options: {
                                 diagramType: this.singleton.diagramIdentifier.diagramType,
                                 needsClientLayout: true,
                                 needsServerLayout: true,
                                 sourceUri: this.singleton.diagramIdentifier.uri
                             } as JsonMap
-                        } as RequestModelAction
+                        } as UpdateViewAction
                     }
                     languageClient.sendNotification('diagram/accept', mes)
                 }
