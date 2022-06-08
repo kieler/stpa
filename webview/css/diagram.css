@@ -233,6 +233,10 @@
     stroke: var(--vscode-button-hover-background);
 }
 
+.parent-selected {
+    fill-opacity: 0.4;
+}
+
 .hidden {
     opacity: 0.4;
 }

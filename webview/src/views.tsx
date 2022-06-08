@@ -22,7 +22,7 @@ import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { inject } from 'inversify'
-import { collectAllChildren, flagConnectedElements, getSelectedNode } from './helper-methods';
+import { collectAllChildren, flagConnectedElements } from './helper-methods';
 import { DISymbol } from './di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
 
@@ -120,7 +120,8 @@ export class STPANodeView extends RectangularNodeView  {
 
         // if an STPANode is selected, the components not connected to it should fade out
         const hidden = (selectedNode instanceof STPANode) && !node.connected
-        const parentNode = node.children.filter(child => child.type == STPA_NODE_TYPE).length != 0 && !hidden
+        const parentNode = node.children.filter(child => child.type == STPA_NODE_TYPE).length != 0
+        const parentSelected = parentNode && !hidden && (selectedNode instanceof STPANode)
         node.connected = false
 
         // determines the color of the node
@@ -136,7 +137,7 @@ export class STPANodeView extends RectangularNodeView  {
                     class-sprotty-port={node instanceof SPort}
                     class-mouseover={node.hoverFeedback} class-selected={node.selected}
                     class-hidden={hidden}>
-                    <g class-parent-node={parentNode}>{element}</g>
+                    <g class-parent-selected={parentSelected} class-parent-node={parentNode && !parentSelected}>{element}</g>
                     {context.renderChildren(node)}
                 </g>;
     }
@@ -175,7 +176,7 @@ export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
         // if an STPANode is selected, the "connected" attribute is set for the nodes and edges connected to the selected node
         let allNodes: SNode[] = []
         collectAllChildren(model.children as SNode[], allNodes)
-        selectedNode = getSelectedNode(allNodes)
+        selectedNode = allNodes.find(node => node.selected)
         if (selectedNode instanceof STPANode) {
             flagConnectedElements(selectedNode)
         }

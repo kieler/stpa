@@ -34,20 +34,6 @@ export function collectAllChildren(nodes: SNode[], children: SNode[]): void {
 }
 
 /**
- * Searches the selected node.
- * @param nodes All nodes of a graph.
- * @returns The selected node or undefined if no node of the {@code nodes} is selected.
- */
- export function getSelectedNode(nodes: SNode[]): SNode | undefined {
-    for (const node of nodes) {
-        if (node.selected) {
-            return node
-        }
-    }
-    return undefined
-}
-
-/**
  * Sets the connected attribute of the nodes and egde connected to {@code node}.
  * @param node The node for which the connected elements should be determined.
  */
