@@ -61,11 +61,11 @@ export class StpaDiagramServer extends DiagramServer {
                 opt.currentValue = option.currentValue;
             }
         }
-        const requestAction = {
-                kind: RequestModelAction.KIND,
+        const updateAction = {
+                kind: UpdateViewAction.KIND,
                 options: this.options
-            } as RequestModelAction;
-        this.handleRequestModel(requestAction);
+            } as UpdateViewAction;
+        this.handleUpdateView(updateAction);
         return Promise.resolve();
     }
     
