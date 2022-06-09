@@ -47,38 +47,38 @@
     box-sizing: border-box;
     appearance: none;
     border: none;
-    border-radius: var(--kdc-border-radius-default);
+    border-radius: var(--stpa-border-radius-default);
     padding: 4px;
 
-    color: var(--kdc-color-sidebar-icon-primary);
+    color: var(--stpa-color-sidebar-icon-primary);
     background: var(--background);
-    transition: background var(--kdc-transition);
+    transition: background var(--stpa-transition);
     cursor: pointer;
 }
 
 .options__icon-button:hover {
-    --background: var(--kdc-color-sidebar-hover-background);
+    --background: var(--stpa-color-sidebar-hover-background);
 }
 
 .options__button {
     box-sizing: border-box;
     appearance: none;
     border: none;
-    border-radius: var(--kdc-border-radius-default);
+    border-radius: var(--stpa-border-radius-default);
     padding: 6px 12px;
 
     font-size: 1rem;
     font-weight: 400;
 
     box-shadow: none;
-    color: var(--kdc-color-sidebar-font-primary);
-    background: var(--kdc-color-sidebar-trigger-background-active);
-    transition: box-shadow var(--kdc-transition);
+    color: var(--stpa-color-sidebar-font-primary);
+    background: var(--stpa-color-sidebar-trigger-background-active);
+    transition: box-shadow var(--stpa-transition);
     cursor: pointer;
 }
 
 .options__button:hover {
-    box-shadow: var(--kdc-sidebar-button-shadow);
+    box-shadow: var(--stpa-sidebar-button-shadow);
 }
 
 /*********************************** INPUTS ***********************************/
@@ -130,10 +130,10 @@
     padding: 2px 4px;
     font-size: 1rem;
 
-    border: 2px solid var(--kdc-color-sidebar-trigger-background-hover);
-    border-radius: var(--kdc-border-radius-default);
-    background: var(--kdc-color-sidebar-trigger-background-active);
-    color: var(--kdc-color-sidebar-font-primary);
+    border: 2px solid var(--stpa-color-sidebar-trigger-background-hover);
+    border-radius: var(--stpa-border-radius-default);
+    background: var(--stpa-color-sidebar-trigger-background-active);
+    color: var(--stpa-color-sidebar-font-primary);
 }
 
 .options__text-field:focus,
@@ -144,7 +144,7 @@
     styles are applied.
     */
     outline: none !important;
-    border-color: var(--kdc-color-primary);
+    border-color: var(--stpa-color-primary);
 }
 
 /* Don't show outlines when a user interacts with different options... */
@@ -162,24 +162,24 @@
 .options__icon-button:focus-visible {
     /* Chromium has this thing where an outline is colored and white. This just colors it. */
     --outline-size: 2px;
-    outline: var(--outline-size) solid var(--kdc-color-primary);
+    outline: var(--outline-size) solid var(--stpa-color-primary);
     outline-offset: calc(-1 * var(--outline-size));
 }
 
 .options__selection {
     padding: 4px 6px;
 
-    border: 2px solid var(--kdc-color-sidebar-trigger-background-hover);
-    border-radius: var(--kdc-border-radius-default);
-    background: var(--kdc-color-sidebar-trigger-background-active);
-    color: var(--kdc-color-sidebar-font-primary);
+    border: 2px solid var(--stpa-color-sidebar-trigger-background-hover);
+    border-radius: var(--stpa-border-radius-default);
+    background: var(--stpa-color-sidebar-trigger-background-active);
+    color: var(--stpa-color-sidebar-font-primary);
     cursor: pointer;
     font-size: 1rem;
 }
 
 .options__selection:focus {
     outline: none;
-    border-color: var(--kdc-color-primary);
+    border-color: var(--stpa-color-primary);
 }
 
 .options__hidden {
