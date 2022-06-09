@@ -25,7 +25,7 @@ import { ActionMessage, JsonMap } from 'sprotty-protocol';
 import { UpdateViewAction } from './actions';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
- 
+
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
     }
@@ -50,7 +50,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
         webview.addActionHandler(WorkspaceEditActionHandler);
         webview.addActionHandler(LspLabelEditActionHandler);
-        this.singleton = webview
+        this.singleton = webview;
         return webview;
     }
 
@@ -91,26 +91,25 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // Start the client. This will also launch the server
         context.subscriptions.push(languageClient.start());
         // diagram is updated when file changes
-        fileSystemWatcher.onDidChange(() => 
-            {
-                if (this.singleton) {
-                    const mes: ActionMessage = {
-                        clientId: this.singleton?.diagramIdentifier.clientId,
-                        action: {
-                            kind: UpdateViewAction.KIND,
-                            options: {
-                                diagramType: this.singleton.diagramIdentifier.diagramType,
-                                needsClientLayout: true,
-                                needsServerLayout: true,
-                                sourceUri: this.singleton.diagramIdentifier.uri
-                            } as JsonMap
-                        } as UpdateViewAction
-                    }
-                    languageClient.sendNotification('diagram/accept', mes)
-                }
-            }
-        )
+        fileSystemWatcher.onDidChange(() => this.sendUpdateView(languageClient));
         return languageClient;
     }
+
+    protected sendUpdateView(languageClient: LanguageClient) {
+        if (this.singleton) {
+            const mes: ActionMessage = {
+                clientId: this.singleton?.diagramIdentifier.clientId,
+                action: {
+                    kind: UpdateViewAction.KIND,
+                    options: {
+                        diagramType: this.singleton.diagramIdentifier.diagramType,
+                        needsClientLayout: true,
+                        needsServerLayout: true,
+                        sourceUri: this.singleton.diagramIdentifier.uri
+                    } as JsonMap
+                } as UpdateViewAction
+            };
+            languageClient.sendNotification('diagram/accept', mes);
+        }
+    }
 }
- 
