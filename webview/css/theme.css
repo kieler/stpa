@@ -1,0 +1,30 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2022 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+:root {
+    /* Behavior and sizing variables */
+    --stpa-transition: 200ms ease-in-out;
+    --stpa-border-radius-default: 4px;
+    --stpa-font-size-base: 16px;
+    --stpa-sidebar-shadow: 0 15px 25px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.05);
+    --stpa-sidebar-button-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+
+    /* Color semantic theme token (no "dump" token like gray100 etc.
+    but rather scoped to where they should be applied). Allows for finer theme control. */
+    --stpa-color-sidebar-background: var(--vscode-sideBar-background);
+    --stpa-color-sidebar-trigger-background: var(--vscode-sideBar-background);
+}

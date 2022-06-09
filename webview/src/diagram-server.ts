@@ -23,8 +23,8 @@ import { VscodeLspEditDiagramServer } from "sprotty-vscode-webview/lib/lsp/editi
 export class StpaDiagramServer extends VscodeLspEditDiagramServer {
 
     protected sendMessage(message: ActionMessage): void {
-        console.log("send to server: " + message.action.kind)
-        super.sendMessage(message)
+        console.log("send to server: " + message.action.kind);
+        super.sendMessage(message);
     }
 
 }

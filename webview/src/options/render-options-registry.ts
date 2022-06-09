@@ -96,7 +96,7 @@ export class RenderOptionsRegistry extends Registry {
         // Add available render options to this registry
         this.register(DifferentFormsOption);
         this.register(ColorStyleOption);
-        
+
         this.register(ShowCSOption);
         this.register(ShowRelationshipGraphOption);
     }
@@ -107,7 +107,7 @@ export class RenderOptionsRegistry extends Registry {
 
 
     register(Option: RenderOptionType): void {
-        this._renderOptions.set(Option.ID, new Option())
+        this._renderOptions.set(Option.ID, new Option());
     }
 
     handle(action: Action): void | Action | ICommand {
@@ -126,7 +126,7 @@ export class RenderOptionsRegistry extends Registry {
             this.notifyListeners();
 
         }
-        return UpdateModelAction.create([], { animate: false, cause: action })
+        return UpdateModelAction.create([], { animate: false, cause: action });
     }
 
     get allRenderOptions(): RenderOption[] {
@@ -138,6 +138,6 @@ export class RenderOptionsRegistry extends Registry {
     }
 
     getValueOrDefault(Option: RenderOptionDefault): any {
-        return this.getValue(Option) ?? Option.DEFAULT
+        return this.getValue(Option) ?? Option.DEFAULT;
     }
 }

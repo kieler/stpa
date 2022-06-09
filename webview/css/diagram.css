@@ -1,5 +1,6 @@
 @import "./options.css";
 @import "./sidebar.css";
+@import "./theme.css";
 
 .vscode-high-contrast .stpa-node[aspect="0"], .vscode-high-contrast .stpa-edge-arrow[aspect="0"] {
     fill: #AD0000;
@@ -234,6 +235,10 @@
 .sprotty-node.selected {
     stroke-width: 2;
     stroke: var(--vscode-button-hover-background);
+}
+
+.parent-selected {
+    fill-opacity: 0.4;
 }
 
 .hidden {
