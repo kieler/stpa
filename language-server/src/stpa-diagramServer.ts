@@ -15,7 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
+import { Action, DiagramServices, DiagramServer, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
+import { UpdateViewAction } from './actions';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 
@@ -23,14 +24,12 @@ export class StpaDiagramServer extends DiagramServer {
 
     private stpaOptions: StpaSynthesisOptions;
     private clientId: string;
-    private options: JsonMap | undefined;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined) {
+        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string) {
         super(dispatch, services);
         this.stpaOptions = synthesisOptions;
         this.clientId = clientId;
-        this.options = options;
     }
 
     accept(action: Action): Promise<void> {
@@ -44,26 +43,44 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     protected handleAction(action: Action): Promise<void> {
-        switch(action.kind) {
-            case SetSynthesisOptionsAction.KIND: 
+        switch (action.kind) {
+            case SetSynthesisOptionsAction.KIND:
                 return this.handleSetSynthesisOption(action as SetSynthesisOptionsAction);
+            case UpdateViewAction.KIND:
+                return this.handleUpdateView(action as UpdateViewAction);
         }
         return super.handleAction(action);
     }
 
-    handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
+    protected handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
         for (const option of action.options) {
             const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
                 opt.currentValue = option.currentValue;
             }
         }
-        const requestAction = {
-                kind: RequestModelAction.KIND,
-                options: this.options
-            } as RequestModelAction;
-        this.handleRequestModel(requestAction);
+        const updateAction = {
+            kind: UpdateViewAction.KIND,
+            options: this.state.options
+        } as UpdateViewAction;
+        this.handleUpdateView(updateAction);
         return Promise.resolve();
+    }
+
+    protected async handleUpdateView(action: UpdateViewAction) {
+        this.state.options = action.options;
+        try {
+            const newRoot = await this.diagramGenerator.generate({
+                options: this.state.options ?? {},
+                state: this.state
+            });
+            newRoot.revision = ++this.state.revision;
+            this.state.currentRoot = newRoot;
+            await this.submitModel(this.state.currentRoot, true, action);
+        } catch (err) {
+            this.rejectRemoteRequest(action, err as Error);
+            console.error('Failed to generate diagram:', err);
+        }
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {

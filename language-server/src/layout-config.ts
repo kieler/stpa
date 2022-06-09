@@ -37,7 +37,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         let hierarchyHandling = 'INCLUDE_CHILDREN';
         let direction = 'UP';
 
-        if (snode.children && snode.children[0].type === CS_NODE_TYPE) {
+        if (snode.children && snode.children[0] && snode.children[0].type === CS_NODE_TYPE) {
             // options for the control structure
             hierarchyHandling = 'SEPARATE_CHILDREN';
             direction = 'DOWN';
