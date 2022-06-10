@@ -21,8 +21,8 @@ import { StpaSynthesisOptions } from './options/synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {
 
-    private stpaOptions: StpaSynthesisOptions;
-    private clientId: string;
+    protected stpaOptions: StpaSynthesisOptions;
+    clientId: string;
     private options: JsonMap | undefined;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
@@ -58,11 +58,12 @@ export class StpaDiagramServer extends DiagramServer {
                 opt.currentValue = option.currentValue;
             }
         }
-        const requestAction = {
-                kind: RequestModelAction.KIND,
-                options: this.options
-            } as RequestModelAction;
-        this.handleRequestModel(requestAction);
+        // update view
+        const updateAction = {
+            kind: UpdateViewAction.KIND,
+            options: this.state.options
+        } as UpdateViewAction;
+        this.handleUpdateView(updateAction);
         return Promise.resolve();
     }
 

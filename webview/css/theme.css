@@ -27,4 +27,11 @@
     but rather scoped to where they should be applied). Allows for finer theme control. */
     --stpa-color-sidebar-background: var(--vscode-sideBar-background);
     --stpa-color-sidebar-trigger-background: var(--vscode-sideBar-background);
+    
+    --stpa-color-sidebar-trigger-background-hover: var(--vscode-sideBar-background);
+    --stpa-color-sidebar-trigger-background-active: var(--vscode-sideBar-background);
+    --stpa-color-sidebar-hover-background: rgba(0, 0, 0, 0.15);
+    /* --stpa-color-sidebar-font-primary: hsl(0, 0%, 12%);
+    --stpa-color-sidebar-icon-primary: hsl(0, 0%, 24%);
+    --stpa-color-primary: #0552b5; */
 }
