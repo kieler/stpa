@@ -128,7 +128,25 @@
                 "command": "stpa.diagram.delete",
                 "when": "stpa-diagram-focused"
             }
-        ]
+        ],
+        "viewsContainers": {
+            "activitybar": [
+              {
+                "id": "stpa",
+                "title": "STPA",
+                "icon": "./icon.png"
+              }
+            ]
+          },
+          "views": {
+            "stpa": [
+              {
+                "type": "webview",
+                "id": "stpa-templates",
+                "name": "STPA Templates"
+              }
+            ]
+          }
     },
     "activationEvents": [
         "onLanguage:stpa",
@@ -145,7 +163,7 @@
 
     "devDependencies": {
         "@types/node": "^12.12.6",
-        "@types/vscode": "1.46.0",
+        "@types/vscode": "1.67.0",
         "rimraf": "^3.0.2",
         "source-map-loader": "^3.0.0",
         "sprotty-vscode": "^0.2.0",
