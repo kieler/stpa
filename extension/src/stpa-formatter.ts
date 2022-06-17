@@ -23,16 +23,28 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
         const edits: TextEdit[] = [];
         const text = document.getText();
         // TODO: controlstructure and/or responsibilities may not be defined
-        const headers = text.split(/(?=ControlStructure)|(?=Responsibilities)/);
+        const headers = text.split(/(?=ControlStructure)/);
         let offset = 0;
         let openParens = 0;
 
-        let splits = headers[0].split(/(?<={)|(?<=})|(?<=\n)/);
+        let splits = headers[0].split(/(?<=])|(?<={)|(?<=})|(?<=\n)/);
         offset = this.format(offset, document, openParens, edits, splits);
 
-        offset += splits[splits.length - 1].length + headers[1].length;
-        splits = headers[2].split(/(?<={)|(?<=})|(?<=\n)/);
-        this.format(offset, document, openParens, edits, splits);
+        if (headers.length > 1) {
+            this.formatControlStructure(offset, document, edits, headers[1]);
+            let rest = headers[1].split(/(?=Responsibilities)/);
+            if (rest.length === 1) {
+                rest = headers[1].split(/(?=UCAs)/);
+            }
+            if (rest.length === 1) {
+                rest = headers[1].split(/(?=LossScenarios)/);
+            }
+            if (rest.length > 1) {
+                offset += splits[splits.length - 1].length + rest[0].length;
+                splits = rest[1].split(/(?<=])|(?<={)|(?<=})|(?<=\n)/);
+                this.format(offset, document, openParens, edits, splits);
+            }
+        }
 
         return edits;
     }
@@ -45,14 +57,14 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
                     this.formatIndentation(offset, document, openParens, edits, splits[i]);
                     break;
                 case ']':
+                    this.formatNewLineAfter(offset, document, openParens, edits, splits[i]);
                     break;
                 case '{':
                     openParens++;
-                    // TODO: case that nothing is written in the parenthesis -> could be handled in closing case
-                    this.formatOpenParenthesis(offset, document, openParens, edits, splits[i]);
+                    this.formatNewLineAfter(offset, document, openParens, edits, splits[i]);
                     break;
                 case '}':
-                    this.formatClosingParenthesis(offset, document, openParens, edits, splits[i - 1]);
+                    this.formatNewLineBefore(offset, document, openParens, edits, splits[i - 1]);
                     openParens--;
                     break;
                 default:
@@ -95,18 +107,18 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
         }
     }
 
-    protected formatClosingParenthesis(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
+    protected formatNewLineBefore(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
         let trimmed = split.trim();
         if (trimmed !== '}') {
-            const newOffset = offset-1;
+            const newOffset = offset - 1;
             const pos: Position = document.positionAt(newOffset);
             // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
             edits.push(TextEdit.insert(pos, '\r\n'));
-            this.formatIndentation(newOffset+1, document, openParens, edits, split.substring(split.indexOf('}')));
+            this.formatIndentation(newOffset + 1, document, openParens, edits, split.substring(split.indexOf('}')));
         }
     }
 
-    protected formatOpenParenthesis(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
+    protected formatNewLineAfter(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
         let nextChar = 0;
         while (split[nextChar] === ' ') {
             nextChar++;
@@ -121,6 +133,10 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
             edits.push(TextEdit.insert(pos, '\r\n'));
             this.formatIndentation(offset + nextChar, document, openParens, edits, split.substring(nextChar));
         }
+    }
+
+    protected formatControlStructure(offset: number, document: TextDocument, edits: TextEdit[], cs: string) {
+        //TODO: implement
     }
 
 }
