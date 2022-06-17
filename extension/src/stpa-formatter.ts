@@ -27,29 +27,23 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
         let offset = 0;
         let openParens = 0;
 
-        let splits = headers[0].split(/(?<=])|(?<={)|(?<=})/);
+        let splits = headers[0].split(/(?<={)|(?<=})|(?<=\n)/);
+        offset = this.format(offset, document, openParens, edits, splits);
+
+        offset += splits[splits.length - 1].length + headers[1].length;
+        splits = headers[2].split(/(?<={)|(?<=})|(?<=\n)/);
+        this.format(offset, document, openParens, edits, splits);
+
+        return edits;
+    }
+
+    protected format(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], splits: string[]): number {
         for (let i = 1; i < splits.length; i++) {
             offset += splits[i - 1].length;
             switch (splits[i - 1][splits[i - 1].length - 1]) {
-                case ']':
+                case '\n':
+                    this.formatIndentation(offset, document, openParens, edits, splits[i]);
                     break;
-                case '{':
-                    openParens++;
-                    this.formatOpenParenthesis(offset, document, openParens, edits, splits[i]);
-                    break;
-                case '}':
-                    openParens--;
-                    break;
-                default:
-                    console.log("Something went wrong while splitting.");
-                    break;
-            }
-        }
-        offset += splits[splits.length - 1].length + headers[1].length;
-        splits = headers[2].split(/(?<=])|(?<={)|(?<=})/);
-        for (let i = 1; i < splits.length - 1; i++) {
-            offset += splits[i - 1].length;
-            switch (splits[i - 1][splits[i - 1].length - 1]) {
                 case ']':
                     break;
                 case '{':
@@ -58,6 +52,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
                     this.formatOpenParenthesis(offset, document, openParens, edits, splits[i]);
                     break;
                 case '}':
+                    this.formatClosingParenthesis(offset, document, openParens, edits, splits[i - 1]);
                     openParens--;
                     break;
                 default:
@@ -65,9 +60,50 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
                     break;
             }
         }
+        return offset;
+    }
 
+    protected formatIndentation(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
+        let whiteSpaces = 0;
+        while (split[whiteSpaces] === ' ') {
+            whiteSpaces++;
+        }
+        if (split[whiteSpaces] === '}') {
+            openParens--;
+        }
+        // insert whitespaces
+        if (whiteSpaces < 4 * openParens) {
+            let insertWhiteSpaces = '';
+            while (whiteSpaces < 4 * openParens) {
+                insertWhiteSpaces += ' ';
+                whiteSpaces++;
+            }
+            const pos: Position = document.positionAt(offset);
+            edits.push(TextEdit.insert(pos, insertWhiteSpaces));
+        }
+        // delete whitespaces
+        if (whiteSpaces > 4 * openParens) {
+            let deleteWhiteSpaces = 0;
+            while (whiteSpaces > 4 * openParens) {
+                deleteWhiteSpaces++;
+                whiteSpaces--;
+            }
+            const startPos = document.positionAt(offset);
+            const endPos = document.positionAt(offset + deleteWhiteSpaces);
+            const delRange = new Range(startPos, endPos);
+            edits.push(TextEdit.delete(delRange));
+        }
+    }
 
-        return edits;
+    protected formatClosingParenthesis(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
+        let trimmed = split.trim();
+        if (trimmed !== '}') {
+            const newOffset = offset-1;
+            const pos: Position = document.positionAt(newOffset);
+            // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
+            edits.push(TextEdit.insert(pos, '\r\n'));
+            this.formatIndentation(newOffset+1, document, openParens, edits, split.substring(split.indexOf('}')));
+        }
     }
 
     protected formatOpenParenthesis(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
@@ -79,26 +115,12 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
         const endPos = document.positionAt(offset + nextChar);
         const delRange = new Range(startPos, endPos);
         edits.push(TextEdit.delete(delRange));
-        let whiteSpaces = 0;
-        let addOffset = 0;
-        if (split[nextChar] === '\r') {
-            while (split[nextChar + 2 + whiteSpaces] === ' ') {
-                whiteSpaces++;
-            }
-            addOffset += 2;
-        } else {
-            const pos: Position = document.positionAt(offset + nextChar);
+        if (split[nextChar] !== '\r') {
+            const pos: Position = document.positionAt(offset);
             // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
             edits.push(TextEdit.insert(pos, '\r\n'));
+            this.formatIndentation(offset + nextChar, document, openParens, edits, split.substring(nextChar));
         }
-
-        let insertWhiteSpaces = '';
-        while (whiteSpaces < 4 * openParens) {
-            insertWhiteSpaces += ' ';
-            whiteSpaces++;
-        }
-        const pos: Position = document.positionAt(offset + nextChar + addOffset);
-        edits.push(TextEdit.insert(pos, insertWhiteSpaces));
     }
 
 }
