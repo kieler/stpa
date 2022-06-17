@@ -25,10 +25,8 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
         // TODO: controlstructure and/or responsibilities may not be defined
         const headers = text.split(/(?=ControlStructure)/);
         let offset = 0;
-        let openParens = 0;
-
-        let splits = headers[0].split(/(?<=])|(?<={)|(?<=})|(?<=\n)/);
-        offset = this.format(offset, document, openParens, edits, splits);
+        let splits = headers[0].split(/(?<=])|(?<={)|(?<=})|(?<=\n)|(?<=")/);
+        offset = this.format(offset, document, edits, splits);
 
         if (headers.length > 1) {
             this.formatControlStructure(offset, document, edits, headers[1]);
@@ -41,15 +39,26 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
             }
             if (rest.length > 1) {
                 offset += splits[splits.length - 1].length + rest[0].length;
-                splits = rest[1].split(/(?<=])|(?<={)|(?<=})|(?<=\n)/);
-                this.format(offset, document, openParens, edits, splits);
+                splits = rest[1].split(/(?<=])|(?<={)|(?<=})|(?<=\n)|(?<=")/);
+                this.format(offset, document, edits, splits);
             }
         }
 
         return edits;
     }
 
-    protected format(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], splits: string[]): number {
+    /**
+     * Formats the given {@code splits}.
+     * @param offset Current offset in the document.
+     * @param document The document to format.
+     * @param edits Array to push the created edits to.
+     * @param splits Text of the document that is splitted by certain tokens.
+     * @returns The offset after the given text.
+     */
+    protected format(offset: number, document: TextDocument, edits: TextEdit[], splits: string[]): number {
+        let quotation = 0;
+        let openParens = 0;
+
         for (let i = 1; i < splits.length; i++) {
             offset += splits[i - 1].length;
             switch (splits[i - 1][splits[i - 1].length - 1]) {
@@ -57,7 +66,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
                     this.formatIndentation(offset, document, openParens, edits, splits[i]);
                     break;
                 case ']':
-                    this.formatNewLineAfter(offset, document, openParens, edits, splits[i]);
+                    this.formatClosedBracket(offset, document, openParens, edits, splits[i]);
                     break;
                 case '{':
                     openParens++;
@@ -65,22 +74,39 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
                     break;
                 case '}':
                     this.formatNewLineBefore(offset, document, openParens, edits, splits[i - 1]);
-                    openParens--;
+                    openParens--; 
+                    this.formatNewLineAfter(offset, document, openParens, edits, splits[i]);
                     break;
+                case '"':
+                    quotation++;
+                    if (quotation % 2 == 0) {
+                        this.formatQuotes(offset, document, openParens, edits, splits[i]);
+                    }
                 default:
                     console.log("Something went wrong while splitting.");
                     break;
             }
         }
+        if (openParens !== 0) {
+            console.log("Something is wrong with the number of open parenthesis");
+        }
         return offset;
     }
 
-    protected formatIndentation(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
+    /**
+     * Formats {@code line} by indentation based on number of open parenthesis.
+     * @param offset Current offset in the document.
+     * @param document The document to format.
+     * @param openParens Number of currently open parenthesis. Determines the indentation.
+     * @param edits Array to push the created edits to.
+     * @param line The text to indent.
+     */
+    protected formatIndentation(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
         let whiteSpaces = 0;
-        while (split[whiteSpaces] === ' ') {
+        while (line[whiteSpaces] === ' ') {
             whiteSpaces++;
         }
-        if (split[whiteSpaces] === '}') {
+        if (line[whiteSpaces] === '}') {
             openParens--;
         }
         // insert whitespaces
@@ -107,31 +133,87 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
         }
     }
 
-    protected formatNewLineBefore(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
-        let trimmed = split.trim();
+    /**
+     * Inserts a newline at the end of the given {@code line}, before '}'.
+     * @param offset Current offset in the document.
+     * @param document The document to format.
+     * @param openParens Number of currently open parenthesis. Determines the indentation.
+     * @param edits Array to push the created edits to.
+     * @param line The text at which end a newline should be inserted.
+     */
+    protected formatNewLineBefore(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
+        let trimmed = line.trim();
         if (trimmed !== '}') {
             const newOffset = offset - 1;
             const pos: Position = document.positionAt(newOffset);
             // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
             edits.push(TextEdit.insert(pos, '\r\n'));
-            this.formatIndentation(newOffset + 1, document, openParens, edits, split.substring(split.indexOf('}')));
+            this.formatIndentation(newOffset + 1, document, openParens, edits, line.substring(line.indexOf('}')));
         }
     }
 
-    protected formatNewLineAfter(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], split: string) {
+    /**
+     * Inserts a newline at the beginning of the given {@code line}.
+     * @param offset Current offset in the document.
+     * @param document The document to format.
+     * @param openParens Number of currently open parenthesis. Determines the indentation.
+     * @param edits Array to push the created edits to.
+     * @param line The text before which a newline should be inserted.
+     */
+    protected formatNewLineAfter(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
         let nextChar = 0;
-        while (split[nextChar] === ' ') {
+        while (line[nextChar] === ' ') {
             nextChar++;
         }
         const startPos = document.positionAt(offset);
         const endPos = document.positionAt(offset + nextChar);
         const delRange = new Range(startPos, endPos);
         edits.push(TextEdit.delete(delRange));
-        if (split[nextChar] !== '\r') {
+        if (line[nextChar] !== '\r') {
             const pos: Position = document.positionAt(offset);
             // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
             edits.push(TextEdit.insert(pos, '\r\n'));
-            this.formatIndentation(offset + nextChar, document, openParens, edits, split.substring(nextChar));
+            this.formatIndentation(offset + nextChar, document, openParens, edits, line.substring(nextChar));
+        }
+    }
+
+    /**
+     * Inserts a newline at the beginning of the given {@code line}, if the first character is not '{'.
+     * @param offset Current offset in the document.
+     * @param document The document to format.
+     * @param openParens Number of currently open parenthesis. Determines the indentation.
+     * @param edits Array to push the created edits to.
+     * @param line The text before which a newline should be inserted.
+     */
+    protected formatClosedBracket(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
+        const trimmed = line.trim();
+        if (trimmed[0] !== '{') {
+            this.formatNewLineAfter(offset, document, openParens, edits, line);
+        }
+    }
+
+    /**
+     * Inserts a newline at the beginning of the given {@code line}, if the first character is not '['.
+     * @param offset Current offset in the document.
+     * @param document The document to format.
+     * @param openParens Number of currently open parenthesis. Determines the indentation.
+     * @param edits Array to push the created edits to.
+     * @param line The text before which a newline should be inserted.
+     */
+    protected formatQuotes(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
+        let nextChar = 0;
+        while (line[nextChar] === ' ') {
+            nextChar++;
+        }
+        if (line[nextChar] !== '[' && line[nextChar] !== '\r') {
+            const startPos = document.positionAt(offset);
+            const endPos = document.positionAt(offset + nextChar);
+            const delRange = new Range(startPos, endPos);
+            edits.push(TextEdit.delete(delRange));
+            const pos: Position = document.positionAt(offset);
+            // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
+            edits.push(TextEdit.insert(pos, '\r\n'));
+            this.formatIndentation(offset + nextChar, document, openParens, edits, line.substring(nextChar));
         }
     }
 
