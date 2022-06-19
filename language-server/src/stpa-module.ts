@@ -47,7 +47,7 @@ export type StpaAddedServices = {
     },
     options: {
         StpaSynthesisOptions: StpaSynthesisOptions
-    }
+    },
 };
 
 /**
@@ -81,7 +81,7 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
     },
     options: {
         StpaSynthesisOptions: () => new StpaSynthesisOptions()
-    }
+    },
 };
 
 export const stpaDiagramServerFactory =

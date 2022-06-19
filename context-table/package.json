@@ -1,0 +1,45 @@
+{
+  "name": "context-table-webview",
+  "version": "0.0.0",
+  "description": "Context tables for the STPA DSL",
+  "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+  "license": "EPL-2.0",
+  "keywords": [
+    "vscode",
+    "context-table",
+    "layout"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kieler/stpa",
+    "directory": "context-table"
+},
+  "files": [
+    "src",
+    "css"
+  ],
+  "dependencies": {
+    "reflect-metadata": "^0.1.13",
+    "feather-icons": "^4.28.0",
+    "sprotty": "~0.11.1",
+    "sprotty-vscode-webview": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/feather-icons": "^4.7.0",
+    "css-loader": "^6.5.1",
+    "file-loader": "^6.2.0",
+    "rimraf": "latest",
+    "source-map-loader": "^3.0.0",
+    "style-loader": "^1.2.1",
+    "ts-loader": "^9.2.6",
+    "typescript": "3.8.3",
+    "webpack": "^5.64.2",
+    "webpack-cli": "^4.9.1"
+  },
+  "scripts": {
+    "prepare": "yarn run clean && yarn run build",
+    "clean": "rimraf out",
+    "build": "webpack --mode=development",
+    "watch": "webpack --mode=development --watch"
+  }
+}
