@@ -155,8 +155,7 @@
         "extension",
         "server",
         "syntaxes",
-        "webview",
-        "context-table"
+        "webview"
     ],
     "main": "./pack/extension",
 
@@ -173,7 +172,7 @@
         "vscode-languageclient": "^7.0.0",
         "webpack": "^5.64.2",
         "webpack-cli": "^4.9.1",
-        "context-table-webview": "^0.0.0"
+        "context-table-webview": "^0.0.1"
     },
     "scripts": {
         "prepare": "yarn run clean && yarn run build && yarn run copy-language-server && yarn run copy-webview",

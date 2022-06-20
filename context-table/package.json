@@ -1,6 +1,6 @@
 {
   "name": "context-table-webview",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Context tables for the STPA DSL",
   "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
   "license": "EPL-2.0",
@@ -21,8 +21,7 @@
   "dependencies": {
     "reflect-metadata": "^0.1.13",
     "feather-icons": "^4.28.0",
-    "sprotty": "~0.11.1",
-    "sprotty-vscode-webview": "^0.2.0"
+    "sprotty": "~0.11.1"
   },
   "devDependencies": {
     "@types/feather-icons": "^4.7.0",
