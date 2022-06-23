@@ -36,6 +36,7 @@ export class STPANode extends SNode {
     description: string = ""
     hierarchyLvl: number = 0
     connected?: boolean
+    level?: number
 }
 
 /**
