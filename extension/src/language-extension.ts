@@ -23,11 +23,14 @@ import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import { ActionMessage, JsonMap } from 'sprotty-protocol';
 import { UpdateViewAction } from './actions';
+import { StpaFormattingEditProvider } from './stpa-formatter';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
+        let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
+        vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
     }
 
     protected getDiagramType(commandArgs: any[]): string | undefined {

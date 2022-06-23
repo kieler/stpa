@@ -26,6 +26,7 @@ export interface STPANode extends SNode {
     description: string
     hierarchyLvl: number
     connected?: boolean
+    level?: number
 }
 
 /**
