@@ -53,10 +53,18 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected nodeOptions(snode: SNode, index: SModelIndex): LayoutOptions | undefined {
+        const parent = snode.children?.find(child => child.type.startsWith('node'));
         const partition = snode.type === CS_NODE_TYPE ? (snode as CSNode).level : (snode as STPANode).level;
-        return {
-            'org.eclipse.elk.partitioning.partition': "" + partition!
-        };
+        if (parent) {
+            return {
+                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_TOP H_CENTER",
+                'org.eclipse.elk.partitioning.partition': "" + partition!
+            };
+        } else {
+            return {
+                'org.eclipse.elk.partitioning.partition': "" + partition!
+            };
+        }
     }
 
     apply(element: SModelElement, index: SModelIndex): LayoutOptions | undefined {
