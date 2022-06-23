@@ -58,11 +58,11 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         if (parent) {
             return {
                 'org.eclipse.elk.nodeLabels.placement': "INSIDE V_TOP H_CENTER",
-                'org.eclipse.elk.partitioning.partition': "" + partition!
+                'org.eclipse.elk.partitioning.partition': "" + partition
             };
         } else {
             return {
-                'org.eclipse.elk.partitioning.partition': "" + partition!
+                'org.eclipse.elk.partitioning.partition': "" + partition
             };
         }
     }
