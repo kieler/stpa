@@ -25,7 +25,7 @@ export class StpaModelViewer extends ModelViewer {
 
     @postConstruct()
     init(): void {
-        
+
     }
 
 }

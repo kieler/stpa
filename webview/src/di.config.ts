@@ -25,8 +25,8 @@ import {
     PreRenderedView, SLabelView,
     TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge, ModelViewer
 } from 'sprotty';
-import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView} from './views';
-import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE} from './stpa-model';
+import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView } from './views';
+import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE } from './stpa-model';
 import { sidebarModule } from './sidebar';
 import { optionsModule } from './options/options-module';
 import { StpaModelViewer } from './model-viewer';
@@ -34,7 +34,7 @@ import { StpaModelViewer } from './model-viewer';
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
-    rebind(ModelViewer).to(StpaModelViewer).inSingletonScope()
+    rebind(ModelViewer).to(StpaModelViewer).inSingletonScope();
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
