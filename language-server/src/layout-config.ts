@@ -45,6 +45,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             direction = 'DOWN';
         }
         return {
+            'org.eclipse.elk.layered.layering.strategy': 'LONGEST_PATH',
             'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': direction,
             'org.eclipse.elk.algorithm': 'layered',
