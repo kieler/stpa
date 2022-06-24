@@ -17,7 +17,7 @@
 
 import * as vscode from 'vscode';
 import { StpaLspVscodeExtension } from './language-extension';
-import { SprottyDiagramIdentifier, SprottyLspVscodeExtension } from 'sprotty-vscode/lib/lsp';
+import { SprottyLspVscodeExtension } from 'sprotty-vscode/lib/lsp';
 import { TemplateWebview } from './template-webview';
 
 let extension: SprottyLspVscodeExtension;
@@ -28,21 +28,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     const provider: vscode.WebviewViewProvider = {
         resolveWebviewView: function (webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
-            const identifier: SprottyDiagramIdentifier = {
-                clientId: "test",
-                diagramType: "stpa",
-                uri: "test"
-            };
 
-            const tWebview = new TemplateWebview({
-                extension: extension,
-                identifier,
-                localResourceRoots: [
+            const tWebview = new TemplateWebview(
+                "templates",
+                [
                     extension.getExtensionFileUri('pack')
                 ],
-                scriptUri: extension.getExtensionFileUri('pack', 'webview.js'),
-                singleton: true // Change this to `true` to enable a singleton view
-            });
+                extension.getExtensionFileUri('pack', 'tempWebview.js'),
+            );
             tWebview.webview = webviewView.webview;
             tWebview.webview.options = {
                 enableScripts: true
