@@ -1,0 +1,148 @@
+Losses
+L1 "Loss of life or serious injury to people"L2 "Damage to the aircraft or objects outside the aircraft"
+
+Hazards
+H1 "Aircraft violate minimum separation standards in flight" [L1, L2]
+H2 "Controlled flight of aircraft into terrain" [L1, L2]
+H3 "Loss of aircraft control" [L1, L2]H4 "Aircraft airframe integrity is lost" [L1, L2]
+H5 "Aircraft environment is harmful to human health" [L1, L2]
+H6 "Aircraft departs designated taxiway, runway, or apron on ground" [L1, L2]
+H7 "Aircraft comes too close to other objects on the ground" [L1, L2] {
+    "Deceleration" H7.1 "Deceleration is insufficient upon landing, rejected takeoff, or during taxiing"
+    H7.2 "Asymmetric deceleration maneuvers aircraft toward other objects"
+    H7.3 " Deceleration occurs after V1 point during takeoff"
+    "Acceleration"
+    H7.4 "Excessive acceleration provided while taxiing"
+    H7.5 "Asymmetric acceleration maneuvers aircraft toward other objects"
+    H7.6 "Acceleration is insufficient during takeoff"
+    H7.7 "Acceleration is provided during landing or when parked"
+    H7.8 "Acceleration continues to be applied during rejected takeoff"
+    "Steering"
+    H7.9 "Insufficient steering to turn along taxiway, runway, or apron path"
+    H7.10 "Steering maneuvers aircraft off the taxiway, runway, or apron path"
+}
+
+SystemConstraints
+SC1 "Aircraft must satisfy minimum sperartion standards from other aircraft and objects" [H1]
+SC4 "Aircraft airfram integrity must be maintained under worst-case conditions" [H4]
+SC7 "Aircraft must have safe distance to other objects on the ground" [H7] {SC7.1 "Deceleration must occur within TBD seconds of landing or rejected takeoff at a rate of at least TBD m/s2" [H7.1]
+    SC7.2 "Asymmetric deceleration must not lead to loss of directional control or cause aircraft to depart taxiway, runway, or apron" [H7.2]
+    SC7.3 "Deceleration must not be provided after V1 point during takeoff" [H7.3]
+}
+
+ControlStructure
+Aircraft {
+    FlightCrew {
+    hierarchyLevel 0
+    processModel {
+        BCSUmode: ["on", "off"]
+    }
+    controlActions {
+        [mc "Manual Controls" ]-> OtherSubsystems
+        [powerOff "Power Off BSCU", powerOn "Power On BSCU"]    ->    BSCU 
+        [manual "Manual Braking"] ->Wheels
+    }
+    }
+    OtherSubsystems {
+        hierarchyLevel 1
+        feedback {
+            [modes "Other system modes", states "states"] -> FlightCrew
+        }
+    }
+    BSCU {
+        hierarchyLevel 1
+        controlActions {
+            [brake "Brake"] -> Wheels
+        }
+        feedback {
+            [mode "BSCU mode", faults "BSCU faults"] -> FlightCrew 
+        }
+    }
+    Wheels {
+        hierarchyLevel 2
+        feedback {
+            [speed "Wheel speed"] -> BSCU
+        }
+    }
+    /*     HorizontalEdge {
+        BSCU -> OtherSubsystems
+        label "Example"
+    }
+    */
+}
+
+Responsibilities
+Wheels {R1 "Decelerate wheels when commanded by BSCU or Flight Crew" [SC7.1]
+}
+BSCU {
+    R2 "Actuate brakes when requested by flight crew" [SC7.1]R3 "Pulse brakes in case of a skid (Anti-skid)" [SC7.2]
+    R4 "Automatically engage brakes on landing or rejected takeoff (Autobrake)" [SC7.1]
+}
+FlightCrew {
+    R5 "Decide when braking is needed" [SC7.1, SC7.3]
+         R6 "Decide how braking will be done: Autobrake, normal braking, or manual braking" [SC7.1]
+R7 "Configure BSCU and Autobrake to prepare for braking" [SC7.1]
+    R8 "Monitor braking and disable BSCU, manually brake in case of malfunction" [SC7.1, SC7.2]
+}
+
+UCAs
+BSCU.brake {
+    notProviding {
+        UCA1 "BSCU Autobrake does not provide the Brake control action during landing roll when the BSCU is armed" [H7.1]
+    }
+providing {
+    UCA2 "BSCU Autobrake provides Brake control action during a normal takeoff" [H7.3, H7.6]
+    UCA5 "BSCU Autobrake provides Brake control action with an insufficient level of braking during landing roll" [H7.1]
+    UCA6 "BSCU Autobrake provides Brake control action with directional or asymmetrical braking during landing roll" [H7.1, H7.2]
+}
+    tooEarly/Late {
+        UCA3 "BSCU Autobrake provides the Brake control action too late (>TBD seconds) after touchdown" [H7.1]
+    }
+    stoppedTooSoon {
+        UCA4 "BSCU Autobrake stops providing the Brake control action too early (before TBD taxi speed attained) when aircraft lands" [H7.1]
+    }
+}
+FlightCrew.powerOff {
+    notProviding {
+        UCA7 "Crew does not provide BSCU Power Off when abnormal WBS behavior occurs" [H6, H7.1, H7.4]
+    }
+    providing {
+        UCA8 "Crew provides BSCU Power Off when Anti-Skid functionality is needed and WBS is functioning normally" [H6, H7.1]
+    }
+    tooEarly/Late {
+        UCA9 "Crew powers off BSCU too early before Autobrake or Anti-Skid behavior is completed when it is needed" [H6, H7.1]
+    }
+    stoppedTooSoon {
+    }
+}
+
+ControllerConstraints C1 "BSCU Autobrake must provide the Brake control action during landing roll when the BSCU is armed" [UCA1]
+C2 "BSCU Autobrake must not provide Brake control action during a normal takeoff" [UCA2]
+C3 "BSCU Autobrake must provide the Brake control action within TBD seconds after touchdown" [UCA3]
+C4 "BSCU Autobrake must not stop providing the Brake control action before TBD taxi speed is attained during landing roll" [UCA4]
+C5 "BSCU Autobrake must not provide less than TBD level of braking during landing roll" [UCA5]
+C6 "BSCU Autobrake must not provide directional or asymmetrical braking during landing roll" [UCA6]
+
+LossScenarios
+Scenario1 for UCA1 "The BSCU Autobrake physical controller fails during landing roll when BSCU is armed, 
+causing the Brake control action to not be provided. As a result, 
+insufficient deceleration may be provided upon landing" [H7.1]
+Scenario2 for UCA3 "The aircraft lands, but processing delays within the BSCU result in the Brake control action being provided too late. 
+As a result, insufficient deceleration may be provided upon landing" [H7.1]
+Scenario3 for UCA7 "Abnormal WBS behavior occurs and a BSCU fault indication is provided to the crew. 
+The crew does not power off the BSCU because the operating procedures did not specify 
+that the crew must power off the BSCU upon receiving a BSCU fault indication." [H7.1, H7.4]
+Scenario4 for UCA2 "The BSCU is armed and the aircraft begins landing roll. The BSCU does not provide the Brake control action 
+because the BSCU incorrectly believes the aircraft has already come to a stop. 
+This flawed process model will occur if the received feedback momentarily indicates zero speed 
+during landing roll. The received feedback may momentarily indicate zero speed during anti-skid operation, 
+even though the aircraft is not stopped"
+Scenario5 "The BSCU sends the Brake command upon landing, but the brakes are not applied due to actuator failure. 
+As a result, insufficient deceleration may be provided upon landing" [H7.1]
+Scenario6 "The BSCU sends the Brake command upon landing, but insufficient braking is applied due to slow actuator response. 
+As a result, insufficient deceleration may be provided upon landing" [H7.1]
+Scenario7 "The BSCU does not send Brake command, but the brakes are applied due to hydraulic valve failure. 
+As a result, acceleration may be insufficient during takeoff" [H7.6]
+
+SafetyRequirements
+SR1 "Sufficient braking must be applied when sending the Brake comman upon landing" [Scenario6]
