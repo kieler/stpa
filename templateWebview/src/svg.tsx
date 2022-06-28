@@ -19,7 +19,7 @@
 import { attributesModule, classModule, eventListenersModule, init, propsModule, styleModule } from 'snabbdom';
 import { svg } from './jsx';
 
-const patch = init([
+export const patch = init([
     // Init patch function with chosen modules
     classModule, // makes it easy to toggle classes
     propsModule, // for setting properties on DOM elements
@@ -28,44 +28,34 @@ const patch = init([
     attributesModule // for using attributes on svg elements
 ]);
 
-export function update(): void {
-    console.log(testNode);  
-    if (typeof document !== 'undefined') {
-        const placeholder = document.getElementById("test_templates");
-        if (placeholder !== null) {
-            patch(placeholder, testNode2);
-        }
-    }
-}
+export const testNode2 = <svg id="stpa-diagram_0_simpleCSTemplate" tabindex="0" width="214.59830729166666" height="179" class-sprotty-graph="true">
+    <g transform="scale(1) translate(0,0)">
+        <g id="stpa-diagram_0_controlStructure" transform="translate(12, 12)" class-parent="true">
+            <rect x="0" y="0" width="184.59830729166666" height="149" class-parent-node="true" class-sprotty-node="true"> </rect>
+            <g id="stpa-diagram_0_Controller" transform="translate(44.253255208333336, 12)" class-cs="true">
+                <rect x="0" y="0" width="72.025390625" height="35" class-sprotty-node="true"> </rect>
+                <text class-label="true" class-sprotty-label="true" id="stpa-diagram_0_Controller.label" transform="translate(5, 10) translate(0, 12)">Controller</text>
+            </g>
+            <g id="stpa-diagram_0_ControlledProcess" transform="translate(27.68994140625, 102)" class-cs="true">
+                <rect x="0" y="0" width="121.71533203125" height="35" class-sprotty-node="true"> </rect>
+                <text class-label="true" class-sprotty-label="true" id="stpa-diagram_0_ControlledProcess.label" transform="translate(5, 10) translate(0, 12)">ControlledProcess</text>
+            </g>
+            <g id="stpa-diagram_0_Controller:ca:ControlledProcess" class-sprotty-edge="true" class-controlStructure="true">
+                <path d="M 92.27018229166666,47 L 92.27018229166666,92 L 108.83349609375,92 L 108.83349609375,102" class-stpa-edge="true"></path><path d="M 6,-3 L 0,0 L 6,3 Z" transform="rotate(-90 108.83349609375 102) translate(108.83349609375 102)" class-sprotty-edge-arrow="true">
 
-const testNode2 = <svg id="stpa-diagram_0_simpleCSTemplate" tabindex="0" width="214.59830729166666" height="179" class-sprotty-graph="true">
-<g transform="scale(1) translate(0,0)">
-    <g id="stpa-diagram_0_controlStructure" transform="translate(12, 12)" class-parent="true">
-        <rect x="0" y="0" width="184.59830729166666" height="149" class-parent-node="true" class-sprotty-node="true"> </rect>
-        <g id="stpa-diagram_0_Controller" transform="translate(44.253255208333336, 12)" class-cs="true">
-            <rect x="0" y="0" width="72.025390625" height="35" class-sprotty-node="true"> </rect>
-            <text class-label="true" class-sprotty-label="true" id="stpa-diagram_0_Controller.label" transform="translate(5, 10) translate(0, 12)">Controller</text>
-        </g>
-        <g id="stpa-diagram_0_ControlledProcess" transform="translate(27.68994140625, 102)" class-cs="true">
-            <rect x="0" y="0" width="121.71533203125" height="35" class-sprotty-node="true"> </rect>
-            <text class-label="true" class-sprotty-label="true" id="stpa-diagram_0_ControlledProcess.label" transform="translate(5, 10) translate(0, 12)">ControlledProcess</text>
-        </g>
-        <g id="stpa-diagram_0_Controller:ca:ControlledProcess" class-sprotty-edge="true" class-controlStructure="true">
-            <path d="M 92.27018229166666,47 L 92.27018229166666,92 L 108.83349609375,92 L 108.83349609375,102" class-stpa-edge="true"></path><path d="M 6,-3 L 0,0 L 6,3 Z" transform="rotate(-90 108.83349609375 102) translate(108.83349609375 102)" class-sprotty-edge-arrow="true">
-
-            </path>
-            <text class-xref="true" class-sprotty-label="true" id="stpa-diagram_0_Controller:ca:ControlledProcess.label" transform="translate(95.27018229166666, 67) translate(0, 12)">control action</text>
-        </g>
-        <g id="stpa-diagram_0_ControlledProcess:fb:Controller" class-sprotty-edge="true" class-controlStructure="true">
-            <path d="M 68.26171875,102 L 68.26171875,47" class-stpa-edge="true"></path>
-            <path d="M 6,-3 L 0,0 L 6,3 Z" transform="rotate(90 68.26171875 47) translate(68.26171875 47)" class-sprotty-edge-arrow="true"></path>
-            <text class-xref="true" class-sprotty-label="true" id="stpa-diagram_0_ControlledProcess:fb:Controller.label" transform="translate(12, 67) translate(1, 12)">feedback</text>
+                </path>
+                <text class-xref="true" class-sprotty-label="true" id="stpa-diagram_0_Controller:ca:ControlledProcess.label" transform="translate(95.27018229166666, 67) translate(0, 12)">control action</text>
+            </g>
+            <g id="stpa-diagram_0_ControlledProcess:fb:Controller" class-sprotty-edge="true" class-controlStructure="true">
+                <path d="M 68.26171875,102 L 68.26171875,47" class-stpa-edge="true"></path>
+                <path d="M 6,-3 L 0,0 L 6,3 Z" transform="rotate(90 68.26171875 47) translate(68.26171875 47)" class-sprotty-edge-arrow="true"></path>
+                <text class-xref="true" class-sprotty-label="true" id="stpa-diagram_0_ControlledProcess:fb:Controller.label" transform="translate(12, 67) translate(1, 12)">feedback</text>
+            </g>
         </g>
     </g>
-</g>
-</svg>
+</svg>;
 
-const testNode = <div class-sidebar__content="true">
+export const testNode = <div class-sidebar__content="true">
     {/*     <div class="sidebar__toggle-container">
         <button title="General" class="sidebar__toggle-button">
             <svg class="feather feather-settings" style="width: 24px; height: 24px; fill: none; stroke: currentcolor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">

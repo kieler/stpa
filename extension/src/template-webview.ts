@@ -77,7 +77,7 @@ export class TemplateWebview {
 
     protected async sendDiagramIdentifier() {
         await this.ready();
-        this.sendToWebview(this.identifier);
+        this.sendToWebview({identifier: this.identifier});
     }
 
     /**

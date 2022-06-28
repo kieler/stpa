@@ -15,10 +15,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Container } from 'inversify';
-import { update } from './viewer';
 import '../css/diagram.css';
+import { Container } from 'inversify';
+import { patch, testNode2 } from './svg';
 import { click } from './mouseListener';
+import { panel, templatesID } from './html';
 
 interface vscode {
     postMessage(message: any): void;
@@ -40,59 +41,43 @@ export class Starter {
         vscode.postMessage({ readyMessage: 'Template Webview ready' });
     }
 
-    protected acceptDiagramIdentifier(): void {
+    protected acceptDiagramIdentifier(): void {
         console.log('Waiting for diagram identifier...');
         const eventListener = (message: any) => {
-            //if (isDiagramIdentifier(message.data)) {
-            this.identifier = message.data
-            this.initHtml();
-            //}
+            this.handleMessages(message);
         };
         window.addEventListener('message', eventListener);
     }
 
     protected initHtml(): void {
-        vscode.postMessage("test")
+        vscode.postMessage("test");
         const containerDiv = document.getElementById(this.identifier + '_container');
-        const haloo = document.createTextNode("Halloooo")
         if (containerDiv) {
-            const svgContainer = document.createElement("div");
-            const test = document.createElement("div");
-            test.appendChild(haloo);
-            svgContainer.id = "test_templates";
-            containerDiv.appendChild(svgContainer);
-            containerDiv.appendChild(test);
+            const panelContainer = document.createElement("div");
+            containerDiv.appendChild(panelContainer);
+            patch(panelContainer, panel);
         }
         document.addEventListener('click', event => {
             click(event);
-        })
-        update();
+        });
     }
+
+    protected handleMessages(message: any) {
+        if (message.data.identifier) {
+            this.identifier = message.data.identifier;
+            this.initHtml();
+            //} else if (message.templates) {
+            const containerDiv = document.getElementById(templatesID);
+            if (containerDiv) {
+                for (let i = 0; i < 2; i++) {
+                    const svgPlaceholder = document.createElement("div");
+                    containerDiv.appendChild(svgPlaceholder);
+                    patch(svgPlaceholder, testNode2);
+                }
+            }
+        }
+    }
+
 }
 
-
-
 new Starter();
-
-/* '<div> <h3>Test</h3></div>'
-const containerDiv = document.getElementById(this.diagramIdentifier.clientId + '_container');
-if (containerDiv) {
-    const svgContainer = document.createElement("div");
-    svgContainer.id = this.viewerOptions.baseDiv;
-    containerDiv.appendChild(svgContainer);
-
-    const hiddenContainer = document.createElement("div");
-    hiddenContainer.id = this.viewerOptions.hiddenDiv;
-    document.body.appendChild(hiddenContainer);
-
-    const statusDiv = document.createElement("div");
-    statusDiv.setAttribute('class', 'sprotty-status');
-    containerDiv.appendChild(statusDiv);
-
-    this.statusIconDiv = document.createElement("div");
-    statusDiv.appendChild(this.statusIconDiv);
-
-    this.statusMessageDiv = document.createElement("div");
-    this.statusMessageDiv.setAttribute('class', 'sprotty-status-message');
-    statusDiv.appendChild(this.statusMessageDiv);
-} */
