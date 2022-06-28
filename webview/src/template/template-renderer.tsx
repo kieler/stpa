@@ -19,7 +19,7 @@
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
 import { html, IModelFactory, ModelRenderer, SGraph, SNode, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
-import { Bounds } from 'sprotty-protocol'
+import { Bounds } from 'sprotty-protocol';
 import { WebviewTemplate } from "./template-models";
 
 
@@ -33,7 +33,7 @@ export class TemplateRenderer {
     setRenderer(renderer: ModelRenderer) {
         this.renderer = renderer;
     }
-    
+
     setBounds(bounds: Bounds) {
         this.bounds = bounds;
     }
@@ -46,7 +46,7 @@ export class TemplateRenderer {
 
         // labels and edges are only visible if they are within the canvas bounds
         for (const temp of templates) {
-            (temp.graph as SGraph).canvasBounds = {width: this.bounds.width + 20, height: this.bounds.height, x: this.bounds.x, y: this.bounds.y};
+            (temp.graph as SGraph).canvasBounds = { width: this.bounds.width + 20, height: this.bounds.height, x: this.bounds.x, y: this.bounds.y };
         }
 
         const res = templates.map(template => {
@@ -57,13 +57,14 @@ export class TemplateRenderer {
             if (graph?.data?.attrs) {
                 graph.data.attrs["width"] = width;
                 graph.data.attrs["height"] = height;
+                graph.data.attrs["id"] = template.id;
             }
             const result: VNode = <div>{graph}</div>;
             /* if (result.data) {
                 const blubb = (width/368.0 * 100) + "%"
                 result.data.style = {width: blubb}
             } */
-            return result
+            return result;
         });
         return res;
     }
