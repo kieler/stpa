@@ -43,7 +43,10 @@ export function activate(context: vscode.ExtensionContext) {
             webviewView.title = title;
             tWebview.initializeWebview(webviewView.webview, title);
             tWebview.connect();
-            extension.languageClient.onNotification('templates/add', (msg) => tWebview.sendToWebview(msg));
+
+            extension.languageClient.onReady().then(() => {
+                extension.languageClient.onNotification('templates/add', (msg) => tWebview.sendToWebview(msg));
+            });
         }
     };
     vscode.window.registerWebviewViewProvider("stpa-templates", provider);

@@ -99,7 +99,7 @@ export class TemplateWebview {
                     clientId: this.extension.clientId,
                     action: {
                         kind: "templateWebviewRdy"
-                    } 
+                    }
                 };
                 this.extension.languageClient.sendNotification('diagram/accept', mes);
             }
