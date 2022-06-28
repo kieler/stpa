@@ -20,9 +20,9 @@ import { ActionHandlerRegistry, IActionHandlerInitializer, ICommand } from "spro
 import { Action } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { DISymbol } from "../di.symbols";
-import { SendModelRendererAction, UpdateTemplatesAction } from "./actions";
-import { WebviewTemplate } from "./template-models";
+import { SendModelRendererAction, RequestWebviewTemplatesAction, SendWebviewTemplatesAction } from "./actions";
 import { TemplateRenderer } from "./template-renderer";
+import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
 
 /**
  * {@link Registry} that stores and manages templates provided by the server.
@@ -33,41 +33,29 @@ import { TemplateRenderer } from "./template-renderer";
 export class TemplateRegistry extends Registry implements IActionHandlerInitializer {
     readonly position = -10;
 
-    private _clientId = "";
-
-    get clientId(): string {
-        return this._clientId;
-    }
-
     @inject(DISymbol.TemplateRenderer) private templateRenderer: TemplateRenderer;
-    
-    private _templates: WebviewTemplate[] = [];
-
-    get templates(): WebviewTemplate[] {
-        return this._templates;
-    }
-    
-    hasTemplateOptions(): boolean {
-        return this._templates.length !== 0;
-    }
 
     initialize(registry: ActionHandlerRegistry): void {
-        registry.register(UpdateTemplatesAction.KIND, this);
+        registry.register(RequestWebviewTemplatesAction.KIND, this);
         registry.register(SendModelRendererAction.KIND, this);
     }
 
     handle(action: Action): void | Action | ICommand {
-        if (UpdateTemplatesAction.isThisAction(action)) {
-            this.handleUpdateOptions(action);
+        if (RequestWebviewTemplatesAction.isThisAction(action)) {
+            this.handleRequestWebviewTemps(action);
         } else if (SendModelRendererAction.isThisAction(action)) {
             this.handleSendModelRenderer(action);
         }
     }
 
-    private handleUpdateOptions(action: UpdateTemplatesAction): void {
-        this._clientId = action.clientId;
-        this._templates = action.templates;
-        this.notifyListeners();
+    private handleRequestWebviewTemps(action: RequestWebviewTemplatesAction): void {
+        const temps = this.templateRenderer.renderTemplates(action.templates);
+        const response: SendWebviewTemplatesAction = {
+            kind: SendWebviewTemplatesAction.KIND,
+            templates: temps,
+            responseId: action.requestId
+        };
+        vscodeApi.postMessage({clientId: action.clientId, action: response});
     }
 
     private handleSendModelRenderer(action: SendModelRendererAction) {

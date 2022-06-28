@@ -15,32 +15,60 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action } from "sprotty-protocol";
+import { VNode } from 'snabbdom';
+import { Action, RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
 import { WebviewTemplate } from "./template-model";
 
-/** Request message from the server to update the diagram options widget on the client. */
-export interface UpdateTemplatesAction extends Action {
-    kind: typeof UpdateTemplatesAction.KIND;
+/** Request message from the server to get the svgs for the templates. */
+export interface RequestWebviewTemplatesAction extends RequestAction<SendWebviewTemplatesAction> {
+    kind: typeof RequestWebviewTemplatesAction.KIND;
     templates: WebviewTemplate[];
     clientId: string;
+    requestId: string;
 }
 
-export namespace UpdateTemplatesAction {
+export namespace RequestWebviewTemplatesAction {
     export const KIND = "updateTemplates";
 
     export function create(
         templates: WebviewTemplate[],
         clientId: string
-    ): UpdateTemplatesAction {
+    ): RequestWebviewTemplatesAction {
         return {
             kind: KIND,
             templates,
-            clientId
+            clientId,
+            requestId: generateRequestId()
         };
     }
 
-    export function isThisAction(action: Action): action is UpdateTemplatesAction {
-        return action.kind === UpdateTemplatesAction.KIND;
+    export function isThisAction(action: Action): action is RequestWebviewTemplatesAction {
+        return action.kind === RequestWebviewTemplatesAction.KIND;
+    }
+}
+
+export interface SendWebviewTemplatesAction extends ResponseAction{
+    kind: typeof SendWebviewTemplatesAction.KIND;
+    templates: VNode[];
+    responseId: string;
+}
+
+export namespace SendWebviewTemplatesAction {
+    export const KIND = "updateTemplates";
+
+    export function create(
+        templates: VNode[],
+        requestId: string = ''
+    ): SendWebviewTemplatesAction {
+        return {
+            kind: KIND,
+            templates,
+            responseId: requestId
+        };
+    }
+
+    export function isThisAction(action: Action): action is SendWebviewTemplatesAction {
+        return action.kind === SendWebviewTemplatesAction.KIND;
     }
 }
 
@@ -63,5 +91,24 @@ export namespace ExecuteTemplateAction {
 
     export function isThisAction(action: Action): action is ExecuteTemplateAction {
         return action.kind === ExecuteTemplateAction.KIND;
+    }
+}
+
+export interface TemplateWebviewRdyAction extends Action {
+    kind: typeof TemplateWebviewRdyAction.KIND;
+}
+
+export namespace TemplateWebviewRdyAction {
+    export const KIND = "templateWebviewRdy";
+
+    export function create(
+    ): TemplateWebviewRdyAction {
+        return {
+            kind: KIND,
+        };
+    }
+
+    export function isThisAction(action: Action): action is TemplateWebviewRdyAction {
+        return action.kind === TemplateWebviewRdyAction.KIND;
     }
 }

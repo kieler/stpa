@@ -17,7 +17,7 @@
 
 import { Action, applyBounds, ComputedBoundsAction, DiagramServer, DiagramServices, JsonMap, RequestBoundsAction, RequestModelAction } from 'sprotty-protocol';
 import { Connection } from 'vscode-languageserver';
-import { ExecuteTemplateAction, UpdateTemplatesAction } from './actions';
+import { ExecuteTemplateAction, TemplateWebviewRdyAction, RequestWebviewTemplatesAction, SendWebviewTemplatesAction } from './actions';
 import { LanguageTemplate, TemplateGraphGenerator, WebviewTemplate } from './template-model';
 
 export class TemplateDiagramServer extends DiagramServer {
@@ -36,13 +36,12 @@ export class TemplateDiagramServer extends DiagramServer {
         this.connection = connection;
         this.templates = templates;
         this.templateGraphGenerator = services.DiagramGenerator as TemplateGraphGenerator;
-        this.sendTemplates();
     }
 
     /**
      * Send the templates provided by the server to the client.
      */
-    private async sendTemplates() {
+    protected async getTemplates() {
         const webviewTemplates: WebviewTemplate[] = [];
         for (const template of this.templates) {
             // TODO: correct ordering of nodes
@@ -60,20 +59,29 @@ export class TemplateDiagramServer extends DiagramServer {
             };
             webviewTemplates.push(webTemp);
         }
+        return webviewTemplates;
 
-        // send the avaiable templates to the client
-        this.dispatch({ kind: UpdateTemplatesAction.KIND, templates: webviewTemplates, clientId: this.clientId });
     }
 
     protected handleAction(action: Action): Promise<void> {
         switch(action.kind) {
             case ExecuteTemplateAction.KIND:
                 return this.handleExecuteTemplate(action as ExecuteTemplateAction);
+            case TemplateWebviewRdyAction.KIND:
+                return this.handleTemplateWebviewRdy();
         }
         return super.handleAction(action);
     }
+    
+    protected async handleTemplateWebviewRdy(): Promise<void> {
+        const temps = await this.getTemplates();
+        // send the avaiable templates to the client
+        const response = await this.request<SendWebviewTemplatesAction>({ kind: RequestWebviewTemplatesAction.KIND, templates: temps, clientId: this.clientId }as RequestWebviewTemplatesAction);
+        // send graph svgs to extension
+        this.connection?.sendNotification('templates/add', {templates: response.templates});
+    }
 
-    async handleExecuteTemplate(action: ExecuteTemplateAction): Promise<void> {
+    protected async handleExecuteTemplate(action: ExecuteTemplateAction): Promise<void> {
         const uri = this.options?.sourceUri;
         const temp = this.templates.find(temp => temp.id === action.id);
         if (temp) {

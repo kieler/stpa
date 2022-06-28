@@ -16,8 +16,10 @@
  */
 
 import '../css/diagram.css';
+
+import { VNode } from 'snabbdom';
 import { Container } from 'inversify';
-import { patch, testNode2 } from './svg';
+import { patch } from './svg';
 import { click } from './mouseListener';
 import { panel, templatesID } from './html';
 
@@ -28,7 +30,7 @@ declare const vscode: vscode;
 
 export class Starter {
 
-
+    protected templates: VNode[] = [];
     protected container?: Container;
     protected identifier: string;
 
@@ -50,7 +52,6 @@ export class Starter {
     }
 
     protected initHtml(): void {
-        vscode.postMessage("test");
         const containerDiv = document.getElementById(this.identifier + '_container');
         if (containerDiv) {
             const panelContainer = document.createElement("div");
@@ -62,19 +63,23 @@ export class Starter {
         });
     }
 
+
     protected handleMessages(message: any) {
         if (message.data.identifier) {
             this.identifier = message.data.identifier;
             this.initHtml();
-            //} else if (message.templates) {
+        } else if (message.data.templates) {
+            this.templates = message.data.templates;
             const containerDiv = document.getElementById(templatesID);
             if (containerDiv) {
-                for (let i = 0; i < 2; i++) {
+                for (const temp of this.templates) {
                     const svgPlaceholder = document.createElement("div");
                     containerDiv.appendChild(svgPlaceholder);
-                    patch(svgPlaceholder, testNode2);
+                    patch(svgPlaceholder, temp);
                 }
             }
+        } else {
+            console.log(message);
         }
     }
 

@@ -41,8 +41,8 @@ export class TemplateRenderer {
     /**
      * Renders all templates provided by the server.
      */
-    renderTemplates(templates: WebviewTemplate[]): (VNode | "")[] | "" {
-        if (templates.length === 0) return "";
+    renderTemplates(templates: WebviewTemplate[]): VNode[] {
+        if (templates.length === 0) return <div></div>;
 
         // labels and edges are only visible if they are within the canvas bounds
         for (const temp of templates) {

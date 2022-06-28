@@ -24,10 +24,8 @@ import { GeneralPanel } from "./general-panel";
 import { RenderOptionsRegistry } from "./render-options-registry";
 import { OptionsRegistry } from "./options-registry";
 import { OptionsPanel } from "./options-panel";
-import { TemplatePanel } from "../template/template-panel";
 import { TemplateRenderer } from "../template/template-renderer";
 import { TemplateRegistry } from "../template/template-registry";
-import { TemplateMouseListener } from "../template/template-mouselistener";
 
 /** Module that configures option related panels and registries. */
 export const optionsModule = new ContainerModule((bind, _, isBound) => {
@@ -44,15 +42,10 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     bind(DISymbol.RenderOptionsRegistry).to(RenderOptionsRegistry).inSingletonScope();
 
     // TODO: create module for templates
-    bind(TemplatePanel).toSelf().inSingletonScope();
-    bind(DISymbol.SidebarPanel).toService(TemplatePanel);
-
     bind(DISymbol.TemplateRenderer).to(TemplateRenderer).inSingletonScope();
 
     bind(DISymbol.TemplateRegistry).to(TemplateRegistry).inSingletonScope();
     bind(TYPES.IActionHandlerInitializer).toService(DISymbol.TemplateRegistry);
-
-    bind(TYPES.MouseListener).to(TemplateMouseListener);
 
     const ctx = { bind, isBound };
     configureActionHandler(ctx, SetRenderOptionAction.KIND, DISymbol.RenderOptionsRegistry);

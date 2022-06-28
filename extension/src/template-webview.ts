@@ -15,11 +15,14 @@
  ********************************************************************************/
 
 import * as vscode from 'vscode';
+import { ActionMessage } from 'sprotty-protocol';
+import { StpaLspVscodeExtension } from './language-extension';
 
 export class TemplateWebview {
 
     static viewCount = 0;
 
+    readonly extension: StpaLspVscodeExtension;
     readonly identifier: string;
     readonly localResourceRoots: vscode.Uri[];
     readonly scriptUri: vscode.Uri;
@@ -30,7 +33,8 @@ export class TemplateWebview {
     private resolveWebviewReady: () => void;
     private readonly webviewReady = new Promise<void>((resolve) => this.resolveWebviewReady = resolve);
 
-    constructor(identifier: string, localResourceRoots: vscode.Uri[], scriptUri: vscode.Uri) {
+    constructor(identifier: string, extension: StpaLspVscodeExtension, localResourceRoots: vscode.Uri[], scriptUri: vscode.Uri) {
+        this.extension = extension;
         this.identifier = identifier;
         this.localResourceRoots = localResourceRoots;
         this.scriptUri = scriptUri;
@@ -77,23 +81,32 @@ export class TemplateWebview {
 
     protected async sendDiagramIdentifier() {
         await this.ready();
-        this.sendToWebview({identifier: this.identifier});
+        this.sendToWebview({ identifier: this.identifier });
     }
 
     /**
      * @return true if the message should be propagated, e.g. to a language server
      */
-    protected receiveFromWebview(message: any): Thenable<boolean> {
+    protected async receiveFromWebview(message: any) {
         console.log("Received from webview");
         if (message.readyMessage) {
             this.resolveWebviewReady();
             this.sendDiagramIdentifier();
-            return Promise.resolve(false);
+
+            // TODO> guarantee that sprotty webview exist
+            if (this.extension.clientId) {
+                const mes: ActionMessage = {
+                    clientId: this.extension.clientId,
+                    action: {
+                        kind: "templateWebviewRdy"
+                    } 
+                };
+                this.extension.languageClient.sendNotification('diagram/accept', mes);
+            }
         }
-        return Promise.resolve(true);
     }
 
-    protected sendToWebview(message: any) {
+    sendToWebview(message: any) {
         this.webview.postMessage(message);
     }
 

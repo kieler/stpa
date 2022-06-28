@@ -26,22 +26,24 @@ import { UpdateViewAction } from './actions';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
+    clientId: string | undefined;
+
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
         this.languageClient.onReady().then(() => {
-            this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this))
-        })
+            this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
+        });
     }
 
     /**
      * Handle WorkSpaceEdit notifications form the langauge server
      * @param msg Message contianing the uri of the document, the text to insert, and the position in the document ot insert it to.
      */
-    private async handleWorkSpaceEdit(msg: {uri: string, text: string, position: vscode.Position}) {
+    protected async handleWorkSpaceEdit(msg: { uri: string, text: string, position: vscode.Position; }) {
         const textDocument = vscode.workspace.textDocuments.find(
             (doc) => doc.uri.toString() === vscode.Uri.parse(msg.uri).toString()
         );
-        if(!textDocument) {
+        if (!textDocument) {
             console.error(
                 `Server requested a text edit but the requested uri was not found among the known documents: ${msg.uri}`
             );
@@ -84,6 +86,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         webview.addActionHandler(WorkspaceEditActionHandler);
         webview.addActionHandler(LspLabelEditActionHandler);
         this.singleton = webview;
+        this.clientId = identifier.clientId;
         return webview;
     }
 
