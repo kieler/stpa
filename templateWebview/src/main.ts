@@ -16,14 +16,17 @@
  */
 
 import { Container } from 'inversify';
+import { update } from './viewer';
+import '../css/diagram.css';
+import { click } from './mouseListener';
 
 interface vscode {
     postMessage(message: any): void;
 }
 declare const vscode: vscode;
 
-
 export class Starter {
+
 
     protected container?: Container;
     protected identifier: string;
@@ -31,7 +34,6 @@ export class Starter {
     constructor() {
         this.sendReadyMessage();
         this.acceptDiagramIdentifier();
-        this.initHtml();
     }
 
     protected sendReadyMessage(): void {
@@ -43,6 +45,7 @@ export class Starter {
         const eventListener = (message: any) => {
             //if (isDiagramIdentifier(message.data)) {
             this.identifier = message.data
+            this.initHtml();
             //}
         };
         window.addEventListener('message', eventListener);
@@ -54,16 +57,19 @@ export class Starter {
         const haloo = document.createTextNode("Halloooo")
         if (containerDiv) {
             const svgContainer = document.createElement("div");
-            svgContainer.id = "test";
+            const test = document.createElement("div");
+            test.appendChild(haloo);
+            svgContainer.id = "test_templates";
             containerDiv.appendChild(svgContainer);
-            containerDiv.appendChild(haloo);
+            containerDiv.appendChild(test);
         }
         document.addEventListener('click', event => {
-            let node = event.target;
-            console.log(node);
+            click(event);
         })
+        update();
     }
 }
+
 
 
 new Starter();

@@ -87,6 +87,8 @@ export class TemplateWebview {
         console.log("Received from webview");
         if (message.readyMessage) {
             this.resolveWebviewReady();
+            this.sendDiagramIdentifier();
+            return Promise.resolve(false);
         }
         return Promise.resolve(true);
     }
