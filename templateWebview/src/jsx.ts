@@ -20,10 +20,10 @@ import { VNodeData, JsxVNodeChildren, JsxVNodeChild, jsx, FunctionComponent } fr
 declare global {
   // eslint-disable-next-line no-redeclare
   namespace JSX {
-      // Based on the tag list in github:DefinitelyTyped/DefinitelyTyped:React
-      interface IntrinsicElements {
-          [elemName: string]: VNodeData
-      }
+    // Based on the tag list in github:DefinitelyTyped/DefinitelyTyped:React
+    interface IntrinsicElements {
+      [elemName: string]: VNodeData;
+    }
   }
 }
 

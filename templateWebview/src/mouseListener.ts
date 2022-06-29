@@ -21,7 +21,7 @@ export function click(event: MouseEvent) {
     let node = event.target;
     let owner = (node as SVGElement).ownerSVGElement;
     if (owner) {
-        const action = {kind: ExecuteTemplateAction.KIND, id: owner.id} as ExecuteTemplateAction;
+        const action = { kind: ExecuteTemplateAction.KIND, id: owner.id } as ExecuteTemplateAction;
         return action;
     }
     return undefined;

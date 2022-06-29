@@ -17,7 +17,7 @@
 
 import { VNode } from 'snabbdom';
 import { Action, Bounds, RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
-import { ModelRenderer } from "sprotty"
+import { ModelRenderer } from "sprotty";
 import { WebviewTemplate } from "./template-models";
 
 /** Sent from the view. */
@@ -37,7 +37,7 @@ export namespace SendModelRendererAction {
             bounds
         };
     }
-    
+
     export function isThisAction(action: Action): action is SendModelRendererAction {
         return action.kind === SendModelRendererAction.KIND;
     }
@@ -71,7 +71,7 @@ export namespace RequestWebviewTemplatesAction {
     }
 }
 
-export interface SendWebviewTemplatesAction extends ResponseAction{
+export interface SendWebviewTemplatesAction extends ResponseAction {
     kind: typeof SendWebviewTemplatesAction.KIND;
     templates: VNode[];
     responseId: string;

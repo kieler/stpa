@@ -70,6 +70,9 @@ export class TemplateWebview {
             </html>`;
     }
 
+    /**
+     * Registers listeners.
+     */
     async connect() {
         this.disposables.push(this.webview.onDidReceiveMessage(message => this.receiveFromWebview(message)));
         /* this.disposables.push(vscode.window.onDidChangeActiveTextEditor(async editor => {
@@ -80,13 +83,17 @@ export class TemplateWebview {
         await this.ready();
     }
 
+    /**
+     * Sends identifier to the webview.
+     */
     protected async sendDiagramIdentifier() {
         await this.ready();
         this.sendToWebview({ identifier: this.identifier });
     }
 
     /**
-     * @return true if the message should be propagated, e.g. to a language server
+     * Handles messages from the webview.
+     * @param message The message received from the webview.
      */
     protected async receiveFromWebview(message: any) {
         console.log("Received from webview");

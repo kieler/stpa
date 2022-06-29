@@ -47,7 +47,7 @@ export namespace RequestWebviewTemplatesAction {
     }
 }
 
-export interface SendWebviewTemplatesAction extends ResponseAction{
+export interface SendWebviewTemplatesAction extends ResponseAction {
     kind: typeof SendWebviewTemplatesAction.KIND;
     templates: VNode[];
     responseId: string;

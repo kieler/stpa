@@ -16,12 +16,9 @@
  */
 
 import '../css/diagram.css';
-
-import { VNode } from 'snabbdom';
-import { Container } from 'inversify';
-import { patch } from './svg';
 import { click } from './mouseListener';
-import { panel, templatesID } from './html';
+import { patch, panel, templatesID } from './html';
+import { VNode } from 'snabbdom';
 
 interface vscode {
     postMessage(message: any): void;
@@ -30,29 +27,22 @@ declare const vscode: vscode;
 
 export class Starter {
 
-    protected templates: VNode[] = [];
-    protected container?: Container;
-    protected identifier: string;
-
     constructor() {
-        this.sendReadyMessage();
-        this.acceptDiagramIdentifier();
-    }
-
-    protected sendReadyMessage(): void {
         vscode.postMessage({ readyMessage: 'Template Webview ready' });
-    }
-
-    protected acceptDiagramIdentifier(): void {
         console.log('Waiting for diagram identifier...');
+        // add listener for messages
         const eventListener = (message: any) => {
             this.handleMessages(message);
         };
         window.addEventListener('message', eventListener);
     }
 
-    protected initHtml(): void {
-        const containerDiv = document.getElementById(this.identifier + '_container');
+    /**
+     * Initializes the webview with a header and a placeholder for the templates.
+     * @param identifier The identifier of the element that should contain the webview.
+     */
+    protected initHtml(identifier: string): void {
+        const containerDiv = document.getElementById(identifier + '_container');
         if (containerDiv) {
             const panelContainer = document.createElement("div");
             containerDiv.appendChild(panelContainer);
@@ -61,31 +51,39 @@ export class Starter {
         document.addEventListener('click', event => {
             const action = click(event);
             if (action) {
-                vscode.postMessage({action: action});
+                vscode.postMessage({ action: action });
             }
         });
     }
 
-
+    /**
+     * Handles incoming messages from the extension.
+     * @param message The received Message.
+     */
     protected handleMessages(message: any) {
         if (message.data.identifier) {
-            this.identifier = message.data.identifier;
-            this.initHtml();
+            this.initHtml(message.data.identifier);
         } else if (message.data.templates) {
-            this.templates = message.data.templates;
-            const containerDiv = document.getElementById(templatesID);
-            if (containerDiv) {
-                for (const temp of this.templates) {
-                    const svgPlaceholder = document.createElement("div");
-                    containerDiv.appendChild(svgPlaceholder);
-                    patch(svgPlaceholder, temp);
-                }
-            }
+            this.handleTemplates(message.data.templates);
         } else {
             console.log("Message not supported: " + message);
         }
     }
 
+    /**
+     * Adds the {@code templates} to the webview.
+     * @param templates The Templates that should be shown.
+     */
+    protected handleTemplates(templates: VNode[]) {
+        const containerDiv = document.getElementById(templatesID);
+        if (containerDiv) {
+            for (const temp of templates) {
+                const svgPlaceholder = document.createElement("div");
+                containerDiv.appendChild(svgPlaceholder);
+                patch(svgPlaceholder, temp);
+            }
+        }
+    }
 }
 
 new Starter();

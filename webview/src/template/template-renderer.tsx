@@ -60,10 +60,6 @@ export class TemplateRenderer {
                 graph.data.attrs["id"] = template.id;
             }
             const result: VNode = <div>{graph}</div>;
-            /* if (result.data) {
-                const blubb = (width/368.0 * 100) + "%"
-                result.data.style = {width: blubb}
-            } */
             return result;
         });
         return res;

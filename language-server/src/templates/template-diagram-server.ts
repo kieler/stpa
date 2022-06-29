@@ -23,7 +23,7 @@ import { LanguageTemplate, TemplateGraphGenerator, WebviewTemplate } from './tem
 export class TemplateDiagramServer extends DiagramServer {
 
     protected clientId: string;
-    protected templates: LanguageTemplate[];    
+    protected templates: LanguageTemplate[];
     protected options: JsonMap | undefined;
     protected connection: Connection | undefined;
     protected templateGraphGenerator: TemplateGraphGenerator;
@@ -39,7 +39,7 @@ export class TemplateDiagramServer extends DiagramServer {
     }
 
     /**
-     * Send the templates provided by the server to the client.
+     * Returns the templates that should be send to the webview for rendering.
      */
     protected async getTemplates() {
         const webviewTemplates: WebviewTemplate[] = [];
@@ -64,7 +64,7 @@ export class TemplateDiagramServer extends DiagramServer {
     }
 
     protected handleAction(action: Action): Promise<void> {
-        switch(action.kind) {
+        switch (action.kind) {
             case ExecuteTemplateAction.KIND:
                 return this.handleExecuteTemplate(action as ExecuteTemplateAction);
             case TemplateWebviewRdyAction.KIND:
@@ -72,13 +72,13 @@ export class TemplateDiagramServer extends DiagramServer {
         }
         return super.handleAction(action);
     }
-    
+
     protected async handleTemplateWebviewRdy(): Promise<void> {
         const temps = await this.getTemplates();
         // send the avaiable templates to the client
-        const response = await this.request<SendWebviewTemplatesAction>({ kind: RequestWebviewTemplatesAction.KIND, templates: temps, clientId: this.clientId }as RequestWebviewTemplatesAction);
+        const response = await this.request<SendWebviewTemplatesAction>({ kind: RequestWebviewTemplatesAction.KIND, templates: temps, clientId: this.clientId } as RequestWebviewTemplatesAction);
         // send graph svgs to extension
-        this.connection?.sendNotification('templates/add', {templates: response.templates});
+        this.connection?.sendNotification('templates/add', { templates: response.templates });
     }
 
     protected async handleExecuteTemplate(action: ExecuteTemplateAction): Promise<void> {
@@ -86,7 +86,7 @@ export class TemplateDiagramServer extends DiagramServer {
         const temp = this.templates.find(temp => temp.id === action.id);
         if (temp) {
             const pos = temp.getPosition(uri as string);
-            this.connection?.sendNotification('editor/add', {uri: uri, text: temp.insertText, position: pos});
+            this.connection?.sendNotification('editor/add', { uri: uri, text: temp.insertText, position: pos });
         } else {
             console.error('There is no Template with id ' + action.id);
         }

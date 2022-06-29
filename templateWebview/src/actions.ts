@@ -15,8 +15,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-//import { VNode } from 'snabbdom';
-
 interface Action {
     kind: string;
 }

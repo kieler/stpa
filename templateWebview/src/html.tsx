@@ -17,11 +17,21 @@
 
 /** @jsx html */
 import { html } from './jsx';
-import { VNode } from 'snabbdom';
+import { attributesModule, classModule, eventListenersModule, init, propsModule, styleModule, VNode } from 'snabbdom';
 
-export const templatesID = 'templates'
+export const templatesID = 'templates';
 
 export const panel: VNode = <div class-sidebar__content="true">
     <h3 class-sidebar__title="true">{"Templates"}</h3>
     <div class-sidebar__panel-content="true" id={templatesID}></div>
 </div>;
+
+export const patch = init([
+    // Init patch function with chosen modules
+    propsModule, // for setting properties on DOM elements
+    styleModule, // handles styling on elements with support for animations
+    eventListenersModule, // attaches event listeners
+    attributesModule, // for using attributes on svg elements
+    // IMPORTANT: classModule must be after attributesModule. Otherwise it does not work when classes are also in the attributes list.
+    classModule // makes it easy to toggle classes
+]);
