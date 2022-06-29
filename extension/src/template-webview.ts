@@ -17,6 +17,7 @@
 import * as vscode from 'vscode';
 import { ActionMessage } from 'sprotty-protocol';
 import { StpaLspVscodeExtension } from './language-extension';
+import { acceptMessageType } from 'sprotty-vscode/lib/lsp';
 
 export class TemplateWebview {
 
@@ -93,7 +94,7 @@ export class TemplateWebview {
             this.resolveWebviewReady();
             this.sendDiagramIdentifier();
 
-            // TODO> guarantee that sprotty webview exist
+            // TODO: guarantee that sprotty webview exist
             if (this.extension.clientId) {
                 const mes: ActionMessage = {
                     clientId: this.extension.clientId,
@@ -101,8 +102,14 @@ export class TemplateWebview {
                         kind: "templateWebviewRdy"
                     }
                 };
-                this.extension.languageClient.sendNotification('diagram/accept', mes);
+                this.extension.languageClient.sendNotification(acceptMessageType, mes);
             }
+        } else if (message.action && this.extension.clientId) {
+            const mes: ActionMessage = {
+                clientId: this.extension.clientId,
+                action: message.action
+            };
+            this.extension.languageClient.sendNotification(acceptMessageType, mes);
         }
     }
 

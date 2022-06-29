@@ -59,7 +59,10 @@ export class Starter {
             patch(panelContainer, panel);
         }
         document.addEventListener('click', event => {
-            click(event);
+            const action = click(event);
+            if (action) {
+                vscode.postMessage({action: action});
+            }
         });
     }
 
@@ -79,7 +82,7 @@ export class Starter {
                 }
             }
         } else {
-            console.log(message);
+            console.log("Message not supported: " + message);
         }
     }
 

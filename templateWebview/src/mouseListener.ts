@@ -15,8 +15,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { ExecuteTemplateAction } from "./actions";
+
 export function click(event: MouseEvent) {
     let node = event.target;
     let owner = (node as SVGElement).ownerSVGElement;
-    console.log(owner);
+    if (owner) {
+        const action = {kind: ExecuteTemplateAction.KIND, id: owner.id} as ExecuteTemplateAction;
+        return action;
+    }
+    return undefined;
 }
