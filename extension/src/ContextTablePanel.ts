@@ -41,7 +41,7 @@ export class ContextTablePanel {
         enableScripts: true,
         // And restrict the webview to only loading content from our extension's `css` directory.
         localResourceRoots: [
-          vscode.Uri.joinPath(extensionUri, "css")
+          vscode.Uri.joinPath(extensionUri, "src")
         ],
       }
     );
