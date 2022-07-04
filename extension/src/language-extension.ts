@@ -22,7 +22,7 @@ import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVs
 import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import { ActionMessage, RequestModelAction, JsonMap } from 'sprotty-protocol'
-import { ContextTablePanel } from 'context-table/out';
+import { ContextTablePanel } from './ContextTablePanel';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
  
