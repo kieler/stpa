@@ -10,3 +10,5 @@ language-server/out
 webview/node_modules
 webview/lib
 webview/out
+
+*/out
