@@ -33,8 +33,8 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     protected registerCommands(): void {
         super.registerCommands();
         this.context.subscriptions.push(
-            vscode.commands.registerCommand('contextTable.open', () => {
-                ContextTablePanel.createOrShow(this.context.extensionUri, this.getExtensionFileUri('pack', 'context-table-panel.js'));
+            vscode.commands.registerCommand('contextTable.open', async (...commandArgs: any[]) => {
+                ContextTablePanel.createOrShow(this.context.extensionUri, this.getExtensionFileUri('pack', 'context-table-panel.js'), commandArgs);
             })
         )
     }

@@ -4,10 +4,12 @@ export class ContextTablePanel {
   // Track the current panel. Only allow a single panel to exist. 
   public static currentPanel: ContextTablePanel | undefined;
   public static readonly viewType = "context-table";
+  public static currentUri: vscode.Uri | undefined;
 
   // Constructor variables.
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
+
   private _disposables: vscode.Disposable[] = [];
 
   protected scriptUri: vscode.Uri;
@@ -25,7 +27,7 @@ export class ContextTablePanel {
   }
 
   // Main call method.
-  public static createOrShow(extensionUri: vscode.Uri, scriptUri: vscode.Uri) {
+  public static createOrShow(extensionUri: vscode.Uri, scriptUri: vscode.Uri, commandArgs: any) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -50,6 +52,9 @@ export class ContextTablePanel {
         ],
       }
     );
+    if (commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
+      this.currentUri = commandArgs[0];
+    }
     ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri, scriptUri);
   }
 
@@ -64,6 +69,10 @@ export class ContextTablePanel {
     ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri, scriptUri);
     // Exists so the _extensionUri variable is read at least once.
     ContextTablePanel.currentPanel._extensionUri.path;
+  }
+
+  public static notify() {
+    return this.currentUri;
   }
 
   // Disposes of the panel and all its related data.
