@@ -10,18 +10,22 @@ export class ContextTablePanel {
   private readonly _extensionUri: vscode.Uri;
   private _disposables: vscode.Disposable[] = [];
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+  protected scriptUri: vscode.Uri;
+
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, scriptUri: vscode.Uri) {
     this._panel = panel;
     this._extensionUri = extensionUri;
+    this.scriptUri = scriptUri;
 
     // Initialize the webview.
     this._update();
     // Listen for the panel being disposed.
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+
   }
 
   // Main call method.
-  public static createOrShow(extensionUri: vscode.Uri) {
+  public static createOrShow(extensionUri: vscode.Uri, scriptUri: vscode.Uri) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -41,11 +45,12 @@ export class ContextTablePanel {
         enableScripts: true,
         // And restrict the webview to only loading content from our extension's `css` directory.
         localResourceRoots: [
-          vscode.Uri.joinPath(extensionUri, "src")
+          vscode.Uri.joinPath(extensionUri, "src"),
+          vscode.Uri.joinPath(extensionUri, "out/compiled"),
         ],
       }
     );
-    ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri);
+    ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri, scriptUri);
   }
 
   // Kills off the current panel.
@@ -55,8 +60,8 @@ export class ContextTablePanel {
   }
 
   // Revives a defined panel.
-  public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-    ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri);
+  public static revive(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, scriptUri: vscode.Uri) {
+    ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri, scriptUri);
     // Exists so the _extensionUri variable is read at least once.
     ContextTablePanel.currentPanel._extensionUri.path;
   }
@@ -148,6 +153,7 @@ export class ContextTablePanel {
             <td colspan = "3">Yes</td>
           </tr>
         </table>
+        <script src="${webview.asWebviewUri(this.scriptUri).toString()}></script>
 		  </body>
 		</html>`;
   }

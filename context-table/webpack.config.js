@@ -7,7 +7,7 @@ const outputPath = path.resolve(__dirname, 'out');
 const config = {
     target: 'web',
 
-    entry: path.resolve(__dirname, 'src/ContextTablePanel.ts'),
+    entry: path.resolve(__dirname, 'src/main.ts'),
     output: {
 		filename: 'context-table-panel.js',
         path: outputPath
