@@ -34,6 +34,7 @@ export class TemplateDiagramServer extends DiagramServer {
         this.clientId = clientId;
         this.options = options;
         this.connection = connection;
+        // TODO: load temps from config
         this.templates = templates;
         this.templateGraphGenerator = services.DiagramGenerator as TemplateGraphGenerator;
     }
@@ -45,19 +46,25 @@ export class TemplateDiagramServer extends DiagramServer {
         const webviewTemplates: WebviewTemplate[] = [];
         for (const template of this.templates) {
             // TODO: correct ordering of nodes
+            // TODO: if template contains edges to non-existing nodes, catch these instead of not showing the graph at all
             let graph = await this.templateGraphGenerator.generateTemplateRoot(template);
-            const request = RequestBoundsAction.create(graph);
-            const response = await this.request<ComputedBoundsAction>(request);
-            applyBounds(graph, response);
-            const newRoot = await this.layoutEngine?.layout(graph);
-            if (newRoot) {
-                graph = newRoot;
+            // check that graph could be generated
+            if (graph.children?.length! > 0) {
+                const request = RequestBoundsAction.create(graph);
+                const response = await this.request<ComputedBoundsAction>(request);
+                applyBounds(graph, response);
+                const newRoot = await this.layoutEngine?.layout(graph);
+                if (newRoot) {
+                    graph = newRoot;
+                }
+                const webTemp = {
+                    graph: graph,
+                    id: template.id
+                };
+                webviewTemplates.push(webTemp);
+            } else {
+                console.log("For template " + template.id + " no graph could be generated.");
             }
-            const webTemp = {
-                graph: graph,
-                id: template.id
-            };
-            webviewTemplates.push(webTemp);
         }
         return webviewTemplates;
 
@@ -74,6 +81,7 @@ export class TemplateDiagramServer extends DiagramServer {
     }
 
     addTemplate(temp: LanguageTemplate) {
+        // TODO: save temps in config
         this.templates.push(temp);
         this.handleTemplateWebviewRdy();
     }

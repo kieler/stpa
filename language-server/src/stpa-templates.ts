@@ -50,7 +50,7 @@ export class StpaTemplates {
 
     createTemp(text: string) {
         // TODO: currently only control structure
-        // TODO: check whether text is valid
+        // TODO: check whether text is valid -> could be checked when generating the sgraph
         this.customTempsNumber++;
         return new CustomCSTemplate(this.langiumDocuments, text, 'CustomTemplate' + this.customTempsNumber, text);
     }
