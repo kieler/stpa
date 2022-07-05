@@ -73,6 +73,11 @@ export class TemplateDiagramServer extends DiagramServer {
         return super.handleAction(action);
     }
 
+    addTemplate(temp: LanguageTemplate) {
+        this.templates.push(temp);
+        this.handleTemplateWebviewRdy();
+    }
+
     protected async handleTemplateWebviewRdy(): Promise<void> {
         const temps = await this.getTemplates();
         // send the avaiable templates to the client

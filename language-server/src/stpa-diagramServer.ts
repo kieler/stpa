@@ -16,21 +16,23 @@
  */
 
 import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
-import { UpdateViewAction } from './actions';
+import { AddTemplateAction, UpdateViewAction } from './actions';
 import { Connection } from 'vscode-languageserver';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 import { TemplateDiagramServer } from './templates/template-diagram-server';
-import { LanguageTemplate } from './templates/template-model';
+import { StpaTemplates } from './stpa-templates';
 
 export class StpaDiagramServer extends TemplateDiagramServer {
 
-    private stpaOptions: StpaSynthesisOptions;
+    protected stpaOptions: StpaSynthesisOptions;
+    protected stpaTemps: StpaTemplates;
     clientId: string;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined, connection: Connection | undefined, templates: LanguageTemplate[]) {
-        super(dispatch, services, clientId, templates, options, connection);
+        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined, connection: Connection | undefined, stpaTemps: StpaTemplates) {
+        super(dispatch, services, clientId, stpaTemps.getTemplates(), options, connection);
+        this.stpaTemps = stpaTemps;
         this.stpaOptions = synthesisOptions;
         this.clientId = clientId;
         // send the avaiable syntheses options to the client
@@ -53,11 +55,19 @@ export class StpaDiagramServer extends TemplateDiagramServer {
                 return this.handleSetSynthesisOption(action as SetSynthesisOptionsAction);
             case UpdateViewAction.KIND:
                 return this.handleUpdateView(action as UpdateViewAction);
+            case AddTemplateAction.KIND:
+                return this.handleAddTemplate(action as AddTemplateAction);
         }
         return super.handleAction(action);
     }
 
-    handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
+    protected handleAddTemplate(action: AddTemplateAction) {
+        const temp = this.stpaTemps.createTemp(action.text);
+        this.addTemplate(temp);
+        return Promise.resolve();
+    }
+
+    protected handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
         // update syntheses options
         for (const option of action.options) {
             const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);

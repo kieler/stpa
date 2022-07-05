@@ -17,7 +17,7 @@
 
 import '../css/diagram.css';
 import { click } from './mouseListener';
-import { patch, panel, templatesID } from './html';
+import { patch, panel, createTemps } from './html';
 import { VNode } from 'snabbdom';
 
 interface vscode {
@@ -75,14 +75,7 @@ export class Starter {
      * @param templates The Templates that should be shown.
      */
     protected handleTemplates(templates: VNode[]) {
-        const containerDiv = document.getElementById(templatesID);
-        if (containerDiv) {
-            for (const temp of templates) {
-                const svgPlaceholder = document.createElement("div");
-                containerDiv.appendChild(svgPlaceholder);
-                patch(svgPlaceholder, temp);
-            }
-        }
+        createTemps(templates);
     }
 }
 

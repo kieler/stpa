@@ -56,6 +56,11 @@
                 "command": "stpa.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.templates.add",
+                "title": "Add STPA Template",
+                "category": "STPA Templates"
             }
         ],
         "menus": {
@@ -79,11 +84,19 @@
                 {
                     "command": "stpa.diagram.export",
                     "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.templates.add"
                 }
             ],
             "editor/context": [
                 {
                     "command": "stpa.diagram.open",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "stpa.templates.add",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }

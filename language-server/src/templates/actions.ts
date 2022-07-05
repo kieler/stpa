@@ -19,7 +19,7 @@ import { VNode } from 'snabbdom';
 import { Action, RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
 import { WebviewTemplate } from "./template-model";
 
-/** Request message from the server to get the svgs for the templates. */
+/** Request message from the server to get the svgs of the templates. */
 export interface RequestWebviewTemplatesAction extends RequestAction<SendWebviewTemplatesAction> {
     kind: typeof RequestWebviewTemplatesAction.KIND;
     templates: WebviewTemplate[];
@@ -47,6 +47,7 @@ export namespace RequestWebviewTemplatesAction {
     }
 }
 
+/** Message to the language server containing the svgs of the templates. */
 export interface SendWebviewTemplatesAction extends ResponseAction {
     kind: typeof SendWebviewTemplatesAction.KIND;
     templates: VNode[];
@@ -72,6 +73,7 @@ export namespace SendWebviewTemplatesAction {
     }
 }
 
+/** Message to the language server to start the execution of a template. */
 export interface ExecuteTemplateAction extends Action {
     kind: typeof ExecuteTemplateAction.KIND;
     id: string;
@@ -94,6 +96,7 @@ export namespace ExecuteTemplateAction {
     }
 }
 
+/** Message to the language server to indicate that the tempalte webview is ready. */
 export interface TemplateWebviewRdyAction extends Action {
     kind: typeof TemplateWebviewRdyAction.KIND;
 }

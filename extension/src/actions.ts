@@ -17,7 +17,7 @@
 
 import { Action, JsonMap } from "sprotty-protocol";
 
-/** Request message from the server to update the diagram options widget on the client. */
+/** Message to the language server to update the model and hence the view. */
 export interface UpdateViewAction extends Action {
     kind: typeof UpdateViewAction.KIND;
     options?: JsonMap;
@@ -35,5 +35,26 @@ export namespace UpdateViewAction {
 
     export function isThisAction(action: Action): action is UpdateViewAction {
         return action.kind === UpdateViewAction.KIND;
+    }
+}
+
+/** Message to the language server to add a template. */
+export interface AddTemplateAction extends Action {
+    kind: typeof AddTemplateAction.KIND;
+    text: string;
+}
+
+export namespace AddTemplateAction {
+    export const KIND = "addTemplate";
+
+    export function create(text: string): AddTemplateAction {
+        return {
+            kind: KIND,
+            text
+        };
+    }
+
+    export function isThisAction(action: Action): action is AddTemplateAction {
+        return action.kind === AddTemplateAction.KIND;
     }
 }

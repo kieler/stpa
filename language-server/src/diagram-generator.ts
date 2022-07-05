@@ -175,8 +175,6 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
             for (const edge of node.actions) {
                 const sourceId = this.idCache.getId(edge.$container);
                 const targetId = this.idCache.getId(edge.target.ref);
-                const testRef = edge.target.ref;
-                console.log(testRef);
                 const edgeId = this.idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
                 // multiple control actions to same target are represented by on edge
                 let label = '';

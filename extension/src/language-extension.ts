@@ -19,10 +19,10 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
-import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
+import { acceptMessageType, SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import { ActionMessage, JsonMap } from 'sprotty-protocol';
-import { UpdateViewAction } from './actions';
+import { AddTemplateAction, UpdateViewAction } from './actions';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -33,6 +33,35 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.languageClient.onReady().then(() => {
             this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
         });
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.templates.add', async (...commandArgs: any) => {
+                this.addTemplate(commandArgs);
+            }));
+    }
+
+    /**
+     * Sends an AddTemplateAction to the language server containing the selected text.
+     * @param commandArgs 
+     */
+    protected async addTemplate(commandArgs: any[]) {
+        const activeEditor = vscode.window.activeTextEditor;
+        const sel = activeEditor?.selection;
+        const doc = activeEditor?.document;
+        if (doc && sel) {
+            if (!this.clientId) {
+                const identifier = await this.createDiagramIdentifier(commandArgs);
+                this.clientId = identifier?.clientId;
+            }
+            const text = doc.getText().substring(doc.offsetAt(sel.start), doc.offsetAt(sel?.end));
+            const mes: ActionMessage = {
+                clientId: this.clientId!,
+                action: {
+                    kind: AddTemplateAction.KIND,
+                    text: text
+                } as AddTemplateAction
+            };
+            this.languageClient.sendNotification(acceptMessageType, mes);
+        }
     }
 
     /**
@@ -146,7 +175,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                     } as JsonMap
                 } as UpdateViewAction
             };
-            languageClient.sendNotification('diagram/accept', mes);
+            languageClient.sendNotification(acceptMessageType, mes);
         }
     }
 }

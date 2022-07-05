@@ -19,11 +19,11 @@
 import { html } from './jsx';
 import { attributesModule, classModule, eventListenersModule, init, propsModule, styleModule, VNode } from 'snabbdom';
 
-export const templatesID = 'templates';
+const placeholderID = 'tempPlaceholder';
 
 export const panel: VNode = <div class-sidebar__content="true">
     <h3 class-sidebar__title="true">{"Templates"}</h3>
-    <div class-sidebar__panel-content="true" id={templatesID}></div>
+    <div class-sidebar__panel-content="true" id="templates"><div id={placeholderID}></div></div>
 </div>;
 
 export const patch = init([
@@ -35,3 +35,11 @@ export const patch = init([
     // IMPORTANT: classModule must be after attributesModule. Otherwise it does not work when classes are also in the attributes list.
     classModule // makes it easy to toggle classes
 ]);
+
+export function createTemps(templates: VNode[]) {
+    let placeholder = document.getElementById('tempPlaceholder');
+    if (placeholder) {
+        const temps = <div id={placeholderID}>{...templates}</div>;
+        patch(placeholder, temps)
+    }
+}

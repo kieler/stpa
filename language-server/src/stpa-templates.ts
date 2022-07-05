@@ -26,6 +26,7 @@ export class StpaTemplates {
     protected readonly langiumDocuments: LangiumDocuments;
     protected defaultTemplates: LanguageTemplate[];
     protected templates: LanguageTemplate[];
+    protected customTempsNumber: number = 0;
 
     constructor(services: LangiumServices) {
         this.langiumDocuments = services.shared.workspace.LangiumDocuments;
@@ -45,6 +46,13 @@ export class StpaTemplates {
             new ParallelContsTemplate(this.langiumDocuments, "T4"),
             new ConsContsWithLoopTemplate(this.langiumDocuments, "T5")
         ];
+    }
+
+    createTemp(text: string) {
+        // TODO: currently only control structure
+        // TODO: check whether text is valid
+        this.customTempsNumber++;
+        return new CustomCSTemplate(this.langiumDocuments, text, 'CustomTemplate' + this.customTempsNumber, text);
     }
 
     getTemplates() {
@@ -78,12 +86,36 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
             template.insertText = template.insertText.substring(18, template.insertText.length);
             return document.positionAt(endIndex);
         } else {
-            template.insertText = template.insertText.substring(22, template.insertText.length-3);
+            template.insertText = template.insertText.substring(22, template.insertText.length - 3);
             const bracketIndex = csText.lastIndexOf('}');
-            return document.positionAt(titleIndex + bracketIndex -1);
+            return document.positionAt(titleIndex + bracketIndex - 1);
         }
     }
-    
+
+}
+
+export class CustomCSTemplate implements LanguageTemplate {
+    insertText: string;
+    documents: LangiumDocuments;
+    id: string;
+    baseCode: string;
+    protected counter: number = 0;
+
+    constructor(documents: LangiumDocuments, insertText: string, id: string, baseCode: string) {
+        this.documents = documents;
+        this.insertText = insertText;
+        this.id = id;
+        this.baseCode = baseCode;
+    }
+
+    getPosition(uri: string): Position {
+        // TODO: inserText needs unique IDs
+        //this.insertText = this.generateCode();
+        this.counter++;
+        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        return getPositionForCSTemplate(document, this);
+    }
+
 }
 
 /**
@@ -122,23 +154,23 @@ CS {
         return `
 ControlStructure
 CS {
-    Controller` + this.shortId + this.counter +` {
+    Controller` + this.shortId + this.counter + ` {
         hierarchyLevel 0
         controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
         }
     }
-    ControlledProcess` + this.shortId + this.counter +` {
+    ControlledProcess` + this.shortId + this.counter + ` {
         hierarchyLevel 1
         feedback {
-            [fb "feedback"] -> Controller` + this.shortId + this.counter +`
+            [fb "feedback"] -> Controller` + this.shortId + this.counter + `
         }
     }
 }
 `;
     }
 
-    getPosition (uri: string): Position {
+    getPosition(uri: string): Position {
         this.insertText = this.generateCode();
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
@@ -194,35 +226,35 @@ CS {
         return `
 ControlStructure
 CS {
-    Controller` + this.shortId + this.counter +` {
+    Controller` + this.shortId + this.counter + ` {
         hierarchyLevel 0
         controlActions {
-            [ca "control action"] -> Actuator` + this.shortId + this.counter +`
+            [ca "control action"] -> Actuator` + this.shortId + this.counter + `
         }
     }
-    Actuator` + this.shortId + this.counter +` {
+    Actuator` + this.shortId + this.counter + ` {
         hierarchyLevel 1
         controlActions {
-            [caAc "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+            [caAc "control action"] -> ControlledProcess` + this.shortId + this.counter + `
         }
     }
-    Sensor` + this.shortId + this.counter +` {
+    Sensor` + this.shortId + this.counter + ` {
         hierarchyLevel 1
         feedback {
-            [fbS "feedback"] -> Controller` + this.shortId + this.counter +`
+            [fbS "feedback"] -> Controller` + this.shortId + this.counter + `
         }
     }
-    ControlledProcess` + this.shortId + this.counter +` {
+    ControlledProcess` + this.shortId + this.counter + ` {
         hierarchyLevel 2
         feedback {
-            [fb "feedback"] -> Sensor` + this.shortId + this.counter +`
+            [fb "feedback"] -> Sensor` + this.shortId + this.counter + `
         }
     }
 }
 `;
     }
-    
-    getPosition (uri: string): Position {
+
+    getPosition(uri: string): Position {
         this.insertText = this.generateCode();
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
@@ -233,7 +265,7 @@ CS {
 /**
  * Template for a control structure with two consecutive controllers and one controlled process.
  */
- export class ConsControllersTemplate implements LanguageTemplate {
+export class ConsControllersTemplate implements LanguageTemplate {
     insertText: string;
     documents: LangiumDocuments;
     id: string = 'consControllerTemplate';
@@ -275,32 +307,32 @@ CS {
         return `
 ControlStructure
 CS {
-    ControllerA` + this.shortId + this.counter +` {
+    ControllerA` + this.shortId + this.counter + ` {
         hierarchyLevel 0
         controlActions {
-            [ca "control action"] -> ControllerB` + this.shortId + this.counter +`
+            [ca "control action"] -> ControllerB` + this.shortId + this.counter + `
         }
     }
-    ControllerB` + this.shortId + this.counter +` {
+    ControllerB` + this.shortId + this.counter + ` {
         hierarchyLevel 1
         controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
         }
         feedback {
-            [fb "feedback"] -> ControllerA` + this.shortId + this.counter +`
+            [fb "feedback"] -> ControllerA` + this.shortId + this.counter + `
         }
     }
-    ControlledProcess` + this.shortId + this.counter +` {
+    ControlledProcess` + this.shortId + this.counter + ` {
         hierarchyLevel 2
         feedback {
-            [fb "feedback"] -> ControllerB` + this.shortId + this.counter +`
+            [fb "feedback"] -> ControllerB` + this.shortId + this.counter + `
         }
     }
 }
 `;
     }
-    
-    getPosition (uri: string): Position {
+
+    getPosition(uri: string): Position {
         this.insertText = this.generateCode();
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
@@ -311,7 +343,7 @@ CS {
 /**
  * Template for a control structure with two parallel controllers and one controlled process.
  */
- export class ParallelContsTemplate implements LanguageTemplate {
+export class ParallelContsTemplate implements LanguageTemplate {
     insertText: string;
     documents: LangiumDocuments;
     id: string = 'parallelContsTemplate';
@@ -351,30 +383,30 @@ CS {
         return `
 ControlStructure
 CS {
-    ControllerA` + this.shortId + this.counter +` {
+    ControllerA` + this.shortId + this.counter + ` {
         hierarchyLevel 0
         controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
         }
     }
-    ControllerB` + this.shortId + this.counter +` {
+    ControllerB` + this.shortId + this.counter + ` {
         hierarchyLevel 0
         controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
         }
     }
-    ControlledProcess` + this.shortId + this.counter +` {
+    ControlledProcess` + this.shortId + this.counter + ` {
         hierarchyLevel 1
         feedback {
-            [fbA "feedback"] -> ControllerA` + this.shortId + this.counter +`
-            [fbB "feedback"] -> ControllerB` + this.shortId + this.counter +`
+            [fbA "feedback"] -> ControllerA` + this.shortId + this.counter + `
+            [fbB "feedback"] -> ControllerB` + this.shortId + this.counter + `
         }
     }
 }
 `;
     }
-    
-    getPosition (uri: string): Position {
+
+    getPosition(uri: string): Position {
         this.insertText = this.generateCode();
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
@@ -385,7 +417,7 @@ CS {
 /**
  * Template for a control structure with two consecutive controllers, one controlled process.
  */
- export class ConsContsWithLoopTemplate implements LanguageTemplate {
+export class ConsContsWithLoopTemplate implements LanguageTemplate {
     insertText: string;
     documents: LangiumDocuments;
     id: string = 'consContsWithLoopTemplate';
@@ -429,34 +461,34 @@ CS {
         return `
 ControlStructure
 CS {
-    ControllerA` + this.shortId + this.counter +` {
+    ControllerA` + this.shortId + this.counter + ` {
         hierarchyLevel 0
         controlActions {
-            [caC "control action"] -> ControlledProcess` + this.shortId + this.counter +`
-            [caB "control action"] -> ControllerB` + this.shortId + this.counter +`
+            [caC "control action"] -> ControlledProcess` + this.shortId + this.counter + `
+            [caB "control action"] -> ControllerB` + this.shortId + this.counter + `
         }
     }
-    ControllerB` + this.shortId + this.counter +` {
+    ControllerB` + this.shortId + this.counter + ` {
         hierarchyLevel 1
         controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter +`
+            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
         }
         feedback {
-            [fb "feedback"] -> ControllerA` + this.shortId + this.counter +`
+            [fb "feedback"] -> ControllerA` + this.shortId + this.counter + `
         }
     }
-    ControlledProcess` + this.shortId + this.counter +` {
+    ControlledProcess` + this.shortId + this.counter + ` {
         hierarchyLevel 2
         feedback {
-            [fbA "feedback"] -> ControllerA` + this.shortId + this.counter +`
-            [fbB "feedback"] -> ControllerB` + this.shortId + this.counter +`
+            [fbA "feedback"] -> ControllerA` + this.shortId + this.counter + `
+            [fbB "feedback"] -> ControllerB` + this.shortId + this.counter + `
         }
     }
 }
 `;
     }
-    
-    getPosition (uri: string): Position {
+
+    getPosition(uri: string): Position {
         this.insertText = this.generateCode();
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
