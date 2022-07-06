@@ -33,5 +33,5 @@ export interface WebviewTemplate {
 }
 
 export abstract class TemplateGraphGenerator extends LangiumDiagramGenerator {
-    abstract generateTemplateRoot(template: LanguageTemplate): Promise<SModelRoot>;
+    abstract generateTemplateRoot(template: LanguageTemplate): Promise<SModelRoot | undefined>;
 }

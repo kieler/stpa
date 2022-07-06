@@ -27,6 +27,7 @@ export class TemplateDiagramServer extends DiagramServer {
     protected options: JsonMap | undefined;
     protected connection: Connection | undefined;
     protected templateGraphGenerator: TemplateGraphGenerator;
+    protected tempRdy: boolean = false;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
         services: DiagramServices, clientId: string, templates: LanguageTemplate[], options: JsonMap | undefined, connection: Connection | undefined) {
@@ -45,11 +46,8 @@ export class TemplateDiagramServer extends DiagramServer {
     protected async getTemplates() {
         const webviewTemplates: WebviewTemplate[] = [];
         for (const template of this.templates) {
-            // TODO: correct ordering of nodes
-            // TODO: if template contains edges to non-existing nodes, catch these instead of not showing the graph at all
             let graph = await this.templateGraphGenerator.generateTemplateRoot(template);
-            // check that graph could be generated
-            if (graph.children?.length! > 0) {
+            if (graph) {
                 const request = RequestBoundsAction.create(graph);
                 const response = await this.request<ComputedBoundsAction>(request);
                 applyBounds(graph, response);
@@ -83,10 +81,13 @@ export class TemplateDiagramServer extends DiagramServer {
     addTemplate(temp: LanguageTemplate) {
         // TODO: save temps in config
         this.templates.push(temp);
-        this.handleTemplateWebviewRdy();
+        if (this.tempRdy) {
+            this.handleTemplateWebviewRdy();
+        }
     }
 
     protected async handleTemplateWebviewRdy(): Promise<void> {
+        this.tempRdy = true;
         const temps = await this.getTemplates();
         // send the avaiable templates to the client
         const response = await this.request<SendWebviewTemplatesAction>({ kind: RequestWebviewTemplatesAction.KIND, templates: temps, clientId: this.clientId } as RequestWebviewTemplatesAction);

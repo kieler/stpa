@@ -18,12 +18,14 @@
 import { AstNode, documentFromText, LangiumParser, ParseResult } from 'langium';
 import { GeneratorContext, IdCache, IdCacheImpl } from 'langium-sprotty';
 import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
-import { isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint, 
-    isSystemConstraint, isUCA, Model, Node } from './generated/ast';
+import {
+    isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
+    isSystemConstraint, isUCA, Model, Node
+} from './generated/ast';
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
 import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
+import { collectElementsWithSubComps, filterDanglingEdges, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 import { LanguageTemplate, TemplateGraphGenerator } from './templates/template-model';
 import { CancellationToken } from 'vscode-languageserver';
@@ -51,11 +53,14 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
      * @param template The template for which a graph should be generated.
      * @returns the SGraph.
      */
-    async generateTemplateRoot(template: LanguageTemplate): Promise<SModelRoot> {
+    async generateTemplateRoot(template: LanguageTemplate): Promise<SModelRoot | undefined> {
         // in order for the cross-references to be correctly evaluated, a document must be build
         const uri = 'file:///template.stpa';
         const textDocument = TextDocument.create(uri, this.languageId, 0, template.baseCode ?? '');
         const parseResult: ParseResult<Model> = this.parser.parse<Model>(template.baseCode);
+        if (parseResult.parserErrors.length > 0) {
+            return undefined;
+        }
         const doc = documentFromText<Model>(textDocument, parseResult);
         await this.docBuilder.buildDocuments([doc], CancellationToken.None);
 
@@ -63,10 +68,13 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
             this.idCache = new IdCacheImpl();
         }
         const graph = this.generateGraph(doc.parseResult.value);
+        if (graph.children) {
+            graph.children = filterDanglingEdges(graph.children);
+        }
         graph.id = template.id;
         return graph;
     }
-    
+
 
     /**
      * Generates a SGraph for the STPA model contained in {@code args}.
@@ -98,16 +106,16 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
             const hazards = collectElementsWithSubComps(model.hazards);
             const sysCons = collectElementsWithSubComps(model.systemLevelConstraints);
             stpaChildren = stpaChildren.concat([
-                    ...hazards.map(sh => this.generateAspectWithEdges(sh)).flat(1),
-                    ...sysCons.map(ssc => this.generateAspectWithEdges(ssc)).flat(1)
-                ]);
+                ...hazards.map(sh => this.generateAspectWithEdges(sh)).flat(1),
+                ...sysCons.map(ssc => this.generateAspectWithEdges(ssc)).flat(1)
+            ]);
         } else {
             // subcomponents are contained in the parent
             stpaChildren = stpaChildren.concat([
-                    ...model.hazards?.map(h => this.generateAspectWithEdges(h)).flat(1),
-                    ...model.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc)).flat(1),
-                    ...model.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateEdgesForSTPANode(ssc))).flat(2)
-                ]);
+                ...model.hazards?.map(h => this.generateAspectWithEdges(h)).flat(1),
+                ...model.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc)).flat(1),
+                ...model.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateEdgesForSTPANode(ssc))).flat(2)
+            ]);
         }
         stpaChildren = stpaChildren.concat([
             ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp))).flat(2),
@@ -135,7 +143,7 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
             // each node should be placed in a specifc layer based on the hierarchy level. therefore positions must be set
             setPositionsForCSNodes(csNodes);
             // children (nodes and edges) of the control structure
-            const CSChildren= [
+            const CSChildren = [
                 ...csNodes,
                 ...this.generateVerticalCSEdges(model.controlStructure.nodes),
                 //...this.generateHorizontalCSEdges(model.controlStructure.edges, args)
@@ -160,14 +168,14 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
             children: graphChildren
         };
     }
-    
+
     /**
      * Creates the edges for the control structure.
      * @param nodes The nodes of the control structure.
      * @param args GeneratorCOntext of the STPA model
      * @returns A list of edges for the control structure.
      */
-    private generateVerticalCSEdges(nodes: Node[]): CSEdge[]{
+    private generateVerticalCSEdges(nodes: Node[]): CSEdge[] {
         let edges: CSEdge[] = [];
         // for every control action and feedback of every a node, a edge should be created
         for (const node of nodes) {
@@ -185,8 +193,8 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
                         label += ", ";
                     }
                 }
-                const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '', 
-                                label, EdgeDirection.DOWN);
+                const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
+                    label, EdgeDirection.DOWN);
                 edges.push(e);
             }
             // create edges representing feedback
@@ -203,27 +211,27 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
                         label += ", ";
                     }
                 }
-                const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '', 
-                                label, EdgeDirection.UP);
+                const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
+                    label, EdgeDirection.UP);
                 edges.push(e);
             }
         }
         return edges;
     }
 
-/*     private generateHorizontalCSEdges(edges: Edge[], args: GeneratorContext<Model>): SEdge[]{
-        const idCache = args.idCache
-        let genEdges: SEdge[] = []
-        for (const edge of edges) {
-            const sourceId = idCache.getId(edge.source.ref)
-            const targetId = idCache.getId(edge.target.ref)
-            const edgeId = idCache.uniqueId(`${sourceId}:${edge.name}:${targetId}`, edge)
-            const e = this.generateSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '', 
-                            edge.label? edge.label:edge.name, args)
-            genEdges.push(e)
-        }
-        return genEdges
-    } */
+    /*     private generateHorizontalCSEdges(edges: Edge[], args: GeneratorContext<Model>): SEdge[]{
+            const idCache = args.idCache
+            let genEdges: SEdge[] = []
+            for (const edge of edges) {
+                const sourceId = idCache.getId(edge.source.ref)
+                const targetId = idCache.getId(edge.target.ref)
+                const edgeId = idCache.uniqueId(`${sourceId}:${edge.name}:${targetId}`, edge)
+                const e = this.generateSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '', 
+                                edge.label? edge.label:edge.name, args)
+                genEdges.push(e)
+            }
+            return genEdges
+        } */
 
     /**
      * Generates a single control structure edge based on the gven arguments.
@@ -245,7 +253,7 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
             targetId: targetId!,
             direction: direction,
             children: [
-                <SLabel> {
+                <SLabel>{
                     type: 'label:xref',
                     id: this.idCache.uniqueId(edgeId + '.label'),
                     text: label
@@ -330,11 +338,11 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
      * @param param4 GeneratorContext of the STPA model.
      * @returns An STPAEdge.
      */
-    private generateSTPAEdge(edgeId: string, sourceId: string, targetId: string, label:string): STPAEdge {
+    private generateSTPAEdge(edgeId: string, sourceId: string, targetId: string, label: string): STPAEdge {
         let children: SModelElement[] = [];
         if (label !== '') {
             children = [
-                <SLabel> {
+                <SLabel>{
                     type: 'label:xref',
                     id: this.idCache.uniqueId(edgeId + '.label'),
                     text: label
@@ -357,8 +365,8 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
      * @returns A STPANode representing {@code node}.
      */
     private generateSTPANode(node: AstNode): STPANode {
-        if (isLoss(node)|| isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node) 
-                    || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node)){
+        if (isLoss(node) || isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node)
+            || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node)) {
             const nodeId = this.idCache.uniqueId(node.name, node);
             // determines the hierarchy level for subcomponents. For other components the value is 0.
             let lvl = 0;

@@ -50,9 +50,8 @@ export class StpaTemplates {
 
     createTemp(text: string) {
         // TODO: currently only control structure
-        // TODO: check whether text is valid -> could be checked when generating the sgraph
         this.customTempsNumber++;
-        return new CustomCSTemplate(this.langiumDocuments, text, 'CustomTemplate' + this.customTempsNumber, text);
+        return new CustomCSTemplate(this.langiumDocuments, text, 'CT' + this.customTempsNumber, text);
     }
 
     getTemplates() {
@@ -78,15 +77,14 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
     if (titleIndex === -1) {
         return document.positionAt(endIndex);
     } else {
+        template.insertText = template.insertText.substring(17, template.insertText.length);
         // check whether a graph ID already exist
         const csText = docText.substring(startIndex, endIndex);
         const graphIndex = csText.indexOf('{');
-        // TODO: starting positions 19 and 23 may be incorrect for user provided templates
         if (graphIndex === -1) {
-            template.insertText = template.insertText.substring(18, template.insertText.length);
             return document.positionAt(endIndex);
         } else {
-            template.insertText = template.insertText.substring(22, template.insertText.length - 3);
+            template.insertText = template.insertText.substring(template.insertText.indexOf('{') + 1, template.insertText.length - 3);
             const bracketIndex = csText.lastIndexOf('}');
             return document.positionAt(titleIndex + bracketIndex - 1);
         }
@@ -103,14 +101,31 @@ export class CustomCSTemplate implements LanguageTemplate {
 
     constructor(documents: LangiumDocuments, insertText: string, id: string, baseCode: string) {
         this.documents = documents;
-        this.insertText = insertText;
+        this.insertText = insertText.trim();
         this.id = id;
-        this.baseCode = baseCode;
+        this.baseCode = baseCode.trim();
+        this.checkCaption();
+    }
+
+    /**
+     * Check whether the CS caption and graph name exists. If not, adds it.
+     */
+    protected checkCaption() {
+        const splits = this.baseCode.split(/[^a-zA-Z0-9\{\}]/);
+        const words = splits.filter(child => child !== "");
+        if (words[0] !== 'ControlStructure') {
+            if (words[2] === 'hierarchyLevel' || words[2] === 'label' || words[2] === 'processModel' || words[2] === 'controlActions' || words[2] === 'feedback' || words[2] === '}' && words.length > 3) {
+                this.baseCode = 'ControlStructure\nCS {\n' + this.baseCode + '\n}';
+            } else {
+                this.baseCode = 'ControlStructure\n' + this.baseCode;
+            }
+        }
     }
 
     getPosition(uri: string): Position {
         // TODO: inserText needs unique IDs
         //this.insertText = this.generateCode();
+        this.insertText = this.baseCode;
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);

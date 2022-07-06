@@ -16,11 +16,13 @@
  */
 
 import { AstNode } from "langium";
-import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, 
-    isLoss, Hazard, SystemConstraint } from "./generated/ast";
+import {
+    isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
+    isLoss, Hazard, SystemConstraint
+} from "./generated/ast";
 import { STPAAspect } from "./stpa-model";
 import { CSNode, STPANode } from "./stpa-interfaces";
-import { SShapeElement } from 'sprotty-protocol';
+import { SEdge, SShapeElement, SModelElement } from 'sprotty-protocol';
 
 /* export function determineLayerForCSNodes(nodes: CSNode[]): void {
     let layer = nodes.length
@@ -57,7 +59,7 @@ import { SShapeElement } from 'sprotty-protocol';
  */
 export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
     if (node) {
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) { 
+        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) {
             const targets: AstNode[] = [];
             for (const ref of node.refs) {
                 if (ref?.ref) { targets.push(ref.ref); }
@@ -119,7 +121,7 @@ export function getAspect(node: AstNode): STPAAspect {
  * @param topElements The top elements that possbible have children.
  * @returns A list with the given {@code topElements} and their descendants.
  */
-export function collectElementsWithSubComps(topElements: (Hazard|SystemConstraint)[]): AstNode[] {
+export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): AstNode[] {
     let result = topElements;
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {
@@ -140,8 +142,8 @@ export function collectElementsWithSubComps(topElements: (Hazard|SystemConstrain
  * @returns The number of the layer {@code node} should be in.
  */
 function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number): number {
-    switch(node.aspect) {
-        case STPAAspect.LOSS: 
+    switch (node.aspect) {
+        case STPAAspect.LOSS:
             return 0;
         case STPAAspect.HAZARD:
             return 1 + node.hierarchyLvl;
@@ -181,7 +183,7 @@ export function setPositionsForSTPANodes(nodes: STPANode[]): void {
     // sets positions according to the layer of the nodes.
     for (const node of nodes) {
         const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth);
-        (node as SShapeElement).position = {x: 0, y: 100 * layer};
+        (node as SShapeElement).position = { x: 0, y: 100 * layer };
     }
 }
 
@@ -192,7 +194,61 @@ export function setPositionsForSTPANodes(nodes: STPANode[]): void {
 export function setPositionsForCSNodes(nodes: CSNode[]) {
     for (const node of nodes) {
         if (node.level) {
-            (node as SShapeElement).position = {x: 0, y: 100 * node.level};
+            (node as SShapeElement).position = { x: 0, y: 100 * node.level };
         }
     }
+}
+
+/**
+ * Filters dangling edges.
+ * @param children Elements that should be checked.
+ * @returns {@code children} without dangling edges.
+ */
+export function filterDanglingEdges(children: SModelElement[]): SModelElement[] {
+    let nodeIds: Set<string> = new Set();
+    for (const child of children) {
+        if (child.type.startsWith('node') || child.type.startsWith('port')) {
+            selectNodeAndPortIDs(child, nodeIds);
+        }
+    }
+    return checkEdges(children, nodeIds);
+}
+
+/**
+ * Adds node and port Ids to {@code set}.
+ * @param element Elements to examine.
+ * @param set The set to which the Ids should be added.
+ */
+function selectNodeAndPortIDs(element: SModelElement, set: Set<string>): void {
+    set.add(element.id);
+    if (element.children) {
+        for (const child of element.children) {
+            if (child.type.startsWith('node') || child.type.startsWith('port')) {
+                selectNodeAndPortIDs(child, set);
+            }
+        }
+    }
+}
+
+/**
+ * Check whether the edges in {@code elements} are dangling.
+ * @param elements Elements to be checked.
+ * @param nodeIds Ids of all existing nodes.
+ * @returns {@code elements} without dangling edges.
+ */
+function checkEdges(elements: SModelElement[], nodeIds: Set<string>): SModelElement[] {
+    let children = [];
+    for (const element of elements) {
+        if (element.type.startsWith('edge')) {
+            if (nodeIds.has((element as SEdge).sourceId) && nodeIds.has((element as SEdge).targetId)) {
+                children.push(element);
+            }
+        } else {
+            if (element.type.startsWith('node') && element.children) {
+                element.children = checkEdges(element.children, nodeIds);
+            }
+            children.push(element);
+        }
+    }
+    return children;
 }
