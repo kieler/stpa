@@ -5,6 +5,11 @@ export class ContextTablePanel {
   public static currentPanel: ContextTablePanel | undefined;
   public static readonly viewType = "context-table";
   public static currentUri: vscode.Uri | undefined;
+  
+  //data lists
+  public static currentHazards: any[];
+  public static currentActions: any[];
+  public static currentVariables: any[];
 
   // Constructor variables.
   private readonly _panel: vscode.WebviewPanel;
@@ -73,6 +78,14 @@ export class ContextTablePanel {
 
   public static notify() {
     return this.currentUri;
+  }
+
+  public static getData(list : any[]) {
+    if (list.length == 3) {
+      this.currentHazards = list[0];
+      this.currentActions = list[1];
+      this.currentVariables = list[2];
+    }
   }
 
   // Disposes of the panel and all its related data.
