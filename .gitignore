@@ -10,3 +10,6 @@ language-server/out
 webview/node_modules
 webview/lib
 webview/out
+workspace/.vscode/settings.json
+
+templateWebview/out/tempWebview.js

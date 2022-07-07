@@ -38,16 +38,16 @@ export namespace UpdateViewAction {
     }
 }
 
-/** Sends config options to the webview */
+/** Contains config option values */
 export interface SendConfigAction extends Action {
     kind: typeof SendConfigAction.KIND;
-    options: {id:string, value: any}[];
+    options: { id: string, value: any; }[];
 }
 
 export namespace SendConfigAction {
     export const KIND = "sendConfig";
 
-    export function create(options: {id:string, value: any}[]): SendConfigAction {
+    export function create(options: { id: string, value: any; }[]): SendConfigAction {
         return {
             kind: KIND,
             options

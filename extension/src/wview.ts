@@ -16,15 +16,18 @@
  */
 
 import * as vscode from 'vscode';
-import { hasOwnProperty } from 'sprotty-protocol';
+import { hasOwnProperty,isActionMessage } from 'sprotty-protocol';
 import { SprottyLspWebview } from "sprotty-vscode/lib/lsp";
 import { SendConfigAction } from './actions';
 
 export class StpaLspWebview extends SprottyLspWebview {
 
     protected receiveFromWebview(message: any): Promise<boolean> {
+        // TODO: for multiple language support here the current language muste be determined
         if (isRenderOptionsRegistryReadyMessage(message)) {
             this.sendConfigValues();
+        } else if (isActionMessage(message) && message.action.kind === SendConfigAction.KIND) {
+            this.updateConfigValues(message.action as SendConfigAction);
         }
         return super.receiveFromWebview(message);
     }
@@ -35,10 +38,15 @@ export class StpaLspWebview extends SprottyLspWebview {
     protected sendConfigValues() {
         const renderOptions: { id: string, value: any; }[] = [];
         const configOptions = vscode.workspace.getConfiguration('stpa');
-        renderOptions.push({ id: "color-style", value: configOptions.get("colorStyle") });
-        renderOptions.push({ id: "different-forms", value: configOptions.get("differentForms") });
+        renderOptions.push({ id: "colorStyle", value: configOptions.get("colorStyle") });
+        renderOptions.push({ id: "differentForms", value: configOptions.get("differentForms") });
 
         this.dispatch({ kind: SendConfigAction.KIND, options: renderOptions } as SendConfigAction);
+    }
+
+    protected updateConfigValues(action: SendConfigAction) {
+        const configOptions = vscode.workspace.getConfiguration('stpa');
+        action.options.forEach(element => configOptions.update(element.id, element.value))
     }
 }
 

@@ -27,7 +27,7 @@ import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
  * Diffrent options for the color style of the relationship graph.
  */
 export class ColorStyleOption implements ChoiceRenderOption {
-    static readonly ID: string = 'color-style';
+    static readonly ID: string = 'colorStyle';
     static readonly NAME: string = 'Color Style';
     readonly id: string = ColorStyleOption.ID;
     readonly name: string = ColorStyleOption.NAME;
@@ -41,7 +41,7 @@ export class ColorStyleOption implements ChoiceRenderOption {
  * Boolean option to enable and disable different forms for the STPA aspects.
  */
 export class DifferentFormsOption implements RenderOption {
-    static readonly ID: string = 'different-forms';
+    static readonly ID: string = 'differentForms';
     static readonly NAME: string = 'Different Forms';
     readonly id: string = DifferentFormsOption.ID;
     readonly name: string = DifferentFormsOption.NAME;
@@ -100,7 +100,7 @@ export class RenderOptionsRegistry extends Registry {
 
         this.register(ShowCSOption);
         this.register(ShowRelationshipGraphOption);
-        
+
         vscodeApi.postMessage({ optionRegistryReadyMessage: "Option Registry ready" });
     }
 
@@ -119,6 +119,8 @@ export class RenderOptionsRegistry extends Registry {
             if (!option) return;
 
             option.currentValue = action.value;
+            const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
+            vscodeApi.postMessage({ action: sendAction });
             this.notifyListeners();
 
         } else if (ResetRenderOptionsAction.isThisAction(action)) {
