@@ -24,11 +24,8 @@ import { createStpaServices } from './stpa-module';
 const connection = createConnection(ProposedFeatures.all);
 
 // Inject the language services
-const { shared, states } = createStpaServices({ connection });
+const { shared } = createStpaServices({ connection });
 
 // Start the language server with the language-specific services
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
-
-connection.onNotification('contextTable/uri', uri => states.contextTable.ContextTableProvider.getUri(uri));
-connection.sendNotification('contextTable/data', states.contextTable.ContextTableProvider.getContext());
