@@ -19,11 +19,12 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
-import { SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
+import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import { ActionMessage, JsonMap } from 'sprotty-protocol';
 import { UpdateViewAction } from './actions';
 import { StpaFormattingEditProvider } from './stpa-formatter';
+import { StpaLspWebview } from './wview';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -42,7 +43,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     }
 
     createWebView(identifier: SprottyDiagramIdentifier): SprottyWebview {
-        const webview = new SprottyLspWebview({
+        const webview = new StpaLspWebview({
             extension: this,
             identifier,
             localResourceRoots: [
@@ -53,6 +54,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
         webview.addActionHandler(WorkspaceEditActionHandler);
         webview.addActionHandler(LspLabelEditActionHandler);
+
         this.singleton = webview;
         return webview;
     }

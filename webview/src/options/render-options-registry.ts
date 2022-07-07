@@ -19,8 +19,9 @@ import { injectable, postConstruct } from "inversify";
 import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
-import { ResetRenderOptionsAction, SetRenderOptionAction } from "./actions";
+import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
+import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
 
 /**
  * Diffrent options for the color style of the relationship graph.
@@ -99,12 +100,13 @@ export class RenderOptionsRegistry extends Registry {
 
         this.register(ShowCSOption);
         this.register(ShowRelationshipGraphOption);
+        
+        vscodeApi.postMessage({ optionRegistryReadyMessage: "Option Registry ready" });
     }
 
     @postConstruct()
     init(): void {
     }
-
 
     register(Option: RenderOptionType): void {
         this._renderOptions.set(Option.ID, new Option());
@@ -125,6 +127,13 @@ export class RenderOptionsRegistry extends Registry {
             });
             this.notifyListeners();
 
+        } else if (SendConfigAction.isThisAction(action)) {
+            action.options.forEach(element => {
+                const option = this._renderOptions.get(element.id);
+                if (!option) return;
+                option.currentValue = element.value;
+            });
+            this.notifyListeners();
         }
         return UpdateModelAction.create([], { animate: false, cause: action });
     }

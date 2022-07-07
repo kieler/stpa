@@ -32,6 +32,22 @@
                 "path": "./syntaxes/stpa.tmLanguage.json"
             }
         ],
+        "configuration": {
+            "title": "STPA",
+            "properties": {
+                "stpa.differentForms": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Different forms for STPA aspects"
+                },
+                "stpa.colorStyle": {
+                    "type": "string",
+                    "default": "colorful",
+                    "enum": ["colorful", "standard", "print"],
+                    "enumDescription": ["Each STPA aspect has a different color", "All nodes have the standard color (blue)", "The diagrams are colored in black and white"]
+                }
+            }
+        },
         "commands": [
             {
                 "command": "stpa.diagram.open",
