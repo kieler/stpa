@@ -77,7 +77,7 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
     if (titleIndex === -1) {
         return document.positionAt(endIndex);
     } else {
-        template.insertText = template.insertText.substring(17, template.insertText.length);
+        template.insertText = template.insertText.substring(18, template.insertText.length);
         // check whether a graph ID already exist
         const csText = docText.substring(startIndex, endIndex);
         const graphIndex = csText.indexOf('{');
@@ -90,6 +90,34 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
         }
     }
 
+}
+
+/**
+ * Adds {@code id} to the node names in {@code text}.
+ * @param text The control structure text.
+ * @param id The id to append.
+ * @returns The modified text.
+ */
+function addNodeIDs(text: string, id: string) {
+    const splits = text.split(/[^a-zA-Z0-9\{\}]/);
+    // collect node names
+    const names = [];
+    for (let i = 3; i < splits.length; i++) {
+        if (splits[i] === '{' && !isKeyWord(splits[i - 1])) {
+            names.push(splits[i - 1]);
+        }
+    }
+
+    // append ID to node names
+    for (const name of names) {
+        const regex = new RegExp(name, "g");
+        text = text.replace(regex, name + id);
+    }
+    return text;
+}
+
+function isKeyWord(text: string) {
+    return text === 'hierarchyLevel' || text === 'label' || text === 'processModel' || text === 'controlActions' || text === 'feedback';
 }
 
 export class CustomCSTemplate implements LanguageTemplate {
@@ -114,18 +142,16 @@ export class CustomCSTemplate implements LanguageTemplate {
         const splits = this.baseCode.split(/[^a-zA-Z0-9\{\}]/);
         const words = splits.filter(child => child !== "");
         if (words[0] !== 'ControlStructure') {
-            if (words[2] === 'hierarchyLevel' || words[2] === 'label' || words[2] === 'processModel' || words[2] === 'controlActions' || words[2] === 'feedback' || words[2] === '}' && words.length > 3) {
-                this.baseCode = 'ControlStructure\nCS {\n' + this.baseCode + '\n}';
+            if (isKeyWord(words[2]) || words[2] === '}' && words.length > 3) {
+                this.baseCode = 'ControlStructure\r\nCS {\r\n' + this.baseCode + '\r\n}';
             } else {
-                this.baseCode = 'ControlStructure\n' + this.baseCode;
+                this.baseCode = 'ControlStructure\r\n' + this.baseCode;
             }
         }
     }
 
     getPosition(uri: string): Position {
-        // TODO: inserText needs unique IDs
-        //this.insertText = this.generateCode();
-        this.insertText = this.baseCode;
+        this.insertText = addNodeIDs(this.baseCode, "" + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);
@@ -165,28 +191,8 @@ CS {
         this.shortId = shortId;
     }
 
-    protected generateCode(): string {
-        return `
-ControlStructure
-CS {
-    Controller` + this.shortId + this.counter + ` {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
-        }
-    }
-    ControlledProcess` + this.shortId + this.counter + ` {
-        hierarchyLevel 1
-        feedback {
-            [fb "feedback"] -> Controller` + this.shortId + this.counter + `
-        }
-    }
-}
-`;
-    }
-
     getPosition(uri: string): Position {
-        this.insertText = this.generateCode();
+        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);
@@ -237,40 +243,8 @@ CS {
         this.shortId = shortId;
     }
 
-    protected generateCode(): string {
-        return `
-ControlStructure
-CS {
-    Controller` + this.shortId + this.counter + ` {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> Actuator` + this.shortId + this.counter + `
-        }
-    }
-    Actuator` + this.shortId + this.counter + ` {
-        hierarchyLevel 1
-        controlActions {
-            [caAc "control action"] -> ControlledProcess` + this.shortId + this.counter + `
-        }
-    }
-    Sensor` + this.shortId + this.counter + ` {
-        hierarchyLevel 1
-        feedback {
-            [fbS "feedback"] -> Controller` + this.shortId + this.counter + `
-        }
-    }
-    ControlledProcess` + this.shortId + this.counter + ` {
-        hierarchyLevel 2
-        feedback {
-            [fb "feedback"] -> Sensor` + this.shortId + this.counter + `
-        }
-    }
-}
-`;
-    }
-
     getPosition(uri: string): Position {
-        this.insertText = this.generateCode();
+        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);
@@ -318,37 +292,8 @@ CS {
         this.shortId = shortId;
     }
 
-    protected generateCode(): string {
-        return `
-ControlStructure
-CS {
-    ControllerA` + this.shortId + this.counter + ` {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> ControllerB` + this.shortId + this.counter + `
-        }
-    }
-    ControllerB` + this.shortId + this.counter + ` {
-        hierarchyLevel 1
-        controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
-        }
-        feedback {
-            [fb "feedback"] -> ControllerA` + this.shortId + this.counter + `
-        }
-    }
-    ControlledProcess` + this.shortId + this.counter + ` {
-        hierarchyLevel 2
-        feedback {
-            [fb "feedback"] -> ControllerB` + this.shortId + this.counter + `
-        }
-    }
-}
-`;
-    }
-
     getPosition(uri: string): Position {
-        this.insertText = this.generateCode();
+        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);
@@ -394,35 +339,8 @@ CS {
         this.shortId = shortId;
     }
 
-    protected generateCode(): string {
-        return `
-ControlStructure
-CS {
-    ControllerA` + this.shortId + this.counter + ` {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
-        }
-    }
-    ControllerB` + this.shortId + this.counter + ` {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
-        }
-    }
-    ControlledProcess` + this.shortId + this.counter + ` {
-        hierarchyLevel 1
-        feedback {
-            [fbA "feedback"] -> ControllerA` + this.shortId + this.counter + `
-            [fbB "feedback"] -> ControllerB` + this.shortId + this.counter + `
-        }
-    }
-}
-`;
-    }
-
     getPosition(uri: string): Position {
-        this.insertText = this.generateCode();
+        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);
@@ -472,39 +390,8 @@ CS {
         this.shortId = shortId;
     }
 
-    protected generateCode(): string {
-        return `
-ControlStructure
-CS {
-    ControllerA` + this.shortId + this.counter + ` {
-        hierarchyLevel 0
-        controlActions {
-            [caC "control action"] -> ControlledProcess` + this.shortId + this.counter + `
-            [caB "control action"] -> ControllerB` + this.shortId + this.counter + `
-        }
-    }
-    ControllerB` + this.shortId + this.counter + ` {
-        hierarchyLevel 1
-        controlActions {
-            [ca "control action"] -> ControlledProcess` + this.shortId + this.counter + `
-        }
-        feedback {
-            [fb "feedback"] -> ControllerA` + this.shortId + this.counter + `
-        }
-    }
-    ControlledProcess` + this.shortId + this.counter + ` {
-        hierarchyLevel 2
-        feedback {
-            [fbA "feedback"] -> ControllerA` + this.shortId + this.counter + `
-            [fbB "feedback"] -> ControllerB` + this.shortId + this.counter + `
-        }
-    }
-}
-`;
-    }
-
     getPosition(uri: string): Position {
-        this.insertText = this.generateCode();
+        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);
