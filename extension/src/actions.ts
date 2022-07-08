@@ -58,3 +58,24 @@ export namespace AddTemplateAction {
         return action.kind === AddTemplateAction.KIND;
     }
 }
+
+/** Message containing templates as string. */
+export interface SendTemplatesAction extends Action {
+    kind: typeof SendTemplatesAction.KIND;
+    temps: string[];
+}
+
+export namespace SendTemplatesAction {
+    export const KIND = "sendTemplates";
+
+    export function create(temps: string[]): SendTemplatesAction {
+        return {
+            kind: KIND,
+            temps
+        };
+    }
+
+    export function isThisAction(action: Action): action is SendTemplatesAction {
+        return action.kind === SendTemplatesAction.KIND;
+    }
+}

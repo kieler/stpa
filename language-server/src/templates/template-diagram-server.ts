@@ -35,7 +35,6 @@ export class TemplateDiagramServer extends DiagramServer {
         this.clientId = clientId;
         this.options = options;
         this.connection = connection;
-        // TODO: load temps from config
         this.templates = templates;
         this.templateGraphGenerator = services.DiagramGenerator as TemplateGraphGenerator;
     }
@@ -74,25 +73,29 @@ export class TemplateDiagramServer extends DiagramServer {
                 return this.handleExecuteTemplate(action as ExecuteTemplateAction);
             case TemplateWebviewRdyAction.KIND:
                 return this.handleTemplateWebviewRdy();
+            //TODO: default implementation for add and sendtemplates. maybe also abstract methods?
         }
         return super.handleAction(action);
     }
 
-    addTemplate(temp: LanguageTemplate) {
-        // TODO: save temps in config
-        this.templates.push(temp);
+    addTemplates(temps: LanguageTemplate[]) {
+        this.templates.push(...temps);
+        this.update();
+    }
+
+    async update() {
         if (this.tempRdy) {
-            this.handleTemplateWebviewRdy();
+            const temps = await this.getTemplates();
+            // send the avaiable templates to the client
+            const response = await this.request<SendWebviewTemplatesAction>({ kind: RequestWebviewTemplatesAction.KIND, templates: temps, clientId: this.clientId } as RequestWebviewTemplatesAction);
+            // send graph svgs to extension
+            this.connection?.sendNotification('templates/add', { templates: response.templates });
         }
     }
 
     protected async handleTemplateWebviewRdy(): Promise<void> {
         this.tempRdy = true;
-        const temps = await this.getTemplates();
-        // send the avaiable templates to the client
-        const response = await this.request<SendWebviewTemplatesAction>({ kind: RequestWebviewTemplatesAction.KIND, templates: temps, clientId: this.clientId } as RequestWebviewTemplatesAction);
-        // send graph svgs to extension
-        this.connection?.sendNotification('templates/add', { templates: response.templates });
+        this.update();
     }
 
     protected async handleExecuteTemplate(action: ExecuteTemplateAction): Promise<void> {

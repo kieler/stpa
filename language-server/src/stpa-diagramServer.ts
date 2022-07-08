@@ -22,6 +22,7 @@ import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/action
 import { StpaSynthesisOptions } from './options/synthesis-options';
 import { TemplateDiagramServer } from './templates/template-diagram-server';
 import { StpaTemplates } from './stpa-templates';
+import { SendTemplatesAction } from './templates/actions';
 
 export class StpaDiagramServer extends TemplateDiagramServer {
 
@@ -40,12 +41,12 @@ export class StpaDiagramServer extends TemplateDiagramServer {
     }
 
     accept(action: Action): Promise<void> {
-        console.log("received from client: " + action.kind);
+        //console.log("received from client: " + action.kind);
         return super.accept(action);
     }
 
     request<Res extends ResponseAction>(action: RequestAction<Res>): Promise<Res> {
-        console.log("request send from server to client: " + action.kind);
+        //console.log("request send from server to client: " + action.kind);
         return super.request(action);
     }
 
@@ -57,13 +58,36 @@ export class StpaDiagramServer extends TemplateDiagramServer {
                 return this.handleUpdateView(action as UpdateViewAction);
             case AddTemplateAction.KIND:
                 return this.handleAddTemplate(action as AddTemplateAction);
+            case SendTemplatesAction.KIND:
+                return this.handleSendTemplates(action as SendTemplatesAction);
         }
         return super.handleAction(action);
     }
 
+    /**
+     * Creates a template based on {@code action} and adds it to the template list & config.
+     * @param action Action containing the text to create a template.
+     * @returns 
+     */
     protected handleAddTemplate(action: AddTemplateAction) {
         const temp = this.stpaTemps.createTemp(action.text);
-        this.addTemplate(temp);
+        this.addTemplates([temp]);
+        this.connection?.sendNotification('config/add', temp.baseCode);
+        return Promise.resolve();
+    }
+
+    /**
+     * Creates templates based on the texts in {@code action}.
+     * @param action Action containing the template texts.
+     * @returns 
+     */
+    protected handleSendTemplates(action: SendTemplatesAction) {
+        const temps = [];
+        for (const template of action.temps) {
+            const temp = this.stpaTemps.createTemp(template);
+            temps.push(temp);
+        }
+        this.addTemplates(temps);
         return Promise.resolve();
     }
 

@@ -151,7 +151,7 @@ export class CustomCSTemplate implements LanguageTemplate {
     }
 
     getPosition(uri: string): Position {
-        this.insertText = addNodeIDs(this.baseCode, "" + this.counter);
+        this.insertText = addNodeIDs(this.baseCode, this.id + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
         return getPositionForCSTemplate(document, this);

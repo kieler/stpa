@@ -18,6 +18,7 @@ import * as vscode from 'vscode';
 import { ActionMessage } from 'sprotty-protocol';
 import { StpaLspVscodeExtension } from './language-extension';
 import { acceptMessageType } from 'sprotty-vscode/lib/lsp';
+import { SendTemplatesAction } from './actions';
 
 export class TemplateWebview {
 
@@ -96,7 +97,7 @@ export class TemplateWebview {
      * @param message The message received from the webview.
      */
     protected async receiveFromWebview(message: any) {
-        console.log("Received from webview");
+        console.log("Received from template webview");
         if (message.readyMessage) {
             this.resolveWebviewReady();
             this.sendDiagramIdentifier();
@@ -110,6 +111,15 @@ export class TemplateWebview {
                     }
                 };
                 this.extension.languageClient.sendNotification(acceptMessageType, mes);
+
+                // send the templates saved in the config file to the language server
+                const temps = vscode.workspace.getConfiguration('stpa').get('templates');
+                const action = { kind: SendTemplatesAction.KIND, temps: temps } as SendTemplatesAction;
+                const mes2: ActionMessage = {
+                    clientId: this.extension.clientId,
+                    action: action
+                };
+                this.extension.languageClient.sendNotification(acceptMessageType, mes2);
             }
         } else if (message.action && this.extension.clientId) {
             const mes: ActionMessage = {

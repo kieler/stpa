@@ -10,3 +10,4 @@ webview/node_modules
 webview/lib
 
 */out
+workspace/.vscode/
