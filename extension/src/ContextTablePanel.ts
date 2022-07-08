@@ -81,10 +81,13 @@ export class ContextTablePanel {
   }
 
   public static getData(list : any[]) {
+    console.log(list);
     if (list.length == 3) {
       this.currentHazards = list[0];
       this.currentActions = list[1];
       this.currentVariables = list[2];
+    } else {
+      console.log("Data has wrong format. List length should be 3, but is " + list.length);
     }
   }
 
