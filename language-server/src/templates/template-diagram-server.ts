@@ -17,10 +17,11 @@
 
 import { Action, applyBounds, ComputedBoundsAction, DiagramServer, DiagramServices, JsonMap, RequestBoundsAction, RequestModelAction } from 'sprotty-protocol';
 import { Connection } from 'vscode-languageserver';
-import { ExecuteTemplateAction, TemplateWebviewRdyAction, RequestWebviewTemplatesAction, SendWebviewTemplatesAction } from './actions';
+import { AddTemplateAction } from '../actions';
+import { ExecuteTemplateAction, TemplateWebviewRdyAction, RequestWebviewTemplatesAction, SendWebviewTemplatesAction, SendTemplatesAction } from './actions';
 import { LanguageTemplate, TemplateGraphGenerator, WebviewTemplate } from './template-model';
 
-export class TemplateDiagramServer extends DiagramServer {
+export abstract class TemplateDiagramServer extends DiagramServer {
 
     protected clientId: string;
     protected templates: LanguageTemplate[];
@@ -73,10 +74,42 @@ export class TemplateDiagramServer extends DiagramServer {
                 return this.handleExecuteTemplate(action as ExecuteTemplateAction);
             case TemplateWebviewRdyAction.KIND:
                 return this.handleTemplateWebviewRdy();
-            //TODO: default implementation for add and sendtemplates. maybe also abstract methods?
+            case AddTemplateAction.KIND:
+                return this.handleAddTemplate(action as AddTemplateAction);
+            case SendTemplatesAction.KIND:
+                return this.handleSendTemplates(action as SendTemplatesAction);
         }
         return super.handleAction(action);
     }
+
+    /**
+     * Creates a template based on {@code action} and adds it to the template list & config.
+     * @param action Action containing the text to create a template.
+     * @returns 
+     */
+    protected handleAddTemplate(action: AddTemplateAction) {
+        const temp = this.createTempFromString(action.text);
+        this.addTemplates([temp]);
+        this.connection?.sendNotification('config/add', temp.baseCode);
+        return Promise.resolve();
+    }
+
+    /**
+     * Creates templates based on the texts in {@code action}.
+     * @param action Action containing the template texts.
+     * @returns 
+     */
+    protected handleSendTemplates(action: SendTemplatesAction) {
+        const temps = [];
+        for (const template of action.temps) {
+            const temp = this.createTempFromString(template);
+            temps.push(temp);
+        }
+        this.addTemplates(temps);
+        return Promise.resolve();
+    }
+
+    protected abstract createTempFromString(text: string): LanguageTemplate;
 
     addTemplates(temps: LanguageTemplate[]) {
         this.templates.push(...temps);
