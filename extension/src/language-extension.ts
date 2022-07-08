@@ -32,7 +32,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         super('stpa', context);
         this.languageClient.onReady().then(() => {
             this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
-            this.languageClient.onNotification('config/add', (temps) => this.handleAddTemplates(temps));
+            this.languageClient.onNotification('config/add', (temps) => this.handleAddToConfig(temps));
         });
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.templates.add', async (...commandArgs: any) => {
@@ -69,7 +69,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
      * Adds the {@code temps} to the templates in the config file.
      * @param temps Text of templates.
      */
-    protected handleAddTemplates(temps: string[]) {
+    protected handleAddToConfig(temps: string[]) {
         const configTemps = vscode.workspace.getConfiguration('stpa').get('templates');
         const newTemps = (configTemps as string[]).concat(temps);
         vscode.workspace.getConfiguration('stpa').update('templates', newTemps);

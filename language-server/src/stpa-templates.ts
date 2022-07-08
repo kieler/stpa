@@ -51,7 +51,7 @@ export class StpaTemplates {
     createTemp(text: string) {
         // TODO: currently only control structure
         this.customTempsNumber++;
-        return new CustomCSTemplate(this.langiumDocuments, text, 'CT' + this.customTempsNumber, text);
+        return new CustomCSTemplate(this.langiumDocuments, text, 'CS' + this.customTempsNumber, text);
     }
 
     getTemplates() {
@@ -84,7 +84,7 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
         if (graphIndex === -1) {
             return document.positionAt(endIndex);
         } else {
-            template.insertText = template.insertText.substring(template.insertText.indexOf('{') + 1, template.insertText.length - 3);
+            template.insertText = template.insertText.substring(template.insertText.indexOf('{') + 1, template.insertText.lastIndexOf('}'));
             const bracketIndex = csText.lastIndexOf('}');
             return document.positionAt(titleIndex + bracketIndex - 1);
         }

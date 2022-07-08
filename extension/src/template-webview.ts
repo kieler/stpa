@@ -104,14 +104,6 @@ export class TemplateWebview {
 
             // TODO: guarantee that sprotty webview exist
             if (this.extension.clientId) {
-                const mes: ActionMessage = {
-                    clientId: this.extension.clientId,
-                    action: {
-                        kind: "templateWebviewRdy"
-                    }
-                };
-                this.extension.languageClient.sendNotification(acceptMessageType, mes);
-
                 // send the templates saved in the config file to the language server
                 const temps = vscode.workspace.getConfiguration('stpa').get('templates');
                 const action = { kind: SendTemplatesAction.KIND, temps: temps } as SendTemplatesAction;

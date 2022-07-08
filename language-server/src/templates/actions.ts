@@ -96,26 +96,6 @@ export namespace ExecuteTemplateAction {
     }
 }
 
-/** Message to the language server to indicate that the tempalte webview is ready. */
-export interface TemplateWebviewRdyAction extends Action {
-    kind: typeof TemplateWebviewRdyAction.KIND;
-}
-
-export namespace TemplateWebviewRdyAction {
-    export const KIND = "templateWebviewRdy";
-
-    export function create(
-    ): TemplateWebviewRdyAction {
-        return {
-            kind: KIND,
-        };
-    }
-
-    export function isThisAction(action: Action): action is TemplateWebviewRdyAction {
-        return action.kind === TemplateWebviewRdyAction.KIND;
-    }
-}
-
 /** Message containing templates as string. */
 export interface SendTemplatesAction extends Action {
     kind: typeof SendTemplatesAction.KIND;
