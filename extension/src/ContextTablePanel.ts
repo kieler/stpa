@@ -7,9 +7,7 @@ export class ContextTablePanel {
   public static currentUri: vscode.Uri | undefined;
   
   //data lists
-  public static currentHazards: any[];
-  public static currentActions: any[];
-  public static currentVariables: any[];
+  public static currentData: any[];
 
   // Constructor variables.
   private readonly _panel: vscode.WebviewPanel;
@@ -83,9 +81,7 @@ export class ContextTablePanel {
   public static getData(list : any[]) {
     console.log(list);
     if (list.length == 3) {
-      this.currentHazards = list[0];
-      this.currentActions = list[1];
-      this.currentVariables = list[2];
+      this.currentData = list;
     } else {
       console.log("Data has wrong format. List length should be 3, but is " + list.length);
     }
@@ -108,8 +104,13 @@ export class ContextTablePanel {
   // Update function. Used for generating and maintaining the view's content.
   private async _update() {
     const webview = this._panel.webview;
-
+    
+    this.sendToWebview(webview, ContextTablePanel.currentData);
     this._panel.webview.html = this._getHtmlForWebview(webview);
+  }
+
+  sendToWebview(webview: vscode.Webview, data: any) {
+    webview.postMessage(data);
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
