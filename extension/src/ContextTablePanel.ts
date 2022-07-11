@@ -65,7 +65,25 @@ export class ContextTablePanel {
     if (commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
       this.currentUri = commandArgs[0];
     }
-    ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri, scriptUri);
+    
+    panel.webview.options = {
+      enableScripts: true
+    };
+    panel.webview.html = `
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, height=device-height">
+            <title>Context-Table</title>
+        </head>
+        <body>
+            <div id="main_container" style="height: 100%;"></div>
+            <script> const vscode = acquireVsCodeApi();</script>
+            <script src="${panel.webview.asWebviewUri(scriptUri).toString()}"></script>
+        </body>
+    </html>`;
+    //ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri, scriptUri);
   }
 
   // Kills off the current panel.
