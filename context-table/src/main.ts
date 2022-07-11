@@ -36,7 +36,7 @@ export class Main {
     }
 
     /**
-     * Appends the table and selector divs to the context table's HTML.
+     * Initialized the context webview and establishes necessary listeners for user interaction.
      * @param actions The list of action-Ids found in the current stpa file.
      * @param variables The list of context variable-Ids found in the current stpa file.
      */
@@ -60,7 +60,12 @@ export class Main {
             this.createSelectorListener(mainDiv, typeSelector);
         }
     }
-
+    
+    /**
+     * Creates a listener for a given selection element which re-initializes the table element when the currently selected option changes.
+     * @param mainDiv The parent Div element of the table element.
+     * @param selector The given HTMLSelectorElement.
+     */
     private createSelectorListener(mainDiv: HTMLElement, selector : HTMLSelectElement) {
         selector.addEventListener('change', change => {
             const oldTable = document.getElementById("table");
@@ -83,6 +88,20 @@ export class Main {
             opt.value = action;
             opt.innerHTML = action;
             selector.appendChild(opt);
+        })
+    }
+
+    /**
+     * Creates multiple children elements with a given type for a given parent element.
+     * @param parent The element to which to apply the children elements to.
+     * @param children Preferrably a string array, the elements of which to apply to the parent element.
+     * @param elementType The type of Div element the children elements should be created with.
+     */
+    private createSubElements(parent: HTMLElement, children: any[], elementType: string) {
+        children.forEach(child => {
+            let newElement = document.createElement(elementType);
+            newElement.innerHTML = child;
+            parent.appendChild(newElement);
         })
     }
 
@@ -137,13 +156,14 @@ export class Main {
             col.innerHTML = variable[0];
             subHeader.appendChild(col);
         })
-        times.forEach(time => {
-            let col = document.createElement('th');
-            col.innerHTML = time;
-            subHeader.appendChild(col);
-        })
+        this.createSubElements(subHeader, times, "th");
     }
 
+    /**
+     * Creates and appends one non-header row to the table. 
+     * @param table The HTMLTableElement to apply the row to.
+     * @param values The context variable values that should be written into the current row.
+     */
     private createRow(table: HTMLTableElement, values: any[]) {
         const row = document.createElement("tr");
         table.appendChild(row);
@@ -152,11 +172,7 @@ export class Main {
         const type = <HTMLSelectElement> document.getElementById("select_type");
         controlAction.innerHTML = action.options[action.selectedIndex].text + " " + type.options[type.selectedIndex].text;
         row.appendChild(controlAction);
-        values.forEach(value => {
-            const val = document.createElement("td");
-            val.innerHTML = value;
-            row.appendChild(val);
-        })
+        this.createSubElements(row, values, "td");
         // temporary until rules; will be specified by an algorithm then
         const no = document.createElement("td");
         no.innerHTML = "No"
@@ -164,6 +180,14 @@ export class Main {
         row.appendChild(no);
     }
 
+    /**
+     * Recursive method that iterates through all possible value combinations of the context variables.
+     * Assembles an array with a combination of values, then sends it to the createRow method, until all possible combinations have been cycled through,
+     * and subsequently, all necessary rows have been assembled.
+     * @param table The HTMLTableElement to apply the rows to. Needed for the createRow method call.
+     * @param index A helper index to determine from which context variable to apply a value next.
+     * @param values Array that holds one array entry for each context variable, containing all its possible values.
+     */
     private getCurrentValList(table: HTMLTableElement, index: number, values: any[]) {
         let last = false;
         const currentValues = values[index];
