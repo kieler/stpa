@@ -11,6 +11,8 @@ export class Main {
     private currentActions: any[];
     private currentVariables: any[];
 
+    private callBack: any[] = [];
+
     constructor() {
         vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
         console.log("started context table")
@@ -92,7 +94,11 @@ export class Main {
     private createTable(table: HTMLTableElement, variables: any[]) {
         this.createHeader(table, variables);
         this.createSubHeader(table, variables);
-        this.createRows(table);
+        let varVals : any[] = [];
+        variables.forEach(variable => {
+            varVals.push(variable[1]);
+        })
+        this.getCurrentValList(table, 0, varVals);
     }
 
     /**
@@ -104,9 +110,6 @@ export class Main {
         const header = document.createElement("tr");
         table.appendChild(header);
         const controlAction = document.createElement("th");
-        /* const action = <HTMLSelectElement> document.getElementById("select_action");
-        const type = <HTMLSelectElement> document.getElementById("select_type");
-        controlAction.innerHTML = action.options[action.selectedIndex].text + " " + type.options[type.selectedIndex].text; */
         controlAction.innerHTML = "Control Action";
         controlAction.rowSpan = 2;
         header.appendChild(controlAction);
@@ -141,13 +144,41 @@ export class Main {
         })
     }
 
-    /**
-     * Creates all the regular rows for the context table.
-     * @param table The HTML table element to complete.
-     */
-    private createRows(table: HTMLTableElement) {
-        const row1 = document.createElement("tr");
-        table.appendChild(row1);
+    private createRow(table: HTMLTableElement, values: any[]) {
+        const row = document.createElement("tr");
+        table.appendChild(row);
+        const controlAction = document.createElement("td");
+        const action = <HTMLSelectElement> document.getElementById("select_action");
+        const type = <HTMLSelectElement> document.getElementById("select_type");
+        controlAction.innerHTML = action.options[action.selectedIndex].text + " " + type.options[type.selectedIndex].text;
+        row.appendChild(controlAction);
+        values.forEach(value => {
+            const val = document.createElement("td");
+            val.innerHTML = value;
+            row.appendChild(val);
+        })
+        // temporary until rules; will be specified by an algorithm then
+        const no = document.createElement("td");
+        no.innerHTML = "No"
+        no.colSpan = 3;
+        row.appendChild(no);
+    }
+
+    private getCurrentValList(table: HTMLTableElement, index: number, values: any[]) {
+        let last = false;
+        const currentValues = values[index];
+        if(index == values.length - 1) {last = true;}
+        for(let privateIndex = 0; privateIndex < currentValues.length; privateIndex++) {
+            this.callBack.push(currentValues[privateIndex]);
+            if(last) {
+                this.createRow(table, this.callBack);
+            } else {
+                index++;
+                this.getCurrentValList(table, index, values);
+                index--;
+            }
+            this.callBack.pop();
+        }
     }
 }
 
