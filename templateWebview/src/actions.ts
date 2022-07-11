@@ -40,3 +40,25 @@ export namespace ExecuteTemplateAction {
         return action.kind === ExecuteTemplateAction.KIND;
     }
 }
+
+
+/** Message to the language server to add a template. */
+export interface AddTemplateAction extends Action {
+    kind: typeof AddTemplateAction.KIND;
+    text: string;
+}
+
+export namespace AddTemplateAction {
+    export const KIND = "addTemplate";
+
+    export function create(text: string): AddTemplateAction {
+        return {
+            kind: KIND,
+            text
+        };
+    }
+
+    export function isThisAction(action: Action): action is AddTemplateAction {
+        return action.kind === AddTemplateAction.KIND;
+    }
+}

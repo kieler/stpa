@@ -20,9 +20,13 @@ import { html } from './jsx';
 import { attributesModule, classModule, eventListenersModule, init, propsModule, styleModule, VNode } from 'snabbdom';
 
 const placeholderID = 'tempPlaceholder';
+export const txtID = 'tempAddTextField';
+export const bntID = 'tempAddBnt';
 
 export const panel: VNode = <div class-sidebar__content="true">
     <h3 class-sidebar__title="true">{"Templates"}</h3>
+    <input type="text" id={txtID} />
+    <button type="button" id={bntID}>Add Template</button>
     <div class-sidebar__panel-content="true" id="templates"><div id={placeholderID}></div></div>
 </div>;
 
@@ -40,6 +44,6 @@ export function createTemps(templates: VNode[]) {
     let placeholder = document.getElementById('tempPlaceholder');
     if (placeholder) {
         const temps = <div id={placeholderID}>{...templates}</div>;
-        patch(placeholder, temps)
+        patch(placeholder, temps);
     }
 }

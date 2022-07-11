@@ -17,8 +17,9 @@
 
 import '../css/diagram.css';
 import { click } from './mouseListener';
-import { patch, panel, createTemps } from './html';
+import { patch, panel, createTemps, bntID, txtID } from './html';
 import { VNode } from 'snabbdom';
+import { AddTemplateAction } from './actions';
 
 interface vscode {
     postMessage(message: any): void;
@@ -48,12 +49,31 @@ export class Starter {
             containerDiv.appendChild(panelContainer);
             patch(panelContainer, panel);
         }
+        const bnt = document.getElementById(bntID);
+        if (bnt) {
+            bnt.addEventListener('click', () => this.addTemplate());
+        }
         document.addEventListener('click', event => {
             const action = click(event);
             if (action) {
                 vscode.postMessage({ action: action });
             }
         });
+    }
+
+    /**
+     * Sends the text in the input field as a AddTemplateAction to the extension.
+     */
+    protected addTemplate() {
+        const text = document.getElementById(txtID);
+        if (text) {
+            const value = (text as HTMLInputElement).value;
+            const action = {
+                kind: AddTemplateAction.KIND,
+                text: value
+            };
+            vscode.postMessage({ action: action });
+        }
     }
 
     /**
