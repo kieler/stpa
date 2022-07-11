@@ -14,8 +14,8 @@ export class Main {
     constructor() {
         vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
         console.log("started context table")
-        const eventListener = (data: any) => {
-            this.handleData(data);
+        const eventListener = (message: any) => {
+            this.handleData(message.data);
         };
         window.addEventListener('message', eventListener);
     }
@@ -51,14 +51,23 @@ export class Main {
             const providedList = ["provided", "not provided"];
             this.createSelector(typeSelector, providedList);
             const tableDiv = document.createElement("table");
+            tableDiv.id = "table";
+            mainDiv.appendChild(tableDiv);
             this.createTable(tableDiv, variables);
+            this.createSelectorListener(mainDiv, selector);
+            this.createSelectorListener(mainDiv, typeSelector);
         }
-        const actSelector = document.getElementById("select_action");
-        if (actSelector) {
-            actSelector.addEventListener('change', change => {
-                this.initHTML(this.currentActions, this.currentVariables);
-            });
-        }
+    }
+
+    private createSelectorListener(mainDiv: HTMLElement, selector : HTMLSelectElement) {
+        selector.addEventListener('change', change => {
+            const oldTable = document.getElementById("table");
+            oldTable?.parentNode?.removeChild(oldTable);
+            const newTable = document.createElement("table");
+            newTable.id = "table";
+            mainDiv.appendChild(newTable);
+            this.createTable(newTable, this.currentVariables);
+        });
     }
 
     /**
@@ -95,10 +104,10 @@ export class Main {
         const header = document.createElement("tr");
         table.appendChild(header);
         const controlAction = document.createElement("th");
-        const action = document.getElementById("select_action");
-        if (action) {
-            controlAction.innerHTML = action.innerHTML;;
-        }
+        /* const action = <HTMLSelectElement> document.getElementById("select_action");
+        const type = <HTMLSelectElement> document.getElementById("select_type");
+        controlAction.innerHTML = action.options[action.selectedIndex].text + " " + type.options[type.selectedIndex].text; */
+        controlAction.innerHTML = "Control Action";
         controlAction.rowSpan = 2;
         header.appendChild(controlAction);
         const vars = document.createElement("th");
@@ -108,6 +117,7 @@ export class Main {
         const hazardous = document.createElement("th");
         hazardous.innerHTML = "Hazardous?";
         hazardous.colSpan = 3;
+        header.appendChild(hazardous);
     }
 
     /**
