@@ -1,5 +1,10 @@
 import '../css/table.css';
 
+interface vscode {
+    postMessage(message: any): void;
+}
+declare const vscode: vscode;
+
 export class Main {
 
     private currentHazards: any[];
@@ -7,6 +12,7 @@ export class Main {
     private currentVariables: any[];
 
     constructor() {
+        vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
         console.log("started context table")
         const eventListener = (data: any) => {
             this.handleData(data);

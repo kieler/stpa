@@ -83,7 +83,7 @@ export class ContextTablePanel {
             <script src="${panel.webview.asWebviewUri(scriptUri).toString()}"></script>
         </body>
     </html>`;
-    //ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri, scriptUri);
+    ContextTablePanel.currentPanel = new ContextTablePanel(panel, extensionUri, scriptUri);
   }
 
   // Kills off the current panel.
@@ -130,7 +130,8 @@ export class ContextTablePanel {
   private async _update() {
     const webview = this._panel.webview;
     
-    this._panel.webview.html = this._getHtmlForWebview(webview);
+    webview.onDidReceiveMessage(message => this.receiveFromWebview(message));
+    //this._panel.webview.html = this._getHtmlForWebview(webview);
     await this.ready();
     this.sendToWebview(webview, ContextTablePanel.currentData);
   }
@@ -139,9 +140,16 @@ export class ContextTablePanel {
     webview.postMessage(data);
   }
 
-  private _getHtmlForWebview(webview: vscode.Webview) {
+  protected async receiveFromWebview(message: any) {
+    console.log("Received from context table webview");
+    if (message.readyMessage) {
+        this.resolveWebviewReady();
+    } 
+  } 
+
+  /* private _getHtmlForWebview(webview: vscode.Webview) {
     // Get the style sheets to be used for the HTML data
-    /*const resetterUri = webview.asWebviewUri(vscode.Uri.joinPath(
+    const resetterUri = webview.asWebviewUri(vscode.Uri.joinPath(
       this._extensionUri,
       "src",
       "resetter.css"
@@ -150,7 +158,7 @@ export class ContextTablePanel {
       this._extensionUri,
       "src",
       "vscode-style.css"
-    ));*/
+    ));
     const tableStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(
       this._extensionUri,
       "src",
@@ -169,5 +177,5 @@ export class ContextTablePanel {
         <script src="${webview.asWebviewUri(this.scriptUri).toString()}></script>
 		  </body>
 		</html>`;
-  }
+  } */
 }
