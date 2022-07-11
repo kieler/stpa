@@ -5,9 +5,11 @@ export class ContextTablePanel {
   public static currentPanel: ContextTablePanel | undefined;
   public static readonly viewType = "context-table";
   public static currentUri: vscode.Uri | undefined;
-  
-  //data lists
   public static currentData: any[];
+
+  // Promise stuff
+  private resolveWebviewReady: () => void;
+  private readonly webviewReady = new Promise<void>((resolve) => this.resolveWebviewReady = resolve);
 
   // Constructor variables.
   private readonly _panel: vscode.WebviewPanel;
@@ -27,6 +29,11 @@ export class ContextTablePanel {
     // Listen for the panel being disposed.
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
+  }
+
+  ready(): Promise<void> {
+    this.resolveWebviewReady;
+    return this.webviewReady;
   }
 
   // Main call method.
@@ -105,8 +112,9 @@ export class ContextTablePanel {
   private async _update() {
     const webview = this._panel.webview;
     
-    this.sendToWebview(webview, ContextTablePanel.currentData);
     this._panel.webview.html = this._getHtmlForWebview(webview);
+    await this.ready();
+    this.sendToWebview(webview, ContextTablePanel.currentData);
   }
 
   sendToWebview(webview: vscode.Webview, data: any) {
@@ -139,46 +147,7 @@ export class ContextTablePanel {
         <link href="${tableStyleUri}" rel="stylesheet">
 		  </head>
       <body>
-        <label for "controlAction">Control Action</label>
-        <select name = "controlAction" id = "controlAction">
-          <option value = "manBrake">Manual Braking</option>
-          <option value = "onBSCU">Power On BSCU</option>
-          <option value = "offBSCU">Power Off BSCU</option>
-        </select>
-        <label for "type">, Type</label>
-        <select name = "type" id = "type">
-          <option value = "prov">provided</option>
-          <option value = "noProv">not provided</option>
-        </select>
-        <button type = "button" class = "catButton">Submit</button>
-        <table>
-          <tr>
-            <th rowspan = "2">Control Action</th>
-            <th colspan = "2">Context Variables</th>
-            <th colspan = "3">Hazardous?</th>
-          </tr>
-          <tr>
-            <th>Variable A</th>
-            <th>Variable B</th>
-            <th>Anytime</th>
-            <th>Too Early</th>
-            <th>Too Late</th>
-          </tr>
-          <tr>
-            <td>CA</td>
-            <td>0</td>
-            <td>0</td>
-            <td>No</td>
-            <td>Yes</td>
-            <td>No</td>
-          </tr>
-          <tr>
-            <td>CA</td>
-            <td>0</td>
-            <td>1</td>
-            <td colspan = "3">Yes</td>
-          </tr>
-        </table>
+        <div id="main_container" style="height: 100%;"></div>
         <script src="${webview.asWebviewUri(this.scriptUri).toString()}></script>
 		  </body>
 		</html>`;
