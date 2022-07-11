@@ -29,7 +29,7 @@ export class ContextTableProvider {
 
         let hazards : string[] = [];
         let actions: string[] = [];
-        let variables: string[] = [];
+        let variables: [string, string[]][] = [];
         model.hazards.forEach(hazard => {
             hazards.push(hazard.name);
         })
@@ -40,7 +40,7 @@ export class ContextTableProvider {
                 })
             })
             element.variables.forEach(variable => {
-                variables.push(variable.name);
+                variables.push([variable.name, variable.values]);
             })
         });
         return [hazards, actions, variables] as const;

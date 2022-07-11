@@ -131,7 +131,7 @@ export class Main {
         table.appendChild(subHeader);
         variables.forEach(variable => {
             let col = document.createElement('th');
-            col.innerHTML = variable;
+            col.innerHTML = variable[0];
             subHeader.appendChild(col);
         })
         times.forEach(time => {
