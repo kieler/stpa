@@ -147,7 +147,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 let label = '';
                 for (let i = 0; i < edge.comms.length; i++) {
                     const com = edge.comms[i];
-                    label+=com.label;
+                    label += com.label;
                     if (i < edge.comms.length - 1) {
                         label += ", ";
                     }
@@ -165,7 +165,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 let label = '';
                 for (let i = 0; i < edge.comms.length; i++) {
                     const com = edge.comms[i];
-                    label+=com.label;
+                    label += com.label;
                     if (i < edge.comms.length - 1) {
                         label += ", ";
                     }
@@ -202,7 +202,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param param5 GeneratorContext of the STPA model.
      * @returns A control structure edge.
      */
-    private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label:string, direction: EdgeDirection, { idCache }: GeneratorContext<Model>): CSEdge {
+    private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string, direction: EdgeDirection, { idCache }: GeneratorContext<Model>): CSEdge {
+        // needed for correct layout
+        label = label === '' ? ' ' : label;
         return {
             type: CS_EDGE_TYPE,
             id: edgeId,

@@ -27,14 +27,14 @@
     /* Sidebar should consume at max 3/4th of the screen. */
     max-width: 75vw;
     width: fit-content;
-    border-radius: var(--kdc-border-radius-default) 0 0 var(--kdc-border-radius-default);
+    border-radius: var(--stpa-border-radius-default) 0 0 var(--stpa-border-radius-default);
 
-    background-color: var(--kdc-color-sidebar-background);
-    box-shadow: var(--kdc-sidebar-shadow);
-    color: var(--kdc-color-sidebar-font-primary);
-    font-size: var(--kdc-font-size-base);
+    background-color: var(--stpa-color-sidebar-background);
+    box-shadow: var(--stpa-sidebar-shadow);
+    color: var(--stpa-color-sidebar-font-primary);
+    font-size: var(--stpa-font-size-base);
 
-    transition: transform var(--kdc-transition);
+    transition: transform var(--stpa-transition);
     transform: translateX(100%);
 }
 
@@ -80,25 +80,25 @@
 }
 
 .sidebar__toggle-button {
-    --background: var(--kdc-color-sidebar-trigger-background);
+    --background: var(--stpa-color-sidebar-trigger-background);
     padding: 8px;
     border: none;
-    border-radius: var(--kdc-border-radius-default) 0 0 var(--kdc-border-radius-default);
+    border-radius: var(--stpa-border-radius-default) 0 0 var(--stpa-border-radius-default);
 
     cursor: pointer;
     outline: none;
     background: var(--background);
-    color: var(--kdc-color-sidebar-icon-primary);
-    box-shadow: var(--kdc-sidebar-button-shadow);
+    color: var(--stpa-color-sidebar-icon-primary);
+    box-shadow: var(--stpa-sidebar-button-shadow);
 
-    transition: background var(--kdc-transition);
+    transition: background var(--stpa-transition);
 }
 
 .sidebar__toggle-button:hover,
 .sidebar__toggle-button:focus-visible {
-    --background: var(--kdc-color-sidebar-trigger-background-hover);
+    --background: var(--stpa-color-sidebar-trigger-background-hover);
 }
 
 .sidebar__toggle-button--active {
-    --background: var(--kdc-color-sidebar-trigger-background-active);
+    --background: var(--stpa-color-sidebar-trigger-background-active);
 }

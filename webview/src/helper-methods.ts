@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SNode, SEdge } from "sprotty"
-import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./STPA-model"
+import { SNode, SEdge } from "sprotty";
+import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./STPA-model";
 
 /**
  * Collects all children of the nodes in {@code nodes}.
@@ -26,25 +26,11 @@ import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./STPA-model"
 export function collectAllChildren(nodes: SNode[], children: SNode[]): void {
     for (const node of nodes) {
         if (node.children.length != 0) {
-            const childrenNodes = node.children.filter(child => child instanceof SNode) as SNode[]
-            children.push(...childrenNodes)
-            collectAllChildren(childrenNodes, children)
+            const childrenNodes = node.children.filter(child => child instanceof SNode) as SNode[];
+            children.push(...childrenNodes);
+            collectAllChildren(childrenNodes, children);
         }
     }
-}
-
-/**
- * Searches the selected node.
- * @param nodes All nodes of a graph.
- * @returns The selected node or undefined if no node of the {@code nodes} is selected.
- */
- export function getSelectedNode(nodes: SNode[]): SNode | undefined {
-    for (const node of nodes) {
-        if (node.selected) {
-            return node
-        }
-    }
-    return undefined
 }
 
 /**
@@ -52,24 +38,24 @@ export function collectAllChildren(nodes: SNode[], children: SNode[]): void {
  * @param node The node for which the connected elements should be determined.
  */
 export function flagConnectedElements(node: SNode): void {
-    (node as STPANode).connected = true
+    (node as STPANode).connected = true;
     if (isSubConstraint(node)) {
-        flagSubConsParent(node as STPANode)
+        flagSubConsParent(node as STPANode);
     }
     if (isSubHazard(node)) {
-        (node.parent as STPANode).connected = true
+        (node.parent as STPANode).connected = true;
         for (const outEdge of (node.parent as STPANode).outgoingEdges) {
-            (outEdge as STPAEdge).connected = true
-            flagSuccNodes(outEdge)
+            (outEdge as STPAEdge).connected = true;
+            flagSuccNodes(outEdge);
         }
     }
     for (const edge of node.incomingEdges) {
-        (edge as STPAEdge).connected = true
-        flagPredNodes(edge)
+        (edge as STPAEdge).connected = true;
+        flagPredNodes(edge);
     }
     for (const edge of node.outgoingEdges) {
-        (edge as STPAEdge).connected = true
-        flagSuccNodes(edge)
+        (edge as STPAEdge).connected = true;
+        flagSuccNodes(edge);
     }
 }
 
@@ -78,24 +64,24 @@ export function flagConnectedElements(node: SNode): void {
  * @param edge The edge which source and further predecessors should be inspected.
  */
 function flagPredNodes(edge: SEdge): void {
-    const node = edge.source as SNode
-    (node as STPANode).connected = true
+    const node = edge.source as SNode;
+    (node as STPANode).connected = true;
     if (isSubConstraint(node)) {
-        flagSubConsParent(node as STPANode)
+        flagSubConsParent(node as STPANode);
     }
     if (node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.HAZARD) {
-        const subHazards = node.children.filter(child => child.type == STPA_NODE_TYPE) as STPANode[]
+        const subHazards = node.children.filter(child => child.type == STPA_NODE_TYPE) as STPANode[];
         for (const subH of subHazards) {
-            subH.connected = true
+            subH.connected = true;
             for (const inEdge of subH.incomingEdges) {
-                (inEdge as STPAEdge).connected = true
-                flagPredNodes(inEdge)
+                (inEdge as STPAEdge).connected = true;
+                flagPredNodes(inEdge);
             }
         }
     }
     for (const inEdge of node.incomingEdges) {
-        (inEdge as STPAEdge).connected = true
-        flagPredNodes(inEdge)
+        (inEdge as STPAEdge).connected = true;
+        flagPredNodes(inEdge);
     }
 }
 
@@ -104,21 +90,21 @@ function flagPredNodes(edge: SEdge): void {
  * @param edge The edge which target and further successors should be inspected.
  */
 function flagSuccNodes(edge: SEdge): void {
-    const node = edge.target as SNode
-    (node as STPANode).connected = true
+    const node = edge.target as SNode;
+    (node as STPANode).connected = true;
     if (isSubConstraint(node)) {
-        flagSubConsParent(node as STPANode)
+        flagSubConsParent(node as STPANode);
     }
     if (isSubHazard(node)) {
-        (node.parent as STPANode).connected = true
+        (node.parent as STPANode).connected = true;
         for (const outEdge of (node.parent as STPANode).outgoingEdges) {
-            (outEdge as STPAEdge).connected = true
-            flagSuccNodes(outEdge)
+            (outEdge as STPAEdge).connected = true;
+            flagSuccNodes(outEdge);
         }
     }
     for (const outEdge of node.outgoingEdges) {
-        (outEdge as STPAEdge).connected = true
-        flagSuccNodes(outEdge)
+        (outEdge as STPAEdge).connected = true;
+        flagSuccNodes(outEdge);
     }
 }
 
@@ -128,8 +114,8 @@ function flagSuccNodes(edge: SEdge): void {
  * @returns whether {@code node} is a sub-hazard.
  */
 function isSubHazard(node: SNode): boolean {
-    return node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.HAZARD 
-        && node.parent.type == STPA_NODE_TYPE && (node.parent as STPANode).aspect == STPAAspect.HAZARD
+    return node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.HAZARD
+        && node.parent.type == STPA_NODE_TYPE && (node.parent as STPANode).aspect == STPAAspect.HAZARD;
 }
 
 /**
@@ -137,9 +123,9 @@ function isSubHazard(node: SNode): boolean {
  * @param node The SNode that should be inspected.
  * @returns whether {@code node} is a sub-constraint.
  */
- function isSubConstraint(node: SNode): boolean {
-    return node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT 
-        && node.parent.type == STPA_NODE_TYPE && (node.parent as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT
+function isSubConstraint(node: SNode): boolean {
+    return node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT
+        && node.parent.type == STPA_NODE_TYPE && (node.parent as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT;
 }
 
 /**
@@ -147,9 +133,9 @@ function isSubHazard(node: SNode): boolean {
  * @param node The node, which parents should be added.
  */
 function flagSubConsParent(node: STPANode): void {
-    let parent = node
+    let parent = node;
     while (parent.parent.type == STPA_NODE_TYPE && (parent.parent as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT) {
-        parent = parent.parent as STPANode
-        parent.connected = true
+        parent = parent.parent as STPANode;
+        parent.connected = true;
     }
 }

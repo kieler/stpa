@@ -36,15 +36,15 @@ import { ContextTableProvider } from './context-dataProvider';
  */
 export type StpaAddedServices = {
     references: {
-        StpaScopeProvider: StpaScopeProvider
+        StpaScopeProvider: StpaScopeProvider;
     },
     validation: {
-        StpaValidator: StpaValidator
+        StpaValidator: StpaValidator;
     },
     layout: {
         ElkFactory: ElkFactory,
         ElementFilter: IElementFilter,
-        LayoutConfigurator: ILayoutConfigurator
+        LayoutConfigurator: ILayoutConfigurator;
     },
     options: {
         StpaSynthesisOptions: StpaSynthesisOptions
@@ -92,28 +92,28 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
 };
 
 export const stpaDiagramServerFactory =
-(services: LangiumSprottySharedServices): ((clientId: string, options?: DiagramOptions) => StpaDiagramServer) => {
-    const connection = services.lsp.Connection;
-    const serviceRegistry = services.ServiceRegistry;
-    return (clientId, options) => {
-        const sourceUri = options?.sourceUri;
-        if (!sourceUri) {
-            throw new Error("Missing 'sourceUri' option in request.");
-        }
-        const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as StpaServices;
-        if (!language.diagram) {
-            throw new Error(`The '${language.LanguageMetaData.languageId}' language does not support diagrams.`);
-        }
-        return new StpaDiagramServer(async action => {
-            connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
-        }, language.diagram, language.options.StpaSynthesisOptions, clientId, options);
+    (services: LangiumSprottySharedServices): ((clientId: string, options?: DiagramOptions) => StpaDiagramServer) => {
+        const connection = services.lsp.Connection;
+        const serviceRegistry = services.ServiceRegistry;
+        return (clientId, options) => {
+            const sourceUri = options?.sourceUri;
+            if (!sourceUri) {
+                throw new Error("Missing 'sourceUri' option in request.");
+            }
+            const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as StpaServices;
+            if (!language.diagram) {
+                throw new Error(`The '${language.LanguageMetaData.languageId}' language does not support diagrams.`);
+            }
+            return new StpaDiagramServer(async action => {
+                connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
+            }, language.diagram, language.options.StpaSynthesisOptions, clientId);
+        };
     };
-};
 
 /**
  * instead of the default diagram server the stpa-diagram server is sued
  */
- export const StpaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
+export const StpaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
     diagram: {
         diagramServerFactory: stpaDiagramServerFactory,
         DiagramServerManager: services => new DefaultDiagramServerManager(services)
@@ -137,14 +137,14 @@ export const stpaDiagramServerFactory =
  * @param context Optional module context with the LSP connection
  * @returns An object wrapping the shared services and the language-specific services
  */
-export function createStpaServices(context?: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, states: StpaServices} {
+export function createStpaServices(context?: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, states: StpaServices; } {
     const shared = inject(
         createDefaultSharedModule(context),
         StpaGeneratedSharedModule,
         StpaSprottySharedModule
     );
     const states = inject(
-        createDefaultModule({shared}),
+        createDefaultModule({ shared }),
         StpaGeneratedModule,
         STPAModule,
     );
