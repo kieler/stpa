@@ -23,14 +23,12 @@ export class StpaDiagramServer extends DiagramServer {
 
     protected stpaOptions: StpaSynthesisOptions;
     clientId: string;
-    private options: JsonMap | undefined;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
         services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, options: JsonMap | undefined) {
         super(dispatch, services);
         this.stpaOptions = synthesisOptions;
         this.clientId = clientId;
-        this.options = options;
     }
 
     accept(action: Action): Promise<void> {
@@ -60,10 +58,10 @@ export class StpaDiagramServer extends DiagramServer {
         }
         // update view
         const updateAction = {
-            kind: UpdateViewAction.KIND,
+            kind: RequestModelAction.KIND,
             options: this.state.options
-        } as UpdateViewAction;
-        this.handleUpdateView(updateAction);
+        } as RequestModelAction;
+        this.handleRequestModel(updateAction);
         return Promise.resolve();
     }
 
