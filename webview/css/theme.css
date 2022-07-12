@@ -45,12 +45,21 @@
     --stpa-scenario-dark: #616100;
     --stpa-safety-requirement-dark: #2f4f4f;
 
-    --stpa-loss-light: #ff7a7a;
-    --stpa-hazard-light: #ffa852;
-    --stpa-sys-constraint-light: #00eb00;
-    --stpa-responsibility-light: #ff6bff;
-    --stpa-uca-light: #66b3ff;
-    --stpa-cont-constraint-light: #00cccc;
-    --stpa-scenario-light: #cccc00;
-    --stpa-safety-requirement-light: #8fbcbc;
+    --stpa-loss-light-edge: #ff7a7a;
+    --stpa-hazard-light-edge: #ffa852;
+    --stpa-sys-constraint-light-edge: #00eb00;
+    --stpa-responsibility-light-edge: #ff6bff;
+    --stpa-uca-light-edge: #66b3ff;
+    --stpa-cont-constraint-light-edge: #00cccc;
+    --stpa-scenario-light-edge: #cccc00;
+    --stpa-safety-requirement-light-edge: #8fbcbc;
+
+    --stpa-loss-light: #FFAFAF;
+    --stpa-hazard-light: #FFD3A8;
+    --stpa-sys-constraint-light: #B4FFB4;
+    --stpa-responsibility-light: #FFBFFF;
+    --stpa-uca-light: #B3D9FF;
+    --stpa-cont-constraint-light: #C5E1E1;
+    --stpa-scenario-light: #DADA8F;
+    --stpa-safety-requirement-light: #E4EEEE;
 }

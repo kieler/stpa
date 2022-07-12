@@ -150,55 +150,80 @@
 
 
 
-.vscode-light .stpa-node[aspect="0"], .vscode-light .stpa-edge-arrow[aspect="0"] {
+.vscode-light .stpa-node[aspect="0"] {
     fill: var(--stpa-loss-light);
 }
-.vscode-light .stpa-node[aspect="1"], .vscode-light .stpa-edge-arrow[aspect="1"] {
+.vscode-light .stpa-node[aspect="1"] {
     fill: var(--stpa-hazard-light);
 }
-.vscode-light .stpa-node[aspect="2"], .vscode-light .stpa-edge-arrow[aspect="2"] {
+.vscode-light .stpa-node[aspect="2"] {
     fill: var(--stpa-sys-constraint-light);
 }
-.vscode-light .stpa-node[aspect="3"], .vscode-light .stpa-edge-arrow[aspect="3"] {
+.vscode-light .stpa-node[aspect="3"] {
     fill: var(--stpa-responsibility-light);
 }
-.vscode-light .stpa-node[aspect="4"], .vscode-light .stpa-edge-arrow[aspect="4"] {
+.vscode-light .stpa-node[aspect="4"] {
     fill: var(--stpa-uca-light);
 }
-.vscode-light .stpa-node[aspect="5"], .vscode-light .stpa-edge-arrow[aspect="5"] {
+.vscode-light .stpa-node[aspect="5"] {
     fill: var(--stpa-cont-constraint-light);
 }
-.vscode-light .stpa-node[aspect="6"], .vscode-light .stpa-edge-arrow[aspect="6"] {
+.vscode-light .stpa-node[aspect="6"] {
     fill: var(--stpa-scenario-light);
 }
-.vscode-light .stpa-node[aspect="7"], .vscode-light .stpa-edge-arrow[aspect="7"] {
+.vscode-light .stpa-node[aspect="7"] {
     fill: var(--stpa-safety-requirement-light);
+}
+
+.vscode-light .stpa-edge-arrow[aspect="0"] {
+    fill: var(--stpa-loss-light-edge);
+}
+.vscode-light .stpa-edge-arrow[aspect="1"] {
+    fill: var(--stpa-hazard-light-edge);
+}
+.vscode-light .stpa-edge-arrow[aspect="2"] {
+    fill: var(--stpa-sys-constraint-light-edge);
+}
+.vscode-light .stpa-edge-arrow[aspect="3"] {
+    fill: var(--stpa-responsibility-light-edge);
+}
+.vscode-light .stpa-edge-arrow[aspect="4"] {
+    fill: var(--stpa-uca-light-edge);
+}
+.vscode-light .stpa-edge-arrow[aspect="5"] {
+    fill: var(--stpa-cont-constraint-light-edge);
+}
+.vscode-light .stpa-edge-arrow[aspect="6"] {
+    fill: var(--stpa-scenario-light-edge);
+}
+.vscode-light .stpa-edge-arrow[aspect="7"] {
+    fill: var(--stpa-safety-requirement-light-edge);
 }
 
 
 .vscode-light .stpa-edge[aspect="0"], .vscode-light .stpa-edge-arrow[aspect="0"] {
-    stroke: var(--stpa-loss-light);
+    stroke: var(--stpa-loss-light-edge);
 }
 .vscode-light .stpa-edge[aspect="1"], .vscode-light .stpa-edge-arrow[aspect="1"] {
-    stroke: var(--stpa-hazard-light);
+    stroke: var(--stpa-hazard-light-edge);
 }
 .vscode-light .stpa-edge[aspect="2"], .vscode-light .stpa-edge-arrow[aspect="2"] {
-    stroke: var(--stpa-sys-constraint-light);
+    stroke: var(--stpa-sys-constraint-light-edge);
 }
 .vscode-light .stpa-edge[aspect="3"], .vscode-light .stpa-edge-arrow[aspect="3"] {
-    stroke: var(--stpa-responsibility-light);
+    stroke: var(--stpa-responsibility-light-edge);
 }
 .vscode-light .stpa-edge[aspect="4"], .vscode-light .stpa-edge-arrow[aspect="4"] {
-    stroke: var(--stpa-uca-light);
+    stroke: var(--stpa-uca-light-edge);
 }
 .vscode-light .stpa-edge[aspect="5"], .vscode-light .stpa-edge-arrow[aspect="5"] {
-    stroke: var(--stpa-cont-constraint-light);
+    stroke: var(--stpa-cont-constraint-light-edge);
 }
 .vscode-light .stpa-edge[aspect="6"], .vscode-light .stpa-edge-arrow[aspect="6"]{
-    stroke: var(--stpa-scenario-light);
+    stroke: var(--stpa-scenario-light-edge);
 }
 .vscode-light .stpa-edge[aspect="7"], .vscode-light .stpa-edge-arrow[aspect="7"] {
-    stroke: var(--stpa-safety-requirement-light);
+    stroke: var(--stpa-safety-requirement-light-edge);
 }
 
 
