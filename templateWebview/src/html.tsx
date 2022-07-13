@@ -23,6 +23,7 @@ const placeholderID = 'tempPlaceholder';
 export const txtID = 'tempAddTextField';
 export const bntID = 'tempAddBnt';
 
+// TODO: instead of defining an input tag, a msg could be send to the extension when clicking on the button. the extension can call windows.showInputBox/createInputBox or using a QuickInput
 export const panel: VNode = <div class-sidebar__content="true">
     <h3 class-sidebar__title="true">{"Templates"}</h3>
     <input type="text" id={txtID} />

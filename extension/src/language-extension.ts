@@ -102,6 +102,14 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             return;
         }
 
+        let activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor) {
+            // TODO: endPos is not completly correct. maybe \n must be counted too?
+            const endPos = textDocument.positionAt(textDocument.offsetAt(pos) + msg.text.length);
+            activeEditor.selections = [new vscode.Selection(pos, endPos)];
+            activeEditor.revealRange(new vscode.Range(pos, endPos));
+        }
+
         //await textDocument.save();
         return;
     }
