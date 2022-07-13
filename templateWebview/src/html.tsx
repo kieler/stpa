@@ -41,9 +41,17 @@ export const patch = init([
 ]);
 
 export function createTemps(templates: VNode[]) {
-    let placeholder = document.getElementById('tempPlaceholder');
+    let placeholder = document.getElementById(placeholderID);
     if (placeholder) {
         const temps = <div id={placeholderID}>{...templates}</div>;
         patch(placeholder, temps);
+        // add mouselistener for highlighting focused template
+        const curTemps = document.getElementById(placeholderID);
+        if (curTemps) {
+            curTemps.childNodes.forEach(child => {
+                (child as HTMLElement).addEventListener('mouseover', () => (child as HTMLElement).classList.add('focused'));
+                (child as HTMLElement).addEventListener('mouseleave', () => (child as HTMLElement).classList.remove('focused'));
+            });
+        }
     }
 }

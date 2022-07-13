@@ -226,6 +226,11 @@
 
 
 
+
+.focused {
+    background-color: #37373d;
+}
+
 .stpa-node {
     stroke: black;
 }
