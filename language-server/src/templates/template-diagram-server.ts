@@ -86,11 +86,24 @@ export abstract class TemplateDiagramServer extends DiagramServer {
      * @param action Action containing the text to create a template.
      * @returns 
      */
-    protected handleAddTemplate(action: AddTemplateAction) {
+    protected async handleAddTemplate(action: AddTemplateAction) {
         const temp = this.createTempFromString(action.text);
-        this.addTemplates([temp]);
-        this.connection?.sendNotification('config/add', [temp.baseCode]);
+        if (await this.parseable(temp)) {
+            this.addTemplates([temp]);
+            this.connection?.sendNotification('config/add', [temp.baseCode]);
+        } else {
+            this.connection?.sendNotification('templates/creationFailed');
+        }
         return Promise.resolve();
+    }
+
+    protected async parseable(template: LanguageTemplate) {
+        let graph = await this.templateGraphGenerator.generateTemplateRoot(template);
+        if (graph) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

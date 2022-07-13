@@ -33,6 +33,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.languageClient.onReady().then(() => {
             this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
             this.languageClient.onNotification('config/add', (temps) => this.handleAddToConfig(temps));
+            this.languageClient.onNotification('templates/creationFailed', () => vscode.window.showWarningMessage("Template could not be created."));
         });
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.templates.add', async (...commandArgs: any) => {
