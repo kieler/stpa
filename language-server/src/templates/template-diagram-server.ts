@@ -89,6 +89,7 @@ export abstract class TemplateDiagramServer extends DiagramServer {
     protected async handleAddTemplate(action: AddTemplateAction) {
         const temp = this.createTempFromString(action.text);
         if (await this.parseable(temp)) {
+            this.templateGraphGenerator.deleteDanglingEdges(temp);
             this.addTemplates([temp]);
             this.connection?.sendNotification('config/add', [temp.baseCode]);
         } else {

@@ -25,7 +25,7 @@ import {
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
 import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps, filterDanglingEdges, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
+import { collectElementsWithSubComps, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 import { LanguageTemplate, TemplateGraphGenerator } from './templates/template-model';
 import { CancellationToken } from 'vscode-languageserver';
@@ -54,6 +54,25 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
      * @returns the SGraph.
      */
     async generateTemplateRoot(template: LanguageTemplate): Promise<SModelRoot | undefined> {
+        if (!this.idCache) {
+            this.idCache = new IdCacheImpl();
+        }
+        const parseRes = await this.getTempalteAST(template);
+        if (!parseRes) {
+            return undefined;
+        } else {
+            const graph = this.generateGraph(parseRes);
+            graph.id = template.id;
+            return graph;
+        }
+    }
+
+    /**
+     * Calculates the parse result for {@code template}.
+     * @param template The template that should be parsed.
+     * @returns The AST for {@code template}.
+     */
+    protected async getTempalteAST(template: LanguageTemplate) {
         // in order for the cross-references to be correctly evaluated, a document must be build
         const uri = 'file:///template.stpa';
         const textDocument = TextDocument.create(uri, this.languageId, 0, template.baseCode ?? '');
@@ -64,17 +83,44 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
         const doc = documentFromText<Model>(textDocument, parseResult);
         await this.docBuilder.buildDocuments([doc], CancellationToken.None);
 
-        if (!this.idCache) {
-            this.idCache = new IdCacheImpl();
-        }
-        const graph = this.generateGraph(doc.parseResult.value);
-        if (graph.children) {
-            graph.children = filterDanglingEdges(graph.children);
-        }
-        graph.id = template.id;
-        return graph;
+        return doc.parseResult.value;
     }
 
+    /**
+     * Deletes the dangling edges in {@code template}.
+     * @param template The template which edges should be inspected.
+     */
+    async deleteDanglingEdges(template: LanguageTemplate) {
+        const model = await this.getTempalteAST(template);
+        if (model) {
+            const nodes = model.controlStructure.nodes;
+            const nodeIDs = new Set<string>();
+            nodes.forEach(node => nodeIDs.add(node.name));
+            const danglingNodes = new Set<string>();
+            for (const node of nodes) {
+                node.actions.filter(action => {
+                    if (!nodeIDs.has(action.target.$refText)) {
+                        danglingNodes.add(action.target.$refText);
+                        return false;
+                    }
+                    return true;
+                });
+                node.feedbacks.filter(feedback => {
+                    if (!nodeIDs.has(feedback.target.$refText)) {
+                        danglingNodes.add(feedback.target.$refText);
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            danglingNodes.forEach((node, test) => {
+                const newString = template.baseCode.replace(/->( )*/, "-> ");
+                const endIndex = newString.indexOf("-> " + node) + 3 + node.length;
+                const startIndex = newString.substring(0, endIndex).lastIndexOf('[');
+                template.baseCode = newString.substring(0, startIndex).trimEnd() + newString.substring(endIndex + 1, newString.length);
+            });
+        }
+    }
 
     /**
      * Generates a SGraph for the STPA model contained in {@code args}.

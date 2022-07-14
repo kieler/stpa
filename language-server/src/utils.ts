@@ -22,7 +22,7 @@ import {
 } from "./generated/ast";
 import { STPAAspect } from "./stpa-model";
 import { CSNode, STPANode } from "./stpa-interfaces";
-import { SEdge, SShapeElement, SModelElement } from 'sprotty-protocol';
+import { SShapeElement } from 'sprotty-protocol';
 
 /* export function determineLayerForCSNodes(nodes: CSNode[]): void {
     let layer = nodes.length
@@ -197,58 +197,4 @@ export function setPositionsForCSNodes(nodes: CSNode[]) {
             (node as SShapeElement).position = { x: 0, y: 100 * node.level };
         }
     }
-}
-
-/**
- * Filters dangling edges.
- * @param children Elements that should be checked.
- * @returns {@code children} without dangling edges.
- */
-export function filterDanglingEdges(children: SModelElement[]): SModelElement[] {
-    let nodeIds: Set<string> = new Set();
-    for (const child of children) {
-        if (child.type.startsWith('node') || child.type.startsWith('port')) {
-            selectNodeAndPortIDs(child, nodeIds);
-        }
-    }
-    return checkEdges(children, nodeIds);
-}
-
-/**
- * Adds node and port Ids to {@code set}.
- * @param element Elements to examine.
- * @param set The set to which the Ids should be added.
- */
-function selectNodeAndPortIDs(element: SModelElement, set: Set<string>): void {
-    set.add(element.id);
-    if (element.children) {
-        for (const child of element.children) {
-            if (child.type.startsWith('node') || child.type.startsWith('port')) {
-                selectNodeAndPortIDs(child, set);
-            }
-        }
-    }
-}
-
-/**
- * Check whether the edges in {@code elements} are dangling.
- * @param elements Elements to be checked.
- * @param nodeIds Ids of all existing nodes.
- * @returns {@code elements} without dangling edges.
- */
-function checkEdges(elements: SModelElement[], nodeIds: Set<string>): SModelElement[] {
-    let children = [];
-    for (const element of elements) {
-        if (element.type.startsWith('edge')) {
-            if (nodeIds.has((element as SEdge).sourceId) && nodeIds.has((element as SEdge).targetId)) {
-                children.push(element);
-            }
-        } else {
-            if (element.type.startsWith('node') && element.children) {
-                element.children = checkEdges(element.children, nodeIds);
-            }
-            children.push(element);
-        }
-    }
-    return children;
 }
