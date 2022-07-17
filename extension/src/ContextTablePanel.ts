@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
+import { URI } from "vscode-languageclient";
 
 export class ContextTablePanel {
   // Track the current panel. Only allow a single panel to exist. 
   public static currentPanel: ContextTablePanel | undefined;
   public static readonly viewType = "context-table";
-  public static currentUri: vscode.Uri | undefined;
+  public static currentUri: URI | undefined;
   public static currentData: any[];
 
   // Promise stuff
@@ -63,7 +64,7 @@ export class ContextTablePanel {
       }
     );
     if (commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
-      this.currentUri = commandArgs[0];
+      this.currentUri = (commandArgs[0] as vscode.Uri).toString();
     }
     
     panel.webview.options = {

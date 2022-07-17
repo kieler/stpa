@@ -1,21 +1,23 @@
-import { Uri } from "vscode";
 import { LangiumDocuments, LangiumDocument } from "langium";
 import { StpaServices } from "./stpa-module";
 import { Model } from "./generated/ast";
+import { URI } from "vscode-languageserver";
 
 export class ContextTableProvider {
-    protected readonly textDocuments: LangiumDocuments;
-    private uri: Uri;
+    protected textDocuments: LangiumDocuments;
+    protected services: StpaServices;
+    private uri: URI;
 
     constructor(services: StpaServices) {
         this.textDocuments = services.shared.workspace.LangiumDocuments;
+        this.services = services;
     }
 
     /**
      * Gets a sent URI and saves it into a class variable.
      * @param sentUri The received URI (from the language extension).
      */
-    getUri(sentUri: Uri) {
+    getUri(sentUri: URI) {
         this.uri = sentUri;
     }
 
@@ -24,7 +26,8 @@ export class ContextTableProvider {
      * @returns The data in a set of arrays.
      */
     getContext() {
-        const currentDoc = this.textDocuments.getOrCreateDocument(this.uri) as LangiumDocument<Model>;
+        this.textDocuments = this.services.shared.workspace.LangiumDocuments;
+        const currentDoc = this.textDocuments.getOrCreateDocument(this.uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
         let hazards : string[] = [];

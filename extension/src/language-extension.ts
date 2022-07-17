@@ -108,6 +108,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     }
 
     protected sendUpdateView(languageClient: LanguageClient) {
+        languageClient.sendNotification('contextTable/uri', ContextTablePanel.notify());
         if (this.singleton) {
             const mes: ActionMessage = {
                 clientId: this.singleton?.diagramIdentifier.clientId,
