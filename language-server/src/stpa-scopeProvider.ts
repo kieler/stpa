@@ -18,7 +18,7 @@
 import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, 
     EMPTY_SCOPE } from "langium";
 import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, 
-    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, isRule, Rule} from "./generated/ast";
+    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, isRule, Rule, Variable} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -29,6 +29,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     private HAZARD_TYPE = Hazard;
     private SYS_CONSTRAINT_TYPE = SystemConstraint;
     private UCA_TYPE = UCA;
+    private VAR_TYPE = Variable;
 
     constructor(services: StpaServices) {
         super(services);
@@ -52,8 +53,10 @@ export class StpaScopeProvider extends DefaultScopeProvider {
                 return this.getSystemConstraints(model, precomputed);
             } else if ((isSystemConstraint(node) || isHazardList(node)) && referenceType === this.HAZARD_TYPE) {
                 return this.getHazards(model, precomputed);
-            } else if (isActionUCAs(node) && referenceType === this.CA_TYPE || isRule(node)) {
+            } else if ((isActionUCAs(node) || isRule(node)) && referenceType === this.CA_TYPE) {
                 return this.getCAs(node, precomputed);
+            } else if (isRule(node) && referenceType === this.VAR_TYPE) {
+                return this.getVars(node, precomputed);
             } else {
                 return this.getStandardScope(node, referenceType, precomputed);
             }
@@ -72,7 +75,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     private getStandardScope(node: AstNode, referenceType: string, precomputed: PrecomputedScopes): Scope {
         let currentNode: AstNode | undefined = node;
         // responsibilities and UCAs should have references to the nodes in the control structure
-        if ((isResps(node) || isActionUCAs(node)) && referenceType === Node) {
+        if ((isResps(node) || isActionUCAs(node) || isRule(node)) && referenceType === Node) {
             const model = node.$container as Model;
             currentNode = model.controlStructure;
         }
@@ -109,6 +112,20 @@ export class StpaScopeProvider extends DefaultScopeProvider {
             for (const actionList of actionLists) {
                 let currentNode: AstNode | undefined = actionList;
                 const descs = this.getDescriptions(currentNode, this.CA_TYPE, precomputed);
+                allDescriptions = allDescriptions.concat(descs);
+            }
+        }
+        return this.descriptionsToScope(allDescriptions);
+    }
+
+    private getVars(node: Rule, precomputed: PrecomputedScopes): Scope {
+        let allDescriptions: AstNodeDescription[] = [];
+        let varLists = node.system.ref?.variables;
+
+        if(varLists) {
+            for(const varList of varLists) {
+                let currentNode: AstNode | undefined = varList;
+                const descs = this.getDescriptions(currentNode, this.VAR_TYPE, precomputed);
                 allDescriptions = allDescriptions.concat(descs);
             }
         }
