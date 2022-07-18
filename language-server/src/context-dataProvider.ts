@@ -29,10 +29,11 @@ export class ContextTableProvider {
         this.textDocuments = this.services.shared.workspace.LangiumDocuments;
         const currentDoc = this.textDocuments.getOrCreateDocument(this.uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
-
+        
         let hazards : string[] = [];
         let actions: string[] = [];
         let variables: [string, string[]][] = [];
+        let rules: [string, string, string, [string, string][]][] = [];
         model.hazards.forEach(hazard => {
             hazards.push(hazard.name);
         })
@@ -46,6 +47,21 @@ export class ContextTableProvider {
                 variables.push([variable.name, variable.values]);
             })
         });
-        return [hazards, actions, variables] as const;
+        const modelRules = model.rules;
+        modelRules.forEach(rule => {
+            const vars = rule.vars;
+            vars[1].ref?.name
+            const values = rule.values;
+            let varVals: [string, string][] = [];
+            for (let i = 0; i < vars.length; i++) {
+                if (vars[i].ref?.name) {
+                    varVals.push([vars[i].ref!.name, values[i]]);
+                }
+            }
+            if (rule.action.ref?.name) {
+                rules.push([rule.name, rule.action.ref!.name, rule.type.value, varVals]);
+            }
+        })
+        return [hazards, actions, variables, rules] as const;
     }
 }

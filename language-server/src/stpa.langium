@@ -34,7 +34,7 @@ Rule:
         'controlAction:' system=[Node] '.' action=[Command]
         'type:' type=Type
         'context:' '{'
-            system=[Node] '.' vars+=[Variable] '=' values+=STRING (',' system=[Node] '.' vars+=[Variable] '=' values+=STRING)
+            system=[Node] '.' vars+=[Variable] '=' values+=STRING (',' system=[Node] '.' vars+=[Variable] '=' values+=STRING)*
         '}'
     '}';
 

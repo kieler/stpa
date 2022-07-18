@@ -159,7 +159,109 @@ R1 {
     controlAction: FlightCrew.manual
     type: "not provided"
     context: {
-        FlightCrew.BSCUmode = "off"
+        FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "taxiing"
+    }
+}
+R2 {
+    controlAction: FlightCrew.manual
+    type: "not provided"
+    context: {
+        FlightCrew.BCSUmode = "off",
+        FlightCrew.aircraftPosition = "takeoff"
+    }
+}
+R3 {
+    controlAction: FlightCrew.manual
+    type: "not provided"
+    context: {
+        FlightCrew.BCSUmode = "off",
+        FlightCrew.aircraftPosition = "landing"
+    }
+}
+R4 {
+    controlAction: FlightCrew.manual
+    type: "provided"
+    context: {
+        FlightCrew.BCSUmode = "off",
+        FlightCrew.aircraftPosition = "taxiing"
+    }
+}
+R5 {
+    controlAction: FlightCrew.manual
+    type: "provided"
+    context: {
+        FlightCrew.BCSUmode = "off",
+        FlightCrew.aircraftPosition = "takeoff"
+    }
+}
+R6 {
+    controlAction: FlightCrew.manual
+    type: "provided"
+    context: {
+        FlightCrew.BCSUmode = "off",
+        FlightCrew.aircraftPosition = "landing"
+    }
+}
+R7 {
+    controlAction: FlightCrew.powerOff
+    type: "not provided"
+    context: {
+        FlightCrew.BCSUmode = "on",
+        FlightCrew.aircraftPosition = "taxiing"
+    }
+}
+R8 {
+    controlAction: FlightCrew.powerOff
+    type: "not provided"
+    context: {
+        FlightCrew.BCSUmode = "on",
+        FlightCrew.aircraftPosition = "takeoff"
+    }
+}
+R9 {
+    controlAction: FlightCrew.powerOff
+    type: "provided"
+    context: {
+        FlightCrew.BCSUmode = "on",
+        FlightCrew.aircraftPosition = "landing"
+    }
+}
+R10 {
+    controlAction: FlightCrew.powerOn
+    type: "not provided"
+    context: {
+        FlightCrew.BCSUmode = "off",
+        FlightCrew.aircraftPosition = "landing"
+    }
+}
+R11 {
+    controlAction: FlightCrew.powerOn
+    type: "provided"
+    context: {
+        FlightCrew.BCSUmode = "off",
+        FlightCrew.aircraftPosition = "taxiing"
+    }
+}
+R12 {
+    controlAction: FlightCrew.powerOn
+    type: "provided"
+    context: {
+        FlightCrew.BCSUmode = "off",
+        FlightCrew.aircraftPosition = "takeoff"
+    }
+}
+R13 {
+    controlAction: FlightCrew.mc
+    type: "not provided"
+    context: {
+        FlightCrew.BCSUmode = "off"
+    }
+}
+R14 {
+    controlAction: FlightCrew.mc
+    type: "not provided"
+    context: {
+        FlightCrew.BCSUmode = "on"
     }
 }
