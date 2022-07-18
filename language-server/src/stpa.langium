@@ -26,8 +26,20 @@ entry Model:
     ('UCAs' allUCAs+=ActionUCAs*)?
     ('ControllerConstraints' controllerConstraints+=ContConstraint*)?
     ('LossScenarios' scenarios+=LossScenario*)?
-    ('SafetyRequirements' safetyCons+=SafetyConstraint*)?;
+    ('SafetyRequirements' safetyCons+=SafetyConstraint*)?
+    ('Rules' rules+=Rule*)?;
 
+Rule:
+    name=ID '{'
+        'controlAction:' system=[Node] '.' action=[Command]
+        'type:' type=Type
+        'context:' '{'
+            system=[Node] '.' vars+=[Variable] '=' values+=STRING (',' system=[Node] '.' vars+=[Variable] '=' values+=STRING)
+        '}'
+    '}';
+
+Type:
+    value=STRING;
 
 Loss:
     name=ID description=STRING;

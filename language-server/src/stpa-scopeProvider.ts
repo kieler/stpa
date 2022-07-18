@@ -18,7 +18,7 @@
 import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, 
     EMPTY_SCOPE } from "langium";
 import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, 
-    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario} from "./generated/ast";
+    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, isRule, Rule} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -52,7 +52,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
                 return this.getSystemConstraints(model, precomputed);
             } else if ((isSystemConstraint(node) || isHazardList(node)) && referenceType === this.HAZARD_TYPE) {
                 return this.getHazards(model, precomputed);
-            } else if (isActionUCAs(node) && referenceType === this.CA_TYPE) {
+            } else if (isActionUCAs(node) && referenceType === this.CA_TYPE || isRule(node)) {
                 return this.getCAs(node, precomputed);
             } else {
                 return this.getStandardScope(node, referenceType, precomputed);
@@ -101,7 +101,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @param precomputed Precomputed Scope of the document.
      * @returns Scope containing all VerticalEdges.
      */
-    private getCAs(node: ActionUCAs, precomputed: PrecomputedScopes): Scope {
+    private getCAs(node: ActionUCAs | Rule, precomputed: PrecomputedScopes): Scope {
         let allDescriptions: AstNodeDescription[] = [];
         let actionLists = node.system.ref?.actions;
 

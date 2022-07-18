@@ -153,3 +153,13 @@ Scenario7 "The BSCU does not send Brake command, but the brakes are applied due 
 
 SafetyRequirements
 SR1 "Sufficient braking must be applied when sending the Brake comman upon landing" [Scenario6]
+
+Rules
+R1 {
+    controlAction: FlightCrew.manual
+    type: "not provided"
+    context: {
+        FlightCrew.BSCUmode = "off"
+        FlightCrew.aircraftPosition = "taxiing"
+    }
+}
