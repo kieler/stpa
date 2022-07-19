@@ -105,7 +105,7 @@ export class ContextTablePanel {
   }
 
   public static getData(list : any[]) {
-    console.log(list);
+    console.log(list.length);
     if (list.length == 3) {
       this.currentData = list;
     } else {

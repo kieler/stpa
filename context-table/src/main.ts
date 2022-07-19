@@ -7,11 +7,14 @@ declare const vscode: vscode;
 
 export class Main {
 
-    private currentHazards: any[];
+    private currentRules: any[];
     private currentActions: any[];
     private currentVariables: any[];
 
     private callBack: any[] = [];
+
+    private selectedAction: string = " ";
+    private selectedType: number = 0;
 
     constructor() {
         vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
@@ -28,10 +31,10 @@ export class Main {
      * @param data The data for creating the table contents.
      */
     protected handleData(data: any[]) {
-        this.currentHazards = data[0];
+        this.currentRules = data[0];
         this.currentActions = data[1];
         this.currentVariables = data[2];
-        this.currentHazards.length;
+        this.currentRules.length;
         this.initHTML(this.currentActions, this.currentVariables);
     }
 
@@ -46,18 +49,19 @@ export class Main {
             const selector = document.createElement("select");
             mainDiv.appendChild(selector);
             selector.id = "select_action";
+            this.selectedAction;
             this.createSelector(selector, actions);
             const typeSelector = document.createElement("select");
             typeSelector.id = "select_type";
             mainDiv.appendChild(typeSelector);
-            const providedList = ["provided", "not provided"];
+            const providedList = ["provided", "not provided", "both"];
             this.createSelector(typeSelector, providedList);
             const tableDiv = document.createElement("table");
             tableDiv.id = "table";
             mainDiv.appendChild(tableDiv);
             this.createTable(tableDiv, variables);
-            this.createSelectorListener(mainDiv, selector);
-            this.createSelectorListener(mainDiv, typeSelector);
+            this.createSelectorListener(mainDiv, selector, true);
+            this.createSelectorListener(mainDiv, typeSelector, false);
         }
     }
     
@@ -66,13 +70,18 @@ export class Main {
      * @param mainDiv The parent Div element of the table element.
      * @param selector The given HTMLSelectorElement.
      */
-    private createSelectorListener(mainDiv: HTMLElement, selector : HTMLSelectElement) {
+    private createSelectorListener(mainDiv: HTMLElement, selector : HTMLSelectElement, action: boolean) {
         selector.addEventListener('change', change => {
             const oldTable = document.getElementById("table");
             oldTable?.parentNode?.removeChild(oldTable);
             const newTable = document.createElement("table");
             newTable.id = "table";
             mainDiv.appendChild(newTable);
+            if (action) {
+                this.selectedAction = selector.options[selector.selectedIndex].text;
+            } else {
+                this.selectedType = selector.selectedIndex;
+            }
             this.createTable(newTable, this.currentVariables);
         });
     }
@@ -138,7 +147,17 @@ export class Main {
         header.appendChild(vars);
         const hazardous = document.createElement("th");
         hazardous.innerHTML = "Hazardous?";
-        hazardous.colSpan = 3;
+        switch(this.selectedType) {
+            case 0:
+                hazardous.colSpan = 3;
+                break;
+            case 1:
+                hazardous.rowSpan = 2;
+                break;
+            case 2:
+                hazardous.colSpan = 4;
+                break;
+        }
         header.appendChild(hazardous);
     }
 
@@ -149,14 +168,22 @@ export class Main {
      */
     private createSubHeader(table: HTMLTableElement, variables: any[]) {
         const subHeader = document.createElement("tr");
-        const times = ["Anytime", "Too Early", "Too Late"];
         table.appendChild(subHeader);
         variables.forEach(variable => {
             let col = document.createElement('th');
             col.innerHTML = variable[0];
             subHeader.appendChild(col);
         })
-        this.createSubElements(subHeader, times, "th");
+        switch(this.selectedType) {
+            case 0:
+                const times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon"];
+                this.createSubElements(subHeader, times, "th");
+                break;
+            case 2:
+                const nTimes = ["Anytime", "Too Early / Too Late", "Stopped Too Soon", "Never"];
+                this.createSubElements(subHeader, nTimes, "th");
+                break;
+        }
     }
 
     /**
@@ -170,14 +197,57 @@ export class Main {
         const controlAction = document.createElement("td");
         const action = <HTMLSelectElement> document.getElementById("select_action");
         const type = <HTMLSelectElement> document.getElementById("select_type");
-        controlAction.innerHTML = action.options[action.selectedIndex].text + " " + type.options[type.selectedIndex].text;
+        if(type.options[type.selectedIndex].text == "both") {
+            controlAction.innerHTML = action.options[action.selectedIndex].text + " provided";
+        } else {
+            controlAction.innerHTML = action.options[action.selectedIndex].text + " " + type.options[type.selectedIndex].text;
+        }
         row.appendChild(controlAction);
         this.createSubElements(row, values, "td");
-        // temporary until rules; will be specified by an algorithm then
-        const no = document.createElement("td");
-        no.innerHTML = "No"
-        no.colSpan = 3;
-        row.appendChild(no);
+        const result = this.getResult(values);
+        switch(this.selectedType) {
+            case 0:
+                if (result[1] > 0) {
+                    for(let i = 1; i < 4; i++) {
+                        const entry = document.createElement("td");
+                        if (i == result[1]) {
+                            entry.innerHTML = result[0];
+                        } else {
+                            entry.innerHTML = "No";
+                        }
+                        row.appendChild(entry);
+                    }
+                } else {
+                    const no = document.createElement("td");
+                    no.innerHTML = result[0];
+                    no.colSpan = 3;
+                    row.appendChild(no);
+                }
+                break;
+            case 1:
+                const entry = document.createElement("td");
+                entry.innerHTML = result[0];
+                row.appendChild(entry);
+                break;
+            case 2:
+                if (result[1] > 0) {
+                    for(let i = 1; i < 5; i++) {
+                        const entry = document.createElement("td");
+                        if (i == result[1]) {
+                            entry.innerHTML = result[0];
+                        } else {
+                            entry.innerHTML = "No";
+                        }
+                        row.appendChild(entry);
+                    }
+                } else {
+                    const no = document.createElement("td");
+                    no.innerHTML = result[0];
+                    no.colSpan = 4;
+                    row.appendChild(no);
+                }
+                break;
+        }
     }
 
     /**
@@ -203,6 +273,44 @@ export class Main {
             }
             this.callBack.pop();
         }
+    }
+
+    private getResult(values: any[]): [string, number] {
+        let type: number = 0;
+        let stop: boolean = false;
+        let result: string = "No";
+        this.currentRules.forEach(rule => {
+            if (rule[1] == this.selectedAction && !stop) {
+                let valueCheck = true;
+                const ruleVals = rule[3];
+                for (let i = 0; i < values.length && valueCheck; i++) {
+                    if (values[i] != ruleVals[i]){
+                        valueCheck = false;
+                    }
+                }
+                if (valueCheck) {
+                    const typeString = rule[2] as string;
+                    const checkString = typeString.toLowerCase();
+                    switch(this.selectedType) {
+                        case 0:
+                            if (checkString == "anytime") {type = 1; result = rule[0]; stop = true; return;};
+                            if (checkString == "too early" || checkString == "too late") {type = 2; result = rule[0]; stop = true; return;};
+                            if (checkString == "stopped too soon" || checkString == "applied too long") {type = 3; result = rule[0]; stop = true; return;};
+                            break;
+                        case 1:
+                            if (checkString == "not provided" || checkString == "never") {result = rule[0]; stop = true; return;};
+                            break;
+                        case 2:
+                            if (checkString == "anytime") {type = 1; result = rule[0]; stop = true; return;};
+                            if (checkString == "too early" || checkString == "too late") {type = 2; result = rule[0]; stop = true; return;};
+                            if (checkString == "stopped too soon" || checkString == "applied too long") {type = 3; result = rule[0]; stop = true; return;};
+                            if (checkString == "not provided" || checkString == "never") {type = 4; result = rule[0]; stop = true; return;};
+                            break;
+                    }
+                }
+            }
+        })
+        return [result, type];
     }
 }
 

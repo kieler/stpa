@@ -1,6 +1,10 @@
 table {
-    width: 580px;
-    margin-top: 50px;
+    margin-top: 140px;
+    column-width: 70px;
+}
+
+select {
+    margin-block-start: 20px;
 }
 
 th {
