@@ -32,10 +32,11 @@ export class STPANode extends SNode {
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
         layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
 
-    aspect: STPAAspect = STPAAspect.UNDEFINED;
-    description: string = "";
-    hierarchyLvl: number = 0;
-    connected?: boolean;
+    aspect: STPAAspect = STPAAspect.UNDEFINED
+    description: string = ""
+    hierarchyLvl: number = 0
+    connected?: boolean
+    level?: number
 }
 
 /**

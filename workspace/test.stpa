@@ -1,5 +1,117 @@
-Losses 
-L1 "blubb"
+Losses
+L1 ""
 
 Hazards
-H1 "blabb" [L1]
+
+SystemConstraints
+
+
+ControlStructure
+Trajectory {
+    OperatorSafety {
+        hierarchyLevel 0
+        controlActions {
+            [n1 ""] -> SafetySystem
+        }
+    }
+    OperatorBackend {
+        hierarchyLevel 0
+        controlActions {
+            [aufgabe ""] -> Teletrimetrie
+        }
+    }
+    SafetySystem {
+        hierarchyLevel 1
+        controlActions {
+            [notaus ""] -> AutoBox
+            [nothalt ""] -> DriveBox
+        }
+    }
+    Teletrimetrie {
+        hierarchyLevel 1
+        controlActions {
+            [n4 ""] -> DriveBox
+        }
+        feedback {
+            [n5 ""] -> OperatorBackend
+        }
+    }
+    DriveBox {
+        hierarchyLevel 2
+        controlActions {
+            [traj ""] -> AutoBox
+        }
+        feedback {
+            [n6 ""] -> Teletrimetrie
+        }
+    }
+    AutoBox {
+        hierarchyLevel 3
+        controlActions {
+            [n2 ""] -> Antriebssystem
+            [n3 ""] -> Lenksystem
+        }
+    }
+    Antriebssystem {
+        hierarchyLevel 4
+        controlActions {
+            [weg ""] -> Fahrzeug
+        }
+    }
+    Lenksystem {
+        hierarchyLevel 4
+        controlActions {
+            [raeder ""] -> Fahrzeug
+        }
+    }
+    Lenksensorik {
+        hierarchyLevel 4
+        feedback {
+            [moment ""] -> AutoBox
+        }
+    }
+    Antriebssensorik {
+        hierarchyLevel 4
+        feedback {
+            [dreh ""] -> AutoBox
+        }
+    }
+    BMU {
+        hierarchyLevel 4
+        feedback {
+            [zustand ""] -> AutoBox
+            [zustand ""] -> DriveBox
+        }
+    }
+    IMU {
+        hierarchyLevel 4
+        feedback {
+            [rate ""] -> AutoBox
+            [rate2 ""] -> DriveBox
+        }
+    }
+    Kamera {
+        hierarchyLevel 4
+        feedback {
+            [info ""] -> DriveBox
+        }
+    }
+    Lidar {
+        hierarchyLevel 4
+        feedback {
+            [raum ""] -> DriveBox
+        }
+    }
+    Fahrzeug {
+        hierarchyLevel 5
+        feedback {
+            [kraft ""] -> Lenksystem
+            [n7 ""] -> Lenksensorik
+            [n8 ""] -> Antriebssensorik
+            [n9 ""] -> BMU
+            [n10 ""] -> IMU
+            [n11 ""] -> Kamera
+            [n12 ""] -> Lidar
+        }
+    }
+}
