@@ -49,7 +49,13 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': direction,
             'org.eclipse.elk.algorithm': 'layered',
-            'org.eclipse.elk.hierarchyHandling': hierarchyHandling
+            'org.eclipse.elk.hierarchyHandling': hierarchyHandling,
+            // nodes with many edges are streched 
+            'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+            'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
+            'org.eclipse.elk.spacing.edgeNode': '4',
+            'org.eclipse.elk.spacing.portPort': '5',
+            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]'
         };
     }
 
@@ -59,11 +65,19 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         if (parent) {
             return {
                 'org.eclipse.elk.nodeLabels.placement': "INSIDE V_TOP H_CENTER",
-                'org.eclipse.elk.partitioning.partition': "" + partition
+                'org.eclipse.elk.partitioning.partition': "" + partition,
+                // nodes with many edges are streched 
+                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
+                'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+                'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
+                'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]'
             };
         } else {
             return {
-                'org.eclipse.elk.partitioning.partition': "" + partition
+                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
+                'org.eclipse.elk.partitioning.partition': "" + partition,
+                // nodes with many edges are streched 
+                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS'
             };
         }
     }
