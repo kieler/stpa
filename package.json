@@ -1,5 +1,7 @@
 {
     "private": true,
+    "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+    "homepage": "https://rtsys.informatik.uni-kiel.de/kieler",
     "scripts": {
       "prepare": "lerna run prepare",
       "clean": "lerna run clean",

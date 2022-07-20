@@ -37,3 +37,24 @@ export namespace UpdateViewAction {
         return action.kind === UpdateViewAction.KIND;
     }
 }
+
+/** Contains config option values */
+export interface SendConfigAction extends Action {
+    kind: typeof SendConfigAction.KIND;
+    options: { id: string, value: any; }[];
+}
+
+export namespace SendConfigAction {
+    export const KIND = "sendConfig";
+
+    export function create(options: { id: string, value: any; }[]): SendConfigAction {
+        return {
+            kind: KIND,
+            options
+        };
+    }
+
+    export function isThisAction(action: Action): action is SendConfigAction {
+        return action.kind === SendConfigAction.KIND;
+    }
+}
