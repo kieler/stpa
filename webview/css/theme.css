@@ -45,8 +45,8 @@
     --stpa-scenario-dark: #616100;
     --stpa-safety-requirement-dark: #2f4f4f;
 
-    --stpa-dark-node: #00000000;
-    --stpa-light-node: #ffffff00;
+    --stpa-dark-node: black;
+    --stpa-light-node: white;
 
     --stpa-loss-light: #FF2828;
     --stpa-hazard-light: #ffa852;
