@@ -22,8 +22,8 @@ import { StpaSynthesisOptions } from './options/synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {
 
-    private stpaOptions: StpaSynthesisOptions;
-    private clientId: string;
+    protected stpaOptions: StpaSynthesisOptions;
+    clientId: string;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
         services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string) {

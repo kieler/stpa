@@ -50,7 +50,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 this.getExtensionFileUri('pack')
             ],
             scriptUri: this.getExtensionFileUri('pack', 'webview.js'),
-            singleton: false // Change this to `true` to enable a singleton view
+            singleton: true // Change this to `true` to enable a singleton view
         });
         webview.addActionHandler(WorkspaceEditActionHandler);
         webview.addActionHandler(LspLabelEditActionHandler);
