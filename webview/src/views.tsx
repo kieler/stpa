@@ -20,7 +20,7 @@ import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph } from 'sprotty';
 import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE } from './stpa-model';
-import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderTrapez, renderTriangle } from './views-rendering';
+import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { inject } from 'inversify';
 import { collectAllChildren, flagConnectedElements } from './helper-methods';
 import { DISymbol } from './di.symbols';
@@ -47,7 +47,9 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const printEdge = colorStyle == "print";
         const coloredEdge = colorStyle == "colorful";
-        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge} class-hidden={hidden} aspect={(edge.source as STPANode).aspect} d={path} />;
+        const lessColoredEdge = colorStyle == "lessColors";
+        const aspect = (edge.source as STPANode).aspect % 2 == 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
+        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect} d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
@@ -64,8 +66,10 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const printEdge = colorStyle == "print";
         const coloredEdge = colorStyle == "colorful" && edge.type != CS_EDGE_TYPE;
         const sprottyEdge = colorStyle == "standard" || (edge.type == CS_EDGE_TYPE && !printEdge);
+        const lessColoredEdge = colorStyle == "lessColors";
+        const aspect = (edge.source as STPANode).aspect % 2 == 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
         return [
-            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge} class-hidden={hidden} aspect={(edge.source as STPANode).aspect}
+            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect}
                 class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
                 transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} />
         ];
@@ -82,6 +86,15 @@ export class STPANodeView extends RectangularNodeView {
     @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
     render(node: STPANode, context: RenderingContext): VNode {
+
+        // determines the color of the node
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
+        const printNode = colorStyle == "print";
+        const coloredNode = colorStyle == "colorful";
+        const sprottyNode = colorStyle == "standard";
+        const lessColoredNode = colorStyle == "lessColors";
+        const aspect = node.aspect % 2 == 0 || !lessColoredNode ? node.aspect : node.aspect - 1;
+
         // create the element based on the option and the aspect of the node
         let element: VNode;
         if (this.renderOptionsRegistry.getValue(DifferentFormsOption)) {
@@ -114,6 +127,25 @@ export class STPANodeView extends RectangularNodeView {
                     element = renderRectangle(node);
                     break;
             }
+        } else if (lessColoredNode) {
+            // aspects with same color should have different forms
+            switch (node.aspect) {
+                case STPAAspect.LOSS:
+                case STPAAspect.SYSTEMCONSTRAINT:
+                case STPAAspect.UCA:
+                case STPAAspect.SCENARIO:
+                    element = renderRectangle(node);
+                    break;
+                case STPAAspect.HAZARD:
+                case STPAAspect.RESPONSIBILITY:
+                case STPAAspect.CONTROLLERCONSTRAINT:
+                case STPAAspect.SAFETYREQUIREMENT:
+                    element = renderRoundedRectangle(node);
+                    break;
+                default:
+                    element = renderRectangle(node);
+                    break;
+            }
         } else {
             element = renderRectangle(node);
         }
@@ -124,15 +156,10 @@ export class STPANodeView extends RectangularNodeView {
         const parentSelected = parentNode && !hidden && (selectedNode instanceof STPANode);
         node.connected = false;
 
-        // determines the color of the node
-        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printNode = colorStyle == "print";
-        const coloredNode = colorStyle == "colorful";
-        const sprottyNode = colorStyle == "standard";
 
         return <g
             class-print-node={printNode}
-            class-stpa-node={coloredNode} aspect={node.aspect}
+            class-stpa-node={coloredNode || lessColoredNode} aspect={aspect}
             class-sprotty-node={sprottyNode}
             class-sprotty-port={node instanceof SPort}
             class-mouseover={node.hoverFeedback} class-selected={node.selected}
@@ -156,8 +183,8 @@ export class CSNodeView extends RectangularNodeView {
         }
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printNode = colorStyle == "print";
-        const sprottyNode = colorStyle != "print";
+        const sprottyNode = colorStyle == "standard";
+        const printNode = !sprottyNode;
         return <g>
             <rect class-parent-node={node.type == PARENT_TYPE} class-print-node={printNode}
                 class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
