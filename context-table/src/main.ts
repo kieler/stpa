@@ -176,11 +176,11 @@ export class Main {
         })
         switch(this.selectedType) {
             case 0:
-                const times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon"];
+                const times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long"];
                 this.createSubElements(subHeader, times, "th");
                 break;
             case 2:
-                const nTimes = ["Anytime", "Too Early / Too Late", "Stopped Too Soon", "Never"];
+                const nTimes = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long", "Never"];
                 this.createSubElements(subHeader, nTimes, "th");
                 break;
         }
@@ -204,49 +204,47 @@ export class Main {
         }
         row.appendChild(controlAction);
         this.createSubElements(row, values, "td");
-        const result = this.getResult(values);
+        const varVals = this.reappendValNames(values);
+        const result = this.getResult(varVals);
         switch(this.selectedType) {
             case 0:
-                if (result[1] > 0) {
-                    for(let i = 1; i < 4; i++) {
-                        const entry = document.createElement("td");
-                        if (i == result[1]) {
-                            entry.innerHTML = result[0];
-                        } else {
-                            entry.innerHTML = "No";
-                        }
-                        row.appendChild(entry);
-                    }
-                } else {
-                    const no = document.createElement("td");
-                    no.innerHTML = result[0];
-                    no.colSpan = 3;
-                    row.appendChild(no);
-                }
+                this.createResults(row, result, 3);
                 break;
             case 1:
+                const firstRes = result[0];
                 const entry = document.createElement("td");
-                entry.innerHTML = result[0];
+                entry.innerHTML = firstRes[0];
                 row.appendChild(entry);
                 break;
             case 2:
-                if (result[1] > 0) {
-                    for(let i = 1; i < 5; i++) {
-                        const entry = document.createElement("td");
-                        if (i == result[1]) {
-                            entry.innerHTML = result[0];
-                        } else {
-                            entry.innerHTML = "No";
-                        }
-                        row.appendChild(entry);
-                    }
-                } else {
-                    const no = document.createElement("td");
-                    no.innerHTML = result[0];
-                    no.colSpan = 4;
-                    row.appendChild(no);
-                }
+                this.createResults(row, result, 4);
                 break;
+        }
+    }
+
+    private createResults(parent: HTMLTableRowElement, result: [string, number][], index: number) {
+        const firstRes = result[0];
+        if (firstRes[1] != 0) {
+            let numbers: number[] = [];
+            result.forEach(res => {
+                numbers.push(res[1]);
+            })
+            for(let i = 1; i <= index; i++) {
+                const entry = document.createElement("td");
+                if (numbers.includes(i)) {
+                    let index = numbers.indexOf(i);
+                    let iRes = result[index];
+                    entry.innerHTML = iRes[0];
+                } else {
+                    entry.innerHTML = "No";
+                }
+                parent.appendChild(entry);
+            }
+        } else {
+            const no = document.createElement("td");
+            no.innerHTML = firstRes[0];
+            no.colSpan = index;
+            parent.appendChild(no);
         }
     }
 
@@ -275,42 +273,60 @@ export class Main {
         }
     }
 
-    private getResult(values: any[]): [string, number] {
-        let type: number = 0;
-        let stop: boolean = false;
-        let result: string = "No";
+    private reappendValNames(values: any[]) {
+        let varVals: any[] = [];
+        let currentVars: any[] = [];
+        for (let i = 0; i < values.length; i++) {
+            const currentVar = this.currentVariables[i];
+            currentVars.push(currentVar[0]);
+        }
+        varVals.push(currentVars);
+        varVals.push(values);
+        return varVals;
+    }
+
+    private getResult(varVals: any[]): [string, number][] {
+        let resultList: [string, number][] = [];
         this.currentRules.forEach(rule => {
-            if (rule[1] == this.selectedAction && !stop) {
-                let valueCheck = true;
-                const ruleVals = rule[3];
-                for (let i = 0; i < values.length && valueCheck; i++) {
-                    if (values[i] != ruleVals[i]){
-                        valueCheck = false;
-                    }
-                }
-                if (valueCheck) {
+            if (rule[1] == this.selectedAction) {
+                if (this.checkValues(rule[3], varVals)) {
                     const typeString = rule[2] as string;
                     const checkString = typeString.toLowerCase();
                     switch(this.selectedType) {
                         case 0:
-                            if (checkString == "anytime") {type = 1; result = rule[0]; stop = true; return;};
-                            if (checkString == "too early" || checkString == "too late") {type = 2; result = rule[0]; stop = true; return;};
-                            if (checkString == "stopped too soon" || checkString == "applied too long") {type = 3; result = rule[0]; stop = true; return;};
+                            if (checkString == "anytime") {resultList.push([rule[0], 1]); return;};
+                            if (checkString == "too early" || checkString == "too late") {resultList.push([rule[0], 2]); return;};
+                            if (checkString == "stopped too soon" || checkString == "applied too long") {resultList.push([rule[0], 3]); return;};
                             break;
                         case 1:
-                            if (checkString == "not provided" || checkString == "never") {result = rule[0]; stop = true; return;};
+                            if (checkString == "not provided" || checkString == "never") {resultList.push([rule[0], 0]); return;};
                             break;
                         case 2:
-                            if (checkString == "anytime") {type = 1; result = rule[0]; stop = true; return;};
-                            if (checkString == "too early" || checkString == "too late") {type = 2; result = rule[0]; stop = true; return;};
-                            if (checkString == "stopped too soon" || checkString == "applied too long") {type = 3; result = rule[0]; stop = true; return;};
-                            if (checkString == "not provided" || checkString == "never") {type = 4; result = rule[0]; stop = true; return;};
+                            if (checkString == "anytime") {resultList.push([rule[0], 1]); return;};
+                            if (checkString == "too early" || checkString == "too late") {resultList.push([rule[0], 2]); return;};
+                            if (checkString == "stopped too soon" || checkString == "applied too long") {resultList.push([rule[0], 3]); return;};
+                            if (checkString == "not provided" || checkString == "never") {resultList.push([rule[0], 4]); return;};
                             break;
                     }
                 }
             }
         })
-        return [result, type];
+        if(resultList.length == 0) {
+            resultList.push(["No", 0]);
+        }
+        return resultList;
+    }
+
+    private checkValues(ruleVars: any[], varVals: any[]): boolean {
+        let checks: boolean = true;
+        for(let i = 0; i < ruleVars.length && checks; i++) {
+            const currentVarVal = ruleVars[i];
+            const theVars = varVals[0] as any[];
+            const theVals = varVals[1] as any[];
+            const index = theVars.indexOf(currentVarVal[0]);
+            if (currentVarVal[1] != theVals[index]) {checks = false;}
+        }
+        return checks;
     }
 }
 
