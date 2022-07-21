@@ -7,14 +7,19 @@ declare const vscode: vscode;
 
 export class Main {
 
+    // variables to save the language-server data in
     private currentRules: any[];
     private currentActions: any[];
     private currentVariables: any[];
 
+    // array used for a recursive method;
+    // is probably redundant and could be integrated into said method as a local variable,
+    // but I'll leave it for now
     private callBack: any[] = [];
 
-    private selectedAction: string = " ";
-    private selectedType: number = 0;
+    // variables to store the currently selected options of the select elements in
+    private selectedAction: any;
+    private selectedType: number;
 
     constructor() {
         vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
@@ -34,55 +39,62 @@ export class Main {
         this.currentRules = data[0];
         this.currentActions = data[1];
         this.currentVariables = data[2];
-        this.currentRules.length;
-        this.initHTML(this.currentActions, this.currentVariables);
+        this.initHTML();
     }
 
     /**
      * Initialized the context webview and establishes necessary listeners for user interaction.
-     * @param actions The list of action-Ids found in the current stpa file.
-     * @param variables The list of context variable-Ids found in the current stpa file.
      */
-    protected initHTML(actions: any[], variables: any[]) {
+    protected initHTML() {
+        // Get the main DIV element that was created by the ContextTablePanel.
         const mainDiv = document.getElementById('main_container');
         if (mainDiv) {
+            // Create a selector element for selecting a control action
             const selector = document.createElement("select");
             mainDiv.appendChild(selector);
             selector.id = "select_action";
-            this.selectedAction;
-            this.createSelector(selector, actions);
+            // Call method to apply all the option elements to the select element.
+            this.createSelector(selector, this.currentActions);
+            this.selectedAction = selector.options[selector.selectedIndex].text;
+            // Create a select element for selecting the action type.
             const typeSelector = document.createElement("select");
             typeSelector.id = "select_type";
             mainDiv.appendChild(typeSelector);
+            // The type "both" depicts both prior types in one table.
             const providedList = ["provided", "not provided", "both"];
+            // Call method to apply all the option elements to the select element.
             this.createSelector(typeSelector, providedList);
-            const tableDiv = document.createElement("table");
-            tableDiv.id = "table";
-            mainDiv.appendChild(tableDiv);
-            this.createTable(tableDiv, variables);
+            this.selectedType = selector.selectedIndex;
+            // Call method to create the table.
+            this.createTable(mainDiv, this.currentVariables);
+            // Call methods to create listeners on the select elements.
             this.createSelectorListener(mainDiv, selector, true);
             this.createSelectorListener(mainDiv, typeSelector, false);
         }
     }
     
     /**
-     * Creates a listener for a given selection element which re-initializes the table element when the currently selected option changes.
+     * Creates a listener for a given selection element which re-initializes the table element
+     * when the currently selected option changes.
      * @param mainDiv The parent Div element of the table element.
      * @param selector The given HTMLSelectorElement.
+     * @param action Should be set to true if selector contains the control action select element.
+     * Should be set to false if otherwise.
      */
     private createSelectorListener(mainDiv: HTMLElement, selector : HTMLSelectElement, action: boolean) {
+        // create an event listener that catches whenever the selected option changes
         selector.addEventListener('change', change => {
+            // remove the old table, as it is now outdated
             const oldTable = document.getElementById("table");
             oldTable?.parentNode?.removeChild(oldTable);
-            const newTable = document.createElement("table");
-            newTable.id = "table";
-            mainDiv.appendChild(newTable);
+            // update the variables containing the currently selected options
             if (action) {
                 this.selectedAction = selector.options[selector.selectedIndex].text;
             } else {
                 this.selectedType = selector.selectedIndex;
             }
-            this.createTable(newTable, this.currentVariables);
+            // create a new table which will be up to date
+            this.createTable(mainDiv, this.currentVariables);
         });
     }
 
@@ -92,6 +104,7 @@ export class Main {
      * @param options A list of options to add.
      */
     private createSelector(selector: HTMLSelectElement, options: any[]) {
+        // make an option element for each array entry and append it to the selection element
         options.forEach(action => {
             let opt = document.createElement('option');
             opt.value = action;
@@ -107,6 +120,7 @@ export class Main {
      * @param elementType The type of Div element the children elements should be created with.
      */
     private createSubElements(parent: HTMLElement, children: any[], elementType: string) {
+        // similar to the createSelector method, but generalized for multiple types
         children.forEach(child => {
             let newElement = document.createElement(elementType);
             newElement.innerHTML = child;
@@ -115,18 +129,26 @@ export class Main {
     }
 
     /**
-     * Assembles the table element.
-     * @param table The HTML table element to complete.
+     * Creates and assembles the table element.
+     * @param mainDiv The parent element to apply the table to.
      * @param variables The list of context variable-Ids found in the current stpa file.
      */
-    private createTable(table: HTMLTableElement, variables: any[]) {
-        this.createHeader(table, variables);
-        this.createSubHeader(table, variables);
+    private createTable(mainDiv: HTMLElement, variables: any[]) {
+        // create a table element and append it to the main Div
+        const tableDiv = document.createElement("table");
+        tableDiv.id = "table";
+        mainDiv.appendChild(tableDiv);
+        // call method to create the header row
+        this.createHeader(tableDiv, variables);
+        // call method to create the subheader row
+        this.createSubHeader(tableDiv, variables);
+        // filter only the value arrays for each variable out of currentVariables and append them all to an array.
         let varVals : any[] = [];
         variables.forEach(variable => {
             varVals.push(variable[1]);
         })
-        this.getCurrentValList(table, 0, varVals);
+        // Call method to recursively create a row for each possible context
+        this.getCurrentValList(tableDiv, 0, varVals);
     }
 
     /**
@@ -222,6 +244,12 @@ export class Main {
         }
     }
 
+    /**
+     * Completes a non-header row with the calculated values for the "Hazardous?"-column.
+     * @param parent The row to apply the values to.
+     * @param result The results calculated with the getResult method.
+     * @param index The number of columns the "Hazardous?"-column currently has.
+     */
     private createResults(parent: HTMLTableRowElement, result: [string, number][], index: number) {
         const firstRes = result[0];
         if (firstRes[1] != 0) {
@@ -273,6 +301,13 @@ export class Main {
         }
     }
 
+    /**
+     * Gets the variable names from the currentVariables Array
+     * and returns it together with the array of the current row's values.
+     * @param values The array containing the values that have been assigned to the context variables in the current row.
+     * @returns An array containing both the variable-names array and the assigned-values array.
+     * The indices for each variable and its assigned value sync up.
+     */
     private reappendValNames(values: any[]) {
         let varVals: any[] = [];
         let currentVars: any[] = [];
@@ -285,6 +320,14 @@ export class Main {
         return varVals;
     }
 
+    /**
+     * Calculates if a control action is hazardous or not
+     * given a specified context using the rules defined in the .stpa file.
+     * @param varVals The context consisting of the context variables and their currently assigned values.
+     * @returns If the action is hazardous, returns an array with all the rules (ID as string) that apply as well as their types (as number).
+     * Else, returns string "No" to be applied to all of the "Hazardous"-column's columns.
+     * 
+     */
     private getResult(varVals: any[]): [string, number][] {
         let resultList: [string, number][] = [];
         this.currentRules.forEach(rule => {
@@ -317,6 +360,12 @@ export class Main {
         return resultList;
     }
 
+    /**
+     * Checks if the assigned values of a rule equal the assigned values of the current row.
+     * @param ruleVars The assigned values of a rule.
+     * @param varVals The assigned values of the current row.
+     * @returns true if all values are equal; false otherwise.
+     */
     private checkValues(ruleVars: any[], varVals: any[]): boolean {
         let checks: boolean = true;
         for(let i = 0; i < ruleVars.length && checks; i++) {
