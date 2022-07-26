@@ -249,7 +249,13 @@ export class Main {
             case 1:
                 const firstRes = result[0];
                 const entry = document.createElement("td");
-                entry.innerHTML = firstRes[0];
+                // entry.innerHTML = firstRes[0];
+                if (firstRes[0] == "No") {
+                    entry.innerHTML = firstRes[0];
+                } else {
+                    entry.title = firstRes[0];
+                    entry.innerHTML = "Yes";
+                }
                 row.appendChild(entry);
                 break;
             case 2:
@@ -283,7 +289,8 @@ export class Main {
                 if (numbers.includes(i)) {
                     let index = numbers.indexOf(i);
                     let iRes = result[index];
-                    entry.innerHTML = iRes[0];
+                    entry.title = iRes[0];
+                    entry.innerHTML = "Yes";
                 } else {
                     // else, there is no rule for this cell
                     entry.innerHTML = "No";
