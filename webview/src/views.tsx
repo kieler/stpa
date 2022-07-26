@@ -22,7 +22,7 @@ import { injectable } from 'inversify';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { inject } from 'inversify';
-import { collectAllChildren, flagConnectedElements } from './helper-methods';
+import { collectAllChildren } from './helper-methods';
 import { DISymbol } from './di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
 
@@ -42,7 +42,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected;
+        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).highlight;
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const printEdge = colorStyle == "print";
@@ -54,10 +54,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).connected;
-        if (edge.type == STPA_EDGE_TYPE) {
-            (edge as STPAEdge).connected = false;
-        }
+        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).highlight;
 
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
@@ -151,11 +148,9 @@ export class STPANodeView extends RectangularNodeView {
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = (selectedNode instanceof STPANode) && !node.connected;
+        const hidden = (selectedNode instanceof STPANode) && !node.highlight;
         const parentNode = node.children.filter(child => child.type == STPA_NODE_TYPE).length != 0;
         const parentSelected = parentNode && !hidden && (selectedNode instanceof STPANode);
-        node.connected = false;
-
 
         return <g
             class-print-node={printNode}
@@ -200,13 +195,9 @@ export class CSNodeView extends RectangularNodeView {
 export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
 
     render(model: Readonly<SGraph>, context: RenderingContext, args?: IRenderingArgs): VNode {
-        // if an STPANode is selected, the "connected" attribute is set for the nodes and edges connected to the selected node
         let allNodes: SNode[] = [];
         collectAllChildren(model.children as SNode[], allNodes);
         selectedNode = allNodes.find(node => node.selected);
-        if (selectedNode instanceof STPANode) {
-            flagConnectedElements(selectedNode);
-        }
 
         return super.render(model, context, args);
     }
