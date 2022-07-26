@@ -26,7 +26,7 @@ import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./STPA-model";
 export function collectAllChildren(nodes: SNode[], children: SNode[]): void {
     for (const node of nodes) {
         if (node.children.length != 0) {
-            const childrenNodes = node.children.filter(child => child instanceof SNode) as SNode[];
+            const childrenNodes = node.children.filter(child => child.type.startsWith('node')) as SNode[];
             children.push(...childrenNodes);
             collectAllChildren(childrenNodes, children);
         }
@@ -34,8 +34,9 @@ export function collectAllChildren(nodes: SNode[], children: SNode[]): void {
 }
 
 /**
- * Sets the connected attribute of the nodes and egde connected to {@code node}.
+ * Sets the highlight attribute of the nodes and egde connected to {@code node}.
  * @param node The node for which the connected elements should be determined.
+ * @returns The highlighted nodes.
  */
 export function flagConnectedElements(node: SNode): (STPANode | STPAEdge)[] {
     const elements: (STPANode | STPAEdge)[] = [];
@@ -67,7 +68,7 @@ export function flagConnectedElements(node: SNode): (STPANode | STPAEdge)[] {
 }
 
 /**
- * Sets the connected attribute of the predecessor nodes and edges based on the {@code edge}.
+ * Sets the highlight attribute of the predecessor nodes and edges based on the {@code edge}.
  * @param edge The edge which source and further predecessors should be inspected.
  */
 function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
@@ -97,7 +98,7 @@ function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
 }
 
 /**
- * Sets the connected attribute of the successor nodes and edges based on the {@code edge}.
+ * Sets the highlight attribute of the successor nodes and edges based on the {@code edge}.
  * @param edge The edge which target and further successors should be inspected.
  */
 function flagSuccNodes(edge: SEdge, elements: SModelElement[]): void {
@@ -144,7 +145,7 @@ function isSubConstraint(node: SNode): boolean {
 }
 
 /**
- * Sets the connected attribute of the parents of the system constraint {@code node}.
+ * Sets the highlight attribute of the parents of the system constraint {@code node}.
  * @param node The node, which parents should be added.
  */
 function flagSubConsParent(node: STPANode, elements: SModelElement[]): void {
@@ -154,4 +155,27 @@ function flagSubConsParent(node: STPANode, elements: SModelElement[]): void {
         parent.highlight = true;
         elements.push(parent);
     }
+}
+
+/**
+ * Sets the highlight attribute of all nodes that have the same aspect as {@code selected} and are at the same hierarchy level.
+ * @param selected The node that determines the aspect that should be highlighted.
+ * @returns The highlighted ndoes.
+ */
+export function flagSameAspect(selected: STPANode): STPANode[] {
+    const elements: STPANode[] = [];
+    const allNodes: STPANode[] = [];
+    collectAllChildren((selected.parent as SNode).parent.children as SNode[], allNodes);
+    allNodes.forEach(node => {
+        if (node.aspect === selected.aspect) {
+            elements.push(node);
+            node.highlight = true;
+        }
+    });
+    // if the selected node is a sub-hazard or -sysconstraint, the parent should be highlighted too
+    if (selected.parent.type === STPA_NODE_TYPE && ((selected.parent as STPANode).aspect === STPAAspect.HAZARD || (selected.parent as STPANode).aspect === STPAAspect.SYSTEMCONSTRAINT)) {
+        elements.push(selected.parent as STPANode);
+        (selected.parent as STPANode).highlight = true;
+    }
+    return elements;
 }

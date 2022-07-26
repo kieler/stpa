@@ -149,8 +149,6 @@ export class STPANodeView extends RectangularNodeView {
 
         // if an STPANode is selected, the components not connected to it should fade out
         const hidden = (selectedNode instanceof STPANode) && !node.highlight;
-        const parentNode = node.children.filter(child => child.type == STPA_NODE_TYPE).length != 0;
-        const parentSelected = parentNode && !hidden && (selectedNode instanceof STPANode);
 
         return <g
             class-print-node={printNode}
@@ -159,7 +157,7 @@ export class STPANodeView extends RectangularNodeView {
             class-sprotty-port={node instanceof SPort}
             class-mouseover={node.hoverFeedback} class-selected={node.selected}
             class-hidden={hidden}>
-            <g class-parent-selected={parentSelected} class-parent-node={parentNode && !parentSelected}>{element}</g>
+            <g>{element}</g>
             {context.renderChildren(node)}
         </g>;
     }
@@ -181,7 +179,7 @@ export class CSNodeView extends RectangularNodeView {
         const sprottyNode = colorStyle == "standard";
         const printNode = !sprottyNode;
         return <g>
-            <rect class-parent-node={node.type == PARENT_TYPE} class-print-node={printNode}
+            <rect class-print-node={printNode}
                 class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
                 class-mouseover={node.hoverFeedback} class-selected={node.selected}
                 x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
