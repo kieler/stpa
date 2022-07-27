@@ -38,6 +38,26 @@ export namespace UpdateViewAction {
     }
 }
 
+/** Contains config option values */
+export interface SendConfigAction extends Action {
+    kind: typeof SendConfigAction.KIND;
+    options: { id: string, value: any; }[];
+}
+
+export namespace SendConfigAction {
+    export const KIND = "sendConfig";
+
+    export function create(options: { id: string, value: any; }[]): SendConfigAction {
+        return {
+            kind: KIND,
+            options
+        };
+    }
+
+    export function isThisAction(action: Action): action is SendConfigAction {
+        return action.kind === SendConfigAction.KIND;
+    }
+}
 /** Message to the language server to add a template. */
 export interface AddTemplateAction extends Action {
     kind: typeof AddTemplateAction.KIND;

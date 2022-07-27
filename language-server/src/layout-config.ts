@@ -18,6 +18,7 @@
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { SGraph, SModelElement, SModelIndex, SNode } from 'sprotty-protocol';
+import { CSNode, STPANode } from './STPA-interfaces';
 import { CS_NODE_TYPE, PARENT_TYPE } from './stpa-model';
 
 
@@ -26,6 +27,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     protected graphOptions(sgraph: SGraph, index: SModelIndex): LayoutOptions {
         // options for the whole graph containing the control structure and the STPA graph
         return {
+            'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': 'DOWN',
             'org.eclipse.elk.spacing.nodeNode': '30.0',
             'org.eclipse.elk.layered.spacing.edgeNodeBetweenLayers': '30.0'
@@ -43,15 +45,41 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             direction = 'DOWN';
         }
         return {
+            'org.eclipse.elk.layered.layering.strategy': 'LONGEST_PATH',
+            'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': direction,
             'org.eclipse.elk.algorithm': 'layered',
             'org.eclipse.elk.hierarchyHandling': hierarchyHandling,
-            // interactive strategies are used to be able to assign layers to nodes through positioning
-            'org.eclipse.elk.separateConnectedComponents': 'false',
-            'org.eclipse.elk.layered.crossingMinimization.semiInteractive': 'true',
-            'cycleBreaking.strategy': 'INTERACTIVE',
-            'layering.strategy': 'INTERACTIVE'
+            // nodes with many edges are streched 
+            'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+            'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
+            'org.eclipse.elk.spacing.edgeNode': '4',
+            'org.eclipse.elk.spacing.portPort': '5',
+            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]'
         };
+    }
+
+    protected nodeOptions(snode: SNode, index: SModelIndex): LayoutOptions | undefined {
+        const parent = snode.children?.find(child => child.type.startsWith('node'));
+        const partition = snode.type === CS_NODE_TYPE ? (snode as CSNode).level : (snode as STPANode).level;
+        if (parent) {
+            return {
+                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_TOP H_CENTER",
+                'org.eclipse.elk.partitioning.partition': "" + partition,
+                // nodes with many edges are streched 
+                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
+                'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+                'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
+                'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]'
+            };
+        } else {
+            return {
+                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
+                'org.eclipse.elk.partitioning.partition': "" + partition,
+                // nodes with many edges are streched 
+                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS'
+            };
+        }
     }
 
     apply(element: SModelElement, index: SModelIndex): LayoutOptions | undefined {

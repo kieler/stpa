@@ -25,7 +25,7 @@ import {
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
 import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
+import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 import { LanguageTemplate, TemplateGraphGenerator } from './templates/template-model';
 import { CancellationToken } from 'vscode-languageserver';
@@ -179,15 +179,13 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
             }
         }
         // each node should be placed in a specific layer based on the aspect. therefore positions must be set
-        setPositionsForSTPANodes(stpaNodes);
+        setLevelsForSTPANodes(stpaNodes);
 
         const graphChildren = [];
 
         if (model.controlStructure) {
             // determine the nodes of the control structure graph
             const csNodes = model.controlStructure?.nodes.map(n => this.generateCSNode(n));
-            // each node should be placed in a specifc layer based on the hierarchy level. therefore positions must be set
-            setPositionsForCSNodes(csNodes);
             // children (nodes and edges) of the control structure
             const CSChildren = [
                 ...csNodes,
@@ -231,13 +229,10 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
                 const targetId = this.idCache.getId(edge.target.ref);
                 const edgeId = this.idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
                 // multiple control actions to same target are represented by on edge
-                let label = '';
+                let label: string[] = [];
                 for (let i = 0; i < edge.comms.length; i++) {
                     const com = edge.comms[i];
-                    label += com.label;
-                    if (i < edge.comms.length - 1) {
-                        label += ", ";
-                    }
+                    label.push(com.label);
                 }
                 const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
                     label, EdgeDirection.DOWN);
@@ -249,13 +244,10 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
                 const targetId = this.idCache.getId(edge.target.ref);
                 const edgeId = this.idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
                 // multiple feedback to same target is represented by on edge
-                let label = '';
+                let label: string[] = [];
                 for (let i = 0; i < edge.comms.length; i++) {
                     const com = edge.comms[i];
-                    label += com.label;
-                    if (i < edge.comms.length - 1) {
-                        label += ", ";
-                    }
+                    label.push(com.label);
                 }
                 const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
                     label, EdgeDirection.UP);
@@ -284,27 +276,37 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
      * @param edgeId The ID of the edge that should be created.
      * @param sourceId The ID of the source of the edge.
      * @param targetId The ID of the target of the edge.
-     * @param label The label of the edge.
+     * @param label The labels of the edge.
      * @param direction The direction of the edge.
      * @param param5 GeneratorContext of the STPA model.
      * @returns A control structure edge.
      */
-    private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string, direction: EdgeDirection): CSEdge {
+    private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string[], direction: EdgeDirection): CSEdge {
         // needed for correct layout
-        label = label === '' ? ' ' : label;
+        const children: SModelElement[] = [];
+        if (label.find(l => l !== '')) {
+            label.forEach(l => {
+                children.push({
+                    type: 'label:xref',
+                    id: this.idCache.uniqueId(edgeId + '.label'),
+                    text: l
+                } as SLabel);
+            });
+        } else {
+            children.push({
+                type: 'label:xref',
+                id: this.idCache.uniqueId(edgeId + '.label'),
+                text: ' '
+            } as SLabel);
+
+        }
         return {
             type: CS_EDGE_TYPE,
             id: edgeId,
             sourceId: sourceId!,
             targetId: targetId!,
             direction: direction,
-            children: [
-                <SLabel>{
-                    type: 'label:xref',
-                    id: this.idCache.uniqueId(edgeId + '.label'),
-                    text: label
-                }
-            ]
+            children: children
         };
     }
 

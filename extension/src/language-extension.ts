@@ -19,9 +19,11 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
-import { acceptMessageType, SprottyDiagramIdentifier, SprottyLspWebview } from 'sprotty-vscode/lib/lsp';
+import { acceptMessageType, SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import { ActionMessage, JsonMap } from 'sprotty-protocol';
+import { StpaFormattingEditProvider } from './stpa-formatter';
+import { StpaLspWebview } from './wview';
 import { AddTemplateAction, UpdateViewAction } from './actions';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
@@ -30,6 +32,8 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
+        let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
+        vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
         this.languageClient.onReady().then(() => {
             this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
             this.languageClient.onNotification('config/add', (temps) => this.handleAddToConfig(temps));
@@ -123,7 +127,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     }
 
     createWebView(identifier: SprottyDiagramIdentifier): SprottyWebview {
-        const webview = new SprottyLspWebview({
+        const webview = new StpaLspWebview({
             extension: this,
             identifier,
             localResourceRoots: [
@@ -134,6 +138,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
         webview.addActionHandler(WorkspaceEditActionHandler);
         webview.addActionHandler(LspLabelEditActionHandler);
+
         this.singleton = webview;
         this.clientId = identifier.clientId;
         return webview;

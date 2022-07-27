@@ -44,6 +44,20 @@ export function renderRectangle(node: SNode): VNode {
 }
 
 /**
+ * Creates a rounded rectangle for {@code node}.
+ * @param node The node whch should be represented by a rounded rectangle.
+ * @returns A rounded rectangle for {@code node}.
+ */
+export function renderRoundedRectangle(node: SNode): VNode {
+    return <rect
+        x="0" y="0"
+        rx="5" ry="5"
+        width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
+    />;
+}
+
+
+/**
  * Creates a triangle for {@code node}.
  * @param node The node whch should be represented by a triangle.
  * @returns A triangle for {@code node}.

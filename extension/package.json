@@ -3,6 +3,8 @@
     "displayName": "STPA-DSL",
     "description": "A DSL for STPA. Includes an automatic visualization of the defined relationships and control structure.",
     "version": "0.0.1",
+    "publisher": "kieler",
+    "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
     "engines": {
         "vscode": "^1.46.0"
     },
@@ -33,6 +35,17 @@
         "configuration": {
             "title": "STPA",
             "properties": {
+                "stpa.differentForms": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Different forms for STPA aspects"
+                },
+                "stpa.colorStyle": {
+                    "type": "string",
+                    "default": "colorful",
+                    "enum": ["colorful", "standard", "print"],
+                    "enumDescription": ["Each STPA aspect has a different color", "All nodes have the standard color (blue)", "The diagrams are colored in black and white"]
+                },
                 "stpa.templates": {
                     "type": "string[]",
                     "default": [],

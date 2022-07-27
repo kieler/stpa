@@ -1,13 +1,11 @@
 node_modules
-extension/node_modules
 extension/syntaxes
 extension/pack
 language-server/src/generated
-language-server/node_modules
 
-
-webview/node_modules
 webview/lib
 
 */out
-workspace/.vscode/
+*/node_modules
+workspace/.vscode/settings.json
+*.log
