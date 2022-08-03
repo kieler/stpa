@@ -381,17 +381,10 @@
     stroke: black;
 }
 
-.parent-node {
-    fill-opacity: 0.3;
-}
 
 .sprotty-node.selected {
     stroke-width: 2;
     stroke: var(--vscode-button-hover-background);
-}
-
-.parent-selected {
-    fill-opacity: 0.4;
 }
 
 .hidden {
