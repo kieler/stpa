@@ -30,33 +30,31 @@ export class ContextTableProvider {
         const currentDoc = this.textDocuments.getOrCreateDocument(this.uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
         
-        let hazards : string[] = [];
-        let actions: string[] = [];
-        let variables: [string, string[]][] = [];
-        let rules: [string, string, string, [string, string][]][] = [];
-        model.hazards.forEach(hazard => {
-            hazards.push(hazard.name);
-        })
+        //let hazards : string[] = [];
+        let actions: [string, string][] = [];
+        let variables : [string, [string, string[]][]][] = [];
+        let rules: [string, [string, string], string, [string, string][]][] = [];
         model.controlStructure.nodes.forEach(element => {
             element.actions.forEach(action => {
                 action.comms.forEach(command => {
-                    actions.push(command.name);
+                    actions.push([element.name, command.name]);
                 })
             })
+            let var2 : [string, string[]][] = [];
             element.variables.forEach(variable => {
-                variables.push([variable.name, variable.values]);
+                var2.push([variable.name, variable.values]);
             })
+            variables.push([element.name, var2]);
         });
-        const modelRules = model.rules;
-        modelRules.forEach(rule => {
+        model.rules.forEach(rule => {
             let varVals: [string, string][] = [];
             for (let i = 0; i < rule.values.length; i++) {
                 if (rule.vars[i].ref?.name) {
                     varVals.push([rule.vars[i].ref!.name, rule.values[i]]);
                 }
             }
-            if (rule.action.ref?.name) {
-                rules.push([rule.name, rule.action.ref!.name, rule.type.value, varVals]);
+            if (rule.action.ref?.name && rule.system.ref?.name) {
+                rules.push([rule.name, [rule.system.ref!.name, rule.action.ref!.name], rule.type.value, varVals]);
             }
         })
         return [rules, actions, variables] as const;

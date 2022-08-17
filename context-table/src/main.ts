@@ -19,7 +19,9 @@ export class Main {
 
     // variables to store the currently selected options of the select elements in
     private selectedAction: any;
+    private currentController: any;
     private selectedType: number;
+    private currentContext : any[];
 
     constructor() {
         vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
@@ -54,8 +56,12 @@ export class Main {
             mainDiv.appendChild(selector);
             selector.id = "select_action";
             // Call method to apply all the option elements to the select element.
-            this.createSelector(selector, this.currentActions);
-            this.selectedAction = selector.options[selector.selectedIndex].text;
+            const actions = this.createActionHTMLs();
+            this.createSelector(selector, actions);
+            const selected = this.currentActions[selector.selectedIndex];
+            this.currentController = selected[0];
+            this.selectedAction = selected[1];
+            this.getCurrentContext();
             // Create a select element for selecting the action type.
             const typeSelector = document.createElement("select");
             typeSelector.id = "select_type";
@@ -66,11 +72,31 @@ export class Main {
             this.createSelector(typeSelector, providedList);
             this.selectedType = selector.selectedIndex;
             // Call method to create the table.
-            this.createTable(mainDiv, this.currentVariables);
+            this.createTable(mainDiv);
             // Call methods to create listeners on the select elements.
             this.createSelectorListener(mainDiv, selector, true);
             this.createSelectorListener(mainDiv, typeSelector, false);
         }
+    }
+
+    private getCurrentContext() {
+        let found : boolean = false;
+        for(let i = 0; i < this.currentVariables.length && !found; i++) {
+            const currentEntry = this.currentVariables[i];
+            if (currentEntry[0] == this.currentController) {
+                this.currentContext = currentEntry[1];
+                found = true;
+            }
+        }
+    }
+
+    private createActionHTMLs() {
+        let actions : any[] = [];
+        this.currentActions.forEach(current => {
+            let combineStr = current[0] + "." + current[1];
+            actions.push(combineStr);
+        })
+        return actions;
     }
     
     /**
@@ -89,12 +115,15 @@ export class Main {
             oldTable?.parentNode?.removeChild(oldTable);
             // update the variables containing the currently selected options
             if (action) {
-                this.selectedAction = selector.options[selector.selectedIndex].text;
+                const selected = this.currentActions[selector.selectedIndex];
+                this.currentController = selected[0];
+                this.selectedAction = selected[1];
+                this.getCurrentContext();
             } else {
                 this.selectedType = selector.selectedIndex;
             }
             // create a new table which will be up to date
-            this.createTable(mainDiv, this.currentVariables);
+            this.createTable(mainDiv);
         });
     }
 
@@ -133,18 +162,18 @@ export class Main {
      * @param mainDiv The parent element to apply the table to.
      * @param variables The list of context variable-Ids found in the current stpa file.
      */
-    private createTable(mainDiv: HTMLElement, variables: any[]) {
+    private createTable(mainDiv: HTMLElement) {
         // create a table element and append it to the main Div
         const tableDiv = document.createElement("table");
         tableDiv.id = "table";
         mainDiv.appendChild(tableDiv);
         // call method to create the header row
-        this.createHeader(tableDiv, variables);
+        this.createHeader(tableDiv);
         // call method to create the subheader row
-        this.createSubHeader(tableDiv, variables);
-        // filter only the value arrays for each variable out of currentVariables and append them all to an array.
+        this.createSubHeader(tableDiv);
+        // filter only the value arrays for each variable out of currentContext and append them all to an array.
         let varVals : any[] = [];
-        variables.forEach(variable => {
+        this.currentContext.forEach(variable => {
             varVals.push(variable[1]);
         })
         // Call method to recursively create a row for each possible context
@@ -156,7 +185,7 @@ export class Main {
      * @param table The HTML table element to complete.
      * @param variables The list of context variable-Ids found in the current stpa file. Uses it to determine column length of the "Context Variables" column.
      */
-    private createHeader(table: HTMLTableElement, variables: any[]) {
+    private createHeader(table: HTMLTableElement) {
         // create the header row element
         const header = document.createElement("tr");
         table.appendChild(header);
@@ -168,7 +197,7 @@ export class Main {
         // the second header column is for the context and needs to span as many columns as there are context variables
         const vars = document.createElement("th");
         vars.innerHTML = "Context Variables";
-        vars.colSpan = variables.length;
+        vars.colSpan = this.currentContext.length;
         header.appendChild(vars);
         // The third header column is the hazardous column
         const hazardous = document.createElement("th");
@@ -193,12 +222,12 @@ export class Main {
      * @param table The HTML table element to complete.
      * @param variables The list of context variable-Ids found in the current stpa file. Appends all the Ids to the "Context Variables" column.
      */
-    private createSubHeader(table: HTMLTableElement, variables: any[]) {
+    private createSubHeader(table: HTMLTableElement) {
         // create sub-header row element
         const subHeader = document.createElement("tr");
         table.appendChild(subHeader);
         // the control action header spans both rows, so the next thing to be appended to the sub-header are the context variables
-        variables.forEach(variable => {
+        this.currentContext.forEach(variable => {
             let col = document.createElement('th');
             col.innerHTML = variable[0];
             subHeader.appendChild(col);
@@ -228,12 +257,11 @@ export class Main {
         // write the control action into the the first column
         const controlAction = document.createElement("td");
         // the get the control action text out of the currently selected options in the selection elements
-        const action = <HTMLSelectElement> document.getElementById("select_action");
         const type = <HTMLSelectElement> document.getElementById("select_type");
         if(type.options[type.selectedIndex].text == "both") {
-            controlAction.innerHTML = action.options[action.selectedIndex].text + " provided";
+            controlAction.innerHTML = this.selectedAction + " provided";
         } else {
-            controlAction.innerHTML = action.options[action.selectedIndex].text + " " + type.options[type.selectedIndex].text;
+            controlAction.innerHTML = this.selectedAction + " " + type.options[type.selectedIndex].text;
         }
         row.appendChild(controlAction);
         // write the given values into the context variable columns
@@ -340,7 +368,7 @@ export class Main {
     }
 
     /**
-     * Gets the variable names from the currentVariables Array
+     * Gets the variable names from the currentContext Array
      * and returns it together with the array of the current row's values.
      * @param values The array containing the values that have been assigned to the context variables in the current row.
      * @returns An array containing both the variable-names array and the assigned-values array.
@@ -353,7 +381,7 @@ export class Main {
         let currentVars: any[] = [];
         // filter all the variable names out of the variable data and append them to the array
         for (let i = 0; i < values.length; i++) {
-            const currentVar = this.currentVariables[i];
+            const currentVar = this.currentContext[i];
             currentVars.push(currentVar[0]);
         }
         // push both the variable name array and the value array into the end result array 
@@ -375,8 +403,9 @@ export class Main {
         let resultList: [string, number][] = [];
         // check all the rules
         this.currentRules.forEach(rule => {
-            // check if the rule name applies first
-            if (rule[1] == this.selectedAction) {
+            // check if the control action applies first
+            const ruleAction = rule[1];
+            if (ruleAction[0] == this.currentController && ruleAction[1] == this.selectedAction) {
                 // check if the context applies next
                 if (this.checkValues(rule[3], varVals)) {
                     // convert the given type string to lowercase

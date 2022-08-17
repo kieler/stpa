@@ -48,19 +48,22 @@ Aircraft {
             [manual "Manual Braking"] -> Wheels
         }
     }
-    OtherSubsystems {
-        hierarchyLevel 1
-        feedback {
-            [modes "Other system modes", states "states"] -> FlightCrew
-        }
-    }
     BSCU {
         hierarchyLevel 1
+        processModel {
+            aircraftPosition: ["docked", "taxiing", "takeoff", "air", "landing"]
+        }
         controlActions {
             [brake "Brake"] -> Wheels
         }
         feedback {
             [mode "BSCU mode", faults "BSCU faults"] -> FlightCrew 
+        }
+    }
+    OtherSubsystems {
+        hierarchyLevel 1
+        feedback {
+            [modes "Other system modes", states "states"] -> FlightCrew
         }
     }
     Wheels {
@@ -97,7 +100,7 @@ BSCU.brake {
         UCA1 "BSCU Autobrake does not provide the Brake control action during landing roll when the BSCU is armed" [H7.1]
     }     
     providing {
-        UCA2 "BSCU Autobrake provides Brake control action during a normal takeoff" [H7.3, H7.6] 
+        UCA2 "BSCU Autobrake provides Brake control action during takeoff" [H7.3, H7.6] 
         UCA5 "BSCU Autobrake provides Brake control action with an insufficient level of braking during landing roll" [H7.1] 
         UCA6 "BSCU Autobrake provides Brake control action with directional or asymmetrical braking during landing roll" [H7.1, H7.2]     
     }     
