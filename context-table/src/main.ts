@@ -307,23 +307,37 @@ export class Main {
         if (firstRes[1] != 0) {
             // push all the numbers from result into a separate array
             let numbers: number[] = [];
+            let counter : number = 0;
             result.forEach(res => {
                 numbers.push(res[1]);
             })
             // go through all of the hazardous columns
             for(let i = 1; i <= index; i++) {
-                const entry = document.createElement("td");
                 // if there is an entry in the numbers that equals the current, a rule from result should be applied now
                 if (numbers.includes(i)) {
-                    let index = numbers.indexOf(i);
-                    let iRes = result[index];
+                    if (counter != 0) {
+                        const no = document.createElement("td");
+                        no.innerHTML = "No";
+                        no.colSpan = counter;
+                        parent.appendChild(no);
+                        counter = 0;
+                    }
+                    const entry = document.createElement("td");
+                    let numberIndex = numbers.indexOf(i);
+                    let iRes = result[numberIndex];
                     entry.title = iRes[0];
                     entry.innerHTML = "Yes";
+                    parent.appendChild(entry);
                 } else {
                     // else, there is no rule for this cell
-                    entry.innerHTML = "No";
+                    counter = counter + 1;
+                    if (i == index && counter != 0) {
+                        const no = document.createElement("td");
+                        no.innerHTML = "No";
+                        no.colSpan = counter;
+                        parent.appendChild(no);
+                    }
                 }
-                parent.appendChild(entry);
             }
         } else {
             // else, there is no rule for the entire row, so it's filled in with a single "No"
