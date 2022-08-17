@@ -160,7 +160,6 @@ export class Main {
     /**
      * Creates and assembles the table element.
      * @param mainDiv The parent element to apply the table to.
-     * @param variables The list of context variable-Ids found in the current stpa file.
      */
     private createTable(mainDiv: HTMLElement) {
         // create a table element and append it to the main Div
@@ -172,18 +171,21 @@ export class Main {
         // call method to create the subheader row
         this.createSubHeader(tableDiv);
         // filter only the value arrays for each variable out of currentContext and append them all to an array.
-        let varVals : any[] = [];
-        this.currentContext.forEach(variable => {
-            varVals.push(variable[1]);
-        })
-        // Call method to recursively create a row for each possible context
-        this.getCurrentValList(tableDiv, 0, varVals);
+        if(this.currentContext.length > 0) {
+            let varVals : any[] = [];
+            this.currentContext.forEach(variable => {
+                varVals.push(variable[1]);
+            })
+            // Call method to recursively create a row for each possible context
+            this.getCurrentValList(tableDiv, 0, varVals);
+        } else {
+            this.createRow(tableDiv, []);
+        }
     }
 
     /**
      * Creates the header (first table row) of the context table.
      * @param table The HTML table element to complete.
-     * @param variables The list of context variable-Ids found in the current stpa file. Uses it to determine column length of the "Context Variables" column.
      */
     private createHeader(table: HTMLTableElement) {
         // create the header row element
@@ -195,10 +197,12 @@ export class Main {
         controlAction.rowSpan = 2;
         header.appendChild(controlAction);
         // the second header column is for the context and needs to span as many columns as there are context variables
-        const vars = document.createElement("th");
-        vars.innerHTML = "Context Variables";
-        vars.colSpan = this.currentContext.length;
-        header.appendChild(vars);
+        if (this.currentContext.length > 0) {
+            const vars = document.createElement("th");
+            vars.innerHTML = "Context Variables";
+            vars.colSpan = this.currentContext.length;
+            header.appendChild(vars);
+        }
         // The third header column is the hazardous column
         const hazardous = document.createElement("th");
         hazardous.innerHTML = "Hazardous?";
@@ -220,18 +224,19 @@ export class Main {
     /**
      * Creates the sub-header (second table row) of the context table.
      * @param table The HTML table element to complete.
-     * @param variables The list of context variable-Ids found in the current stpa file. Appends all the Ids to the "Context Variables" column.
      */
     private createSubHeader(table: HTMLTableElement) {
         // create sub-header row element
         const subHeader = document.createElement("tr");
         table.appendChild(subHeader);
         // the control action header spans both rows, so the next thing to be appended to the sub-header are the context variables
-        this.currentContext.forEach(variable => {
-            let col = document.createElement('th');
-            col.innerHTML = variable[0];
-            subHeader.appendChild(col);
-        })
+        if (this.currentContext.length > 0) {
+            this.currentContext.forEach(variable => {
+                let col = document.createElement('th');
+                col.innerHTML = variable[0];
+                subHeader.appendChild(col);
+            })
+        }
         // append the hazardous sub-options, which depend on the selected action type
         switch(this.selectedType) {
             case 0:
@@ -264,31 +269,50 @@ export class Main {
             controlAction.innerHTML = this.selectedAction + " " + type.options[type.selectedIndex].text;
         }
         row.appendChild(controlAction);
-        // write the given values into the context variable columns
-        this.createSubElements(row, values, "td");
-        const varVals = this.reappendValNames(values);
-        // call method to calculate if the control action is hazardous
-        const result = this.getResult(varVals);
-        // write the result into the column(s)
-        switch(this.selectedType) {
-            case 0:
-                this.createResults(row, result, 3);
-                break;
-            case 1:
-                const firstRes = result[0];
-                const entry = document.createElement("td");
-                // entry.innerHTML = firstRes[0];
-                if (firstRes[0] == "No") {
-                    entry.innerHTML = firstRes[0];
-                } else {
-                    entry.title = firstRes[0];
-                    entry.innerHTML = "Yes";
-                }
-                row.appendChild(entry);
-                break;
-            case 2:
-                this.createResults(row, result, 4);
-                break;
+        if (values.length > 0) {
+            // write the given values into the context variable columns
+            this.createSubElements(row, values, "td");
+            const varVals = this.reappendValNames(values);
+            // call method to calculate if the control action is hazardous
+            const result = this.getResult(varVals);
+            // write the result into the column(s)
+            switch(this.selectedType) {
+                case 0:
+                    this.createResults(row, result, 3);
+                    break;
+                case 1:
+                    const firstRes = result[0];
+                    const entry = document.createElement("td");
+                    // entry.innerHTML = firstRes[0];
+                    if (firstRes[0] == "No") {
+                        entry.innerHTML = firstRes[0];
+                    } else {
+                        entry.title = firstRes[0];
+                        entry.innerHTML = "Yes";
+                    }
+                    row.appendChild(entry);
+                    break;
+                case 2:
+                    this.createResults(row, result, 4);
+                    break;
+            }
+        } else {
+            let span : number = 0;
+            switch(this.selectedType) {
+                case 0:
+                    span = 3;
+                    break;
+                case 1:
+                    span = 1;
+                    break;
+                case 2:
+                    span = 4;
+                    break;
+            }
+            const no = document.createElement("td");
+            no.innerHTML = "No";
+            no.colSpan = span;
+            row.appendChild(no);
         }
     }
 
