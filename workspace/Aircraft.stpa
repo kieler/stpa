@@ -165,7 +165,7 @@ RL1 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "taxiing"
     }
-}
+}[H6, H7.9]
 RL2 {
     controlAction: FlightCrew.manual
     type: "never"
@@ -173,7 +173,7 @@ RL2 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "takeoff"
     }
-}
+}[H7.1, H7.6]
 RL3 {
     controlAction: FlightCrew.manual
     type: "Not Provided"
@@ -181,7 +181,7 @@ RL3 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "landing"
     }
-}
+}[H2, H3]
 RL4 {
     controlAction: FlightCrew.manual
     type: "too late"
@@ -189,7 +189,7 @@ RL4 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "taxiing"
     }
-}
+}[H7.9]
 RL5 {
     controlAction: FlightCrew.manual
     type: "anytime"
@@ -197,7 +197,7 @@ RL5 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "takeoff"
     }
-}
+}[H7.8]
 RL6 {
     controlAction: FlightCrew.manual
     type: "anytime"
@@ -205,7 +205,7 @@ RL6 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "landing"
     }
-}
+}[H7.1, H7.7]
 RL7 {
     controlAction: FlightCrew.powerOff
     type: "not provided"
@@ -213,7 +213,7 @@ RL7 {
         FlightCrew.BCSUmode = "on",
         FlightCrew.aircraftPosition = "taxiing"
     }
-}
+}[H6, H7.1]
 RL8 {
     controlAction: FlightCrew.powerOff
     type: "Never"
@@ -221,7 +221,7 @@ RL8 {
         FlightCrew.BCSUmode = "on",
         FlightCrew.aircraftPosition = "takeoff"
     }
-}
+}[H7.3]
 RL9 {
     controlAction: FlightCrew.powerOff
     type: "anytime"
@@ -229,7 +229,7 @@ RL9 {
         FlightCrew.BCSUmode = "on",
         FlightCrew.aircraftPosition = "landing"
     }
-}
+}[H7.1]
 RL10 {
     controlAction: FlightCrew.powerOn
     type: "not provided"
@@ -237,7 +237,7 @@ RL10 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "landing"
     }
-}
+}[H7.1]
 RL11 {
     controlAction: FlightCrew.powerOn
     type: "anytime"
@@ -245,7 +245,7 @@ RL11 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "taxiing"
     }
-}
+}[H6, H7.1]
 RL12 {
     controlAction: FlightCrew.powerOn
     type: "anytime"
@@ -253,18 +253,18 @@ RL12 {
         FlightCrew.BCSUmode = "off",
         FlightCrew.aircraftPosition = "takeoff"
     }
-}
+}[H7.3]
 RL13 {
     controlAction: FlightCrew.mc
     type: "not provided"
     context: {
         FlightCrew.BCSUmode = "off"
     }
-}
+}[H3]
 RL14 {
     controlAction: FlightCrew.mc
     type: "never"
     context: {
         FlightCrew.BCSUmode = "on"
     }
-}
+}[H2]

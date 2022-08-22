@@ -29,7 +29,6 @@ export class ContextTablePanel {
     this._update();
     // Listen for the panel being disposed.
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-
   }
 
   ready(): Promise<void> {

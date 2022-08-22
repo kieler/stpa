@@ -288,6 +288,7 @@ export class Main {
                         entry.innerHTML = firstRes[0];
                     } else {
                         entry.title = firstRes[0];
+                        entry.style.textDecoration = "underline dotted";
                         entry.innerHTML = "Yes";
                     }
                     row.appendChild(entry);
@@ -350,6 +351,7 @@ export class Main {
                     let numberIndex = numbers.indexOf(i);
                     let iRes = result[numberIndex];
                     entry.title = iRes[0];
+                    entry.style.textDecoration = "underline dotted";
                     entry.innerHTML = "Yes";
                     parent.appendChild(entry);
                 } else {
