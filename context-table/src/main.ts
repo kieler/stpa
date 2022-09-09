@@ -51,6 +51,8 @@ export class Main {
         // Get the main DIV element that was created by the ContextTablePanel.
         const mainDiv = document.getElementById('main_container');
         if (mainDiv) {
+            const oldSelector = document.getElementById("select_action");
+            oldSelector?.parentNode?.removeChild(oldSelector);
             // Create a selector element for selecting a control action
             const selector = document.createElement("select");
             mainDiv.appendChild(selector);
@@ -62,6 +64,8 @@ export class Main {
             this.currentController = selected[0];
             this.selectedAction = selected[1];
             this.getCurrentContext();
+            const oldTypeSel = document.getElementById("select_type");
+            oldTypeSel?.parentNode?.removeChild(oldTypeSel);
             // Create a select element for selecting the action type.
             const typeSelector = document.createElement("select");
             typeSelector.id = "select_type";
@@ -71,6 +75,8 @@ export class Main {
             // Call method to apply all the option elements to the select element.
             this.createSelector(typeSelector, providedList);
             this.selectedType = selector.selectedIndex;
+            const oldTable = document.getElementById("table");
+            oldTable?.parentNode?.removeChild(oldTable);
             // Call method to create the table.
             this.createTable(mainDiv);
             // Call methods to create listeners on the select elements.
@@ -283,13 +289,11 @@ export class Main {
                 case 1:
                     const firstRes = result[0];
                     const entry = document.createElement("td");
-                    // entry.innerHTML = firstRes[0];
                     if (firstRes[0] == "No") {
                         entry.innerHTML = firstRes[0];
                     } else {
                         entry.title = firstRes[0];
-                        entry.style.textDecoration = "underline dotted";
-                        entry.innerHTML = "Yes";
+                        entry.innerHTML = firstRes[2].toString();
                     }
                     row.appendChild(entry);
                     break;
@@ -324,7 +328,7 @@ export class Main {
      * @param result The results calculated with the getResult method.
      * @param index The number of columns the "Hazardous?"-column currently has.
      */
-    private createResults(parent: HTMLTableRowElement, result: [string, number][], index: number) {
+    private createResults(parent: HTMLTableRowElement, result: [string, number, string[]][], index: number) {
         // check if the first result comes with a 0, which is the indicator that all columns should
         // simply be filled with a single "No" 
         const firstRes = result[0];
@@ -351,8 +355,7 @@ export class Main {
                     let numberIndex = numbers.indexOf(i);
                     let iRes = result[numberIndex];
                     entry.title = iRes[0];
-                    entry.style.textDecoration = "underline dotted";
-                    entry.innerHTML = "Yes";
+                    entry.innerHTML = iRes[2].toString();
                     parent.appendChild(entry);
                 } else {
                     // else, there is no rule for this cell
@@ -438,9 +441,9 @@ export class Main {
      * Else, returns string "No" to be applied to all of the "Hazardous"-column's columns.
      * 
      */
-    private getResult(varVals: any[]): [string, number][] {
+    private getResult(varVals: any[]): [string, number, string[]][] {
         // create an empty array for the end result
-        let resultList: [string, number][] = [];
+        let resultList: [string, number, string[]][] = [];
         // check all the rules
         this.currentRules.forEach(rule => {
             // check if the control action applies first
@@ -456,18 +459,18 @@ export class Main {
                     // this depends on the selected action type in the selector element
                     switch(this.selectedType) {
                         case 0:
-                            if (checkString == "anytime") {resultList.push([rule[0], 1]); return;};
-                            if (checkString == "too early" || checkString == "too late") {resultList.push([rule[0], 2]); return;};
-                            if (checkString == "stopped too soon" || checkString == "applied too long") {resultList.push([rule[0], 3]); return;};
+                            if (checkString == "anytime") {resultList.push([rule[0], 1, rule[4]]); return;};
+                            if (checkString == "too early" || checkString == "too late") {resultList.push([rule[0], 2, rule[4]]); return;};
+                            if (checkString == "stopped too soon" || checkString == "applied too long") {resultList.push([rule[0], 3, rule[4]]); return;};
                             break;
                         case 1:
-                            if (checkString == "not provided" || checkString == "never") {resultList.push([rule[0], 0]); return;};
+                            if (checkString == "not provided" || checkString == "never") {resultList.push([rule[0], 0, rule[4]]); return;};
                             break;
                         case 2:
-                            if (checkString == "anytime") {resultList.push([rule[0], 1]); return;};
-                            if (checkString == "too early" || checkString == "too late") {resultList.push([rule[0], 2]); return;};
-                            if (checkString == "stopped too soon" || checkString == "applied too long") {resultList.push([rule[0], 3]); return;};
-                            if (checkString == "not provided" || checkString == "never") {resultList.push([rule[0], 4]); return;};
+                            if (checkString == "anytime") {resultList.push([rule[0], 1, rule[4]]); return;};
+                            if (checkString == "too early" || checkString == "too late") {resultList.push([rule[0], 2, rule[4]]); return;};
+                            if (checkString == "stopped too soon" || checkString == "applied too long") {resultList.push([rule[0], 3, rule[4]]); return;};
+                            if (checkString == "not provided" || checkString == "never") {resultList.push([rule[0], 4, rule[4]]); return;};
                             break;
                     }
                 }
@@ -475,7 +478,7 @@ export class Main {
         })
         // if the result array remains empty, there is no rule, so push a single "No"
         if(resultList.length == 0) {
-            resultList.push(["No", 0]);
+            resultList.push(["No", 0, []]);
         }
         return resultList;
     }

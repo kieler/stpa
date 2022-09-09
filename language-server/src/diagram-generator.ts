@@ -23,7 +23,7 @@ import { isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, i
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
 import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps, getAspect, getTargets, setPositionsForCSNodes, setPositionsForSTPANodes } from './utils';
+import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './options/synthesis-options';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
@@ -81,13 +81,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             }
         }
         // each node should be placed in a specific layer based on the aspect. therefore positions must be set
-        setPositionsForSTPANodes(stpaNodes);
+        setLevelsForSTPANodes(stpaNodes);
 
         if (model.controlStructure) {
             // determine the nodes of the control structure graph
             const csNodes = model.controlStructure?.nodes.map(n => this.generateCSNode(n, args));
-            // each node should be placed in a specifc layer based on the hierarchy level. therefore positions must be set
-            setPositionsForCSNodes(csNodes);
             // children (nodes and edges) of the control structure
             const CSChildren= [
                 ...csNodes,

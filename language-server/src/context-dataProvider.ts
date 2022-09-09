@@ -30,10 +30,9 @@ export class ContextTableProvider {
         const currentDoc = this.textDocuments.getOrCreateDocument(this.uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
         
-        //let hazards : string[] = [];
         let actions: [string, string][] = [];
         let variables : [string, [string, string[]][]][] = [];
-        let rules: [string, [string, string], string, [string, string][]][] = [];
+        let rules: [string, [string, string], string, [string, string][], string[]][] = [];
         model.controlStructure.nodes.forEach(element => {
             element.actions.forEach(action => {
                 action.comms.forEach(command => {
@@ -53,8 +52,15 @@ export class ContextTableProvider {
                     varVals.push([rule.vars[i].ref!.name, rule.values[i]]);
                 }
             }
+            const hazardList = rule.list.refs;
+            let hazards : string[] = [];
+            hazardList.forEach(hazard => {
+                if(hazard.ref?.name) {
+                    hazards.push(hazard.ref!.name);
+                }
+            });
             if (rule.action.ref?.name && rule.system.ref?.name) {
-                rules.push([rule.name, [rule.system.ref!.name, rule.action.ref!.name], rule.type.value, varVals]);
+                rules.push([rule.name, [rule.system.ref!.name, rule.action.ref!.name], rule.type.value, varVals, hazards]);
             }
         })
         return [rules, actions, variables] as const;

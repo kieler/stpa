@@ -19,8 +19,7 @@ import { AstNode } from "langium";
 import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, 
     isLoss, Hazard, SystemConstraint } from "./generated/ast";
 import { STPAAspect } from "./stpa-model";
-import { CSNode, STPANode } from "./stpa-interfaces";
-import { SShapeElement } from 'sprotty-protocol';
+import { STPANode } from "./stpa-interfaces";
 
 /* export function determineLayerForCSNodes(nodes: CSNode[]): void {
     let layer = nodes.length
@@ -163,10 +162,10 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
 }
 
 /**
- * Sets the position for {@code nodes} depending on the layer they should be in.
+ * Sets the level property for {@code nodes} depending on the layer they should be in.
  * @param nodes The nodes representing the stpa components.
  */
-export function setPositionsForSTPANodes(nodes: STPANode[]): void {
+export function setLevelsForSTPANodes(nodes: STPANode[]): void {
     // determines the maximal hierarchy depth of hazards and system constraints
     let maxHazardDepth = -1;
     let maxSysConsDepth = -1;
@@ -178,21 +177,10 @@ export function setPositionsForSTPANodes(nodes: STPANode[]): void {
             maxSysConsDepth = maxSysConsDepth > node.hierarchyLvl ? maxSysConsDepth : node.hierarchyLvl;
         }
     }
-    // sets positions according to the layer of the nodes.
+    // sets level property to the layer of the nodes.
     for (const node of nodes) {
         const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth);
-        (node as SShapeElement).position = {x: 0, y: 100 * layer};
+        node.level = -layer;
     }
 }
 
-/**
- * Sets the position for {@code nodes} depending on their hierarchy level in the control structure.
- * @param nodes The nodes of the control structure.
- */
-export function setPositionsForCSNodes(nodes: CSNode[]) {
-    for (const node of nodes) {
-        if (node.level) {
-            (node as SShapeElement).position = {x: 0, y: 100 * node.level};
-        }
-    }
-}

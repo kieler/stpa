@@ -107,6 +107,9 @@ export class ContextTablePanel {
     console.log(list.length);
     if (list.length == 3) {
       this.currentData = list;
+      /* if(ContextTablePanel.currentPanel?._panel && ContextTablePanel.currentPanel!._extensionUri && ContextTablePanel.currentPanel!.scriptUri) {
+        this.revive(ContextTablePanel.currentPanel!._panel, ContextTablePanel.currentPanel!._extensionUri, ContextTablePanel.currentPanel!.scriptUri);
+      } */
     } else {
       console.log("Data has wrong format. List length should be 3, but is " + list.length);
     }
