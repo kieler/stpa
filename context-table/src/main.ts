@@ -54,9 +54,17 @@ export class Main {
             const oldSelector = document.getElementById("select_action");
             oldSelector?.parentNode?.removeChild(oldSelector);
             // Create a selector element for selecting a control action
+            const actionDesc = document.createElement("pre");
+            actionDesc.textContent = "Choose a Control Action:";
+            actionDesc.style.position = "absolute";
+            actionDesc.style.left = "10px";
+            mainDiv.appendChild(actionDesc);
             const selector = document.createElement("select");
             mainDiv.appendChild(selector);
             selector.id = "select_action";
+            selector.style.position = "absolute";
+            selector.style.top = "11px";
+            selector.style.left = "210px";
             // Call method to apply all the option elements to the select element.
             const actions = this.createActionHTMLs();
             this.createSelector(selector, actions);
@@ -66,9 +74,18 @@ export class Main {
             this.getCurrentContext();
             const oldTypeSel = document.getElementById("select_type");
             oldTypeSel?.parentNode?.removeChild(oldTypeSel);
+            const typeDesc = document.createElement("pre");
+            typeDesc.textContent = "Choose a Type:";
+            typeDesc.style.position = "absolute";
+            typeDesc.style.top = "40px";
+            typeDesc.style.left = "10px";
+            mainDiv.appendChild(typeDesc);
             // Create a select element for selecting the action type.
             const typeSelector = document.createElement("select");
             typeSelector.id = "select_type";
+            typeSelector.style.position = "absolute";
+            typeSelector.style.top = "51px";
+            typeSelector.style.left = "130px";
             mainDiv.appendChild(typeSelector);
             // The type "both" depicts both prior types in one table.
             const providedList = ["provided", "not provided", "both"];
@@ -168,9 +185,16 @@ export class Main {
      * @param mainDiv The parent element to apply the table to.
      */
     private createTable(mainDiv: HTMLElement) {
+        const tableDesc = document.createElement("pre");
+        tableDesc.textContent = "Hover over the hazards to see their associated rules!";
+        tableDesc.style.position = "absolute";
+        tableDesc.style.top = "90px";
+        mainDiv.appendChild(tableDesc);
         // create a table element and append it to the main Div
         const tableDiv = document.createElement("table");
         tableDiv.id = "table";
+        tableDiv.style.position = "absolute";
+        tableDiv.style.top = "80px";
         mainDiv.appendChild(tableDiv);
         // call method to create the header row
         this.createHeader(tableDiv);
