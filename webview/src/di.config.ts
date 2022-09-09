@@ -30,10 +30,12 @@ import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_
 import { sidebarModule } from './sidebar';
 import { optionsModule } from './options/options-module';
 import { StpaModelViewer } from './model-viewer';
+import { StpaMouseListener } from './stpa-mouselistener';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
+    bind(TYPES.MouseListener).to(StpaMouseListener).inSingletonScope();
     rebind(ModelViewer).to(StpaModelViewer).inSingletonScope();
 
     // configure the diagram elements
