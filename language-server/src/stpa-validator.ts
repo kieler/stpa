@@ -90,7 +90,7 @@ export class StpaValidator {
         // check if all elements are referenced at least once
         for (const node of allElements) {
             if (!references.has(node.name)) {
-                accept('warning', 'This element is nowhere referenced', { node: node, property: 'name' });
+                accept('warning', 'This element is referenced nowhere', { node: node, property: 'name' });
             }
         }
 
