@@ -25,6 +25,7 @@ export class ContextTablePanel {
     this._extensionUri = extensionUri;
     this.scriptUri = scriptUri;
 
+    panel.webview.onDidReceiveMessage(message => this.receiveFromWebview(message));
     // Initialize the webview.
     this._update();
     // Listen for the panel being disposed.
@@ -107,9 +108,7 @@ export class ContextTablePanel {
     console.log(list.length);
     if (list.length == 3) {
       this.currentData = list;
-      /* if(ContextTablePanel.currentPanel?._panel && ContextTablePanel.currentPanel!._extensionUri && ContextTablePanel.currentPanel!.scriptUri) {
-        this.revive(ContextTablePanel.currentPanel!._panel, ContextTablePanel.currentPanel!._extensionUri, ContextTablePanel.currentPanel!.scriptUri);
-      } */
+      ContextTablePanel.currentPanel?._update();
     } else {
       console.log("Data has wrong format. List length should be 3, but is " + list.length);
     }
@@ -133,8 +132,7 @@ export class ContextTablePanel {
   private async _update() {
     const webview = this._panel.webview;
     
-    webview.onDidReceiveMessage(message => this.receiveFromWebview(message));
-    //this._panel.webview.html = this._getHtmlForWebview(webview);
+    //webview.onDidReceiveMessage(message => this.receiveFromWebview(message));
     await this.ready();
     this.sendToWebview(webview, ContextTablePanel.currentData);
   }
