@@ -27,4 +27,35 @@
     but rather scoped to where they should be applied). Allows for finer theme control. */
     --stpa-color-sidebar-background: var(--vscode-sideBar-background);
     --stpa-color-sidebar-trigger-background: var(--vscode-sideBar-background);
+    
+    --stpa-color-sidebar-trigger-background-hover: var(--vscode-sideBar-background);
+    --stpa-color-sidebar-trigger-background-active: var(--vscode-sideBar-background);
+    --stpa-color-sidebar-hover-background: rgba(0, 0, 0, 0.15);
+    /* --stpa-color-sidebar-font-primary: hsl(0, 0%, 12%);
+    --stpa-color-sidebar-icon-primary: hsl(0, 0%, 24%);
+    --stpa-color-primary: #0552b5; */
+
+    /* Colors for stpa aspects */
+    --stpa-loss-dark: #AD0000;
+    --stpa-hazard-dark: #A85400;
+    --stpa-sys-constraint-dark: #006600;
+    --stpa-responsibility-dark: purple;
+    --stpa-uca-dark: #0054A8;
+    --stpa-cont-constraint-dark: #006161;
+    --stpa-scenario-dark: #616100;
+    --stpa-safety-requirement-dark: #2f4f4f;
+
+    --stpa-dark-node: #ffffff00;
+    --stpa-light-node: white;
+
+    --stpa-loss-light: #FF2828;
+    --stpa-hazard-light: #ffa852;
+    --stpa-sys-constraint-light: #00eb00;
+    --stpa-responsibility-light: #ff6bff;
+    --stpa-uca-light: #66b3ff;
+    --stpa-cont-constraint-light: #00cccc;
+    --stpa-scenario-light: #cccc00;
+    --stpa-safety-requirement-light: #8fbcbc;
+
+    /* background: #feffe8 */
 }

@@ -1,0 +1,74 @@
+
+ControlStructure
+CS {
+    CommandAuthority {
+        hierarchyLevel 0
+        controlActions {
+            [ca "Training"] -> Operators
+        }
+    }
+    Operators {
+        hierarchyLevel 1
+        controlActions {
+            [ca "Engage Target"] -> FireControl
+        }
+        feedback {
+            [fb "Exercise Results"] -> CommandAuthority
+        }
+    }
+    FireControl {
+        hierarchyLevel 2
+        controlActions {
+            [ca1 "Status Request"] -> EarlyWarningSystem
+            [ca2 "Status Request"] -> Radar
+            [ca3 "Mode Change"] -> LaunchStation
+        }
+        feedback {
+            [fb "Status"] -> Operators
+        }
+    }
+    EarlyWarningSystem {
+        hierarchyLevel 3
+        feedback {
+            [fb "Report"] -> FireControl
+        }
+    }
+    Radar {
+        hierarchyLevel 3
+        feedback {
+            [fb "Status"] -> FireControl
+        }
+    }
+    LaunchStation {
+        hierarchyLevel 3
+        controlActions {
+            [ca1 "arm"] -> FlightComputer
+            [ca2 "arm"] -> Simulator
+        }
+        feedback {
+            [fb "Status"] -> FireControl
+        }
+    }
+    Simulator {
+        hierarchyLevel 4
+        feedback {
+            [fb "status"] -> LaunchStation
+        }
+    }
+    FlightComputer {
+        hierarchyLevel 4
+        controlActions {
+            [ca "arm"] -> Hardware
+        }
+        feedback {
+            [fb "status"] -> LaunchStation
+        }
+    }
+    Hardware {
+        hierarchyLevel 5
+        feedback {
+            [fb1 "status"] -> FlightComputer
+            [fb2 "voltages"] -> LaunchStation
+        }
+    }
+}

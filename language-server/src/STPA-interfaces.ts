@@ -25,7 +25,7 @@ export interface STPANode extends SNode {
     aspect: STPAAspect
     description: string
     hierarchyLvl: number
-    connected?: boolean
+    highlight?: boolean
     level?: number
 }
 
@@ -33,7 +33,7 @@ export interface STPANode extends SNode {
  * Edge representing an edge in the relationship graph.
  */
  export interface STPAEdge extends SEdge {
-    connected?: boolean
+    highlight?: boolean
 }
 
 /**

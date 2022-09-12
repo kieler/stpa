@@ -35,7 +35,7 @@ export class STPANode extends SNode {
     aspect: STPAAspect = STPAAspect.UNDEFINED
     description: string = ""
     hierarchyLvl: number = 0
-    connected?: boolean
+    highlight?: boolean
     level?: number
 }
 
@@ -43,7 +43,7 @@ export class STPANode extends SNode {
  * Edge representing an edge in the relationship graph.
  */
 export class STPAEdge extends SEdge {
-    connected?: boolean;
+    highlight?: boolean;
 }
 
 /**

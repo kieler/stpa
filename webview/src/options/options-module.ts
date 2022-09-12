@@ -18,7 +18,7 @@
 import { ContainerModule } from "inversify";
 import { configureActionHandler, TYPES } from "sprotty";
 import { DISymbol } from "../di.symbols";
-import { SetRenderOptionAction, ResetRenderOptionsAction } from "./actions";
+import { SetRenderOptionAction, ResetRenderOptionsAction, SendConfigAction } from "./actions";
 import { OptionsRenderer } from "./options-renderer";
 import { GeneralPanel } from "./general-panel";
 import { RenderOptionsRegistry } from "./render-options-registry";
@@ -42,4 +42,5 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     const ctx = { bind, isBound };
     configureActionHandler(ctx, SetRenderOptionAction.KIND, DISymbol.RenderOptionsRegistry);
     configureActionHandler(ctx, ResetRenderOptionsAction.KIND, DISymbol.RenderOptionsRegistry);
+    configureActionHandler(ctx, SendConfigAction.KIND, DISymbol.RenderOptionsRegistry);
 });
