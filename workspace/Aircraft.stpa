@@ -262,9 +262,9 @@ RL13 {
     }
 }[H3]
 RL14 {
-    controlAction: FlightCrew.mc
-    type: "never"
+   controlAction: FlightCrew.mc
+    type: "not provided"
     context: {
         FlightCrew.BCSUmode = "on"
-    }
-}[H2]
+    } 
+} [H2]

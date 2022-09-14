@@ -20,8 +20,9 @@ export class Main {
     // variables to store the currently selected options of the select elements in
     private selectedAction: any;
     private currentController: any;
-    private selectedType: number;
+    private selectedType: number = 0;
     private currentContext : any[];
+    private selIndexA: number = 0;
 
     constructor() {
         vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
@@ -60,14 +61,15 @@ export class Main {
             actionDesc.style.left = "10px";
             mainDiv.appendChild(actionDesc);
             const selector = document.createElement("select");
-            mainDiv.appendChild(selector);
-            selector.id = "select_action";
-            selector.style.position = "absolute";
-            selector.style.top = "11px";
-            selector.style.left = "210px";
             // Call method to apply all the option elements to the select element.
             const actions = this.createActionHTMLs();
             this.createSelector(selector, actions);
+            mainDiv.appendChild(selector);
+            selector.id = "select_action";
+            selector.selectedIndex = this.selIndexA;
+            selector.style.position = "absolute";
+            selector.style.top = "11px";
+            selector.style.left = "210px";
             const selected = this.currentActions[selector.selectedIndex];
             this.currentController = selected[0];
             this.selectedAction = selected[1];
@@ -82,16 +84,16 @@ export class Main {
             mainDiv.appendChild(typeDesc);
             // Create a select element for selecting the action type.
             const typeSelector = document.createElement("select");
+            // The type "both" depicts both prior types in one table.
+            const providedList = ["provided", "not provided", "both"];
+            // Call method to apply all the option elements to the select element.
+            this.createSelector(typeSelector, providedList);
+            typeSelector.selectedIndex = this.selectedType;
             typeSelector.id = "select_type";
             typeSelector.style.position = "absolute";
             typeSelector.style.top = "51px";
             typeSelector.style.left = "130px";
             mainDiv.appendChild(typeSelector);
-            // The type "both" depicts both prior types in one table.
-            const providedList = ["provided", "not provided", "both"];
-            // Call method to apply all the option elements to the select element.
-            this.createSelector(typeSelector, providedList);
-            this.selectedType = selector.selectedIndex;
             const oldTable = document.getElementById("table");
             oldTable?.parentNode?.removeChild(oldTable);
             // Call method to create the table.
@@ -138,6 +140,7 @@ export class Main {
             oldTable?.parentNode?.removeChild(oldTable);
             // update the variables containing the currently selected options
             if (action) {
+                this.selIndexA = selector.selectedIndex;
                 const selected = this.currentActions[selector.selectedIndex];
                 this.currentController = selected[0];
                 this.selectedAction = selected[1];
