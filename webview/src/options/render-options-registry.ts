@@ -32,7 +32,7 @@ export class ColorStyleOption implements ChoiceRenderOption {
     readonly id: string = ColorStyleOption.ID;
     readonly name: string = ColorStyleOption.NAME;
     readonly type: TransformationOptionType = TransformationOptionType.CHOICE;
-    readonly availableValues: string[] = ["colorful", "standard", "print", "lessColors"];
+    readonly availableValues: string[] = ["colorful", "standard", "black & white", "fewer colors"];
     readonly initialValue: string = "colorful";
     currentValue = "colorful";
 }
