@@ -19,6 +19,7 @@ import { Action, DiagramServices, DiagramServer, RequestAction, RequestModelActi
 import { UpdateViewAction } from './actions';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions';
 import { StpaSynthesisOptions } from './options/synthesis-options';
+import { DropDownOption } from './options/option-models';
 
 export class StpaDiagramServer extends DiagramServer {
 
@@ -57,6 +58,10 @@ export class StpaDiagramServer extends DiagramServer {
             const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
                 opt.currentValue = option.currentValue;
+                if ((opt.synthesisOption as DropDownOption).currentId) {
+                    (opt.synthesisOption as DropDownOption).currentId = option.currentValue;
+                    this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });        
+                }
             }
         }
         const updateAction = {
@@ -84,8 +89,8 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
-        this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
         super.handleRequestModel(action);
+        this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
     }
 
 }

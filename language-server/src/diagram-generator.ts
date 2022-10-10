@@ -19,6 +19,7 @@ import { AstNode } from 'langium';
 import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty';
 import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
 import {
+    ActionUCAs,
     isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
     isSystemConstraint, isUCA, Model, Node
 } from './generated/ast';
@@ -45,6 +46,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     protected generateRoot(args: GeneratorContext<Model>): SModelRoot {
         const { document } = args;
         const model: Model = document.parseResult.value;
+        
+        this.setFilterOption(model.allUCAs)
 
         // determine the children for the STPA graph
         // for each component a node is generated with edges representing the references of the component
@@ -69,11 +72,12 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         }
         stpaChildren = stpaChildren.concat([
             ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
-            ...model.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
-            ...model.controllerConstraints?.map(c => this.generateAspectWithEdges(c, args)).flat(1),
-            ...model.scenarios?.map(s => this.generateAspectWithEdges(s, args)).flat(1),
+            ...model.allUCAs?.filter(allUCA => (allUCA.system.ref?.name + "." + allUCA.action.ref?.name) == this.options.getFilteringUCAs() || this.options.getFilteringUCAs() == "all UCAs").map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
+            ...model.controllerConstraints?.filter(cons => (cons.refs[0].ref?.$container.system.ref?.name + "." + cons.refs[0].ref?.$container.action.ref?.name) == this.options.getFilteringUCAs() || this.options.getFilteringUCAs() == "all UCAs").map(c => this.generateAspectWithEdges(c, args)).flat(1),
+            ...model.scenarios?.filter(scenario => (!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "." + scenario.uca?.ref?.$container.action.ref?.name) == this.options.getFilteringUCAs() || this.options.getFilteringUCAs() == "all UCAs").map(s => this.generateAspectWithEdges(s, args)).flat(1),
             ...model.safetyCons?.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
         ]);
+
 
         // filtering the nodes of the STPA graph
         const stpaNodes: STPANode[] = [];
@@ -83,7 +87,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             }
         }
         // each node should be placed in a specific layer based on the aspect. therefore positions must be set
-        setLevelsForSTPANodes(stpaNodes);
+        setLevelsForSTPANodes(stpaNodes, this.options.getGroupingUCAs());
 
         if (model.controlStructure) {
             // determine the nodes of the control structure graph
@@ -125,6 +129,19 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 ]
             };
         }
+    }
+
+    protected setFilterOption(allUCAs: ActionUCAs[]) {
+        const set = new Set<string>();
+        set.add("all UCAs");
+        allUCAs.forEach(uca => {
+            if (!set.has(uca.system.ref?.name + "." + uca.action.ref?.name)) {
+                set.add(uca.system.ref?.name + "." + uca.action.ref?.name);
+            }
+        })
+        const list: { displayName: string; id: string }[] = [];
+        set.forEach(entry => list.push({displayName: entry, id: entry}));
+        this.options.updateFilterUCAsOption(list);
     }
 
     /**
@@ -264,6 +281,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     private generateAspectWithEdges(node: AstNode, args: GeneratorContext<Model>): SModelElement[] {
         // node must be created first in order to access the id when creating the edges
         const stpaNode = this.generateSTPANode(node, args);
+        if (isUCA(node) && node.$container.system.ref) {
+            stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name
+        }
         const elements: SModelElement[] = this.generateEdgesForSTPANode(node, args);
         elements.push(stpaNode);
         return elements;

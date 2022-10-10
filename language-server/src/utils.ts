@@ -16,8 +16,10 @@
  */
 
 import { AstNode } from "langium";
-import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, 
-    isLoss, Hazard, SystemConstraint } from "./generated/ast";
+import {
+    isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
+    isLoss, Hazard, SystemConstraint
+} from "./generated/ast";
 import { STPAAspect } from "./stpa-model";
 import { STPANode } from "./stpa-interfaces";
 
@@ -56,7 +58,7 @@ import { STPANode } from "./stpa-interfaces";
  */
 export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
     if (node) {
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) { 
+        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) {
             const targets: AstNode[] = [];
             for (const ref of node.refs) {
                 if (ref?.ref) { targets.push(ref.ref); }
@@ -118,7 +120,7 @@ export function getAspect(node: AstNode): STPAAspect {
  * @param topElements The top elements that possbible have children.
  * @returns A list with the given {@code topElements} and their descendants.
  */
-export function collectElementsWithSubComps(topElements: (Hazard|SystemConstraint)[]): AstNode[] {
+export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): AstNode[] {
     let result = topElements;
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {
@@ -136,11 +138,12 @@ export function collectElementsWithSubComps(topElements: (Hazard|SystemConstrain
  * @param node STPANode for which the layer should be determined.
  * @param hazardDepth Maximal depth of the hazard hierarchy.
  * @param sysConsDepth Maximal depth of the system-level constraint hierarchy.
+ * @param map Maps control actions to group number.
  * @returns The number of the layer {@code node} should be in.
  */
-function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number): number {
-    switch(node.aspect) {
-        case STPAAspect.LOSS: 
+function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number, map: Map<string, number>, groupUCAs: boolean): number {
+    switch (node.aspect) {
+        case STPAAspect.LOSS:
             return 0;
         case STPAAspect.HAZARD:
             return 1 + node.hierarchyLvl;
@@ -149,13 +152,19 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
         case STPAAspect.RESPONSIBILITY:
             return 3 + hazardDepth + sysConsDepth;
         case STPAAspect.UCA:
+            if (groupUCAs) {
+                if (node.controlAction && !map.has(node.controlAction)) {
+                    map.set(node.controlAction, map.size)
+                }
+                return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!)!;
+            }
             return 4 + hazardDepth + sysConsDepth;
         case STPAAspect.CONTROLLERCONSTRAINT:
-            return 5 + hazardDepth + sysConsDepth;
+            return 5 + hazardDepth + sysConsDepth + map.size;
         case STPAAspect.SCENARIO:
-            return 6 + hazardDepth + sysConsDepth;
+            return 6 + hazardDepth + sysConsDepth + map.size;
         case STPAAspect.SAFETYREQUIREMENT:
-            return 7 + hazardDepth + sysConsDepth;
+            return 7 + hazardDepth + sysConsDepth + map.size;
         default:
             return -1;
     }
@@ -165,7 +174,7 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
  * Sets the level property for {@code nodes} depending on the layer they should be in.
  * @param nodes The nodes representing the stpa components.
  */
-export function setLevelsForSTPANodes(nodes: STPANode[]): void {
+export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: boolean): void {
     // determines the maximal hierarchy depth of hazards and system constraints
     let maxHazardDepth = -1;
     let maxSysConsDepth = -1;
@@ -177,9 +186,11 @@ export function setLevelsForSTPANodes(nodes: STPANode[]): void {
             maxSysConsDepth = maxSysConsDepth > node.hierarchyLvl ? maxSysConsDepth : node.hierarchyLvl;
         }
     }
+
+    let map = new Map<string, number>()
     // sets level property to the layer of the nodes.
     for (const node of nodes) {
-        const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth);
+        const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth, map, groupUCAs);
         node.level = -layer;
     }
 }
