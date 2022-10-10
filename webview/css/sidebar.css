@@ -33,6 +33,7 @@
     box-shadow: var(--stpa-sidebar-shadow);
     color: var(--stpa-color-sidebar-font-primary);
     font-size: var(--stpa-font-size-base);
+    font-family: Arial, sans-serif;
 
     transition: transform var(--stpa-transition);
     transform: translateX(100%);

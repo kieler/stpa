@@ -1,7 +1,7 @@
 import { MouseListener, SLabel, SModelElement } from "sprotty";
 import { Action } from "sprotty-protocol";
 import { flagConnectedElements, flagSameAspect } from "./helper-methods";
-import { STPAEdge, STPANode, STPA_NODE_TYPE } from "./STPA-model";
+import { STPAEdge, STPANode, STPA_NODE_TYPE } from "./stpa-model";
 
 export class StpaMouseListener extends MouseListener {
 

@@ -42,8 +42,8 @@
                 },
                 "stpa.colorStyle": {
                     "type": "string",
-                    "default": "colorful",
-                    "enum": ["colorful", "standard", "print"],
+                    "default": "fewer colors",
+                    "enum": ["colorful", "standard", "black & white", "fewer colors"],
                     "enumDescription": ["Each STPA aspect has a different color", "All nodes have the standard color (blue)", "The diagrams are colored in black and white"]
                 }
             }
