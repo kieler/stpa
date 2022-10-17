@@ -36,18 +36,25 @@ const hierarchicalGraphOption: ValuedSynthesisOption = {
     currentValue: true
 };
 
+export enum groupValue {
+    NO_GROUPING,
+    CONTROL_ACTION,
+    SYSTEM_COMPONENT
+}
+
 const groupingOfUCAs: ValuedSynthesisOption = {
     synthesisOption: {
         id: groupingUCAsID,
-        name: "Group UCAs by Control Action",
-        type: TransformationOptionType.CHECK,
-        initialValue: true,
-        currentValue: true,
-        values: [true, false]
+        name: "Group UCAs",
+        type: TransformationOptionType.CHOICE,
+        initialValue: "no grouping",
+        currentValue: "no grouping",
+        values: ["no grouping", "Group by Control Action", "Group by System Component"]
     },
-    currentValue: true
+    currentValue: "no grouping"
 };
 
+//TODO: update must be sent after file changes
 const filteringOfUCAs: ValuedSynthesisOption = {
     synthesisOption: {
         id: filteringUCAsID,
@@ -80,8 +87,13 @@ export class StpaSynthesisOptions {
         return option?.currentValue;
     }
 
-    getGroupingUCAs(): boolean {
+    getGroupingUCAs(): groupValue {
         const option = this.options.find(option => option.synthesisOption.id === groupingUCAsID);
+        switch(option?.currentValue) {
+            case "no grouping": return groupValue.NO_GROUPING
+            case "Group by Control Action": return groupValue.CONTROL_ACTION
+            case "Group by System Component": return groupValue.SYSTEM_COMPONENT
+        }
         return option?.currentValue;
     }
 
