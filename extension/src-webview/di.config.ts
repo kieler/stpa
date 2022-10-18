@@ -23,7 +23,7 @@ import {
     configureModelElement, ConsoleLogger, HtmlRoot,
     HtmlRootView, LogLevel, overrideViewerOptions, PreRenderedElement,
     PreRenderedView, SLabelView,
-    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge, ModelViewer, RectangularNodeView
+    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge, ModelViewer
 } from 'sprotty';
 import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView } from './views';
 import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE } from './stpa-model';
@@ -41,13 +41,11 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
     configureModelElement(context, 'graph', SGraph, STPAGraphView);
-    configureModelElement(context, 'node', SNode, RectangularNodeView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
     configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
     configureModelElement(context, 'label', SLabel, SLabelView);
     configureModelElement(context, 'label:xref', SLabel, SLabelView);
-    configureModelElement(context, 'edge', SEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_EDGE_TYPE, SEdge, PolylineArrowEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, 'html', HtmlRoot, HtmlRootView);

@@ -25,7 +25,7 @@ import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./stpa-model";
  */
 export function collectAllChildren(nodes: SNode[], children: SNode[]): void {
     for (const node of nodes) {
-        if (node.children && node.children.length != 0) {
+        if (node.children.length != 0) {
             const childrenNodes = node.children.filter(child => child.type.startsWith('node')) as SNode[];
             children.push(...childrenNodes);
             collectAllChildren(childrenNodes, children);
