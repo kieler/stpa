@@ -42,8 +42,8 @@
                 },
                 "stpa.colorStyle": {
                     "type": "string",
-                    "default": "colorful",
-                    "enum": ["colorful", "standard", "print"],
+                    "default": "fewer colors",
+                    "enum": ["colorful", "standard", "black & white", "fewer colors"],
                     "enumDescription": ["Each STPA aspect has a different color", "All nodes have the standard color (blue)", "The diagrams are colored in black and white"]
                 },
                 "stpa.templates": {
@@ -197,6 +197,12 @@
     ],
     "main": "./pack/extension",
 
+    "dependencies": {
+        "reflect-metadata": "^0.1.13",
+        "feather-icons": "^4.28.0",
+        "sprotty": "~0.11.1",
+        "sprotty-vscode-webview": "^0.2.0"
+      },
     "devDependencies": {
         "@types/node": "^12.12.6",
         "@types/vscode": "1.67.0",
@@ -204,21 +210,21 @@
         "source-map-loader": "^3.0.0",
         "sprotty-vscode": "^0.2.0",
         "stpa-language-server": "^0.0.0",
-        "stpa-sprotty-webview": "^0.0.8",
-        "stpa-template-webview": "^0.0.1",
         "ts-loader": "^9.2.6",
         "typescript": "3.8.3",
         "vscode-languageclient": "^7.0.0",
         "webpack": "^5.64.2",
-        "webpack-cli": "^4.9.1"
+        "webpack-cli": "^4.9.1",
+        "@types/feather-icons": "^4.7.0",
+        "css-loader": "^6.5.1",
+        "file-loader": "^6.2.0",
+        "style-loader": "^1.2.1"
     },
     "scripts": {
-        "prepare": "yarn run clean && yarn run build && yarn run copy-language-server && yarn run copy-webview && yarn run copy-tempWebview",
+        "prepare": "yarn run clean && yarn run build && yarn run copy-language-server",
         "clean": "rimraf pack",
         "build": "webpack --mode=development",
         "watch": "webpack --mode=development --watch",
-        "copy-language-server": "copy ..\\language-server\\out\\* pack",
-        "copy-webview": "xcopy ..\\webview\\out\\* pack",
-        "copy-tempWebview": "xcopy ..\\templateWebview\\out\\tempWebview.js pack"
+        "copy-language-server": "copy ..\\language-server\\out\\* pack"
     }
 }

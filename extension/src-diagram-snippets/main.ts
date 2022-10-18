@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import '../css/diagram.css';
+import './css/diagram.css';
 import { click } from './mouseListener';
 import { patch, panel, createTemps, bntID, txtID } from './html';
 import { VNode } from 'snabbdom';
