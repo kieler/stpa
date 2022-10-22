@@ -12,7 +12,6 @@
     },
     "workspaces": [
       "language-server",
-      "webview",
       "extension"
     ]
   }
