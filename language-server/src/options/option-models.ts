@@ -82,7 +82,9 @@ export interface Pair<K, V> {
     v: V
 }
 
-
+/**
+ * A SynthesisOption with the DROPDOWN type.
+ */
 export interface DropDownOption extends SynthesisOption {
     currentId: string
     availableValues: { displayName: string; id: string }[];

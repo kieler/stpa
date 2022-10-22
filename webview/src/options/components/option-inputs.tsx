@@ -163,12 +163,16 @@ export function CategoryOption(props: CategoryOptionProps, children: VNode[]): V
     );
 }
 
+/**
+ * Properties for dropdown menus.
+ */
 interface DropDownMenuProps extends BaseProps<string> {
     currentId: string;
     availableValues: { displayName: string; id: string }[];
     onChange: (newValue: string) => void;
 }
 
+/** Renders a dropdown menu. */
 export function DropDownMenuOption(props: DropDownMenuProps): VNode {
     // The sprotty jsx function always puts an additional 'props' key around the element, requiring this hack.
     props = (props as any as {props: DropDownMenuProps}).props

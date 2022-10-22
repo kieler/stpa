@@ -42,6 +42,10 @@ export enum groupValue {
     SYSTEM_COMPONENT
 }
 
+/**
+ * Option to determine the grouping of UCAs.
+ * It can be no grouping, grouping by control action or grouping by system component.
+ */
 const groupingOfUCAs: ValuedSynthesisOption = {
     synthesisOption: {
         id: groupingUCAsID,
@@ -55,6 +59,9 @@ const groupingOfUCAs: ValuedSynthesisOption = {
 };
 
 //TODO: update must be sent after file changes
+/**
+ * Option to filter the UCAs based on their control action
+ */
 const filteringOfUCAs: ValuedSynthesisOption = {
     synthesisOption: {
         id: filteringUCAsID,
@@ -102,10 +109,16 @@ export class StpaSynthesisOptions {
         return option?.currentValue;
     }
 
+    /**
+     * Updates the filterUCAs option with the availabe cotrol actions.
+     * @param values The currently avaiable control actions.
+     */
     updateFilterUCAsOption(values: { displayName: string; id: string }[]) {
         const option = this.options.find(option => option.synthesisOption.id === filteringUCAsID);
         if (option) {
             (option.synthesisOption as DropDownOption).availableValues = values;
+            // if the last selected control action is not available anymore, 
+            // set the option to the first control action of the new list
             if (!values.find(val => val.id == (option.synthesisOption as DropDownOption).currentId)) {
                 (option.synthesisOption as DropDownOption).currentId = values[0].id
                 option.synthesisOption.currentValue = values[0].id;

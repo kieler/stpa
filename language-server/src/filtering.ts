@@ -18,6 +18,9 @@
 import { ActionUCAs, ContConstraint, Graph, Hazard, Loss, LossScenario, Model, Resps, SafetyConstraint, SystemConstraint } from "./generated/ast";
 import { StpaSynthesisOptions } from "./options/synthesis-options";
 
+/**
+ * Needed to work on a filtered model without changing the original model.
+ */
 export class CustomModel {
     losses: Loss[];
     hazards: Hazard[];
@@ -30,13 +33,23 @@ export class CustomModel {
     controlStructure: Graph;
 }
 
+/**
+ * Creates a new model based on the original {@code model} and the {@code options}.
+ * @param model The original model that should be filtered.
+ * @param options The synthesis options determining what should be filtered.
+ * @returns A new model which only contains the filtered components.
+ */
 export function filterModel(model: Model, options: StpaSynthesisOptions): CustomModel {
+    // updates the control actions that can be used to filter the UCAs
     setFilterUCAOption(model.allUCAs, options);
     let newModel = new CustomModel();
+    // aspects for which no filter exists are just copied
     newModel.losses = model.losses;
     newModel.hazards = model.hazards;
     newModel.systemLevelConstraints = model.systemLevelConstraints;
     newModel.responsibilities = model.responsibilities;
+
+    // filter UCAs by the filteringUCA option
     newModel.allUCAs = model.allUCAs?.filter(allUCA =>
         (allUCA.system.ref?.name + "." + allUCA.action.ref?.name) == options.getFilteringUCAs()
         || options.getFilteringUCAs() == "all UCAs");
@@ -48,14 +61,21 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
         (!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "."
             + scenario.uca?.ref?.$container.action.ref?.name) == options.getFilteringUCAs()
         || options.getFilteringUCAs() == "all UCAs");
+
     newModel.safetyCons = model.safetyCons;
     newModel.controlStructure = model.controlStructure;
     return newModel;
 }
 
+/**
+ * Updates the filterUCA option with the current available control actions.
+ * @param allUCAs All UCAs.
+ * @param options The synthesis options for the model.
+ */
 function setFilterUCAOption(allUCAs: ActionUCAs[], options: StpaSynthesisOptions) {
     const set = new Set<string>();
     set.add("all UCAs");
+    // collect all available control actions
     allUCAs.forEach(uca => {
         if (!set.has(uca.system.ref?.name + "." + uca.action.ref?.name)) {
             set.add(uca.system.ref?.name + "." + uca.action.ref?.name);
@@ -63,5 +83,6 @@ function setFilterUCAOption(allUCAs: ActionUCAs[], options: StpaSynthesisOptions
     });
     const list: { displayName: string; id: string; }[] = [];
     set.forEach(entry => list.push({ displayName: entry, id: entry }));
+    // update the option
     options.updateFilterUCAsOption(list);
 }

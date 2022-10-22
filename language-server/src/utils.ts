@@ -153,18 +153,21 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
         case STPAAspect.RESPONSIBILITY:
             return 3 + hazardDepth + sysConsDepth;
         case STPAAspect.UCA:
-            if (groupUCAs == groupValue.CONTROL_ACTION) {
-                if (node.controlAction && !map.has(node.controlAction)) {
-                    map.set(node.controlAction, map.size)
-                }
-                return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!)!;
-            } else if (groupUCAs == groupValue.SYSTEM_COMPONENT) {
-                if (node.controlAction && !map.has(node.controlAction.substring(0, node.controlAction.indexOf(".")))) {
-                    map.set(node.controlAction.substring(0, node.controlAction.indexOf(".")), map.size)
-                }
-                return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!.substring(0, node.controlAction!.indexOf(".")))!;
+            // each UCA group gets its own layer
+            switch(groupUCAs) {
+                case groupValue.CONTROL_ACTION:
+                    if (node.controlAction && !map.has(node.controlAction)) {
+                        map.set(node.controlAction, map.size)
+                    }
+                    return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!)!;
+                case groupValue.SYSTEM_COMPONENT:
+                    if (node.controlAction && !map.has(node.controlAction.substring(0, node.controlAction.indexOf(".")))) {
+                        map.set(node.controlAction.substring(0, node.controlAction.indexOf(".")), map.size)
+                    }
+                    return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!.substring(0, node.controlAction!.indexOf(".")))!;
+                default: 
+                    return 4 + hazardDepth + sysConsDepth;
             }
-            return 4 + hazardDepth + sysConsDepth;
         case STPAAspect.CONTROLLERCONSTRAINT:
             return 5 + hazardDepth + sysConsDepth + map.size;
         case STPAAspect.SCENARIO:
@@ -179,6 +182,7 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
 /**
  * Sets the level property for {@code nodes} depending on the layer they should be in.
  * @param nodes The nodes representing the stpa components.
+ * @param groupUCAs Determines whether and how UCAs are grouped.
  */
 export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue): void {
     // determines the maximal hierarchy depth of hazards and system constraints
@@ -193,6 +197,7 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
         }
     }
 
+    // used to determine which control action or system component belongs to which group number
     let map = new Map<string, number>()
     // sets level property to the layer of the nodes.
     for (const node of nodes) {

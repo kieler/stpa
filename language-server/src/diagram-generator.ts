@@ -46,6 +46,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     protected generateRoot(args: GeneratorContext<Model>): SModelRoot {
         const { document } = args;
         let model: Model = document.parseResult.value;
+        // filter model based on the options set by the user
         let filteredModel = filterModel(model, this.options)
 
         // determine the children for the STPA graph
@@ -267,6 +268,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     private generateAspectWithEdges(node: AstNode, args: GeneratorContext<Model>): SModelElement[] {
         // node must be created first in order to access the id when creating the edges
         const stpaNode = this.generateSTPANode(node, args);
+        // uca nodes need to save their control action in order to be able to group them by the actions
         if (isUCA(node) && node.$container.system.ref) {
             stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name
         }

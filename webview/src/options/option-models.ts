@@ -54,6 +54,9 @@ export interface RangeOption extends SynthesisOption {
     stepSize: number
 }
 
+/**
+ * A SynthesisOption with the DROPDOWN type.
+ */
 export interface DropDownOption extends SynthesisOption {
     currentId: string
     availableValues: { displayName: string; id: string }[];
