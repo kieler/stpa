@@ -83,6 +83,8 @@ export class StpaDiagramServer extends DiagramServer {
             newRoot.revision = ++this.state.revision;
             this.state.currentRoot = newRoot;
             await this.submitModel(this.state.currentRoot, true, action);
+            // ensures the the filterUCA option is correct
+            this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
         } catch (err) {
             this.rejectRemoteRequest(action, err as Error);
             console.error('Failed to generate diagram:', err);
@@ -90,7 +92,7 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
-        super.handleRequestModel(action);
+        await super.handleRequestModel(action);
         this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
     }
 

@@ -58,7 +58,6 @@ const groupingOfUCAs: ValuedSynthesisOption = {
     currentValue: "no grouping"
 };
 
-//TODO: update must be sent after file changes
 /**
  * Option to filter the UCAs based on their control action
  */

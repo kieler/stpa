@@ -121,6 +121,19 @@ FlightCrew.powerOff {
     stoppedTooSoon {}
 }
 
+/* FlightCrew.mc {
+    notProviding {
+        UCAM1 "Crew does not provide BSCU Power Off when abnormal WBS behavior occurs" [H6, H7.1, H7.4]
+    }
+    providing {
+        UCAM2 "Crew provides BSCU Power Off when Anti-Skid functionality is needed and WBS is functioning normally" [H6, H7.1]
+    }
+    tooEarly/Late {
+        UCAM3 "Crew powers off BSCU too early before Autobrake or Anti-Skid behavior is completed when it is needed" [H6, H7.1]
+    }
+    stoppedTooSoon {}
+} */
+
 ControllerConstraints
 C1 "BSCU Autobrake must provide the Brake control action during landing roll when the BSCU is armed" [UCA1] 
 C2 "BSCU Autobrake must not provide Brake control action during a normal takeoff" [UCA2]
