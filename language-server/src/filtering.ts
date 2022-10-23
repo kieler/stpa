@@ -46,23 +46,26 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
     // aspects for which no filter exists are just copied
     newModel.losses = model.losses;
     newModel.hazards = model.hazards;
-    newModel.systemLevelConstraints = model.systemLevelConstraints;
-    newModel.responsibilities = model.responsibilities;
+
+    newModel.systemLevelConstraints = options.getHideSysCons() ? [] : model.systemLevelConstraints;
+    newModel.responsibilities = options.getHideSysCons() || options.getHideRespsCons() ? [] : model.responsibilities;
 
     // filter UCAs by the filteringUCA option
     newModel.allUCAs = model.allUCAs?.filter(allUCA =>
         (allUCA.system.ref?.name + "." + allUCA.action.ref?.name) == options.getFilteringUCAs()
         || options.getFilteringUCAs() == "all UCAs");
-    newModel.controllerConstraints = model.controllerConstraints?.filter(cons =>
-        (cons.refs[0].ref?.$container.system.ref?.name + "."
-            + cons.refs[0].ref?.$container.action.ref?.name) == options.getFilteringUCAs()
-        || options.getFilteringUCAs() == "all UCAs");
-    newModel.scenarios = model.scenarios?.filter(scenario =>
-        (!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "."
-            + scenario.uca?.ref?.$container.action.ref?.name) == options.getFilteringUCAs()
-        || options.getFilteringUCAs() == "all UCAs");
+    newModel.controllerConstraints = options.getHideContCons() ? [] :
+        model.controllerConstraints?.filter(cons =>
+            (cons.refs[0].ref?.$container.system.ref?.name + "."
+                + cons.refs[0].ref?.$container.action.ref?.name) == options.getFilteringUCAs()
+            || options.getFilteringUCAs() == "all UCAs");
+    newModel.scenarios = options.getHideScenarios() ? [] :
+        model.scenarios?.filter(scenario =>
+            (!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "."
+                + scenario.uca?.ref?.$container.action.ref?.name) == options.getFilteringUCAs()
+            || options.getFilteringUCAs() == "all UCAs");
 
-    newModel.safetyCons = model.safetyCons;
+    newModel.safetyCons = options.getHideScenarios() ? [] : model.safetyCons;
     newModel.controlStructure = model.controlStructure;
     return newModel;
 }
