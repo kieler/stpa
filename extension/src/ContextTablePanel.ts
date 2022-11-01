@@ -9,18 +9,18 @@ export class ContextTablePanel {
   public static currentData: any[];
 
   // Promise stuff
-  private resolveWebviewReady: () => void;
-  private readonly webviewReady = new Promise<void>((resolve) => this.resolveWebviewReady = resolve);
+  protected resolveWebviewReady: () => void;
+  protected readonly webviewReady = new Promise<void>((resolve) => this.resolveWebviewReady = resolve);
 
   // Constructor variables.
-  private readonly _panel: vscode.WebviewPanel;
-  private readonly _extensionUri: vscode.Uri;
+  protected readonly _panel: vscode.WebviewPanel;
+  protected readonly _extensionUri: vscode.Uri;
 
-  private _disposables: vscode.Disposable[] = [];
+  protected _disposables: vscode.Disposable[] = [];
 
   protected scriptUri: vscode.Uri;
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, scriptUri: vscode.Uri) {
+  protected constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, scriptUri: vscode.Uri) {
     this._panel = panel;
     this._extensionUri = extensionUri;
     this.scriptUri = scriptUri;
@@ -129,7 +129,7 @@ export class ContextTablePanel {
   }
 
   // Update function. Used for generating and maintaining the view's content.
-  private async _update() {
+  protected async _update() {
     const webview = this._panel.webview;
     
     //webview.onDidReceiveMessage(message => this.receiveFromWebview(message));
@@ -148,35 +148,4 @@ export class ContextTablePanel {
     } 
   } 
 
-  /* private _getHtmlForWebview(webview: vscode.Webview) {
-    // Get the style sheets to be used for the HTML data
-    const resetterUri = webview.asWebviewUri(vscode.Uri.joinPath(
-      this._extensionUri,
-      "src",
-      "resetter.css"
-    ));
-    const vscStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(
-      this._extensionUri,
-      "src",
-      "vscode-style.css"
-    ));
-    const tableStyleUri = webview.asWebviewUri(vscode.Uri.joinPath(
-      this._extensionUri,
-      "src",
-      "table.css"
-    ));
-    // HTML
-    return `<!DOCTYPE html>
-		<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-		    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="${tableStyleUri}" rel="stylesheet">
-		  </head>
-      <body>
-        <div id="main_container" style="height: 100%;"></div>
-        <script src="${webview.asWebviewUri(this.scriptUri).toString()}></script>
-		  </body>
-		</html>`;
-  } */
 }

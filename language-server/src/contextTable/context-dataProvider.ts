@@ -1,6 +1,6 @@
 import { LangiumDocuments, LangiumDocument } from "langium";
-import { StpaServices } from "./stpa-module";
-import { Model } from "./generated/ast";
+import { StpaServices } from "../stpa-module";
+import { Model } from "../generated/ast";
 import { URI } from "vscode-languageserver";
 
 export class ContextTableProvider {

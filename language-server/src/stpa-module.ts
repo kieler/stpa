@@ -28,7 +28,7 @@ import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 import { URI } from 'vscode-uri';
 import { DiagramOptions } from 'sprotty-protocol';
 import { StpaSynthesisOptions } from './options/synthesis-options';
-import { ContextTableProvider } from './context-dataProvider';
+import { ContextTableProvider } from './contextTable/context-dataProvider';
 
 
 /**
@@ -50,7 +50,7 @@ export type StpaAddedServices = {
         StpaSynthesisOptions: StpaSynthesisOptions
     },
     contextTable: {
-        ContextTableProvider : ContextTableProvider
+        ContextTableProvider: ContextTableProvider
     }
 };
 

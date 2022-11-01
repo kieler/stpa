@@ -29,6 +29,7 @@ entry Model:
     ('SafetyRequirements' safetyCons+=SafetyConstraint*)?
     ('Rules' rules+=Rule*)?;
 
+// TODO: controlAction already determines the system, the contet variables dont need it too
 Rule:
     name=ID '{'
         'controlAction:' system=[Node] '.' action=[Command]
@@ -39,6 +40,7 @@ Rule:
     '}'
     list=HazardList;
 
+// TODO: write validator for this string
 Type:
     value=STRING;
 

@@ -8,21 +8,21 @@ declare const vscode: vscode;
 export class Main {
 
     // variables to save the language-server data in
-    private currentRules: any[];
-    private currentActions: any[];
-    private currentVariables: any[];
+    protected currentRules: any[];
+    protected currentActions: any[];
+    protected currentVariables: any[];
 
     // array used for a recursive method;
     // is probably redundant and could be integrated into said method as a local variable,
     // but I'll leave it for now
-    private callBack: any[] = [];
+    protected callBack: any[] = [];
 
     // variables to store the currently selected options of the select elements in
-    private selectedAction: any;
-    private currentController: any;
-    private selectedType: number = 0;
-    private currentContext : any[];
-    private selIndexA: number = 0;
+    protected selectedAction: any;
+    protected currentController: any;
+    protected selectedType: number = 0;
+    protected currentContext : any[];
+    protected selIndexA: number = 0;
 
     constructor() {
         vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
@@ -39,6 +39,7 @@ export class Main {
      * @param data The data for creating the table contents.
      */
     protected handleData(data: any[]) {
+        //TODO: make more generic
         this.currentRules = data[0];
         this.currentActions = data[1];
         this.currentVariables = data[2];
@@ -51,6 +52,8 @@ export class Main {
     protected initHTML() {
         // Get the main DIV element that was created by the ContextTablePanel.
         const mainDiv = document.getElementById('main_container');
+        // TODO: use jsx and table webview
+        // TODO: mage numbers as class variables
         if (mainDiv) {
             const oldSelector = document.getElementById("select_action");
             oldSelector?.parentNode?.removeChild(oldSelector);
@@ -104,18 +107,17 @@ export class Main {
         }
     }
 
-    private getCurrentContext() {
-        let found : boolean = false;
-        for(let i = 0; i < this.currentVariables.length && !found; i++) {
+    protected getCurrentContext() {
+        for(let i = 0; i < this.currentVariables.length; i++) {
             const currentEntry = this.currentVariables[i];
             if (currentEntry[0] == this.currentController) {
                 this.currentContext = currentEntry[1];
-                found = true;
+                return
             }
         }
     }
 
-    private createActionHTMLs() {
+    protected createActionHTMLs() {
         let actions : any[] = [];
         this.currentActions.forEach(current => {
             let combineStr = current[0] + "." + current[1];
@@ -132,7 +134,7 @@ export class Main {
      * @param action Should be set to true if selector contains the control action select element.
      * Should be set to false if otherwise.
      */
-    private createSelectorListener(mainDiv: HTMLElement, selector : HTMLSelectElement, action: boolean) {
+    protected createSelectorListener(mainDiv: HTMLElement, selector : HTMLSelectElement, action: boolean) {
         // create an event listener that catches whenever the selected option changes
         selector.addEventListener('change', change => {
             // remove the old table, as it is now outdated
@@ -158,7 +160,7 @@ export class Main {
      * @param selector The selection element to assemble.
      * @param options A list of options to add.
      */
-    private createSelector(selector: HTMLSelectElement, options: any[]) {
+    protected createSelector(selector: HTMLSelectElement, options: any[]) {
         // make an option element for each array entry and append it to the selection element
         options.forEach(action => {
             let opt = document.createElement('option');
@@ -174,7 +176,7 @@ export class Main {
      * @param children Preferrably a string array, the elements of which to apply to the parent element.
      * @param elementType The type of Div element the children elements should be created with.
      */
-    private createSubElements(parent: HTMLElement, children: any[], elementType: string) {
+    protected createSubElements(parent: HTMLElement, children: any[], elementType: string) {
         // similar to the createSelector method, but generalized for multiple types
         children.forEach(child => {
             let newElement = document.createElement(elementType);
@@ -187,7 +189,8 @@ export class Main {
      * Creates and assembles the table element.
      * @param mainDiv The parent element to apply the table to.
      */
-    private createTable(mainDiv: HTMLElement) {
+    protected createTable(mainDiv: HTMLElement) {
+        // TODO: jsx and teble webview
         const tableDesc = document.createElement("pre");
         tableDesc.textContent = "Hover over the hazards to see their associated rules!";
         tableDesc.style.position = "absolute";
@@ -220,7 +223,7 @@ export class Main {
      * Creates the header (first table row) of the context table.
      * @param table The HTML table element to complete.
      */
-    private createHeader(table: HTMLTableElement) {
+    protected createHeader(table: HTMLTableElement) {
         // create the header row element
         const header = document.createElement("tr");
         table.appendChild(header);
@@ -258,7 +261,7 @@ export class Main {
      * Creates the sub-header (second table row) of the context table.
      * @param table The HTML table element to complete.
      */
-    private createSubHeader(table: HTMLTableElement) {
+    protected createSubHeader(table: HTMLTableElement) {
         // create sub-header row element
         const subHeader = document.createElement("tr");
         table.appendChild(subHeader);
@@ -288,7 +291,7 @@ export class Main {
      * @param table The HTMLTableElement to apply the row to.
      * @param values The context variable values that should be written into the current row.
      */
-    private createRow(table: HTMLTableElement, values: any[]) {
+    protected createRow(table: HTMLTableElement, values: any[]) {
         // create the new row element
         const row = document.createElement("tr");
         table.appendChild(row);
@@ -349,13 +352,12 @@ export class Main {
     }
 
     /**
-     * Exists so that I don't have to write this code twice.
      * Completes a non-header row with the calculated values for the "Hazardous?"-column.
      * @param parent The row to apply the values to.
      * @param result The results calculated with the getResult method.
      * @param index The number of columns the "Hazardous?"-column currently has.
      */
-    private createResults(parent: HTMLTableRowElement, result: [string, number, string[]][], index: number) {
+    protected createResults(parent: HTMLTableRowElement, result: [string, number, string[]][], index: number) {
         // check if the first result comes with a 0, which is the indicator that all columns should
         // simply be filled with a single "No" 
         const firstRes = result[0];
@@ -412,7 +414,7 @@ export class Main {
      * @param index A helper index to determine from which context variable to apply a value next.
      * @param values Array that holds one array entry for each context variable, containing all its possible values.
      */
-    private getCurrentValList(table: HTMLTableElement, index: number, values: any[]) {
+    protected getCurrentValList(table: HTMLTableElement, index: number, values: any[]) {
         // boolean to help recognize when the last variable is reached 
         let last = false;
         // load the values of the current recursion's variable
@@ -444,7 +446,7 @@ export class Main {
      * @returns An array containing both the variable-names array and the assigned-values array.
      * The indices for each variable and its assigned value sync up.
      */
-    private reappendValNames(values: any[]) {
+    protected reappendValNames(values: any[]) {
         // create empty array for end result
         let varVals: any[] = [];
         // create an empty array for the variable names
@@ -468,7 +470,7 @@ export class Main {
      * Else, returns string "No" to be applied to all of the "Hazardous"-column's columns.
      * 
      */
-    private getResult(varVals: any[]): [string, number, string[]][] {
+    protected getResult(varVals: any[]): [string, number, string[]][] {
         // create an empty array for the end result
         let resultList: [string, number, string[]][] = [];
         // check all the rules
@@ -516,7 +518,7 @@ export class Main {
      * @param varVals The assigned values of the current row.
      * @returns true if all values are equal; false otherwise.
      */
-    private checkValues(ruleVars: any[], varVals: any[]): boolean {
+    protected checkValues(ruleVars: any[], varVals: any[]): boolean {
         // a boolean to iteratively check if values have been flagged as not equal, which should end the method
         let checks: boolean = true;
         // for all variables of the rule
