@@ -29,6 +29,8 @@ import { StpaLspWebview } from './wview';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
+    protected contextTable: ContextTablePanel
+
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
         let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
@@ -38,9 +40,10 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     protected registerCommands(): void {
         super.registerCommands();
         this.context.subscriptions.push(
-            vscode.commands.registerCommand('contextTable.open', async (...commandArgs: any[]) => {
-                ContextTablePanel.createOrShow(this.context.extensionUri, this.getExtensionFileUri('pack', 'context-table-panel.js'), commandArgs);
-                this.languageClient.sendNotification('contextTable/uri', ContextTablePanel.notify());
+            vscode.commands.registerCommand(this.extensionPrefix + '.contextTable.open', async (...commandArgs: any[]) => {
+                this.createContextTable()
+                await this.contextTable.ready()
+                this.languageClient.sendNotification('contextTable/uri', (commandArgs[0] as vscode.Uri).toString());
             })
         )
         
@@ -52,6 +55,22 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             return 'stpa-diagram';
         }
         return undefined;
+    }
+
+    createContextTable(): void {
+        const tWebview = new ContextTablePanel(
+            'Context-Table',
+            [this.getExtensionFileUri('pack')],
+            this.getExtensionFileUri('pack', 'context-table-panel.js')
+        )
+        this.contextTable = tWebview
+
+        //TODO: add interactivity?
+        /* this.context.subscriptions.push(
+            this.contextTable.cellClicked((cell: { rowId: string; columnId: string } | undefined) => {
+                
+            })
+        )*/
     }
 
     createWebView(identifier: SprottyDiagramIdentifier): SprottyWebview {
@@ -108,16 +127,18 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // Start the client. This will also launch the server
         context.subscriptions.push(languageClient.start());
         // diagram is updated when file changes
-        fileSystemWatcher.onDidChange(() => this.updateViews(languageClient));
+        fileSystemWatcher.onDidChange((uri) => this.updateViews(languageClient, uri.toString()));
         
         languageClient.onReady().then(() => {
-            languageClient.onNotification('contextTable/data', data => ContextTablePanel.getData(data));
+            languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
         });
         return languageClient;
     }
 
-    protected updateViews(languageClient: LanguageClient) {
-        languageClient.sendNotification('contextTable/uri', ContextTablePanel.notify());
+    protected updateViews(languageClient: LanguageClient, uri: string) {
+        if (this.contextTable) {
+            languageClient.sendNotification('contextTable/uri', uri);
+        }
         if (this.singleton) {
             const mes: ActionMessage = {
                 clientId: this.singleton?.diagramIdentifier.clientId,

@@ -56,9 +56,9 @@
                 "category": "STPA Diagram"
             },
             {
-                "command": "contextTable.open",
+                "command": "stpa.contextTable.open",
                 "title": "Show Context Tables",
-                "icon": "$(server-process)",
+                "icon": "$(window)",
                 "category": "Context Table"
             },
             {
@@ -87,9 +87,13 @@
                 {
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'"
+                },     
+                {
+                    "command": "stpa.contextTable.open",
+                    "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "contextTable.open",
+                    "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
@@ -114,6 +118,11 @@
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
+                },     
+                {
+                    "command": "stpa.contextTable.open",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
                 }
             ],
             "editor/title": [
@@ -123,7 +132,7 @@
                     "group": "navigation"
                 },     
                 {
-                    "command": "contextTable.open",
+                    "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }
@@ -131,6 +140,11 @@
             "explorer/context": [
                 {
                     "command": "stpa.diagram.open",
+                    "when": "resourceExtname == '.stpa'",
+                    "group": "navigation"
+                }, 
+                {
+                    "command": "stpa.contextTable.open",
                     "when": "resourceExtname == '.stpa'",
                     "group": "navigation"
                 }
@@ -166,7 +180,7 @@
     "activationEvents": [
         "onLanguage:stpa",
         "onCommand:stpa.diagram.open",
-        "onCommand:contextTable.open"
+        "onCommand:stpa.contextTable.open"
     ],
     "files": [
         "lib",
@@ -181,7 +195,8 @@
         "reflect-metadata": "^0.1.13",
         "feather-icons": "^4.28.0",
         "sprotty": "~0.11.1",
-        "sprotty-vscode-webview": "^0.2.0"
+        "sprotty-vscode-webview": "^0.2.0",
+        "@kieler/table-webview": "^0.0.1"
       },
     "devDependencies": {
         "@types/node": "^12.12.6",

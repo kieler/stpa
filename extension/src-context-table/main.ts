@@ -51,7 +51,7 @@ export class Main {
      */
     protected initHTML() {
         // Get the main DIV element that was created by the ContextTablePanel.
-        const mainDiv = document.getElementById('main_container');
+        const mainDiv = document.getElementById('Context-Table_container');
         // TODO: use jsx and table webview
         // TODO: mage numbers as class variables
         if (mainDiv) {
