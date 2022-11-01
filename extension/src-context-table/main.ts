@@ -1,4 +1,4 @@
-import '../css/table.css';
+import './css/table.css';
 
 interface vscode {
     postMessage(message: any): void;

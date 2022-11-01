@@ -190,7 +190,6 @@
         "source-map-loader": "^3.0.0",
         "sprotty-vscode": "^0.2.0",
         "stpa-language-server": "^0.0.0",
-        "context-table-webview": "^0.0.1",
         "ts-loader": "^9.2.6",
         "typescript": "3.8.3",
         "vscode-languageclient": "^7.0.0",
@@ -206,6 +205,6 @@
         "clean": "rimraf pack",
         "build": "webpack --mode=development",
         "watch": "webpack --mode=development --watch",
-        "copy-language-server": "copy ..\\language-server\\out\\* pack",
+        "copy-language-server": "copy ..\\language-server\\out\\* pack"
     }
 }
