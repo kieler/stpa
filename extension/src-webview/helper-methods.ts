@@ -16,7 +16,7 @@
  */
 
 import { SNode, SEdge, SModelElement } from "sprotty";
-import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./STPA-model";
+import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./stpa-model";
 
 /**
  * Collects all children of the nodes in {@code nodes}.

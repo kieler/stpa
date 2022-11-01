@@ -45,9 +45,9 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).highlight;
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printEdge = colorStyle == "print";
+        const printEdge = colorStyle == "black & white";
         const coloredEdge = colorStyle == "colorful";
-        const lessColoredEdge = colorStyle == "lessColors";
+        const lessColoredEdge = colorStyle == "fewer colors";
         const aspect = (edge.source as STPANode).aspect % 2 == 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
         return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect} d={path} />;
     }
@@ -60,10 +60,10 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const p2 = segments[segments.length - 1];
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printEdge = colorStyle == "print";
+        const printEdge = colorStyle == "black & white";
         const coloredEdge = colorStyle == "colorful" && edge.type != CS_EDGE_TYPE;
         const sprottyEdge = colorStyle == "standard" || (edge.type == CS_EDGE_TYPE && !printEdge);
-        const lessColoredEdge = colorStyle == "lessColors";
+        const lessColoredEdge = colorStyle == "fewer colors";
         const aspect = (edge.source as STPANode).aspect % 2 == 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
         return [
             <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect}
@@ -86,10 +86,10 @@ export class STPANodeView extends RectangularNodeView {
 
         // determines the color of the node
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printNode = colorStyle == "print";
+        const printNode = colorStyle == "black & white";
         const coloredNode = colorStyle == "colorful";
         const sprottyNode = colorStyle == "standard";
-        const lessColoredNode = colorStyle == "lessColors";
+        const lessColoredNode = colorStyle == "fewer colors";
         const aspect = node.aspect % 2 == 0 || !lessColoredNode ? node.aspect : node.aspect - 1;
 
         // create the element based on the option and the aspect of the node

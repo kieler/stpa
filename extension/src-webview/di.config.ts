@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import '../css/diagram.css';
+import './css/diagram.css';
 import 'sprotty/css/sprotty.css';
 
 import { Container, ContainerModule } from 'inversify';

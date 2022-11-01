@@ -12,8 +12,6 @@
     },
     "workspaces": [
       "language-server",
-      "webview",
-      "extension",
-      "context-table"
+      "extension"
     ]
   }

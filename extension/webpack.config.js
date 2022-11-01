@@ -37,4 +37,48 @@ const config = {
     },
 }
 
-module.exports = config;
+/**@type {import('webpack').Configuration}*/
+const webviewConfig = {
+    target: 'web',
+
+    entry: path.resolve(__dirname, 'src-webview/main.ts'),
+    output: {
+		filename: 'webview.js',
+        path: path.resolve(__dirname, 'pack'),
+    },
+    devtool: 'eval-source-map',
+
+    resolve: {
+        extensions: ['.ts', '.tsx', '.js']
+    },
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: ['ts-loader']
+            },
+            {
+                test: /\.js$/,
+                use: ['source-map-loader'],
+                enforce: 'pre'
+            },
+            {
+                test: /\.css$/,
+                exclude: /\.useable\.css$/,
+                use: ['style-loader', 'css-loader']
+            },
+            {
+                test: /\.(ttf)$/,
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                    outputPath: '',
+                    publicPath: '..',
+                    postTransformPublicPath: (p) => `__webpack_public_path__ + ${p}`,
+                }
+            },
+        ]
+    }
+};
+
+module.exports = [config, webviewConfig];
