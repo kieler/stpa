@@ -29,7 +29,7 @@ import { StpaLspWebview } from './wview';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
-    protected contextTable: ContextTablePanel
+    protected contextTable: ContextTablePanel;
 
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
@@ -41,12 +41,12 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         super.registerCommands();
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.contextTable.open', async (...commandArgs: any[]) => {
-                this.createContextTable()
-                await this.contextTable.ready()
+                this.createContextTable();
+                await this.contextTable.ready();
                 this.languageClient.sendNotification('contextTable/uri', (commandArgs[0] as vscode.Uri).toString());
             })
-        )
-        
+        );
+
     }
 
     protected getDiagramType(commandArgs: any[]): string | undefined {
@@ -62,8 +62,8 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             'Context-Table',
             [this.getExtensionFileUri('pack')],
             this.getExtensionFileUri('pack', 'context-table-panel.js')
-        )
-        this.contextTable = tWebview
+        );
+        this.contextTable = tWebview;
 
         //TODO: add interactivity?
         /* this.context.subscriptions.push(
@@ -128,7 +128,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         context.subscriptions.push(languageClient.start());
         // diagram is updated when file changes
         fileSystemWatcher.onDidChange((uri) => this.updateViews(languageClient, uri.toString()));
-        
+
         languageClient.onReady().then(() => {
             languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
         });

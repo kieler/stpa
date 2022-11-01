@@ -16,18 +16,18 @@
  */
 
 import * as vscode from "vscode";
-import { TableWebview } from '@kieler/table-webview/lib/table-webview'
+import { TableWebview } from '@kieler/table-webview/lib/table-webview';
 
 export class ContextTablePanel extends TableWebview {
-  
+
   protected currentData: any[];
 
   constructor(identifier: string, localResourceRoots: vscode.Uri[], scriptUri: vscode.Uri) {
-    super(identifier, localResourceRoots, scriptUri)
-    this.createWebviewPanel([])
+    super(identifier, localResourceRoots, scriptUri);
+    this.createWebviewPanel([]);
   }
 
-  setData(list : any[]): void {
+  setData(list: any[]): void {
     if (list.length == 3) {
       this.currentData = list;
       this.sendToWebview(this.currentData);
