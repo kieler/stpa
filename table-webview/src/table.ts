@@ -29,7 +29,7 @@ export class Table {
     protected headers: string[];
 
     constructor() {
-        vscode.postMessage({ readyMessage: 'Template Webview ready' });
+        vscode.postMessage({ readyMessage: 'Webview ready' });
         // add listener for messages
         const eventListener = (message: any) => {
             this.handleMessages(message);

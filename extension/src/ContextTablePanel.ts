@@ -17,6 +17,7 @@
 
 import * as vscode from "vscode";
 import { TableWebview } from '@kieler/table-webview/lib/table-webview';
+import { SendContextTableDataAction } from '../src-context-table/actions'
 
 export class ContextTablePanel extends TableWebview {
 
@@ -30,7 +31,7 @@ export class ContextTablePanel extends TableWebview {
   setData(list: any[]): void {
     if (list.length == 3) {
       this.currentData = list;
-      this.sendToWebview(this.currentData);
+      this.sendToWebview({ action: SendContextTableDataAction.create(list[0], list[1], list[2])});
     } else {
       console.log("Data has wrong format. List length should be 3, but is " + list.length);
     }

@@ -1,17 +1,38 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2022 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import './css/table.css';
+import { Table } from '@kieler/table-webview/lib/table'
+import { SendContextTableDataAction } from './actions';
+import { updateSelector } from './html';
 
 interface vscode {
     postMessage(message: any): void;
 }
 declare const vscode: vscode;
 
-export class Main {
+export class Main extends Table {
 
-    // variables to save the language-server data in
+    // variables to save the data in
     protected currentRules: any[];
     protected currentActions: any[];
     protected currentVariables: any[];
 
+    //????????????
     // array used for a recursive method;
     // is probably redundant and could be integrated into said method as a local variable,
     // but I'll leave it for now
@@ -24,49 +45,57 @@ export class Main {
     protected currentContext : any[];
     protected selIndexA: number = 0;
 
-    constructor() {
-        vscode.postMessage({ readyMessage: 'Context Table Webview ready' });
-        console.log("started context table")
-        const eventListener = (message: any) => {
-            this.handleData(message.data);
-        };
-        window.addEventListener('message', eventListener);
+    protected handleMessages(message: any): void {
+        const action = message.data.action
+        if (action) {
+            if (SendContextTableDataAction.isThisAction(action)) {
+                this.handleData(action as SendContextTableDataAction)
+            } else {
+                super.handleMessages(message);
+            }
+        } else {
+            super.handleMessages(message);
+        }
     }
 
     /**
-     * Handles the incoming data and assigns it to the correct variables needed for the class to function properly.
-     * Will call the HTML init method afterwards.
-     * @param data The data for creating the table contents.
+     * Saves the data for the context table and updates the table.
+     * @param action SendContextTableDataAction that contains the data needed to create the table contents.
      */
-    protected handleData(data: any[]) {
-        //TODO: make more generic
-        this.currentRules = data[0];
-        this.currentActions = data[1];
-        this.currentVariables = data[2];
-        this.initHTML();
+    protected handleData(action: SendContextTableDataAction) {
+        this.currentRules = action.rules;
+        this.currentActions = action.actions;
+        this.currentVariables = action.variables;
+        this.update();
     }
 
-    /**
-     * Initialized the context webview and establishes necessary listeners for user interaction.
-     */
-    protected initHTML() {
-        // Get the main DIV element that was created by the ContextTablePanel.
-        const mainDiv = document.getElementById('Context-Table_container');
-        // TODO: use jsx and table webview
-        // TODO: mage numbers as class variables
+    protected initHtml(identifier: string, headers: string[]): void {
+        //TODO
+        const mainDiv = document.getElementById(identifier + '_container');
         if (mainDiv) {
-            const oldSelector = document.getElementById("select_action");
-            oldSelector?.parentNode?.removeChild(oldSelector);
             // Create a selector element for selecting a control action
             const actionDesc = document.createElement("pre");
             actionDesc.textContent = "Choose a Control Action:";
             actionDesc.style.position = "absolute";
             actionDesc.style.left = "10px";
             mainDiv.appendChild(actionDesc);
+        }
+        this.identifier = identifier
+    }
+
+    /**
+     * Initialized the context webview and establishes necessary listeners for user interaction.
+     */
+    protected update() {
+        // Get the main DIV element that was created by the ContextTablePanel.
+        const mainDiv = document.getElementById(this.identifier + '_container');
+        // TODO: use jsx and table webview
+        // TODO: mage numbers as class variables
+        if (mainDiv) {
             const selector = document.createElement("select");
             // Call method to apply all the option elements to the select element.
             const actions = this.createActionHTMLs();
-            this.createSelector(selector, actions);
+            updateSelector(selector, actions);
             mainDiv.appendChild(selector);
             selector.id = "select_action";
             selector.selectedIndex = this.selIndexA;
@@ -90,7 +119,7 @@ export class Main {
             // The type "both" depicts both prior types in one table.
             const providedList = ["provided", "not provided", "both"];
             // Call method to apply all the option elements to the select element.
-            this.createSelector(typeSelector, providedList);
+            updateSelector(typeSelector, providedList);
             typeSelector.selectedIndex = this.selectedType;
             typeSelector.id = "select_type";
             typeSelector.style.position = "absolute";
@@ -155,20 +184,7 @@ export class Main {
         });
     }
 
-    /**
-     * Assembles a context-table specific HTML selection element.
-     * @param selector The selection element to assemble.
-     * @param options A list of options to add.
-     */
-    protected createSelector(selector: HTMLSelectElement, options: any[]) {
-        // make an option element for each array entry and append it to the selection element
-        options.forEach(action => {
-            let opt = document.createElement('option');
-            opt.value = action;
-            opt.innerHTML = action;
-            selector.appendChild(opt);
-        })
-    }
+
 
     /**
      * Creates multiple children elements with a given type for a given parent element.
