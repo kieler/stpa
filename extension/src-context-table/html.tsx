@@ -35,11 +35,31 @@ export const patch = init([
  * @param id ID of the selector.
  * @param index Selected Index of the selector.
  * @param options The options the selector contains.
+ * @param topDistance The distance of the text to the top border.
+ * @param leftDistance The distance of the text to the left border.
  * @returns A selector VNode.
  */
-export function createSelector(id: string, index: number, options: string[]): VNode {
+export function createSelector(id: string, index: number, options: string[], topDistance?: string, leftDistance?: string): VNode {
     const optionHtmls = options.map(option => createOption(option))
-    return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute", top: "11px", left: "210px"}}>{optionHtmls}</select>
+    if (topDistance && leftDistance) {
+        return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute", top: topDistance, left: leftDistance}}>{optionHtmls}</select>
+    } else if (topDistance) {
+        return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute", top: topDistance}}>{optionHtmls}</select>
+    } else if (leftDistance) {
+        return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute", left: leftDistance}}>{optionHtmls}</select>
+    } else {
+        return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute"}}>{optionHtmls}</select>
+    }
+}
+
+/**
+ * Creates a table VNode.
+ * @param id The id of the table.
+ * @param topDistance The distance of the text to the top border.
+ * @returns A table VNode.
+ */
+ export function createTable(id: string, topDistance: string): VNode {
+    return <table attrs={{ id: id }} style={{position: "absolute", top: topDistance}}></table>
 }
 
 /**
@@ -52,23 +72,11 @@ function createOption(option: string): VNode {
 }
 
 /**
- * Creates a new selector with the given {@code options} that replaces the given {@code selector}.
- * @param selector The selection element to replace.
- * @param options A list of options the new selector should have.
- * @param index The selected index of the selector.
- * @returns A new selector VNode.
- */
-export function replaceSelector(selector: HTMLSelectElement, options: string[], index: number): VNode {
-    const newSelector = createSelector(selector.id, index, options)
-    patch(selector, newSelector)
-    return newSelector
-}
-
-/**
  * Creates a text VNode.
  * @param text The text that should be displayed.
+ * @param topDistance The distance of the text to the top border.
  * @returns A text VNode.
  */
-export function createText(text: string): VNode {
-    return <pre style={{position: "absolute", left: "10px"}}>{text}</pre>
+export function createText(text: string, topDistance: string): VNode {
+    return <pre style={{position: "absolute", left: "10px", top: topDistance}}>{text}</pre>
 }
