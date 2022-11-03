@@ -21,13 +21,14 @@ import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
 import { addSelector, addText, BigCell, createStrings, replaceSelector } from './utils';
 import { VNode } from "snabbdom";
+import { createResults, getResult } from './context-table-logic';
 
 interface vscode {
     postMessage(message: any): void;
 }
 declare const vscode: vscode;
 
-export class Main extends Table {
+export class ContextTable extends Table {
 
     /** Ids for the html elements */
     protected actionSelectorId = "select_action"
@@ -52,8 +53,8 @@ export class Main extends Table {
     protected callBack: any[] = [];
 
     // variables to store the currently selected options of the select elements in
-    protected selectedAction: any;
-    protected currentController: any;
+    protected selectedAction: string;
+    protected currentController: string;
     protected selectedType: number = 0;
     protected currentVariables : any[] = [];
 
@@ -71,7 +72,7 @@ export class Main extends Table {
     }
 
     /**
-     * Saves the data for the context table and updates the table.
+     * Updates the data of the context table.
      * @param action SendContextTableDataAction that contains the data needed to create the table contents.
      */
     protected handleData(action: SendContextTableDataAction) {
@@ -271,7 +272,7 @@ export class Main extends Table {
      * @param values The context variable values that should be written into the current row.
      */
     protected addRow(table: HTMLTableElement, values: string[], id: string) {
-        // create row palceholder
+        // create row placeholder
         const placeholderRow = document.createElement("tr");
         table.appendChild(placeholderRow);
 
@@ -293,26 +294,26 @@ export class Main extends Table {
 
             // calculate whether the control action is hazardous
             // TODO: evaluate both methods
-            const varVals = this.reappendValNames(values);
-            const result = this.getResult(varVals);
+            const result = getResult(values, this.rules, this.currentController, this.selectedAction, this.selectedType, this.currentVariables);
             // write the result into the column(s)
             switch(this.selectedType) {
+                //TODO: evaluate
                 case 0:
-                    this.createResults(placeholderRow, result, 3);
+                    cells = cells.concat(createResults(result, 3));
                     break;
                 case 1:
                     const firstRes = result[0];
-                    const entry = document.createElement("td");
+                    let text = ""
                     if (firstRes[0] == "No") {
-                        entry.innerHTML = firstRes[0];
+                        text = firstRes[0];
                     } else {
-                        entry.title = firstRes[0];
-                        entry.innerHTML = firstRes[2].toString();
+                        // entry.title = firstRes[0];
+                        text = firstRes[2].toString();
                     }
-                    placeholderRow.appendChild(entry);
+                    cells.push({cssClass: "result", value: text, colSpan: 1})
                     break;
                 case 2:
-                    this.createResults(placeholderRow, result, 4);
+                    cells = cells.concat(createResults(result, 4));
                     break;
             }
         } else {
@@ -334,32 +335,6 @@ export class Main extends Table {
         const row = createRow(id, cells)
         patch(placeholderRow, row)
     }
-
-    
-    /**
-     * Gets the variable names from the currentContext Array
-     * and returns it together with the array of the current row's values.
-     * @param values The array containing the values that have been assigned to the context variables in the current row.
-     * @returns An array containing both the variable-names array and the assigned-values array.
-     * The indices for each variable and its assigned value sync up.
-     */
-     protected reappendValNames(values: any[]) {
-        // create empty array for end result
-        let valuesOfVariables: any[] = [];
-        // create an empty array for the variable names
-        let currentVars: any[] = [];
-        // filter all the variable names out of the variable data and append them to the array
-        for (let i = 0; i < values.length; i++) {
-            const currentVar = this.currentVariables[i];
-            currentVars.push(currentVar[0]);
-        }
-        // push both the variable name array and the value array into the end result array 
-        valuesOfVariables.push(currentVars);
-        valuesOfVariables.push(values);
-        return valuesOfVariables;
-    }
-
-
 
 
     //TODO: evaluate method
@@ -398,137 +373,11 @@ export class Main extends Table {
 
     
 
-    /**
-     * Calculates if a control action is hazardous or not
-     * given a specified context using the rules defined in the .stpa file.
-     * @param varVals The context consisting of the context variables and their currently assigned values.
-     * @returns If the action is hazardous, returns an array with all the rules (ID as string) that apply as well as their types (as number).
-     * Else, returns string "No" to be applied to all of the "Hazardous"-column's columns.
-     * 
-     */
-    protected getResult(varVals: any[]): [string, number, string[]][] {
-        // create an empty array for the end result
-        let resultList: [string, number, string[]][] = [];
-        // check all the rules
-        this.rules.forEach(rule => {
-            // check if the control action applies first
-            const ruleAction = rule[1];
-            if (ruleAction[0] == this.currentController && ruleAction[1] == this.selectedAction) {
-                // check if the context applies next
-                if (this.checkValues(rule[3], varVals)) {
-                    // convert the given type string to lowercase
-                    const typeString = rule[2] as string;
-                    const checkString = typeString.toLowerCase();
-                    // check if it is one of the accepted types that can be worked with,
-                    // if so, push rule onto the end result array with a fitting indicator as to what cell to write the rule in
-                    // this depends on the selected action type in the selector element
-                    switch(this.selectedType) {
-                        case 0:
-                            if (checkString == "anytime") {resultList.push([rule[0], 1, rule[4]]); return;};
-                            if (checkString == "too early" || checkString == "too late") {resultList.push([rule[0], 2, rule[4]]); return;};
-                            if (checkString == "stopped too soon" || checkString == "applied too long") {resultList.push([rule[0], 3, rule[4]]); return;};
-                            break;
-                        case 1:
-                            if (checkString == "not provided" || checkString == "never") {resultList.push([rule[0], 0, rule[4]]); return;};
-                            break;
-                        case 2:
-                            if (checkString == "anytime") {resultList.push([rule[0], 1, rule[4]]); return;};
-                            if (checkString == "too early" || checkString == "too late") {resultList.push([rule[0], 2, rule[4]]); return;};
-                            if (checkString == "stopped too soon" || checkString == "applied too long") {resultList.push([rule[0], 3, rule[4]]); return;};
-                            if (checkString == "not provided" || checkString == "never") {resultList.push([rule[0], 4, rule[4]]); return;};
-                            break;
-                    }
-                }
-            }
-        })
-        // if the result array remains empty, there is no rule, so push a single "No"
-        if(resultList.length == 0) {
-            resultList.push(["No", 0, []]);
-        }
-        return resultList;
-    }
 
-    
-    /**
-     * Completes a non-header row with the calculated values for the "Hazardous?"-column.
-     * @param parent The row to apply the values to.
-     * @param result The results calculated with the getResult method.
-     * @param index The number of columns the "Hazardous?"-column currently has.
-     */
-     protected createResults(parent: HTMLTableRowElement, result: [string, number, string[]][], index: number) {
-        // check if the first result comes with a 0, which is the indicator that all columns should
-        // simply be filled with a single "No" 
-        const firstRes = result[0];
-        // if there is no 0, then there is at least one rule to be applied
-        if (firstRes[1] != 0) {
-            // push all the numbers from result into a separate array
-            let numbers: number[] = [];
-            let counter : number = 0;
-            result.forEach(res => {
-                numbers.push(res[1]);
-            })
-            // go through all of the hazardous columns
-            for(let i = 1; i <= index; i++) {
-                // if there is an entry in the numbers that equals the current, a rule from result should be applied now
-                if (numbers.includes(i)) {
-                    if (counter != 0) {
-                        const no = document.createElement("td");
-                        no.innerHTML = "No";
-                        no.colSpan = counter;
-                        parent.appendChild(no);
-                        counter = 0;
-                    }
-                    const entry = document.createElement("td");
-                    let numberIndex = numbers.indexOf(i);
-                    let iRes = result[numberIndex];
-                    entry.title = iRes[0];
-                    entry.innerHTML = iRes[2].toString();
-                    parent.appendChild(entry);
-                } else {
-                    // else, there is no rule for this cell
-                    counter = counter + 1;
-                    if (i == index && counter != 0) {
-                        const no = document.createElement("td");
-                        no.innerHTML = "No";
-                        no.colSpan = counter;
-                        parent.appendChild(no);
-                    }
-                }
-            }
-        } else {
-            // else, there is no rule for the entire row, so it's filled in with a single "No"
-            const no = document.createElement("td");
-            no.innerHTML = firstRes[0];
-            no.colSpan = index;
-            parent.appendChild(no);
-        }
-    }
 
-    /**
-     * Checks if the assigned values of a rule equal the assigned values of the current row.
-     * @param ruleVars The assigned values of a rule.
-     * @param varVals The assigned values of the current row.
-     * @returns true if all values are equal; false otherwise.
-     */
-    protected checkValues(ruleVars: any[], varVals: any[]): boolean {
-        // a boolean to iteratively check if values have been flagged as not equal, which should end the method
-        let checks: boolean = true;
-        // for all variables of the rule
-        for(let i = 0; i < ruleVars.length && checks; i++) {
-            // get the current variable with required value
-            const currentVarVal = ruleVars[i];
-            // load the row's current variable names and values into separate arrays
-            const theVars = varVals[0] as any[];
-            const theVals = varVals[1] as any[];
-            // get the index of the value pair in the row array that the current iteration wants to compare
-            const index = theVars.indexOf(currentVarVal[0]);
-            // use that index to compare the rule's required value with the matching row's current value
-            if (currentVarVal[1] != theVals[index]) {checks = false;}
-        }
-        return checks;
-    }
+
 
 
 }
 
-new Main();
+new ContextTable();

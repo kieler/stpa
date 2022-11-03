@@ -98,3 +98,53 @@ export function addSelector(parent: HTMLElement, id: string, index: number, opti
     const typeSelector = createSelector(id, index, options, topDistance, leftDistance);
     patch(placeholderTypeSelector, typeSelector);
 }
+
+    //TODO: evaluate
+    /**
+     * Checks if the assigned values of a rule equal the assigned values of the current row.
+     * @param ruleVars The assigned values of a rule.
+     * @param varVals The assigned values of the current row.
+     * @returns true if all values are equal; false otherwise.
+     */
+     export function checkValues(ruleVars: any[], varVals: any[]): boolean {
+        // a boolean to iteratively check if values have been flagged as not equal, which should end the method
+        let checks: boolean = true;
+        // for all variables of the rule
+        for(let i = 0; i < ruleVars.length && checks; i++) {
+            // get the current variable with required value
+            const currentVarVal = ruleVars[i];
+            // load the row's current variable names and values into separate arrays
+            const theVars = varVals[0] as any[];
+            const theVals = varVals[1] as any[];
+            // get the index of the value pair in the row array that the current iteration wants to compare
+            const index = theVars.indexOf(currentVarVal[0]);
+            // use that index to compare the rule's required value with the matching row's current value
+            if (currentVarVal[1] != theVals[index]) {checks = false;}
+        }
+        return checks;
+    }
+
+    
+    //TODO: evaluate
+    /**
+     * Gets the variable names from the currentContext Array
+     * and returns it together with the array of the current row's values.
+     * @param values The array containing the values that have been assigned to the context variables in the current row.
+     * @returns An array containing both the variable-names array and the assigned-values array.
+     * The indices for each variable and its assigned value sync up.
+     */
+     export function reappendValNames(values: string[], currentVariables: any[]) {
+        // create empty array for end result
+        let valuesOfVariables: any[] = [];
+        // create an empty array for the variable names
+        let currentVars: any[] = [];
+        // filter all the variable names out of the variable data and append them to the array
+        for (let i = 0; i < values.length; i++) {
+            const currentVar = currentVariables[i];
+            currentVars.push(currentVar[0]);
+        }
+        // push both the variable name array and the value array into the end result array 
+        valuesOfVariables.push(currentVars);
+        valuesOfVariables.push(values);
+        return valuesOfVariables;
+    }
