@@ -18,7 +18,7 @@
 import './css/table.css';
 import { Table } from '@kieler/table-webview/lib/table'
 import { SendContextTableDataAction } from './actions';
-import { updateSelector } from './html';
+import { createSelector, createText, patch, replaceSelector } from './html';
 
 interface vscode {
     postMessage(message: any): void;
@@ -26,6 +26,8 @@ interface vscode {
 declare const vscode: vscode;
 
 export class Main extends Table {
+
+    protected actionSelectorId = "select_action"
 
     // variables to save the data in
     protected currentRules: any[];
@@ -43,7 +45,6 @@ export class Main extends Table {
     protected currentController: any;
     protected selectedType: number = 0;
     protected currentContext : any[];
-    protected selIndexA: number = 0;
 
     protected handleMessages(message: any): void {
         const action = message.data.action
@@ -66,19 +67,22 @@ export class Main extends Table {
         this.currentRules = action.rules;
         this.currentActions = action.actions;
         this.currentVariables = action.variables;
-        this.update();
+        this.initData();
     }
 
     protected initHtml(identifier: string, headers: string[]): void {
         //TODO
         const mainDiv = document.getElementById(identifier + '_container');
         if (mainDiv) {
+            const placeholderActionDescriptions = document.createElement("pre");
+            mainDiv.appendChild(placeholderActionDescriptions);
+            const actionDescriptions = createText("Choose a Control Action:");
+            patch(placeholderActionDescriptions, actionDescriptions);
             // Create a selector element for selecting a control action
-            const actionDesc = document.createElement("pre");
-            actionDesc.textContent = "Choose a Control Action:";
-            actionDesc.style.position = "absolute";
-            actionDesc.style.left = "10px";
-            mainDiv.appendChild(actionDesc);
+            const placeholderSelector = document.createElement("select");
+            mainDiv.append(placeholderSelector)
+            const selector = createSelector(this.actionSelectorId, 0, []);
+            patch(placeholderSelector, selector);
         }
         this.identifier = identifier
     }
@@ -86,25 +90,22 @@ export class Main extends Table {
     /**
      * Initialized the context webview and establishes necessary listeners for user interaction.
      */
-    protected update() {
+    protected initData() {
         // Get the main DIV element that was created by the ContextTablePanel.
         const mainDiv = document.getElementById(this.identifier + '_container');
         // TODO: use jsx and table webview
         // TODO: mage numbers as class variables
         if (mainDiv) {
-            const selector = document.createElement("select");
+            const selector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
             // Call method to apply all the option elements to the select element.
             const actions = this.createActionHTMLs();
-            updateSelector(selector, actions);
-            mainDiv.appendChild(selector);
-            selector.id = "select_action";
-            selector.selectedIndex = this.selIndexA;
-            selector.style.position = "absolute";
-            selector.style.top = "11px";
-            selector.style.left = "210px";
-            const selected = this.currentActions[selector.selectedIndex];
+            replaceSelector(selector, actions, 0);
+
+            // TODO: is this necessary?
+            const selected = this.currentActions[0];
             this.currentController = selected[0];
             this.selectedAction = selected[1];
+
             this.getCurrentContext();
             const oldTypeSel = document.getElementById("select_type");
             oldTypeSel?.parentNode?.removeChild(oldTypeSel);
@@ -119,7 +120,7 @@ export class Main extends Table {
             // The type "both" depicts both prior types in one table.
             const providedList = ["provided", "not provided", "both"];
             // Call method to apply all the option elements to the select element.
-            updateSelector(typeSelector, providedList);
+            replaceSelector(typeSelector, providedList, 0);
             typeSelector.selectedIndex = this.selectedType;
             typeSelector.id = "select_type";
             typeSelector.style.position = "absolute";
@@ -171,7 +172,6 @@ export class Main extends Table {
             oldTable?.parentNode?.removeChild(oldTable);
             // update the variables containing the currently selected options
             if (action) {
-                this.selIndexA = selector.selectedIndex;
                 const selected = this.currentActions[selector.selectedIndex];
                 this.currentController = selected[0];
                 this.selectedAction = selected[1];
