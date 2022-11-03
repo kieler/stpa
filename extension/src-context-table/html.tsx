@@ -17,7 +17,8 @@
 
 /** @jsx html */
 import { html } from './jsx';
-import { attributesModule, classModule, eventListenersModule, init, propsModule, styleModule, VNode } from 'snabbdom';
+import { attributesModule, Classes, classModule, eventListenersModule, init, propsModule, styleModule, VNode } from 'snabbdom';
+import { BigCell } from './utils';
 
 /** Needed to update the html document */
 export const patch = init([
@@ -79,4 +80,51 @@ function createOption(option: string): VNode {
  */
 export function createText(text: string, topDistance: string): VNode {
     return <pre style={{position: "absolute", left: "10px", top: topDistance}}>{text}</pre>
+}
+
+/**
+ * Creates a header element.
+ * @param header The text of the header.
+ * @param rowspan The rowspan of the header.
+ * @param colspan The colspan of the header.
+ * @returns A header element.
+ */
+export function createHeaderElement(header: string, rowspan?:number, colspan?: number) {
+    if (rowspan && colspan) {
+        return <th attrs={{ rowspan: rowspan, colspan: colspan }}>{header}</th>
+    } else if (rowspan) {
+        return <th attrs={{ rowspan: rowspan }}>{header}</th>
+    } else if (colspan) {
+        return <th attrs={{ colspan: colspan }}>{header}</th>
+    } else {
+        return <th>{header}</th>
+    }
+}
+
+/**
+ * Creates a header row with the given children.
+ * @param headers The headers of the header row.
+ * @returns A header row element.
+ */
+export function createHeaders(headers: VNode[]) {
+    return <tr>
+        {...headers}
+    </tr>
+}
+
+/**
+ * Creates a row of a table as VNode.
+ * @param id Id of the row.
+ * @param values The values of the row in the correct ordering.
+ * @returns a row of a table as VNode.
+ */
+ export function createRow(id: string, values: BigCell[]): VNode {
+    const children: VNode[] = [];
+    for (const val of values) {
+        const classes: Classes =  {}
+        classes[val.cssClass] = true
+        children.push(<td class={classes} attrs={{ colspan: val.colSpan }}>{val.value}</td>);
+    }
+    const row = <tr attrs={{ id: id }}>{children}</tr>;
+    return row;
 }

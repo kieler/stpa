@@ -15,6 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { Cell } from "@kieler/table-webview/lib/helper";
 import { VNode } from "snabbdom";
 import { createSelector, createText, patch } from "./html";
 
@@ -31,6 +32,10 @@ export class SystemVariables {
 export class Variable {
     name: string
     values: string[]
+}
+
+export class BigCell extends Cell {
+    public colSpan: number
 }
 
 /**

@@ -18,8 +18,9 @@
 import './css/table.css';
 import { Table } from '@kieler/table-webview/lib/table'
 import { SendContextTableDataAction } from './actions';
-import { createTable, patch } from './html';
-import { addSelector, addText, createStrings, replaceSelector } from './utils';
+import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
+import { addSelector, addText, BigCell, createStrings, replaceSelector } from './utils';
+import { VNode } from "snabbdom";
 
 interface vscode {
     postMessage(message: any): void;
@@ -36,9 +37,9 @@ export class Main extends Table {
 
     // data of the table
     // TODO: determine type
-    protected rules: any[];
-    protected controlActions: any[];
-    protected systemVariables: any[];
+    protected rules: any[] = [];
+    protected controlActions: any[] = [];
+    protected systemVariables: any[] = [];
 
     /* protected rules: any[];
     protected actions: ControlAction[];
@@ -54,7 +55,7 @@ export class Main extends Table {
     protected selectedAction: any;
     protected currentController: any;
     protected selectedType: number = 0;
-    protected currentVariables : any[];
+    protected currentVariables : any[] = [];
 
     protected handleMessages(message: any): void {
         const action = message.data.action
@@ -77,12 +78,21 @@ export class Main extends Table {
         this.rules = action.rules;
         this.controlActions = action.actions;
         this.systemVariables = action.variables;
-        this.initActionSelector();
-        this.initTableData();
+        this.updateActionSelector();
+        this.updateTable();
+    }
+
+    protected handleResetTable(): void {
+        const table = document.getElementById(this.tableId)
+        if (table) {
+            const newTable = createTable(this.tableId, "80px");
+            patch(table, newTable);
+        }
     }
 
     protected initHtml(identifier: string, headers: string[]): void {
         this.identifier = identifier
+        this.tableId = this.identifier + "_table"
         const mainDiv = document.getElementById(identifier + '_container');
         if (mainDiv) {
             // Create text and selector element for selecting a control action
@@ -95,7 +105,10 @@ export class Main extends Table {
 
             // add listener
             const htmlTypeSelector = document.getElementById(this.typeSelectorId) as HTMLSelectElement;
-            this.createSelectorListener(htmlTypeSelector!, false);
+            htmlTypeSelector.addEventListener('change', () => {
+                this.selectedType = htmlTypeSelector.selectedIndex;
+                this.updateTable();
+            });
 
             // Create text element for table
             addText(mainDiv, "Hover over the hazards to see their associated rules!", "90px");
@@ -107,38 +120,26 @@ export class Main extends Table {
         }
     }
 
-
     /**
      * Initializes the action selector with the available actions.
      */
-    protected initActionSelector() {
+    protected updateActionSelector() {
         const selector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
         if (selector) {
             // translate control actions to strings and add them to the selector
             const actions = createStrings(this.controlActions);
             replaceSelector(selector, actions, 0);
 
-            // TODO: is this necessary?
-            const selected = this.controlActions[0];
-            this.currentController = selected[0];
-            this.selectedAction = selected[1];
+            // update currently selected control action
+            this.updateSelection(0)
 
             // add listener
-            const htmlTypeSelector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
-            this.createSelectorListener(htmlTypeSelector, true);
+            const htmlActionSelector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
+            htmlActionSelector.addEventListener('change', () => {
+                this.updateSelection(htmlActionSelector.selectedIndex)
+                this.updateTable();
+            });
         }
-    }
-
-    /**
-     * Initializes the context table.
-     */
-    protected initTableData() {
-        this.setCurrentVariables();
-
-        const oldTable = document.getElementById("table");
-        oldTable?.parentNode?.removeChild(oldTable);
-        // Call method to create the table.
-        this.updateTable();
     }
 
     /**
@@ -148,70 +149,47 @@ export class Main extends Table {
         this.currentVariables = this.systemVariables.find(systemVariable => systemVariable[0] === this.currentController)[1]
     }
 
-
-
-
-    /**
-     * Creates and assembles the table element.
-     */
-    protected updateTable() {
-        const mainDiv = document.getElementById(this.identifier + '_container');
-        if (mainDiv) {
-            // TODO: jsx and teble webview
-            // call method to create the header row
-           /*  this.createHeader(tableDiv);
-            // call method to create the subheader row
-            this.createSubHeader(tableDiv);
-            // filter only the value arrays for each variable out of currentContext and append them all to an array.
-            if(this.currentVariables.length > 0) {
-                let varVals : any[] = [];
-                this.currentVariables.forEach(variable => {
-                    varVals.push(variable[1]);
-                })
-                // Call method to recursively create a row for each possible context
-                this.getCurrentValList(tableDiv, 0, varVals);
-            } else {
-                this.createRow(tableDiv, []);
-            } */
-        }
-    }
-
     /**
      * Creates the header (first table row) of the context table.
      * @param table The HTML table element to complete.
      */
-    protected createHeader(table: HTMLTableElement) {
-        // create the header row element
-        const header = document.createElement("tr");
-        table.appendChild(header);
+    protected createHeader(table: HTMLTableElement): void {
+        // create and add a header placeholder
+        const placeholderHeader = document.createElement("tr");
+        table.appendChild(placeholderHeader);
+
+        const headers: VNode[] = []
         // the first column is for the control action and has no subheader
-        const controlAction = document.createElement("th");
-        controlAction.innerHTML = "Control Action";
-        controlAction.rowSpan = 2;
-        header.appendChild(controlAction);
+        const controlActionHeader = createHeaderElement("Control Action", 2)
+        headers.push(controlActionHeader)
+
         // the second header column is for the context and needs to span as many columns as there are context variables
         if (this.currentVariables.length > 0) {
-            const vars = document.createElement("th");
-            vars.innerHTML = "Context Variables";
-            vars.colSpan = this.currentVariables.length;
-            header.appendChild(vars);
+            const contextVariablesHeader = createHeaderElement("Context Variables", undefined, this.currentVariables.length)
+            headers.push(contextVariablesHeader)
         }
+
         // The third header column is the hazardous column
-        const hazardous = document.createElement("th");
-        hazardous.innerHTML = "Hazardous?";
         // The column-/row-span depends on what action type has been selected
+        let colSpan: number | undefined = undefined;
+        let rowSpan: number | undefined = undefined
         switch(this.selectedType) {
             case 0:
-                hazardous.colSpan = 3;
+                colSpan = 3;
                 break;
             case 1:
-                hazardous.rowSpan = 2;
+                rowSpan = 2;
                 break;
             case 2:
-                hazardous.colSpan = 4;
+                colSpan = 4;
                 break;
         }
-        header.appendChild(hazardous);
+        const hazardousHeader = createHeaderElement("Hazardous?", rowSpan, colSpan)
+        headers.push(hazardousHeader)
+
+        // create correct header
+        const headersElement = createHeaders(headers)
+        patch(placeholderHeader, headersElement)
     }
 
     /**
@@ -219,74 +197,108 @@ export class Main extends Table {
      * @param table The HTML table element to complete.
      */
     protected createSubHeader(table: HTMLTableElement) {
-        // create sub-header row element
-        const subHeader = document.createElement("tr");
-        table.appendChild(subHeader);
-        // the control action header spans both rows, so the next thing to be appended to the sub-header are the context variables
-        if (this.currentVariables.length > 0) {
-            this.currentVariables.forEach(variable => {
-                let col = document.createElement('th');
-                col.innerHTML = variable[0];
-                subHeader.appendChild(col);
-            })
-        }
-        // append the hazardous sub-options, which depend on the selected action type
+        // create and add placeholder for subheaders
+        const placeholdersubHeaders = document.createElement("tr");
+        table.appendChild(placeholdersubHeaders);
+
+        const headers: VNode[] = []
+        // sub-headers for the context variables
+        this.currentVariables.forEach(variable => {
+            const header = createHeaderElement(variable[0])
+            headers.push(header)
+        })
+        // hazardous sub-options, which depend on the selected action type
+        let times: string[] = []
         switch(this.selectedType) {
             case 0:
-                const times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long"];
-                this.createSubElements(subHeader, times, "th");
+                times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long"];
                 break;
             case 2:
-                const nTimes = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long", "Never"];
-                this.createSubElements(subHeader, nTimes, "th");
+                times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long", "Never"];
                 break;
+        }
+        times.forEach(time => {
+            const header = createHeaderElement(time)
+            headers.push(header)
+        })
+        // create correct header
+        const headersElement = createHeaders(headers)
+        patch(placeholdersubHeaders, headersElement)
+    }
+    
+    /**
+     * Updates the currently selected control action.
+     * @param index Index determining which control action is selected.
+     */
+     protected updateSelection(index: number) {
+        const selected = this.controlActions[index];
+        this.currentController = selected[0];
+        this.selectedAction = selected[1];
+        this.setCurrentVariables();
+    }
+        
+    /**
+     * Creates the content of the table.
+     */
+     protected updateTable() {
+        // reset old table
+        this.handleResetTable()
+        const table = document.getElementById(this.tableId) as HTMLTableElement;
+        if (table) {
+            // create the headers
+            this.createHeader(table);
+            this.createSubHeader(table);
+            if (this.currentVariables.length > 0) {
+                // collect the values of the current variables
+                // needed to calculate all possible combinations (contexts)
+                let valuesOfVariables : (string[])[] = [];
+                this.currentVariables.forEach(variable => {
+                    valuesOfVariables.push(variable[1]);
+                })
+                // recursively create a row for each possible context
+                this.createContexts(table, 0, valuesOfVariables);
+            } else {
+                // table is empty
+                this.addRow(table, [], "empty-row");
+            }
         }
     }
 
-    /**
-     * Creates multiple children elements with a given type for a given parent element.
-     * @param parent The element to which to apply the children elements to.
-     * @param children Preferrably a string array, the elements of which to apply to the parent element.
-     * @param elementType The type of Div element the children elements should be created with.
-     */
-         protected createSubElements(parent: HTMLElement, children: any[], elementType: string) {
-            // similar to the createSelector method, but generalized for multiple types
-            children.forEach(child => {
-                let newElement = document.createElement(elementType);
-                newElement.innerHTML = child;
-                parent.appendChild(newElement);
-            })
-        }
 
     /**
      * Creates and appends one non-header row to the table. 
      * @param table The HTMLTableElement to apply the row to.
      * @param values The context variable values that should be written into the current row.
      */
-    protected createRow(table: HTMLTableElement, values: any[]) {
-        // create the new row element
-        const row = document.createElement("tr");
-        table.appendChild(row);
-        // write the control action into the the first column
-        const controlAction = document.createElement("td");
-        // the get the control action text out of the currently selected options in the selection elements
-        const type = <HTMLSelectElement> document.getElementById("select_type");
+    protected addRow(table: HTMLTableElement, values: string[], id: string) {
+        // create row palceholder
+        const placeholderRow = document.createElement("tr");
+        table.appendChild(placeholderRow);
+
+        let cells: BigCell[] = []
+        // the control action text based on the currently selected options
+        let controlAction = ""
+        const type = document.getElementById("select_type") as HTMLSelectElement;
         if(type.options[type.selectedIndex].text == "both") {
-            controlAction.innerHTML = this.selectedAction + " provided";
+            controlAction = this.selectedAction + " provided";
         } else {
-            controlAction.innerHTML = this.selectedAction + " " + type.options[type.selectedIndex].text;
+            controlAction = this.selectedAction + " " + type.options[type.selectedIndex].text;
         }
-        row.appendChild(controlAction);
+        cells.push({cssClass: "control-action", value: controlAction, colSpan: 1})
+
         if (values.length > 0) {
-            // write the given values into the context variable columns
-            this.createSubElements(row, values, "td");
+            // values of the context variables
+            const valueCells = values.map(value => {return {cssClass: "context-variable", value: value, colSpan: 1}})
+            cells = cells.concat(valueCells)
+
+            // calculate whether the control action is hazardous
+            // TODO: evaluate both methods
             const varVals = this.reappendValNames(values);
-            // call method to calculate if the control action is hazardous
             const result = this.getResult(varVals);
             // write the result into the column(s)
             switch(this.selectedType) {
                 case 0:
-                    this.createResults(row, result, 3);
+                    this.createResults(placeholderRow, result, 3);
                     break;
                 case 1:
                     const firstRes = result[0];
@@ -297,10 +309,10 @@ export class Main extends Table {
                         entry.title = firstRes[0];
                         entry.innerHTML = firstRes[2].toString();
                     }
-                    row.appendChild(entry);
+                    placeholderRow.appendChild(entry);
                     break;
                 case 2:
-                    this.createResults(row, result, 4);
+                    this.createResults(placeholderRow, result, 4);
                     break;
             }
         } else {
@@ -316,68 +328,41 @@ export class Main extends Table {
                     span = 4;
                     break;
             }
-            const no = document.createElement("td");
-            no.innerHTML = "No";
-            no.colSpan = span;
-            row.appendChild(no);
+            cells.push({cssClass: "result", value: "No", colSpan: span})
         }
+
+        const row = createRow(id, cells)
+        patch(placeholderRow, row)
     }
 
+    
     /**
-     * Completes a non-header row with the calculated values for the "Hazardous?"-column.
-     * @param parent The row to apply the values to.
-     * @param result The results calculated with the getResult method.
-     * @param index The number of columns the "Hazardous?"-column currently has.
+     * Gets the variable names from the currentContext Array
+     * and returns it together with the array of the current row's values.
+     * @param values The array containing the values that have been assigned to the context variables in the current row.
+     * @returns An array containing both the variable-names array and the assigned-values array.
+     * The indices for each variable and its assigned value sync up.
      */
-    protected createResults(parent: HTMLTableRowElement, result: [string, number, string[]][], index: number) {
-        // check if the first result comes with a 0, which is the indicator that all columns should
-        // simply be filled with a single "No" 
-        const firstRes = result[0];
-        // if there is no 0, then there is at least one rule to be applied
-        if (firstRes[1] != 0) {
-            // push all the numbers from result into a separate array
-            let numbers: number[] = [];
-            let counter : number = 0;
-            result.forEach(res => {
-                numbers.push(res[1]);
-            })
-            // go through all of the hazardous columns
-            for(let i = 1; i <= index; i++) {
-                // if there is an entry in the numbers that equals the current, a rule from result should be applied now
-                if (numbers.includes(i)) {
-                    if (counter != 0) {
-                        const no = document.createElement("td");
-                        no.innerHTML = "No";
-                        no.colSpan = counter;
-                        parent.appendChild(no);
-                        counter = 0;
-                    }
-                    const entry = document.createElement("td");
-                    let numberIndex = numbers.indexOf(i);
-                    let iRes = result[numberIndex];
-                    entry.title = iRes[0];
-                    entry.innerHTML = iRes[2].toString();
-                    parent.appendChild(entry);
-                } else {
-                    // else, there is no rule for this cell
-                    counter = counter + 1;
-                    if (i == index && counter != 0) {
-                        const no = document.createElement("td");
-                        no.innerHTML = "No";
-                        no.colSpan = counter;
-                        parent.appendChild(no);
-                    }
-                }
-            }
-        } else {
-            // else, there is no rule for the entire row, so it's filled in with a single "No"
-            const no = document.createElement("td");
-            no.innerHTML = firstRes[0];
-            no.colSpan = index;
-            parent.appendChild(no);
+     protected reappendValNames(values: any[]) {
+        // create empty array for end result
+        let valuesOfVariables: any[] = [];
+        // create an empty array for the variable names
+        let currentVars: any[] = [];
+        // filter all the variable names out of the variable data and append them to the array
+        for (let i = 0; i < values.length; i++) {
+            const currentVar = this.currentVariables[i];
+            currentVars.push(currentVar[0]);
         }
+        // push both the variable name array and the value array into the end result array 
+        valuesOfVariables.push(currentVars);
+        valuesOfVariables.push(values);
+        return valuesOfVariables;
     }
 
+
+
+
+    //TODO: evaluate method
     /**
      * Recursive method that iterates through all possible value combinations of the context variables.
      * Assembles an array with a combination of values, then sends it to the createRow method, until all possible combinations have been cycled through,
@@ -386,7 +371,7 @@ export class Main extends Table {
      * @param index A helper index to determine from which context variable to apply a value next.
      * @param values Array that holds one array entry for each context variable, containing all its possible values.
      */
-    protected getCurrentValList(table: HTMLTableElement, index: number, values: any[]) {
+    protected createContexts(table: HTMLTableElement, index: number, values: any[]) {
         // boolean to help recognize when the last variable is reached 
         let last = false;
         // load the values of the current recursion's variable
@@ -399,11 +384,11 @@ export class Main extends Table {
             this.callBack.push(currentValues[privateIndex]);
             // if this was the last value to be added, a complete collection of values has been assembles to create a row
             if(last) {
-                this.createRow(table, this.callBack);
+                this.addRow(table, this.callBack,"test-id");
             } else {
                 // else, go to the next variable and call the method on it
                 index++;
-                this.getCurrentValList(table, index, values);
+                this.createContexts(table, index, values);
                 index--;
             }
             // remove the currently indexed value afterward, when all possible contexts with it in it have been applied to the table
@@ -411,28 +396,7 @@ export class Main extends Table {
         }
     }
 
-    /**
-     * Gets the variable names from the currentContext Array
-     * and returns it together with the array of the current row's values.
-     * @param values The array containing the values that have been assigned to the context variables in the current row.
-     * @returns An array containing both the variable-names array and the assigned-values array.
-     * The indices for each variable and its assigned value sync up.
-     */
-    protected reappendValNames(values: any[]) {
-        // create empty array for end result
-        let varVals: any[] = [];
-        // create an empty array for the variable names
-        let currentVars: any[] = [];
-        // filter all the variable names out of the variable data and append them to the array
-        for (let i = 0; i < values.length; i++) {
-            const currentVar = this.currentVariables[i];
-            currentVars.push(currentVar[0]);
-        }
-        // push both the variable name array and the value array into the end result array 
-        varVals.push(currentVars);
-        varVals.push(values);
-        return varVals;
-    }
+    
 
     /**
      * Calculates if a control action is hazardous or not
@@ -484,6 +448,62 @@ export class Main extends Table {
         return resultList;
     }
 
+    
+    /**
+     * Completes a non-header row with the calculated values for the "Hazardous?"-column.
+     * @param parent The row to apply the values to.
+     * @param result The results calculated with the getResult method.
+     * @param index The number of columns the "Hazardous?"-column currently has.
+     */
+     protected createResults(parent: HTMLTableRowElement, result: [string, number, string[]][], index: number) {
+        // check if the first result comes with a 0, which is the indicator that all columns should
+        // simply be filled with a single "No" 
+        const firstRes = result[0];
+        // if there is no 0, then there is at least one rule to be applied
+        if (firstRes[1] != 0) {
+            // push all the numbers from result into a separate array
+            let numbers: number[] = [];
+            let counter : number = 0;
+            result.forEach(res => {
+                numbers.push(res[1]);
+            })
+            // go through all of the hazardous columns
+            for(let i = 1; i <= index; i++) {
+                // if there is an entry in the numbers that equals the current, a rule from result should be applied now
+                if (numbers.includes(i)) {
+                    if (counter != 0) {
+                        const no = document.createElement("td");
+                        no.innerHTML = "No";
+                        no.colSpan = counter;
+                        parent.appendChild(no);
+                        counter = 0;
+                    }
+                    const entry = document.createElement("td");
+                    let numberIndex = numbers.indexOf(i);
+                    let iRes = result[numberIndex];
+                    entry.title = iRes[0];
+                    entry.innerHTML = iRes[2].toString();
+                    parent.appendChild(entry);
+                } else {
+                    // else, there is no rule for this cell
+                    counter = counter + 1;
+                    if (i == index && counter != 0) {
+                        const no = document.createElement("td");
+                        no.innerHTML = "No";
+                        no.colSpan = counter;
+                        parent.appendChild(no);
+                    }
+                }
+            }
+        } else {
+            // else, there is no rule for the entire row, so it's filled in with a single "No"
+            const no = document.createElement("td");
+            no.innerHTML = firstRes[0];
+            no.colSpan = index;
+            parent.appendChild(no);
+        }
+    }
+
     /**
      * Checks if the assigned values of a rule equal the assigned values of the current row.
      * @param ruleVars The assigned values of a rule.
@@ -508,33 +528,7 @@ export class Main extends Table {
         return checks;
     }
 
-        
-    /**
-     * Creates a listener for a given selection element which re-initializes the table element
-     * when the currently selected option changes.
-     * @param selector The given HTMLSelectorElement.
-     * @param action Should be set to true if selector contains the control action select element.
-     * Should be set to false if otherwise.
-     */
-     protected createSelectorListener(selector : HTMLSelectElement, action: boolean) {
-        // create an event listener that catches whenever the selected option changes
-        selector.addEventListener('change', change => {
-            // remove the old table, as it is now outdated
-            const oldTable = document.getElementById("table");
-            oldTable?.parentNode?.removeChild(oldTable);
-            // update the variables containing the currently selected options
-            if (action) {
-                const selected = this.controlActions[selector.selectedIndex];
-                this.currentController = selected[0];
-                this.selectedAction = selected[1];
-                this.setCurrentVariables();
-            } else {
-                this.selectedType = selector.selectedIndex;
-            }
-            // create a new table which will be up to date
-            this.updateTable();
-        });
-    }
+
 }
 
 new Main();

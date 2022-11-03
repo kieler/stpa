@@ -49,10 +49,10 @@ Aircraft {
         }
     }
     BSCU {
-        hierarchyLevel 1
+        hierarchyLevel 1/* 
         processModel {
             aircraftPosition: ["docked", "taxiing", "takeoff", "air", "landing"]
-        }
+        } */
         controlActions {
             [brake "Brake"] -> Wheels
         }
