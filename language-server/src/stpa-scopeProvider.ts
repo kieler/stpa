@@ -118,6 +118,12 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         return this.descriptionsToScope(allDescriptions);
     }
 
+    /**
+     * Creates scope containing the variables of the system component referenced by {@code node}.
+     * @param node Current Rule.
+     * @param precomputed Precomputed Scope of the document.
+     * @returns Scope containing all variables.
+     */
     private getVars(node: Rule, precomputed: PrecomputedScopes): Scope {
         let allDescriptions: AstNodeDescription[] = [];
         let varLists = node.system.ref?.variables;

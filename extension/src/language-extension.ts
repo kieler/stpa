@@ -43,10 +43,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             vscode.commands.registerCommand(this.extensionPrefix + '.contextTable.open', async (...commandArgs: any[]) => {
                 this.createContextTable();
                 await this.contextTable.ready();
-                this.languageClient.sendNotification('contextTable/uri', (commandArgs[0] as vscode.Uri).toString());
+                this.languageClient.sendNotification('contextTable/getData', (commandArgs[0] as vscode.Uri).toString());
             })
         );
-
     }
 
     protected getDiagramType(commandArgs: any[]): string | undefined {
@@ -137,7 +136,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
     protected updateViews(languageClient: LanguageClient, uri: string) {
         if (this.contextTable) {
-            languageClient.sendNotification('contextTable/uri', uri);
+            languageClient.sendNotification('contextTable/getData', uri);
         }
         if (this.singleton) {
             const mes: ActionMessage = {

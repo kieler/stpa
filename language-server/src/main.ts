@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2022 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -30,7 +30,8 @@ const { shared, states } = createStpaServices({ connection });
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
-connection.onNotification('contextTable/uri', uri => {
-    states.contextTable.ContextTableProvider.getUri(uri);
-    connection.sendNotification('contextTable/data', states.contextTable.ContextTableProvider.getContext());
+// handler for notification regarding the context table
+connection.onNotification('contextTable/getData', uri => {
+    const contextTable = states.contextTable.ContextTableProvider;
+    connection.sendNotification('contextTable/data', contextTable.getData(uri));
 });
