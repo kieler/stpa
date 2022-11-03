@@ -26,7 +26,7 @@ export interface SendContextTableDataAction extends Action {
     //TODO: determine correct type
     rules: any[];
     actions: any[];
-    variables:any[]
+    variables: any[];
 }
 
 

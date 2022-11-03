@@ -16,7 +16,7 @@
  */
 
 import './css/table.css';
-import { Table } from '@kieler/table-webview/lib/table'
+import { Table } from '@kieler/table-webview/lib/table';
 import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
 import { addSelector, addText, BigCell, createStrings, replaceSelector } from './utils';
@@ -31,9 +31,9 @@ declare const vscode: vscode;
 export class ContextTable extends Table {
 
     /** Ids for the html elements */
-    protected actionSelectorId = "select_action"
-    protected typeSelectorId = "select_type"
-    protected tableId = "context_table"
+    protected actionSelectorId = "select_action";
+    protected typeSelectorId = "select_type";
+    protected tableId = "context_table";
 
 
     // data of the table
@@ -56,13 +56,13 @@ export class ContextTable extends Table {
     protected selectedAction: string;
     protected currentController: string;
     protected selectedType: number = 0;
-    protected currentVariables : any[] = [];
+    protected currentVariables: any[] = [];
 
     protected handleMessages(message: any): void {
-        const action = message.data.action
+        const action = message.data.action;
         if (action) {
             if (SendContextTableDataAction.isThisAction(action)) {
-                this.handleData(action as SendContextTableDataAction)
+                this.handleData(action as SendContextTableDataAction);
             } else {
                 super.handleMessages(message);
             }
@@ -84,7 +84,7 @@ export class ContextTable extends Table {
     }
 
     protected handleResetTable(): void {
-        const table = document.getElementById(this.tableId)
+        const table = document.getElementById(this.tableId);
         if (table) {
             const newTable = createTable(this.tableId, "80px");
             patch(table, newTable);
@@ -92,8 +92,8 @@ export class ContextTable extends Table {
     }
 
     protected initHtml(identifier: string, headers: string[]): void {
-        this.identifier = identifier
-        this.tableId = this.identifier + "_table"
+        this.identifier = identifier;
+        this.tableId = this.identifier + "_table";
         const mainDiv = document.getElementById(identifier + '_container');
         if (mainDiv) {
             // Create text and selector element for selecting a control action
@@ -101,8 +101,8 @@ export class ContextTable extends Table {
             addSelector(mainDiv, this.actionSelectorId, 0, [], "11px", "210px");
 
             // Create text and selector element for selecting the action type
-            addText(mainDiv, "Choose a Type:", "40px")
-            addSelector(mainDiv, this.typeSelectorId, this.selectedType, ["provided", "not provided", "both"], "51px", "130px")
+            addText(mainDiv, "Choose a Type:", "40px");
+            addSelector(mainDiv, this.typeSelectorId, this.selectedType, ["provided", "not provided", "both"], "51px", "130px");
 
             // add listener
             const htmlTypeSelector = document.getElementById(this.typeSelectorId) as HTMLSelectElement;
@@ -115,7 +115,7 @@ export class ContextTable extends Table {
             addText(mainDiv, "Hover over the hazards to see their associated rules!", "90px");
             // create a table
             const placeholderTable = document.createElement("table");
-            mainDiv.append(placeholderTable)
+            mainDiv.append(placeholderTable);
             const table = createTable(this.tableId, "80px");
             patch(placeholderTable, table);
         }
@@ -132,12 +132,12 @@ export class ContextTable extends Table {
             replaceSelector(selector, actions, 0);
 
             // update currently selected control action
-            this.updateSelection(0)
+            this.updateSelection(0);
 
             // add listener
             const htmlActionSelector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
             htmlActionSelector.addEventListener('change', () => {
-                this.updateSelection(htmlActionSelector.selectedIndex)
+                this.updateSelection(htmlActionSelector.selectedIndex);
                 this.updateTable();
             });
         }
@@ -147,7 +147,7 @@ export class ContextTable extends Table {
      * Sets the current variables based on the current controller.
      */
     protected setCurrentVariables() {
-        this.currentVariables = this.systemVariables.find(systemVariable => systemVariable[0] === this.currentController)[1]
+        this.currentVariables = this.systemVariables.find(systemVariable => systemVariable[0] === this.currentController)[1];
     }
 
     /**
@@ -159,22 +159,22 @@ export class ContextTable extends Table {
         const placeholderHeader = document.createElement("tr");
         table.appendChild(placeholderHeader);
 
-        const headers: VNode[] = []
+        const headers: VNode[] = [];
         // the first column is for the control action and has no subheader
-        const controlActionHeader = createHeaderElement("Control Action", 2)
-        headers.push(controlActionHeader)
+        const controlActionHeader = createHeaderElement("Control Action", 2);
+        headers.push(controlActionHeader);
 
         // the second header column is for the context and needs to span as many columns as there are context variables
         if (this.currentVariables.length > 0) {
-            const contextVariablesHeader = createHeaderElement("Context Variables", undefined, this.currentVariables.length)
-            headers.push(contextVariablesHeader)
+            const contextVariablesHeader = createHeaderElement("Context Variables", undefined, this.currentVariables.length);
+            headers.push(contextVariablesHeader);
         }
 
         // The third header column is the hazardous column
         // The column-/row-span depends on what action type has been selected
         let colSpan: number | undefined = undefined;
-        let rowSpan: number | undefined = undefined
-        switch(this.selectedType) {
+        let rowSpan: number | undefined = undefined;
+        switch (this.selectedType) {
             case 0:
                 colSpan = 3;
                 break;
@@ -185,12 +185,12 @@ export class ContextTable extends Table {
                 colSpan = 4;
                 break;
         }
-        const hazardousHeader = createHeaderElement("Hazardous?", rowSpan, colSpan)
-        headers.push(hazardousHeader)
+        const hazardousHeader = createHeaderElement("Hazardous?", rowSpan, colSpan);
+        headers.push(hazardousHeader);
 
         // create correct header
-        const headersElement = createHeaders(headers)
-        patch(placeholderHeader, headersElement)
+        const headersElement = createHeaders(headers);
+        patch(placeholderHeader, headersElement);
     }
 
     /**
@@ -202,15 +202,15 @@ export class ContextTable extends Table {
         const placeholdersubHeaders = document.createElement("tr");
         table.appendChild(placeholdersubHeaders);
 
-        const headers: VNode[] = []
+        const headers: VNode[] = [];
         // sub-headers for the context variables
         this.currentVariables.forEach(variable => {
-            const header = createHeaderElement(variable[0])
-            headers.push(header)
-        })
+            const header = createHeaderElement(variable[0]);
+            headers.push(header);
+        });
         // hazardous sub-options, which depend on the selected action type
-        let times: string[] = []
-        switch(this.selectedType) {
+        let times: string[] = [];
+        switch (this.selectedType) {
             case 0:
                 times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long"];
                 break;
@@ -219,31 +219,31 @@ export class ContextTable extends Table {
                 break;
         }
         times.forEach(time => {
-            const header = createHeaderElement(time)
-            headers.push(header)
-        })
+            const header = createHeaderElement(time);
+            headers.push(header);
+        });
         // create correct header
-        const headersElement = createHeaders(headers)
-        patch(placeholdersubHeaders, headersElement)
+        const headersElement = createHeaders(headers);
+        patch(placeholdersubHeaders, headersElement);
     }
-    
+
     /**
      * Updates the currently selected control action.
      * @param index Index determining which control action is selected.
      */
-     protected updateSelection(index: number) {
+    protected updateSelection(index: number) {
         const selected = this.controlActions[index];
         this.currentController = selected[0];
         this.selectedAction = selected[1];
         this.setCurrentVariables();
     }
-        
+
     /**
      * Creates the content of the table.
      */
-     protected updateTable() {
+    protected updateTable() {
         // reset old table
-        this.handleResetTable()
+        this.handleResetTable();
         const table = document.getElementById(this.tableId) as HTMLTableElement;
         if (table) {
             // create the headers
@@ -252,10 +252,10 @@ export class ContextTable extends Table {
             if (this.currentVariables.length > 0) {
                 // collect the values of the current variables
                 // needed to calculate all possible combinations (contexts)
-                let valuesOfVariables : (string[])[] = [];
+                let valuesOfVariables: (string[])[] = [];
                 this.currentVariables.forEach(variable => {
                     valuesOfVariables.push(variable[1]);
-                })
+                });
                 // recursively create a row for each possible context
                 this.createContexts(table, 0, valuesOfVariables);
             } else {
@@ -276,49 +276,49 @@ export class ContextTable extends Table {
         const placeholderRow = document.createElement("tr");
         table.appendChild(placeholderRow);
 
-        let cells: BigCell[] = []
+        let cells: BigCell[] = [];
         // the control action text based on the currently selected options
-        let controlAction = ""
+        let controlAction = "";
         const type = document.getElementById("select_type") as HTMLSelectElement;
-        if(type.options[type.selectedIndex].text == "both") {
+        if (type.options[type.selectedIndex].text == "both") {
             controlAction = this.selectedAction + " provided";
         } else {
             controlAction = this.selectedAction + " " + type.options[type.selectedIndex].text;
         }
-        cells.push({cssClass: "control-action", value: controlAction, colSpan: 1})
+        cells.push({ cssClass: "control-action", value: controlAction, colSpan: 1 });
 
         if (values.length > 0) {
             // values of the context variables
-            const valueCells = values.map(value => {return {cssClass: "context-variable", value: value, colSpan: 1}})
-            cells = cells.concat(valueCells)
+            const valueCells = values.map(value => { return { cssClass: "context-variable", value: value, colSpan: 1 }; });
+            cells = cells.concat(valueCells);
 
             // calculate whether the control action is hazardous
             // TODO: evaluate both methods
             const result = getResult(values, this.rules, this.currentController, this.selectedAction, this.selectedType, this.currentVariables);
             // write the result into the column(s)
-            switch(this.selectedType) {
+            switch (this.selectedType) {
                 //TODO: evaluate
                 case 0:
                     cells = cells.concat(createResults(result, 3));
                     break;
                 case 1:
                     const firstRes = result[0];
-                    let text = ""
+                    let text = "";
                     if (firstRes[0] == "No") {
                         text = firstRes[0];
                     } else {
                         // entry.title = firstRes[0];
                         text = firstRes[2].toString();
                     }
-                    cells.push({cssClass: "result", value: text, colSpan: 1})
+                    cells.push({ cssClass: "result", value: text, colSpan: 1 });
                     break;
                 case 2:
                     cells = cells.concat(createResults(result, 4));
                     break;
             }
         } else {
-            let span : number = 0;
-            switch(this.selectedType) {
+            let span: number = 0;
+            switch (this.selectedType) {
                 case 0:
                     span = 3;
                     break;
@@ -329,11 +329,11 @@ export class ContextTable extends Table {
                     span = 4;
                     break;
             }
-            cells.push({cssClass: "result", value: "No", colSpan: span})
+            cells.push({ cssClass: "result", value: "No", colSpan: span });
         }
 
-        const row = createRow(id, cells)
-        patch(placeholderRow, row)
+        const row = createRow(id, cells);
+        patch(placeholderRow, row);
     }
 
 
@@ -352,14 +352,14 @@ export class ContextTable extends Table {
         // load the values of the current recursion's variable
         const currentValues = values[index];
         // check if variable is the last variable of the array
-        if(index == values.length - 1) {last = true;}
+        if (index == values.length - 1) { last = true; }
         // go through all the values of the current variable
-        for(let privateIndex = 0; privateIndex < currentValues.length; privateIndex++) {
+        for (let privateIndex = 0; privateIndex < currentValues.length; privateIndex++) {
             // push the currently indexed value
             this.callBack.push(currentValues[privateIndex]);
             // if this was the last value to be added, a complete collection of values has been assembles to create a row
-            if(last) {
-                this.addRow(table, this.callBack,"test-id");
+            if (last) {
+                this.addRow(table, this.callBack, "test-id");
             } else {
                 // else, go to the next variable and call the method on it
                 index++;
@@ -371,7 +371,7 @@ export class ContextTable extends Table {
         }
     }
 
-    
+
 
 
 

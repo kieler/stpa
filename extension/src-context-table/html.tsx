@@ -41,15 +41,15 @@ export const patch = init([
  * @returns A selector VNode.
  */
 export function createSelector(id: string, index: number, options: string[], topDistance?: string, leftDistance?: string): VNode {
-    const optionHtmls = options.map(option => createOption(option))
+    const optionHtmls = options.map(option => createOption(option));
     if (topDistance && leftDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute", top: topDistance, left: leftDistance}}>{optionHtmls}</select>
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", top: topDistance, left: leftDistance }}>{optionHtmls}</select>;
     } else if (topDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute", top: topDistance}}>{optionHtmls}</select>
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", top: topDistance }}>{optionHtmls}</select>;
     } else if (leftDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute", left: leftDistance}}>{optionHtmls}</select>
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", left: leftDistance }}>{optionHtmls}</select>;
     } else {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{position: "absolute"}}>{optionHtmls}</select>
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute" }}>{optionHtmls}</select>;
     }
 }
 
@@ -59,8 +59,8 @@ export function createSelector(id: string, index: number, options: string[], top
  * @param topDistance The distance of the text to the top border.
  * @returns A table VNode.
  */
- export function createTable(id: string, topDistance: string): VNode {
-    return <table attrs={{ id: id }} style={{position: "absolute", top: topDistance}}></table>
+export function createTable(id: string, topDistance: string): VNode {
+    return <table attrs={{ id: id }} style={{ position: "absolute", top: topDistance }}></table>;
 }
 
 /**
@@ -69,7 +69,7 @@ export function createSelector(id: string, index: number, options: string[], top
  * @returns An option VNode.
  */
 function createOption(option: string): VNode {
-    return <option attrs={{ value: option }}>{option}</option>
+    return <option attrs={{ value: option }}>{option}</option>;
 }
 
 /**
@@ -79,7 +79,7 @@ function createOption(option: string): VNode {
  * @returns A text VNode.
  */
 export function createText(text: string, topDistance: string): VNode {
-    return <pre style={{position: "absolute", left: "10px", top: topDistance}}>{text}</pre>
+    return <pre style={{ position: "absolute", left: "10px", top: topDistance }}>{text}</pre>;
 }
 
 /**
@@ -89,15 +89,15 @@ export function createText(text: string, topDistance: string): VNode {
  * @param colspan The colspan of the header.
  * @returns A header element.
  */
-export function createHeaderElement(header: string, rowspan?:number, colspan?: number) {
+export function createHeaderElement(header: string, rowspan?: number, colspan?: number) {
     if (rowspan && colspan) {
-        return <th attrs={{ rowspan: rowspan, colspan: colspan }}>{header}</th>
+        return <th attrs={{ rowspan: rowspan, colspan: colspan }}>{header}</th>;
     } else if (rowspan) {
-        return <th attrs={{ rowspan: rowspan }}>{header}</th>
+        return <th attrs={{ rowspan: rowspan }}>{header}</th>;
     } else if (colspan) {
-        return <th attrs={{ colspan: colspan }}>{header}</th>
+        return <th attrs={{ colspan: colspan }}>{header}</th>;
     } else {
-        return <th>{header}</th>
+        return <th>{header}</th>;
     }
 }
 
@@ -109,7 +109,7 @@ export function createHeaderElement(header: string, rowspan?:number, colspan?: n
 export function createHeaders(headers: VNode[]) {
     return <tr>
         {...headers}
-    </tr>
+    </tr>;
 }
 
 /**
@@ -118,11 +118,11 @@ export function createHeaders(headers: VNode[]) {
  * @param values The values of the row in the correct ordering.
  * @returns a row of a table as VNode.
  */
- export function createRow(id: string, values: BigCell[]): VNode {
+export function createRow(id: string, values: BigCell[]): VNode {
     const children: VNode[] = [];
     for (const val of values) {
-        const classes: Classes =  {}
-        classes[val.cssClass] = true
+        const classes: Classes = {};
+        classes[val.cssClass] = true;
         children.push(<td class={classes} attrs={{ colspan: val.colSpan }}>{val.value}</td>);
     }
     const row = <tr attrs={{ id: id }}>{children}</tr>;
