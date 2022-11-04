@@ -19,7 +19,7 @@ import './css/table.css';
 import { Table } from '@kieler/table-webview/lib/table';
 import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
-import { addSelector, addText, BigCell, ControlAction, convertControlActionsToStrings, replaceSelector, Rule, SystemVariables, Type, VariableValues } from './utils';
+import { addSelector, addText, BigCell, ControlAction, convertControlActionsToStrings, replaceSelector, Rule, SystemVariables, Type, Variable, VariableValues } from './utils';
 import { VNode } from "snabbdom";
 import { createResults, getResult } from './context-table-logic';
 
@@ -39,12 +39,6 @@ export class ContextTable extends Table {
     protected rules: Rule[] = [];
     protected controlActions: ControlAction[] = [];
     protected systemVariables: SystemVariables[] = [];
-
-    //????????????
-    // array used for a recursive method;
-    // is probably redundant and could be integrated into said method as a local variable,
-    // but I'll leave it for now
-    protected callBack: any[] = [];
 
     // variables to store the currently selected options of the select elements in
     protected selectedControlAction: ControlAction;
@@ -68,7 +62,7 @@ export class ContextTable extends Table {
      * Updates the data of the context table.
      * @param action SendContextTableDataAction that contains the data needed to create the table contents.
      */
-    protected handleData(action: SendContextTableDataAction) {
+    protected handleData(action: SendContextTableDataAction): void {
         this.rules = action.data.rules;
         this.controlActions = action.data.actions;
         this.systemVariables = action.data.systemVariables;
@@ -127,7 +121,7 @@ export class ContextTable extends Table {
     /**
      * Initializes the action selector with the available actions.
      */
-    protected updateActionSelector() {
+    protected updateActionSelector(): void {
         const selector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
         if (selector) {
             // translate control actions to strings and add them to the selector
@@ -149,7 +143,7 @@ export class ContextTable extends Table {
     /**
      * Sets the current variables based on the current controller.
      */
-    protected setCurrentVariables() {
+    protected setCurrentVariables(): void {
         const variables = this.systemVariables.find(systemVariable => systemVariable.system === this.selectedControlAction.controller)?.variables;
         if (variables) {
             this.currentVariables = variables;
@@ -205,7 +199,7 @@ export class ContextTable extends Table {
      * Creates the sub-header (second table row) of the context table.
      * @param table The HTML table element to complete.
      */
-    protected createSubHeader(table: HTMLTableElement) {
+    protected createSubHeader(table: HTMLTableElement): void {
         // create and add placeholder for subheaders
         const placeholdersubHeaders = document.createElement("tr");
         table.appendChild(placeholdersubHeaders);
@@ -239,7 +233,7 @@ export class ContextTable extends Table {
      * Updates the currently selected control action.
      * @param index Index determining which control action is selected.
      */
-    protected updateControlActionSelection(index: number) {
+    protected updateControlActionSelection(index: number): void {
         this.selectedControlAction = this.controlActions[index];
         this.setCurrentVariables();
     }
@@ -247,7 +241,7 @@ export class ContextTable extends Table {
     /**
      * Creates the content of the table.
      */
-    protected updateTable() {
+    protected updateTable(): void {
         // reset old table
         this.handleResetTable();
         const table = document.getElementById(this.tableId) as HTMLTableElement;
@@ -256,14 +250,9 @@ export class ContextTable extends Table {
             this.createHeader(table);
             this.createSubHeader(table);
             if (this.currentVariables.length > 0) {
-                // collect the values of the current variables
-                // needed to calculate all possible combinations (contexts)
-                let valuesOfVariables: (string[])[] = [];
-                this.currentVariables.forEach(variable => {
-                    valuesOfVariables.push(variable.values);
-                });
-                // recursively create a row for each possible context
-                this.createContexts(table, 0, valuesOfVariables);
+                // generate all possible contexts
+                const contexts = this.createContexts(0, this.currentVariables, []);
+                contexts.forEach(context => this.addRow(table, context, "context"))
             } else {
                 // table is empty
                 this.addRow(table, [], "empty-row");
@@ -275,9 +264,10 @@ export class ContextTable extends Table {
     /**
      * Creates and appends one non-header row to the table. 
      * @param table The HTMLTableElement to apply the row to.
-     * @param values The context variable values that should be written into the current row.
+     * @param variables The context variable values that should be written into the current row.
+     * @param id The id of the row.
      */
-    protected addRow(table: HTMLTableElement, values: string[], id: string) {
+    protected addRow(table: HTMLTableElement, variables: Variable[], id: string): void {
         // create row placeholder
         const placeholderRow = document.createElement("tr");
         table.appendChild(placeholderRow);
@@ -293,13 +283,13 @@ export class ContextTable extends Table {
         }
         cells.push({ cssClass: "control-action", value: controlAction, colSpan: 1 });
 
-        if (values.length > 0) {
+        if (variables.length > 0) {
             // values of the context variables
-            const valueCells = values.map(value => { return { cssClass: "context-variable", value: value, colSpan: 1 }; });
+            const valueCells = variables.map(variable => { return { cssClass: "context-variable", value: variable.value, colSpan: 1 }; });
             cells = cells.concat(valueCells);
 
             // calculate whether the control action is hazardous
-            const result = getResult(values, this.rules, this.selectedControlAction.controller, this.selectedControlAction.action, this.selectedType, this.currentVariables);
+            const result = getResult(variables, this.rules, this.selectedControlAction.controller, this.selectedControlAction.action, this.selectedType, this.currentVariables);
             // write the result into the column(s)
             switch (this.selectedType) {
                 //TODO: evaluate
@@ -342,38 +332,35 @@ export class ContextTable extends Table {
     }
 
 
-    //TODO: evaluate method
     /**
-     * Recursive method that iterates through all possible value combinations of the context variables.
-     * Assembles an array with a combination of values, then sends it to the createRow method, until all possible combinations have been cycled through,
-     * and subsequently, all necessary rows have been assembled.
-     * @param table The HTMLTableElement to apply the rows to. Needed for the createRow method call.
-     * @param index A helper index to determine from which context variable to apply a value next.
-     * @param values Array that holds one array entry for each context variable, containing all its possible values.
+     * Generates all possible value combinations of the given variables.
+     * @param variableIndex Index to determine from which variable to apply a value next.
+     * @param variableValues All variables with their possible values for which the combinations should be generated.
+     * @param determinedValues The already determined variable values.
+     * @returns All possible value combinations of the given variables.
      */
-    protected createContexts(table: HTMLTableElement, index: number, values: any[]) {
-        // boolean to help recognize when the last variable is reached 
-        let last = false;
+    protected createContexts(variableIndex: number, variableValues: VariableValues[], determinedValues: Variable[]): (Variable[])[] {
+        let result: (Variable[])[] = []
         // load the values of the current recursion's variable
-        const currentValues = values[index];
-        // check if variable is the last variable of the array
-        if (index == values.length - 1) { last = true; }
+        const currentValues = variableValues[variableIndex].values;
+        const lastVariable = variableIndex == variableValues.length - 1;
         // go through all the values of the current variable
-        for (let privateIndex = 0; privateIndex < currentValues.length; privateIndex++) {
+        for (let valueIndex = 0; valueIndex < currentValues.length; valueIndex++) {
             // push the currently indexed value
-            this.callBack.push(currentValues[privateIndex]);
+            determinedValues.push({name: variableValues[variableIndex].name, value: currentValues[valueIndex]});
             // if this was the last value to be added, a complete collection of values has been assembles to create a row
-            if (last) {
-                this.addRow(table, this.callBack, "test-id");
+            if (lastVariable) {
+                const context: Variable[] = []
+                determinedValues.forEach(variable => context.push(variable))
+                result.push(context)
             } else {
                 // else, go to the next variable and call the method on it
-                index++;
-                this.createContexts(table, index, values);
-                index--;
+                result = result.concat(this.createContexts(variableIndex + 1, variableValues, determinedValues));
             }
-            // remove the currently indexed value afterward, when all possible contexts with it in it have been applied to the table
-            this.callBack.pop();
+            // remove the currently indexed value afterward, when all possible contexts with it have been collected
+            determinedValues.pop();
         }
+        return result
     }
 
 

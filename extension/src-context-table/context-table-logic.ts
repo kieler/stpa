@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { BigCell, ControlAction, Rule, Variable, VariableValues } from "./utils";
+import { BigCell, Rule, Variable, VariableValues } from "./utils";
 
 
 
@@ -75,7 +75,7 @@ export function createResults(result: [string, number, string[]][], index: numbe
  * Else, returns string "No" to be applied to all of the "Hazardous"-column's columns.
  * 
  */
-export function getResult(values: string[], rules: Rule[], selectedController: string, selectedAction: string, selectedType: number, currentVariables: VariableValues[]): [string, number, string[]][] {
+export function getResult(variables: Variable[], rules: Rule[], selectedController: string, selectedAction: string, selectedType: number, currentVariables: VariableValues[]): [string, number, string[]][] {
     // create an empty array for the end result
     let resultList: [string, number, string[]][] = [];
     // check all the rules
@@ -83,7 +83,6 @@ export function getResult(values: string[], rules: Rule[], selectedController: s
         // check if the control action applies first
         const ruleAction = rule.controlAction;
         if (ruleAction.controller == selectedController && ruleAction.action == selectedAction) {
-            const variables = reappendValNames(values, currentVariables);
             // check if the context applies next
             if (checkValues(rule.variables, variables)) {
                 // convert the given type string to lowercase
@@ -138,25 +137,4 @@ function checkValues(ruleVariables: Variable[], variables: Variable[]): boolean 
         if (currentRuleVariable.value != correspondingVariable?.value) { checks = false; }
     }
     return checks;
-}
-
-
-//TODO: evaluate
-/**
- * Gets the variable names from the currentContext Array
- * and returns it together with the array of the current row's values.
- * @param values The array containing the values that have been assigned to the context variables in the current row.
- * @param currentVariables
- * @returns An array containing both the variable-names array and the assigned-values array.
- * The indices for each variable and its assigned value sync up.
- */
-function reappendValNames(values: string[], currentVariables: VariableValues[]): Variable[] {
-    // create empty array for end result
-    let variables: Variable[] = [];
-    // filter all the variable names out of the variable data and append them to the array
-    for (let i = 0; i < values.length; i++) {
-        const currentVar = currentVariables[i];
-        variables.push({ name: currentVar.name, value: values[i] });
-    }
-    return variables;
 }

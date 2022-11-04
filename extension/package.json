@@ -225,7 +225,7 @@
         "langium:watch": "langium generate --watch",
         "lint": "eslint .",
         "build": "yarn run langium:generate && webpack --mode production",
-        "watch": "yarn run langium:watch && webpack --watch",
+        "watch": "webpack --watch",
         "package": "yarn run langium:generate && vsce package --yarn -o stpa-dsl.vsix",
         "vscode:prepublish": "yarn run build"
     }
