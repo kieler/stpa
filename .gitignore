@@ -1,11 +1,7 @@
 node_modules
-extension/syntaxes
-extension/pack
-language-server/src/generated
-
-webview/lib
-
-*/out
-*/node_modules
-workspace/.vscode/settings.json
+syntaxes
+pack
+out
+settings.json
 lib
+extension/src-language-server/generated/

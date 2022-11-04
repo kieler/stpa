@@ -30,7 +30,7 @@
     "ts-loader": "^9.2.6"
   },
   "scripts": {
-    "clean": "rm -rf lib",
+    "clean": "rimraf lib",
     "lint": "eslint .",
     "build": "tsc",
     "watch": "tsc -w",
