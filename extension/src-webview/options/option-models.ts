@@ -55,6 +55,15 @@ export interface RangeOption extends SynthesisOption {
 }
 
 /**
+ * A SynthesisOption with the DROPDOWN type.
+ */
+export interface DropDownOption extends SynthesisOption {
+    currentId: string
+    availableValues: { displayName: string; id: string }[];
+}
+
+
+/**
  * The different types a SynthesisOption can have.
  */
 export enum TransformationOptionType {
@@ -64,6 +73,7 @@ export enum TransformationOptionType {
     TEXT = 3,
     SEPARATOR = 4,
     CATEGORY = 5,
+    DROPDOWN = 6
 }
 
 /**

@@ -37,6 +37,7 @@ export class STPANode extends SNode {
     hierarchyLvl: number = 0
     highlight?: boolean
     level?: number
+    controlAction?: string
 }
 
 /**
