@@ -195,7 +195,7 @@
         "lint": "eslint .",
         "build": "yarn run langium:generate && webpack --mode production",
         "watch": "yarn run langium:watch && webpack --watch",
-        "package": "yarn run langium:generate && vsce package --yarn -o keith-vscode.vsix",
+        "package": "yarn run langium:generate && vsce package --yarn -o stpa-dsl.vsix",
         "vscode:prepublish": "yarn run build"
     }
 }
