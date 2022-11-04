@@ -45,6 +45,7 @@ export class Rule {
     type: string;
     variables: Variable[];
     hazards: string[];
+    column?: number;
 }
 
 export class ContextTableData {

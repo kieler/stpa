@@ -15,126 +15,105 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { BigCell, Rule, Variable, VariableValues } from "./utils";
+import { BigCell, Rule, Type, Variable, VariableValues } from "./utils";
 
-
-
-//TODO: evaluate
+//TODO
 /**
- * Completes a non-header row with the calculated values for the "Hazardous?"-column.
- * @param parent The row to apply the values to.
- * @param result The results calculated with the getResult method.
- * @param index The number of columns the "Hazardous?"-column currently has.
+ * 
+ * @param rules 
+ * @param hazardColumnsCount The number of columns the "Hazardous?"-column currently has.
+ * @returns 
  */
-export function createResults(result: [string, number, string[]][], index: number): BigCell[] {
+export function createResults(rules: Rule[], hazardColumnsCount: number): BigCell[] {
     const cells: BigCell[] = [];
-    // check if the first result comes with a 0, which is the indicator that all columns should
-    // simply be filled with a single "No" 
-    const firstRes = result[0];
-    // if there is no 0, then there is at least one rule to be applied
-    if (firstRes[1] != 0) {
-        // push all the numbers from result into a separate array
-        let numbers: number[] = [];
-        let counter: number = 0;
-        result.forEach(res => {
-            numbers.push(res[1]);
-        });
-        // go through all of the hazardous columns
-        for (let i = 1; i <= index; i++) {
-            // if there is an entry in the numbers that equals the current, a rule from result should be applied now
-            if (numbers.includes(i)) {
-                if (counter != 0) {
-                    cells.push({ cssClass: "result", value: "No", colSpan: counter });
-                }
-                let numberIndex = numbers.indexOf(i);
-                let iRes = result[numberIndex];
-
-                cells.push({ cssClass: "result", value: iRes[2].toString(), colSpan: 1 });
-
-                // entry.title = iRes[0];
-            } else {
-                // else, there is no rule for this cell
-                counter = counter + 1;
-                if (i == index && counter != 0) {
-                    cells.push({ cssClass: "result", value: "No", colSpan: counter });
-                }
+    // keeps track on how many neihbouring columns have no rule applied
+    let noAppliedRuleCounter: number = 0;
+    // go through all of the hazardous columns
+    for (let hazardColumn = 1; hazardColumn <= hazardColumnsCount; hazardColumn++) {
+        // TODO: can there be multiple rules with the same column?
+        const currentRule = rules.find(rule => rule.column === hazardColumn);
+        if (!currentRule) {
+            // there is no rule for this column
+            noAppliedRuleCounter++;
+            if (hazardColumn == hazardColumnsCount) {
+                // its the last column so we can fill the missing columns with a cell containing the value "No"
+                cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
             }
+        } else {
+            // it may be that previous columns had no rule
+            // in this case a cell with value "No" must be created that covers these columns
+            if (noAppliedRuleCounter != 0) {
+                cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
+                noAppliedRuleCounter = 0;
+            }
+            // add the hazards, defined by the rule, as a cell
+            cells.push({ cssClass: "result", value: currentRule.hazards.toString(), colSpan: 1 });
+            //TODO: add hover
+            // entry.title = currentRule.id;
         }
-    } else {
-        // else, there is no rule for the entire row, so it's filled in with a single "No"
-        cells.push({ cssClass: "result", value: firstRes[0], colSpan: index });
     }
     return cells;
 }
 
-// TODO: evalaute
+//TODO
 /**
- * Calculates if a control action is hazardous or not
- * given a specified context using the rules defined in the .stpa file.
- * @returns If the action is hazardous, returns an array with all the rules (ID as string) that apply as well as their types (as number).
- * Else, returns string "No" to be applied to all of the "Hazardous"-column's columns.
  * 
+ * @param variables 
+ * @param rules 
+ * @param selectedController 
+ * @param selectedAction 
+ * @param selectedType 
+ * @param hazardColumnsCount 
+ * @returns 
  */
-export function getResult(variables: Variable[], rules: Rule[], selectedController: string, selectedAction: string, selectedType: number, currentVariables: VariableValues[]): [string, number, string[]][] {
-    // create an empty array for the end result
-    let resultList: [string, number, string[]][] = [];
-    // check all the rules
+export function determineResults(variables: Variable[], rules: Rule[], selectedController: string,
+    selectedAction: string, selectedType: number, hazardColumnsCount: number): BigCell[] {
+    // update the columns of all rules
     rules.forEach(rule => {
-        // check if the control action applies first
-        const ruleAction = rule.controlAction;
-        if (ruleAction.controller == selectedController && ruleAction.action == selectedAction) {
-            // check if the context applies next
-            if (checkValues(rule.variables, variables)) {
-                // convert the given type string to lowercase
-                const typeString = rule.type;
-                const checkString = typeString.toLowerCase();
-                // check if it is one of the accepted types that can be worked with,
-                // if so, push rule onto the end result array with a fitting indicator as to what cell to write the rule in
-                // this depends on the selected action type in the selector element
-                switch (selectedType) {
-                    case 0:
-                        if (checkString == "anytime") { resultList.push([rule.id, 1, rule.hazards]); return; };
-                        if (checkString == "too early" || checkString == "too late") { resultList.push([rule.id, 2, rule.hazards]); return; };
-                        if (checkString == "stopped too soon" || checkString == "applied too long") { resultList.push([rule.id, 3, rule.hazards]); return; };
-                        break;
-                    case 1:
-                        if (checkString == "not provided" || checkString == "never") { resultList.push([rule.id, 0, rule.hazards]); return; };
-                        break;
-                    case 2:
-                        if (checkString == "anytime") { resultList.push([rule.id, 1, rule.hazards]); return; };
-                        if (checkString == "too early" || checkString == "too late") { resultList.push([rule.id, 2, rule.hazards]); return; };
-                        if (checkString == "stopped too soon" || checkString == "applied too long") { resultList.push([rule.id, 3, rule.hazards]); return; };
-                        if (checkString == "not provided" || checkString == "never") { resultList.push([rule.id, 4, rule.hazards]); return; };
-                        break;
-                }
+        // compare control action of the rule with the selected one and  
+        // the context of the rule with the current context
+        if (rule.controlAction.controller === selectedController && rule.controlAction.action === selectedAction
+            && checkValues(rule.variables, variables)) {
+            // determine the column for which the rule applies
+            const ruleType = rule.type.toLowerCase();
+            let column = -1;
+            if (selectedType === Type.NOT_PROVIDED && (ruleType == "not provided" || ruleType == "never")) {
+                column = 1;
+            } else if (ruleType == "anytime") {
+                column = 1;
+            } else if (ruleType == "too early" || ruleType == "too late") {
+                column = 2;
+            } else if (ruleType == "stopped too soon" || ruleType == "applied too long") {
+                column = 3;
+            } else if (ruleType == "not provided" || ruleType == "never") {
+                column = 4;
+            } else {
+                console.log("The given control action type is not supported: " + ruleType);
             }
+            rule.column = column;
+        } else {
+            rule.column = undefined;
         }
     });
-    // if the result array remains empty, there is no rule, so push a single "No"
-    if (resultList.length == 0) {
-        resultList.push(["No", 0, []]);
-    }
-    return resultList;
+
+    return createResults(rules, hazardColumnsCount);
 }
 
-//TODO: evaluate
 /**
- * Checks if the assigned values of a rule equal the assigned values of the current row.
- * @param ruleVariables The assigned values of a rule.
- * @param variables The assigned values of the current row.
+ * Checks whether the values of {@code variables1} and {@code variables2} are the same
+ * @param variables1 Variables that should be compared to the other set.
+ * @param variables2 Variables that should be compared to the other set.
  * @returns true if all values are equal; false otherwise.
  */
-function checkValues(ruleVariables: Variable[], variables: Variable[]): boolean {
-    // a boolean to iteratively check if values have been flagged as not equal, which should end the method
-    let checks: boolean = true;
-    // for all variables of the rule
-    for (let i = 0; i < ruleVariables.length && checks; i++) {
-        // get the current variable with required value
-        const currentRuleVariable = ruleVariables[i];
-        // get the index of the value pair in the row array that the current iteration wants to compare
-        const correspondingVariable = variables.find(variable => variable.name === currentRuleVariable.name);
-        // use that index to compare the rule's required value with the matching row's current value
-        if (currentRuleVariable.value != correspondingVariable?.value) { checks = false; }
+function checkValues(variables1: Variable[], variables2: Variable[]): boolean {
+    for (let i = 0; i < variables1.length; i++) {
+        const firstVariable = variables1[i];
+        // get corresponding variable
+        const correspondingVariable = variables2.find(secondVariable => secondVariable.name === firstVariable.name);
+        // check values
+        if (firstVariable.value != correspondingVariable?.value) {
+            return false;
+        }
     }
-    return checks;
+    return true;
 }

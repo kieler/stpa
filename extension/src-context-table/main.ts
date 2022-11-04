@@ -21,7 +21,7 @@ import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
 import { addSelector, addText, BigCell, ControlAction, convertControlActionsToStrings, replaceSelector, Rule, SystemVariables, Type, Variable, VariableValues } from './utils';
 import { VNode } from "snabbdom";
-import { createResults, getResult } from './context-table-logic';
+import { createResults, determineResults } from './context-table-logic';
 
 interface vscode {
     postMessage(message: any): void;
@@ -252,7 +252,7 @@ export class ContextTable extends Table {
             if (this.currentVariables.length > 0) {
                 // generate all possible contexts
                 const contexts = this.createContexts(0, this.currentVariables, []);
-                contexts.forEach(context => this.addRow(table, context, "context"))
+                contexts.forEach(context => this.addRow(table, context, "context"));
             } else {
                 // table is empty
                 this.addRow(table, [], "empty-row");
@@ -288,45 +288,42 @@ export class ContextTable extends Table {
             const valueCells = variables.map(variable => { return { cssClass: "context-variable", value: variable.value, colSpan: 1 }; });
             cells = cells.concat(valueCells);
 
-            // calculate whether the control action is hazardous
-            const result = getResult(variables, this.rules, this.selectedControlAction.controller, this.selectedControlAction.action, this.selectedType, this.currentVariables);
-            // write the result into the column(s)
+            // determine the amount of hazardous columns
+            let columns = -1;
             switch (this.selectedType) {
-                //TODO: evaluate
                 case Type.PROVIDED:
-                    cells = cells.concat(createResults(result, 3));
+                    columns = 3;
                     break;
                 case Type.NOT_PROVIDED:
-                    const firstRes = result[0];
-                    let text = "";
-                    if (firstRes[0] == "No") {
-                        text = firstRes[0];
-                    } else {
-                        // entry.title = firstRes[0];
-                        text = firstRes[2].toString();
-                    }
-                    cells.push({ cssClass: "result", value: text, colSpan: 1 });
+                    columns = 1;
                     break;
                 case Type.BOTH:
-                    cells = cells.concat(createResults(result, 4));
+                    columns = 4;
                     break;
+                default:
+                    console.log("The selected control action type is not supported: " + this.selectedType);
             }
+            // determine the result cells
+            cells = cells.concat(determineResults(variables, this.rules, this.selectedControlAction.controller,
+                this.selectedControlAction.action, this.selectedType, columns));
         } else {
-            let span: number = 0;
+            // no variables exist
+            let colSpan: number = 0;
             switch (this.selectedType) {
                 case Type.PROVIDED:
-                    span = 3;
+                    colSpan = 3;
                     break;
                 case Type.NOT_PROVIDED:
-                    span = 1;
+                    colSpan = 1;
                     break;
                 case Type.BOTH:
-                    span = 4;
+                    colSpan = 4;
                     break;
             }
-            cells.push({ cssClass: "result", value: "No", colSpan: span });
+            cells.push({ cssClass: "result", value: "No", colSpan: colSpan });
         }
 
+        // create the row
         const row = createRow(id, cells);
         patch(placeholderRow, row);
     }
@@ -340,19 +337,19 @@ export class ContextTable extends Table {
      * @returns All possible value combinations of the given variables.
      */
     protected createContexts(variableIndex: number, variableValues: VariableValues[], determinedValues: Variable[]): (Variable[])[] {
-        let result: (Variable[])[] = []
+        let result: (Variable[])[] = [];
         // load the values of the current recursion's variable
         const currentValues = variableValues[variableIndex].values;
         const lastVariable = variableIndex == variableValues.length - 1;
         // go through all the values of the current variable
         for (let valueIndex = 0; valueIndex < currentValues.length; valueIndex++) {
             // push the currently indexed value
-            determinedValues.push({name: variableValues[variableIndex].name, value: currentValues[valueIndex]});
-            // if this was the last value to be added, a complete collection of values has been assembles to create a row
+            determinedValues.push({ name: variableValues[variableIndex].name, value: currentValues[valueIndex] });
+            // if this was the last value to be added, a complete collection of values has been assembled
             if (lastVariable) {
-                const context: Variable[] = []
-                determinedValues.forEach(variable => context.push(variable))
-                result.push(context)
+                const context: Variable[] = [];
+                determinedValues.forEach(variable => context.push(variable));
+                result.push(context);
             } else {
                 // else, go to the next variable and call the method on it
                 result = result.concat(this.createContexts(variableIndex + 1, variableValues, determinedValues));
@@ -360,7 +357,7 @@ export class ContextTable extends Table {
             // remove the currently indexed value afterward, when all possible contexts with it have been collected
             determinedValues.pop();
         }
-        return result
+        return result;
     }
 
 
