@@ -27,6 +27,7 @@ import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE,
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './options/synthesis-options';
+import { filterModel } from './filtering';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
@@ -44,17 +45,19 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      */
     protected generateRoot(args: GeneratorContext<Model>): SModelRoot {
         const { document } = args;
-        const model: Model = document.parseResult.value;
+        let model: Model = document.parseResult.value;
+        // filter model based on the options set by the user
+        let filteredModel = filterModel(model, this.options)
 
         // determine the children for the STPA graph
         // for each component a node is generated with edges representing the references of the component
         // in order to be able to set the target IDs of the edges, the nodes must be created in the correct order
-        let stpaChildren: SModelElement[] = model.losses?.map(l => this.generateSTPANode(l, args));
+        let stpaChildren: SModelElement[] = filteredModel.losses?.map(l => this.generateSTPANode(l, args));
         // the hierarchy option determines whether subcomponents are contained in ther parent or not
         if (!this.options.getHierarchy()) {
             // subcomponents have edges to the parent
-            const hazards = collectElementsWithSubComps(model.hazards);
-            const sysCons = collectElementsWithSubComps(model.systemLevelConstraints);
+            const hazards = collectElementsWithSubComps(filteredModel.hazards);
+            const sysCons = collectElementsWithSubComps(filteredModel.systemLevelConstraints);
             stpaChildren = stpaChildren.concat([
                 ...hazards.map(sh => this.generateAspectWithEdges(sh, args)).flat(1),
                 ...sysCons.map(ssc => this.generateAspectWithEdges(ssc, args)).flat(1)
@@ -62,18 +65,19 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         } else {
             // subcomponents are contained in the parent
             stpaChildren = stpaChildren.concat([
-                ...model.hazards?.map(h => this.generateAspectWithEdges(h, args)).flat(1),
-                ...model.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc, args)).flat(1),
-                ...model.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateEdgesForSTPANode(ssc, args))).flat(2)
+                ...filteredModel.hazards?.map(h => this.generateAspectWithEdges(h, args)).flat(1),
+                ...filteredModel.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc, args)).flat(1),
+                ...filteredModel.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateEdgesForSTPANode(ssc, args))).flat(2)
             ]);
         }
         stpaChildren = stpaChildren.concat([
-            ...model.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
-            ...model.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
-            ...model.controllerConstraints?.map(c => this.generateAspectWithEdges(c, args)).flat(1),
-            ...model.scenarios?.map(s => this.generateAspectWithEdges(s, args)).flat(1),
-            ...model.safetyCons?.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
+            ...filteredModel.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
+            ...filteredModel.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
+            ...filteredModel.controllerConstraints?.map(c => this.generateAspectWithEdges(c, args)).flat(1),
+            ...filteredModel.scenarios?.map(s => this.generateAspectWithEdges(s, args)).flat(1),
+            ...filteredModel.safetyCons?.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
         ]);
+
 
         // filtering the nodes of the STPA graph
         const stpaNodes: STPANode[] = [];
@@ -83,16 +87,16 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             }
         }
         // each node should be placed in a specific layer based on the aspect. therefore positions must be set
-        setLevelsForSTPANodes(stpaNodes);
+        setLevelsForSTPANodes(stpaNodes, this.options.getGroupingUCAs());
 
-        if (model.controlStructure) {
+        if (filteredModel.controlStructure) {
             // determine the nodes of the control structure graph
-            const csNodes = model.controlStructure?.nodes.map(n => this.generateCSNode(n, args));
+            const csNodes = filteredModel.controlStructure?.nodes.map(n => this.generateCSNode(n, args));
             // children (nodes and edges) of the control structure
             const CSChildren = [
                 ...csNodes,
-                ...this.generateVerticalCSEdges(model.controlStructure.nodes, args),
-                //...this.generateHorizontalCSEdges(model.controlStructure.edges, args)
+                ...this.generateVerticalCSEdges(filteredModel.controlStructure.nodes, args),
+                //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, args)
             ];
             // SGraph containing the STPA graph and the control structure
             return {
@@ -264,6 +268,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     private generateAspectWithEdges(node: AstNode, args: GeneratorContext<Model>): SModelElement[] {
         // node must be created first in order to access the id when creating the edges
         const stpaNode = this.generateSTPANode(node, args);
+        // uca nodes need to save their control action in order to be able to group them by the actions
+        if (isUCA(node) && node.$container.system.ref) {
+            stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name
+        }
         const elements: SModelElement[] = this.generateEdgesForSTPANode(node, args);
         elements.push(stpaNode);
         return elements;

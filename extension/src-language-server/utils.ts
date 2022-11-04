@@ -16,10 +16,13 @@
  */
 
 import { AstNode } from "langium";
-import { isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario, 
-    isLoss, Hazard, SystemConstraint } from "./generated/ast";
+import {
+    isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
+    isLoss, Hazard, SystemConstraint
+} from "./generated/ast";
 import { STPAAspect } from "./stpa-model";
 import { STPANode } from "./stpa-interfaces";
+import { groupValue } from "./options/synthesis-options";
 
 /* export function determineLayerForCSNodes(nodes: CSNode[]): void {
     let layer = nodes.length
@@ -52,12 +55,13 @@ import { STPANode } from "./stpa-interfaces";
 /**
  * Getter for the references contained in {@code node}.
  * @param node The STPAAspect which tracings should be returned.
+ * @param hierarchy If this is true, subcomponents are children of their parents in the diagram, otherwise the relationship is represented by edges.
  * @returns The objects {@code node} is traceable to.
  */
 export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
     if (node) {
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) { 
-            const targets: AstNode[] = [];
+        const targets: AstNode[] = [];
+        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) {
             for (const ref of node.refs) {
                 if (ref?.ref) { targets.push(ref.ref); }
             }
@@ -65,23 +69,17 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
             if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
                 targets.push(node.$container);
             }
-            return targets;
         } else if (isSafetyConstraint(node)) {
-            const targets = [];
             if (node.refs.ref) { targets.push(node.refs.ref); }
-            return targets;
         } else if (isLossScenario(node) && node.uca && node.uca.ref) {
-            return [node.uca.ref];
+            targets.push(node.uca.ref);
         } else if ((isUCA(node) || isLossScenario(node)) && node.list) {
             const refs = node.list.refs.map(x => x.ref);
-            const targets = [];
             for (const ref of refs) {
                 if (ref) { targets.push(ref); }
             }
-            return targets;
-        } else {
-            return [];
         }
+        return targets;
     } else {
         return [];
     }
@@ -118,7 +116,7 @@ export function getAspect(node: AstNode): STPAAspect {
  * @param topElements The top elements that possbible have children.
  * @returns A list with the given {@code topElements} and their descendants.
  */
-export function collectElementsWithSubComps(topElements: (Hazard|SystemConstraint)[]): AstNode[] {
+export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): AstNode[] {
     let result = topElements;
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {
@@ -136,11 +134,13 @@ export function collectElementsWithSubComps(topElements: (Hazard|SystemConstrain
  * @param node STPANode for which the layer should be determined.
  * @param hazardDepth Maximal depth of the hazard hierarchy.
  * @param sysConsDepth Maximal depth of the system-level constraint hierarchy.
+ * @param map Maps control actions to group number.
+ * @param groupUCAs Determines whether and how UCAs should be grouped.
  * @returns The number of the layer {@code node} should be in.
  */
-function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number): number {
-    switch(node.aspect) {
-        case STPAAspect.LOSS: 
+function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number, map: Map<string, number>, groupUCAs: groupValue): number {
+    switch (node.aspect) {
+        case STPAAspect.LOSS:
             return 0;
         case STPAAspect.HAZARD:
             return 1 + node.hierarchyLvl;
@@ -149,13 +149,27 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
         case STPAAspect.RESPONSIBILITY:
             return 3 + hazardDepth + sysConsDepth;
         case STPAAspect.UCA:
-            return 4 + hazardDepth + sysConsDepth;
+            // each UCA group gets its own layer
+            switch (groupUCAs) {
+                case groupValue.CONTROL_ACTION:
+                    if (node.controlAction && !map.has(node.controlAction)) {
+                        map.set(node.controlAction, map.size);
+                    }
+                    return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!)!;
+                case groupValue.SYSTEM_COMPONENT:
+                    if (node.controlAction && !map.has(node.controlAction.substring(0, node.controlAction.indexOf(".")))) {
+                        map.set(node.controlAction.substring(0, node.controlAction.indexOf(".")), map.size);
+                    }
+                    return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!.substring(0, node.controlAction!.indexOf(".")))!;
+                default:
+                    return 4 + hazardDepth + sysConsDepth;
+            }
         case STPAAspect.CONTROLLERCONSTRAINT:
-            return 5 + hazardDepth + sysConsDepth;
+            return 5 + hazardDepth + sysConsDepth + map.size;
         case STPAAspect.SCENARIO:
-            return 6 + hazardDepth + sysConsDepth;
+            return 6 + hazardDepth + sysConsDepth + map.size;
         case STPAAspect.SAFETYREQUIREMENT:
-            return 7 + hazardDepth + sysConsDepth;
+            return 7 + hazardDepth + sysConsDepth + map.size;
         default:
             return -1;
     }
@@ -164,8 +178,9 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
 /**
  * Sets the level property for {@code nodes} depending on the layer they should be in.
  * @param nodes The nodes representing the stpa components.
+ * @param groupUCAs Determines whether and how UCAs are grouped.
  */
-export function setLevelsForSTPANodes(nodes: STPANode[]): void {
+export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue): void {
     // determines the maximal hierarchy depth of hazards and system constraints
     let maxHazardDepth = -1;
     let maxSysConsDepth = -1;
@@ -177,10 +192,12 @@ export function setLevelsForSTPANodes(nodes: STPANode[]): void {
             maxSysConsDepth = maxSysConsDepth > node.hierarchyLvl ? maxSysConsDepth : node.hierarchyLvl;
         }
     }
+
+    // used to determine which control action or system component belongs to which group number
+    let map = new Map<string, number>();
     // sets level property to the layer of the nodes.
     for (const node of nodes) {
-        const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth);
+        const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth, map, groupUCAs);
         node.level = -layer;
     }
 }
-

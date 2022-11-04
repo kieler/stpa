@@ -19,6 +19,7 @@ import { Action, DiagramServices, DiagramServer, RequestAction, RequestModelActi
 import { UpdateViewAction } from './actions';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions';
 import { StpaSynthesisOptions } from './options/synthesis-options';
+import { DropDownOption } from './options/option-models';
 
 export class StpaDiagramServer extends DiagramServer {
 
@@ -57,6 +58,11 @@ export class StpaDiagramServer extends DiagramServer {
             const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
                 opt.currentValue = option.currentValue;
+                // for dropdown menu options more must be done
+                if ((opt.synthesisOption as DropDownOption).currentId) {
+                    (opt.synthesisOption as DropDownOption).currentId = option.currentValue;
+                    this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });        
+                }
             }
         }
         const updateAction = {
@@ -77,6 +83,8 @@ export class StpaDiagramServer extends DiagramServer {
             newRoot.revision = ++this.state.revision;
             this.state.currentRoot = newRoot;
             await this.submitModel(this.state.currentRoot, true, action);
+            // ensures the the filterUCA option is correct
+            this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
         } catch (err) {
             this.rejectRemoteRequest(action, err as Error);
             console.error('Failed to generate diagram:', err);
@@ -84,8 +92,8 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
+        await super.handleRequestModel(action);
         this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
-        super.handleRequestModel(action);
     }
 
 }

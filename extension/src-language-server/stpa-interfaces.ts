@@ -27,6 +27,7 @@ export interface STPANode extends SNode {
     hierarchyLvl: number
     highlight?: boolean
     level?: number
+    controlAction?: string
 }
 
 /**

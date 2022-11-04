@@ -25,14 +25,15 @@ import {
 } from "./actions";
 import {
     CategoryOption,
-    CheckOption, ChoiceOption, RangeOption, SeparatorOption, TextOption,
+    CheckOption, ChoiceOption, DropDownMenuOption, RangeOption, SeparatorOption, TextOption,
 } from "./components/option-inputs";
 import {
     ChoiceRenderOption,
     RenderOption,
     RangeOption as RangeOptionData,
     SynthesisOption,
-    TransformationOptionType
+    TransformationOptionType,
+    DropDownOption
 } from "./option-models";
 
 interface AllOptions {
@@ -137,6 +138,19 @@ export class OptionsRenderer {
                                     ? ""
                                     : this.renderSynthesisOptions(synthesisOptions, option)}
                             </CategoryOption>
+                        );
+                    case TransformationOptionType.DROPDOWN:
+                        return (
+                            <DropDownMenuOption
+                                key={option.id}
+                                id={option.id}
+                                currentId = {(option as DropDownOption).currentId}
+                                name={option.name}
+                                value={option.currentValue}
+                                availableValues={(option as DropDownOption).availableValues}
+                                description={option.description}
+                                onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                            />
                         );
                     default:
                         console.error("Unsupported option type for option:", option.name);
