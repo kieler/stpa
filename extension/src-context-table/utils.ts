@@ -26,12 +26,31 @@ export class ControlAction {
 
 export class SystemVariables {
     system: string;
-    variables: Variable[];
+    variables: VariableValues[];
+}
+
+export class VariableValues {
+    name: string;
+    values: string[];
 }
 
 export class Variable {
     name: string;
-    values: string[];
+    value: string;
+}
+
+export class Rule {
+    id: string;
+    controlAction: ControlAction;
+    type: string;
+    variables: Variable[]
+    hazards: string[];
+}
+
+export enum Type {
+    PROVIDED,
+    NOT_PROVIDED,
+    BOTH
 }
 
 export class BigCell extends Cell {
@@ -39,22 +58,17 @@ export class BigCell extends Cell {
 }
 
 /**
- * Concats the elements in the lists in {@code list} by combining the entries with a dot.
- * @param list A list containing lists that should be flattened.
- * @returns A list containing the reuslting strings.
+ * Concats the elements of each controlaction in {@code controlactions} with a dot.
+ * @param controlactions A list containing controlactions that should be converted to strings.
+ * @returns A list containing the resulting strings.
  */
-export function createStrings(list: (string[])[]) {
-    let stringList: string[] = [];
-    list.forEach(item => {
-        let combineStr = "";
-        for (const str of item) {
-            combineStr += str + ".";
-        }
-        // delete last dot
-        combineStr = combineStr.substring(0, combineStr.length - 1);
-        stringList.push(combineStr);
+export function convertControlActionsToStrings(controlactions: ControlAction[]): string[] {
+    let result: string[] = [];
+    controlactions.forEach(controlAction => {
+        let combineStr = controlAction.controller + "." + controlAction.action;
+        result.push(combineStr);
     });
-    return stringList;
+    return result;
 }
 
 /**
@@ -97,54 +111,4 @@ export function addSelector(parent: HTMLElement, id: string, index: number, opti
     parent.append(placeholderTypeSelector);
     const typeSelector = createSelector(id, index, options, topDistance, leftDistance);
     patch(placeholderTypeSelector, typeSelector);
-}
-
-//TODO: evaluate
-/**
- * Checks if the assigned values of a rule equal the assigned values of the current row.
- * @param ruleVars The assigned values of a rule.
- * @param varVals The assigned values of the current row.
- * @returns true if all values are equal; false otherwise.
- */
-export function checkValues(ruleVars: any[], varVals: any[]): boolean {
-    // a boolean to iteratively check if values have been flagged as not equal, which should end the method
-    let checks: boolean = true;
-    // for all variables of the rule
-    for (let i = 0; i < ruleVars.length && checks; i++) {
-        // get the current variable with required value
-        const currentVarVal = ruleVars[i];
-        // load the row's current variable names and values into separate arrays
-        const theVars = varVals[0] as any[];
-        const theVals = varVals[1] as any[];
-        // get the index of the value pair in the row array that the current iteration wants to compare
-        const index = theVars.indexOf(currentVarVal[0]);
-        // use that index to compare the rule's required value with the matching row's current value
-        if (currentVarVal[1] != theVals[index]) { checks = false; }
-    }
-    return checks;
-}
-
-
-//TODO: evaluate
-/**
- * Gets the variable names from the currentContext Array
- * and returns it together with the array of the current row's values.
- * @param values The array containing the values that have been assigned to the context variables in the current row.
- * @returns An array containing both the variable-names array and the assigned-values array.
- * The indices for each variable and its assigned value sync up.
- */
-export function reappendValNames(values: string[], currentVariables: any[]) {
-    // create empty array for end result
-    let valuesOfVariables: any[] = [];
-    // create an empty array for the variable names
-    let currentVars: any[] = [];
-    // filter all the variable names out of the variable data and append them to the array
-    for (let i = 0; i < values.length; i++) {
-        const currentVar = currentVariables[i];
-        currentVars.push(currentVar[0]);
-    }
-    // push both the variable name array and the value array into the end result array 
-    valuesOfVariables.push(currentVars);
-    valuesOfVariables.push(values);
-    return valuesOfVariables;
 }

@@ -19,7 +19,7 @@ import './css/table.css';
 import { Table } from '@kieler/table-webview/lib/table';
 import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
-import { addSelector, addText, BigCell, createStrings, replaceSelector } from './utils';
+import { addSelector, addText, BigCell, ControlAction, convertControlActionsToStrings, replaceSelector, Rule, SystemVariables, Type, VariableValues } from './utils';
 import { VNode } from "snabbdom";
 import { createResults, getResult } from './context-table-logic';
 
@@ -35,16 +35,10 @@ export class ContextTable extends Table {
     protected typeSelectorId = "select_type";
     protected tableId = "context_table";
 
-
     // data of the table
-    // TODO: determine type
-    protected rules: any[] = [];
-    protected controlActions: any[] = [];
-    protected systemVariables: any[] = [];
-
-    /* protected rules: any[];
-    protected actions: ControlAction[];
-    protected variables: SystemVariables[]; */
+    protected rules: Rule[] = [];
+    protected controlActions: ControlAction[] = [];
+    protected systemVariables: SystemVariables[] = [];
 
     //????????????
     // array used for a recursive method;
@@ -53,10 +47,9 @@ export class ContextTable extends Table {
     protected callBack: any[] = [];
 
     // variables to store the currently selected options of the select elements in
-    protected selectedAction: string;
-    protected currentController: string;
-    protected selectedType: number = 0;
-    protected currentVariables: any[] = [];
+    protected selectedControlAction: ControlAction
+    protected selectedType: Type = Type.PROVIDED;
+    protected currentVariables: VariableValues[] = [];
 
     protected handleMessages(message: any): void {
         const action = message.data.action;
@@ -107,7 +100,17 @@ export class ContextTable extends Table {
             // add listener
             const htmlTypeSelector = document.getElementById(this.typeSelectorId) as HTMLSelectElement;
             htmlTypeSelector.addEventListener('change', () => {
-                this.selectedType = htmlTypeSelector.selectedIndex;
+                switch(htmlTypeSelector.selectedIndex) {
+                    case 0: 
+                        this.selectedType = Type.PROVIDED;
+                        break;
+                    case 1: 
+                        this.selectedType = Type.NOT_PROVIDED;
+                        break;
+                    case 2:
+                        this.selectedType = Type.BOTH;
+                        break;
+                }
                 this.updateTable();
             });
 
@@ -128,16 +131,16 @@ export class ContextTable extends Table {
         const selector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
         if (selector) {
             // translate control actions to strings and add them to the selector
-            const actions = createStrings(this.controlActions);
+            const actions = convertControlActionsToStrings(this.controlActions);
             replaceSelector(selector, actions, 0);
 
             // update currently selected control action
-            this.updateSelection(0);
+            this.updateControlActionSelection(0);
 
             // add listener
             const htmlActionSelector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
             htmlActionSelector.addEventListener('change', () => {
-                this.updateSelection(htmlActionSelector.selectedIndex);
+                this.updateControlActionSelection(htmlActionSelector.selectedIndex);
                 this.updateTable();
             });
         }
@@ -147,7 +150,12 @@ export class ContextTable extends Table {
      * Sets the current variables based on the current controller.
      */
     protected setCurrentVariables() {
-        this.currentVariables = this.systemVariables.find(systemVariable => systemVariable[0] === this.currentController)[1];
+        const variables = this.systemVariables.find(systemVariable => systemVariable.system === this.selectedControlAction.controller)?.variables;
+        if (variables) {
+            this.currentVariables = variables;
+        } else {
+            console.log("No system component selected");
+        }
     }
 
     /**
@@ -175,13 +183,13 @@ export class ContextTable extends Table {
         let colSpan: number | undefined = undefined;
         let rowSpan: number | undefined = undefined;
         switch (this.selectedType) {
-            case 0:
+            case Type.PROVIDED:
                 colSpan = 3;
                 break;
-            case 1:
+            case Type.NOT_PROVIDED:
                 rowSpan = 2;
                 break;
-            case 2:
+            case Type.BOTH:
                 colSpan = 4;
                 break;
         }
@@ -205,16 +213,16 @@ export class ContextTable extends Table {
         const headers: VNode[] = [];
         // sub-headers for the context variables
         this.currentVariables.forEach(variable => {
-            const header = createHeaderElement(variable[0]);
+            const header = createHeaderElement(variable.name);
             headers.push(header);
         });
         // hazardous sub-options, which depend on the selected action type
         let times: string[] = [];
         switch (this.selectedType) {
-            case 0:
+            case Type.PROVIDED:
                 times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long"];
                 break;
-            case 2:
+            case Type.BOTH:
                 times = ["Anytime", "Too Early / Too Late", "Stopped Too Soon / Applied Too Long", "Never"];
                 break;
         }
@@ -231,10 +239,8 @@ export class ContextTable extends Table {
      * Updates the currently selected control action.
      * @param index Index determining which control action is selected.
      */
-    protected updateSelection(index: number) {
-        const selected = this.controlActions[index];
-        this.currentController = selected[0];
-        this.selectedAction = selected[1];
+    protected updateControlActionSelection(index: number) {
+        this.selectedControlAction = this.controlActions[index];
         this.setCurrentVariables();
     }
 
@@ -254,7 +260,7 @@ export class ContextTable extends Table {
                 // needed to calculate all possible combinations (contexts)
                 let valuesOfVariables: (string[])[] = [];
                 this.currentVariables.forEach(variable => {
-                    valuesOfVariables.push(variable[1]);
+                    valuesOfVariables.push(variable.values);
                 });
                 // recursively create a row for each possible context
                 this.createContexts(table, 0, valuesOfVariables);
@@ -281,9 +287,9 @@ export class ContextTable extends Table {
         let controlAction = "";
         const type = document.getElementById("select_type") as HTMLSelectElement;
         if (type.options[type.selectedIndex].text == "both") {
-            controlAction = this.selectedAction + " provided";
+            controlAction = this.selectedControlAction.action + " provided";
         } else {
-            controlAction = this.selectedAction + " " + type.options[type.selectedIndex].text;
+            controlAction = this.selectedControlAction.action + " " + type.options[type.selectedIndex].text;
         }
         cells.push({ cssClass: "control-action", value: controlAction, colSpan: 1 });
 
@@ -293,15 +299,14 @@ export class ContextTable extends Table {
             cells = cells.concat(valueCells);
 
             // calculate whether the control action is hazardous
-            // TODO: evaluate both methods
-            const result = getResult(values, this.rules, this.currentController, this.selectedAction, this.selectedType, this.currentVariables);
+            const result = getResult(values, this.rules, this.selectedControlAction.controller, this.selectedControlAction.action, this.selectedType, this.currentVariables);
             // write the result into the column(s)
             switch (this.selectedType) {
                 //TODO: evaluate
-                case 0:
+                case Type.PROVIDED:
                     cells = cells.concat(createResults(result, 3));
                     break;
-                case 1:
+                case Type.NOT_PROVIDED:
                     const firstRes = result[0];
                     let text = "";
                     if (firstRes[0] == "No") {
@@ -312,20 +317,20 @@ export class ContextTable extends Table {
                     }
                     cells.push({ cssClass: "result", value: text, colSpan: 1 });
                     break;
-                case 2:
+                case Type.BOTH:
                     cells = cells.concat(createResults(result, 4));
                     break;
             }
         } else {
             let span: number = 0;
             switch (this.selectedType) {
-                case 0:
+                case Type.PROVIDED:
                     span = 3;
                     break;
-                case 1:
+                case Type.NOT_PROVIDED:
                     span = 1;
                     break;
-                case 2:
+                case Type.BOTH:
                     span = 4;
                     break;
             }
@@ -370,12 +375,6 @@ export class ContextTable extends Table {
             this.callBack.pop();
         }
     }
-
-
-
-
-
-
 
 
 }

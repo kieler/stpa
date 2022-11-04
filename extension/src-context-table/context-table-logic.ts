@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { BigCell, checkValues, reappendValNames } from "./utils";
+import { BigCell, ControlAction, Rule, Variable, VariableValues } from "./utils";
 
 
 
@@ -75,37 +75,37 @@ export function createResults(result: [string, number, string[]][], index: numbe
  * Else, returns string "No" to be applied to all of the "Hazardous"-column's columns.
  * 
  */
-export function getResult(values: string[], rules: any[], currentController: string, selectedAction: string, selectedType: number, currentVariables: any[]): [string, number, string[]][] {
-    const varVals = reappendValNames(values, currentVariables);
+export function getResult(values: string[], rules: Rule[], selectedController: string, selectedAction: string, selectedType: number, currentVariables: VariableValues[]): [string, number, string[]][] {
     // create an empty array for the end result
     let resultList: [string, number, string[]][] = [];
     // check all the rules
     rules.forEach(rule => {
         // check if the control action applies first
-        const ruleAction = rule[1];
-        if (ruleAction[0] == currentController && ruleAction[1] == selectedAction) {
+        const ruleAction = rule.controlAction;
+        if (ruleAction.controller == selectedController && ruleAction.action == selectedAction) {
+            const variables = reappendValNames(values, currentVariables);
             // check if the context applies next
-            if (checkValues(rule[3], varVals)) {
+            if (checkValues(rule.variables, variables)) {
                 // convert the given type string to lowercase
-                const typeString = rule[2] as string;
+                const typeString = rule.type;
                 const checkString = typeString.toLowerCase();
                 // check if it is one of the accepted types that can be worked with,
                 // if so, push rule onto the end result array with a fitting indicator as to what cell to write the rule in
                 // this depends on the selected action type in the selector element
                 switch (selectedType) {
                     case 0:
-                        if (checkString == "anytime") { resultList.push([rule[0], 1, rule[4]]); return; };
-                        if (checkString == "too early" || checkString == "too late") { resultList.push([rule[0], 2, rule[4]]); return; };
-                        if (checkString == "stopped too soon" || checkString == "applied too long") { resultList.push([rule[0], 3, rule[4]]); return; };
+                        if (checkString == "anytime") { resultList.push([rule.id, 1, rule.hazards]); return; };
+                        if (checkString == "too early" || checkString == "too late") { resultList.push([rule.id, 2, rule.hazards]); return; };
+                        if (checkString == "stopped too soon" || checkString == "applied too long") { resultList.push([rule.id, 3, rule.hazards]); return; };
                         break;
                     case 1:
-                        if (checkString == "not provided" || checkString == "never") { resultList.push([rule[0], 0, rule[4]]); return; };
+                        if (checkString == "not provided" || checkString == "never") { resultList.push([rule.id, 0, rule.hazards]); return; };
                         break;
                     case 2:
-                        if (checkString == "anytime") { resultList.push([rule[0], 1, rule[4]]); return; };
-                        if (checkString == "too early" || checkString == "too late") { resultList.push([rule[0], 2, rule[4]]); return; };
-                        if (checkString == "stopped too soon" || checkString == "applied too long") { resultList.push([rule[0], 3, rule[4]]); return; };
-                        if (checkString == "not provided" || checkString == "never") { resultList.push([rule[0], 4, rule[4]]); return; };
+                        if (checkString == "anytime") { resultList.push([rule.id, 1, rule.hazards]); return; };
+                        if (checkString == "too early" || checkString == "too late") { resultList.push([rule.id, 2, rule.hazards]); return; };
+                        if (checkString == "stopped too soon" || checkString == "applied too long") { resultList.push([rule.id, 3, rule.hazards]); return; };
+                        if (checkString == "not provided" || checkString == "never") { resultList.push([rule.id, 4, rule.hazards]); return; };
                         break;
                 }
             }
@@ -116,4 +116,47 @@ export function getResult(values: string[], rules: any[], currentController: str
         resultList.push(["No", 0, []]);
     }
     return resultList;
+}
+
+//TODO: evaluate
+/**
+ * Checks if the assigned values of a rule equal the assigned values of the current row.
+ * @param ruleVariables The assigned values of a rule.
+ * @param variables The assigned values of the current row.
+ * @returns true if all values are equal; false otherwise.
+ */
+function checkValues(ruleVariables: Variable[], variables: Variable[]): boolean {
+    // a boolean to iteratively check if values have been flagged as not equal, which should end the method
+    let checks: boolean = true;
+    // for all variables of the rule
+    for (let i = 0; i < ruleVariables.length && checks; i++) {
+        // get the current variable with required value
+        const currentRuleVariable = ruleVariables[i];
+        // get the index of the value pair in the row array that the current iteration wants to compare
+        const correspondingVariable = variables.find(variable => variable.name === currentRuleVariable.name);
+        // use that index to compare the rule's required value with the matching row's current value
+        if (currentRuleVariable.value != correspondingVariable?.value) { checks = false; }
+    }
+    return checks;
+}
+
+
+//TODO: evaluate
+/**
+ * Gets the variable names from the currentContext Array
+ * and returns it together with the array of the current row's values.
+ * @param values The array containing the values that have been assigned to the context variables in the current row.
+ * @param currentVariables
+ * @returns An array containing both the variable-names array and the assigned-values array.
+ * The indices for each variable and its assigned value sync up.
+ */
+function reappendValNames(values: string[], currentVariables: VariableValues[]): Variable[] {
+    // create empty array for end result
+    let variables: Variable[] = [];
+    // filter all the variable names out of the variable data and append them to the array
+    for (let i = 0; i < values.length; i++) {
+        const currentVar = currentVariables[i];
+        variables.push({name: currentVar.name, value: values[i]});
+    }
+    return variables;
 }

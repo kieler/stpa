@@ -2,6 +2,7 @@ import { LangiumDocument } from "langium";
 import { StpaServices } from "../stpa-module";
 import { Model } from "../generated/ast";
 import { URI } from "vscode-languageserver";
+import { ControlAction, Rule, SystemVariables, Variable, VariableValues } from "../../src-context-table/utils";
 
 export class ContextTableProvider {
     protected services: StpaServices;
@@ -20,26 +21,26 @@ export class ContextTableProvider {
         const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
         
-        let actions: [string, string][] = [];
-        let variables : [string, [string, string[]][]][] = [];
-        let rules: [string, [string, string], string, [string, string][], string[]][] = [];
+        let actions: ControlAction[] = [];
+        let variables : SystemVariables[] = [];
+        let rules: Rule[] = [];
         model.controlStructure.nodes.forEach(node => {
             node.actions.forEach(action => {
                 action.comms.forEach(command => {
-                    actions.push([node.name, command.name]);
+                    actions.push({controller: node.name, action: command.name});
                 })
             })
-            let variableValues : [string, string[]][] = [];
+            let variableValues : VariableValues[] = [];
             node.variables.forEach(variable => {
-                variableValues.push([variable.name, variable.values]);
+                variableValues.push({name: variable.name, values: variable.values});
             })
-            variables.push([node.name, variableValues]);
+            variables.push({system: node.name, variables: variableValues});
         });
         model.rules.forEach(rule => {
-            let varVals: [string, string][] = [];
+            let ruleVariables: Variable[] = [];
             for (let i = 0; i < rule.values.length; i++) {
                 if (rule.vars[i].ref?.name) {
-                    varVals.push([rule.vars[i].ref!.name, rule.values[i]]);
+                    ruleVariables.push({name:rule.vars[i].ref!.name, value: rule.values[i]});
                 }
             }
             const hazardList = rule.list.refs;
@@ -50,7 +51,8 @@ export class ContextTableProvider {
                 }
             });
             if (rule.action.ref?.name && rule.system.ref?.name) {
-                rules.push([rule.name, [rule.system.ref!.name, rule.action.ref!.name], rule.type.value, varVals, hazards]);
+                rules.push({id:rule.name, controlAction: {controller: rule.system.ref!.name,action: rule.action.ref!.name}, type: rule.type.value, 
+                    variables: ruleVariables, hazards: hazards});
             }
         })
         return [rules, actions, variables] as const;
