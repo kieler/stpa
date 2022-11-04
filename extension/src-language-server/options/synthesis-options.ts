@@ -198,7 +198,7 @@ export class StpaSynthesisOptions {
      * Updates the filterUCAs option with the availabe cotrol actions.
      * @param values The currently avaiable control actions.
      */
-    updateFilterUCAsOption(values: { displayName: string; id: string; }[]) {
+    updateFilterUCAsOption(values: { displayName: string; id: string; }[]): void {
         const option = this.options.find(option => option.synthesisOption.id === filteringUCAsID);
         if (option) {
             (option.synthesisOption as DropDownOption).availableValues = values;

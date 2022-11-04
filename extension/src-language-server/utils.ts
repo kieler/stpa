@@ -55,12 +55,13 @@ import { groupValue } from "./options/synthesis-options";
 /**
  * Getter for the references contained in {@code node}.
  * @param node The STPAAspect which tracings should be returned.
+ * @param hierarchy If this is true, subcomponents are children of their parents in the diagram, otherwise the relationship is represented by edges.
  * @returns The objects {@code node} is traceable to.
  */
 export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
     if (node) {
+        const targets: AstNode[] = [];
         if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) {
-            const targets: AstNode[] = [];
             for (const ref of node.refs) {
                 if (ref?.ref) { targets.push(ref.ref); }
             }
@@ -68,23 +69,17 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
             if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
                 targets.push(node.$container);
             }
-            return targets;
         } else if (isSafetyConstraint(node)) {
-            const targets = [];
             if (node.refs.ref) { targets.push(node.refs.ref); }
-            return targets;
         } else if (isLossScenario(node) && node.uca && node.uca.ref) {
-            return [node.uca.ref];
+            targets.push(node.uca.ref);
         } else if ((isUCA(node) || isLossScenario(node)) && node.list) {
             const refs = node.list.refs.map(x => x.ref);
-            const targets = [];
             for (const ref of refs) {
                 if (ref) { targets.push(ref); }
             }
-            return targets;
-        } else {
-            return [];
         }
+        return targets;
     } else {
         return [];
     }
@@ -140,6 +135,7 @@ export function collectElementsWithSubComps(topElements: (Hazard | SystemConstra
  * @param hazardDepth Maximal depth of the hazard hierarchy.
  * @param sysConsDepth Maximal depth of the system-level constraint hierarchy.
  * @param map Maps control actions to group number.
+ * @param groupUCAs Determines whether and how UCAs should be grouped.
  * @returns The number of the layer {@code node} should be in.
  */
 function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number, map: Map<string, number>, groupUCAs: groupValue): number {
@@ -154,18 +150,18 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
             return 3 + hazardDepth + sysConsDepth;
         case STPAAspect.UCA:
             // each UCA group gets its own layer
-            switch(groupUCAs) {
+            switch (groupUCAs) {
                 case groupValue.CONTROL_ACTION:
                     if (node.controlAction && !map.has(node.controlAction)) {
-                        map.set(node.controlAction, map.size)
+                        map.set(node.controlAction, map.size);
                     }
                     return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!)!;
                 case groupValue.SYSTEM_COMPONENT:
                     if (node.controlAction && !map.has(node.controlAction.substring(0, node.controlAction.indexOf(".")))) {
-                        map.set(node.controlAction.substring(0, node.controlAction.indexOf(".")), map.size)
+                        map.set(node.controlAction.substring(0, node.controlAction.indexOf(".")), map.size);
                     }
                     return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!.substring(0, node.controlAction!.indexOf(".")))!;
-                default: 
+                default:
                     return 4 + hazardDepth + sysConsDepth;
             }
         case STPAAspect.CONTROLLERCONSTRAINT:
@@ -198,7 +194,7 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
     }
 
     // used to determine which control action or system component belongs to which group number
-    let map = new Map<string, number>()
+    let map = new Map<string, number>();
     // sets level property to the layer of the nodes.
     for (const node of nodes) {
         const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth, map, groupUCAs);

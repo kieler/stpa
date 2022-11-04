@@ -75,7 +75,7 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
  * @param allUCAs All UCAs.
  * @param options The synthesis options for the model.
  */
-function setFilterUCAOption(allUCAs: ActionUCAs[], options: StpaSynthesisOptions) {
+function setFilterUCAOption(allUCAs: ActionUCAs[], options: StpaSynthesisOptions): void {
     const set = new Set<string>();
     set.add("all UCAs");
     // collect all available control actions
