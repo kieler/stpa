@@ -81,4 +81,37 @@ const webviewConfig = {
     }
 };
 
-module.exports = [config, webviewConfig];
+/**@type {import('webpack').Configuration}*/
+const lsConfig = {
+    target: 'node',
+
+    entry: path.resolve(__dirname, 'src-language-server/main.ts'),
+    output: {
+		filename: 'language-server.js',
+        path: path.resolve(__dirname, 'pack'),
+    },
+    devtool: 'nosources-source-map',
+
+    externals: {
+        vscode: "commonjs vscode"
+    },
+    resolve: {
+        extensions: ['.ts', '.js']
+    },
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: ['ts-loader']
+            },
+            {
+                test: /\.js$/,
+                use: ['source-map-loader'],
+                enforce: 'pre',
+                exclude: /vscode/
+            }
+        ]
+    }
+};
+
+module.exports = [config, webviewConfig, lsConfig];
