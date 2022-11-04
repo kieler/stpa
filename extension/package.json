@@ -208,7 +208,7 @@
       },
     "devDependencies": {
         "@types/node": "^12.12.6",
-        "@types/vscode": "1.46.0",
+        "@types/vscode": "1.67.0",
         "@types/feather-icons": "^4.7.0",
         "rimraf": "^3.0.2",
         "source-map-loader": "^3.0.0",
@@ -231,7 +231,7 @@
         "lint": "eslint .",
         "build": "yarn run langium:generate && webpack --mode production",
         "watch": "yarn run langium:watch && webpack --watch",
-        "package": "yarn run langium:generate && vsce package --yarn -o keith-vscode.vsix",
+        "package": "yarn run langium:generate && vsce package --yarn -o stpa-dsl.vsix",
         "vscode:prepublish": "yarn run build"
     }
 }
