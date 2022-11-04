@@ -43,7 +43,7 @@ export class Rule {
     id: string;
     controlAction: ControlAction;
     type: string;
-    variables: Variable[]
+    variables: Variable[];
     hazards: string[];
 }
 

@@ -26,7 +26,7 @@ interface Action {
 export interface SendContextTableDataAction extends Action {
     kind: typeof SendContextTableDataAction.KIND;
     //TODO: determine correct type
-    data: ContextTableData
+    data: ContextTableData;
 }
 
 

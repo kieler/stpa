@@ -47,7 +47,7 @@ export class ContextTable extends Table {
     protected callBack: any[] = [];
 
     // variables to store the currently selected options of the select elements in
-    protected selectedControlAction: ControlAction
+    protected selectedControlAction: ControlAction;
     protected selectedType: Type = Type.PROVIDED;
     protected currentVariables: VariableValues[] = [];
 
@@ -100,11 +100,11 @@ export class ContextTable extends Table {
             // add listener
             const htmlTypeSelector = document.getElementById(this.typeSelectorId) as HTMLSelectElement;
             htmlTypeSelector.addEventListener('change', () => {
-                switch(htmlTypeSelector.selectedIndex) {
-                    case 0: 
+                switch (htmlTypeSelector.selectedIndex) {
+                    case 0:
                         this.selectedType = Type.PROVIDED;
                         break;
-                    case 1: 
+                    case 1:
                         this.selectedType = Type.NOT_PROVIDED;
                         break;
                     case 2:

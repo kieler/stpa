@@ -156,7 +156,7 @@ function reappendValNames(values: string[], currentVariables: VariableValues[]):
     // filter all the variable names out of the variable data and append them to the array
     for (let i = 0; i < values.length; i++) {
         const currentVar = currentVariables[i];
-        variables.push({name: currentVar.name, value: values[i]});
+        variables.push({ name: currentVar.name, value: values[i] });
     }
     return variables;
 }
