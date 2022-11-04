@@ -69,9 +69,9 @@ export class ContextTable extends Table {
      * @param action SendContextTableDataAction that contains the data needed to create the table contents.
      */
     protected handleData(action: SendContextTableDataAction) {
-        this.rules = action.rules;
-        this.controlActions = action.actions;
-        this.systemVariables = action.variables;
+        this.rules = action.data.rules;
+        this.controlActions = action.data.actions;
+        this.systemVariables = action.data.systemVariables;
         this.updateActionSelector();
         this.updateTable();
     }

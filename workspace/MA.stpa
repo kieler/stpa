@@ -82,28 +82,3 @@ LossScenarios
 Scenario1 for UCA1 "Abnormal WBS behavior occurs. Crew does not power off ..." [H2.1]
 Scenario2 "Insufficient braking is applied due to ..." [H2.1]
 
-Rules
-RL1 {
-    controlAction: FlightCrew.manual
-    type: "not provided"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "taxiing"
-    }
-}[H6, H7.9]
-RL2 {
-    controlAction: FlightCrew.manual
-    type: "never"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "takeoff"
-    }
-}[H7.1, H7.6]
-RL3 {
-    controlAction: FlightCrew.manual
-    type: "Not Provided"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "landing"
-    }
-}[H2, H3]

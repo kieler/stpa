@@ -47,6 +47,12 @@ export class Rule {
     hazards: string[];
 }
 
+export class ContextTableData {
+    rules: Rule[];
+    actions: ControlAction[];
+    systemVariables: SystemVariables[];
+}
+
 export enum Type {
     PROVIDED,
     NOT_PROVIDED,
