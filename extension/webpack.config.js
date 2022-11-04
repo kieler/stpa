@@ -4,19 +4,11 @@
 const path = require('path');
 
 /**@type {import('webpack').Configuration}*/
-const config = {
-    target: 'node', 
-
-    entry: path.resolve(__dirname, 'src/extension.ts'),
-    output: { 
-        path: path.resolve(__dirname, 'pack'),
-        filename: 'extension.js',
-        libraryTarget: "commonjs2",
-        devtoolModuleFilenameTemplate: "../[resource-path]",
-    },
+const commonConfig = {
+    target: 'node',
     devtool: 'source-map',
     externals: {
-        vscode: "commonjs vscode"
+        vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded
     },
     resolve: {
         extensions: ['.ts', '.js']
@@ -34,8 +26,30 @@ const config = {
                 use: ['source-map-loader'],
             }
         ]
-    },
+    }
 }
+
+/**@type {import('webpack').Configuration}*/
+const vscodeConfig = {
+    ...commonConfig,
+    entry: path.resolve(__dirname, 'src/extension.ts'),
+    output: { 
+        path: path.resolve(__dirname, 'pack'),
+        filename: 'extension.js',
+        libraryTarget: "commonjs2",
+        devtoolModuleFilenameTemplate: "../[resource-path]",
+    }
+}
+
+/**@type {import('webpack').Configuration}*/
+const lsConfig = {
+    ...commonConfig,
+    entry: path.resolve(__dirname, 'src-language-server/main.ts'),
+    output: {
+		filename: 'language-server.js',
+        path: path.resolve(__dirname, 'pack'),
+    },
+};
 
 /**@type {import('webpack').Configuration}*/
 const webviewConfig = {
@@ -81,4 +95,5 @@ const webviewConfig = {
     }
 };
 
-module.exports = [config, webviewConfig];
+
+module.exports = [vscodeConfig, webviewConfig, lsConfig];
