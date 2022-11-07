@@ -305,7 +305,6 @@ export class StpaValidator {
                     }
                 }
                 if (!found) {
-                    //TODO: should be in the scope provider?
                     accept('error', 'SubHazards are only allowed to reference losses the parent references too', { node: hazard, property: 'refs', index: i });
                 }
             }

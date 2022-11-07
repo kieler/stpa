@@ -61,7 +61,8 @@ export enum Type {
 }
 
 export class BigCell extends Cell {
-    public colSpan: number;
+    colSpan: number;
+    title?: string;
 }
 
 /**

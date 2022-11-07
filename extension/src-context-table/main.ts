@@ -21,7 +21,7 @@ import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
 import { addSelector, addText, BigCell, ControlAction, convertControlActionsToStrings, replaceSelector, Rule, SystemVariables, Type, Variable, VariableValues } from './utils';
 import { VNode } from "snabbdom";
-import { createResults, determineResults } from './context-table-logic';
+import { createResults, determineColumnsForRules } from './context-table-logic';
 
 interface vscode {
     postMessage(message: any): void;
@@ -304,8 +304,9 @@ export class ContextTable extends Table {
                     console.log("The selected control action type is not supported: " + this.selectedType);
             }
             // determine the result cells
-            cells = cells.concat(determineResults(variables, this.rules, this.selectedControlAction.controller,
-                this.selectedControlAction.action, this.selectedType, columns));
+            determineColumnsForRules(variables, this.rules, this.selectedControlAction.controller,
+                this.selectedControlAction.action, this.selectedType)
+            cells = cells.concat(createResults(this.rules, columns));
         } else {
             // no variables exist
             let colSpan: number = 0;

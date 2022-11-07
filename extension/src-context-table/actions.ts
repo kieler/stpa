@@ -25,7 +25,6 @@ interface Action {
 /** Adds a row to the table. */
 export interface SendContextTableDataAction extends Action {
     kind: typeof SendContextTableDataAction.KIND;
-    //TODO: determine correct type
     data: ContextTableData;
 }
 

@@ -123,7 +123,11 @@ export function createRow(id: string, values: BigCell[]): VNode {
     for (const val of values) {
         const classes: Classes = {};
         classes[val.cssClass] = true;
-        children.push(<td class={classes} attrs={{ colspan: val.colSpan }}>{val.value}</td>);
+        if (val.title) {
+            children.push(<td class={classes} attrs={{ colspan: val.colSpan, title: val.title }}>{val.value}</td>);
+        } else {
+            children.push(<td class={classes} attrs={{ colspan: val.colSpan }}>{val.value}</td>);
+        }
     }
     const row = <tr attrs={{ id: id }}>{children}</tr>;
     return row;

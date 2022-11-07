@@ -17,57 +17,16 @@
 
 import { BigCell, Rule, Type, Variable, VariableValues } from "./utils";
 
-//TODO
 /**
- * 
- * @param rules 
- * @param hazardColumnsCount The number of columns the "Hazardous?"-column currently has.
- * @returns 
+ * Sets the column attribute of {@code rules}.
+ * @param variables The variable values of the current row.
+ * @param rules The available rules.
+ * @param selectedController The currently selected controller.
+ * @param selectedAction The currently selected control action.
+ * @param selectedType The currently selected control action type.
  */
-export function createResults(rules: Rule[], hazardColumnsCount: number): BigCell[] {
-    const cells: BigCell[] = [];
-    // keeps track on how many neihbouring columns have no rule applied
-    let noAppliedRuleCounter: number = 0;
-    // go through all of the hazardous columns
-    for (let hazardColumn = 1; hazardColumn <= hazardColumnsCount; hazardColumn++) {
-        // TODO: can there be multiple rules with the same column?
-        const currentRule = rules.find(rule => rule.column === hazardColumn);
-        if (!currentRule) {
-            // there is no rule for this column
-            noAppliedRuleCounter++;
-            if (hazardColumn == hazardColumnsCount) {
-                // its the last column so we can fill the missing columns with a cell containing the value "No"
-                cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
-            }
-        } else {
-            // it may be that previous columns had no rule
-            // in this case a cell with value "No" must be created that covers these columns
-            if (noAppliedRuleCounter != 0) {
-                cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
-                noAppliedRuleCounter = 0;
-            }
-            // add the hazards, defined by the rule, as a cell
-            cells.push({ cssClass: "result", value: currentRule.hazards.toString(), colSpan: 1 });
-            //TODO: add hover
-            // entry.title = currentRule.id;
-        }
-    }
-    return cells;
-}
-
-//TODO
-/**
- * 
- * @param variables 
- * @param rules 
- * @param selectedController 
- * @param selectedAction 
- * @param selectedType 
- * @param hazardColumnsCount 
- * @returns 
- */
-export function determineResults(variables: Variable[], rules: Rule[], selectedController: string,
-    selectedAction: string, selectedType: number, hazardColumnsCount: number): BigCell[] {
+export function determineColumnsForRules(variables: Variable[], rules: Rule[], selectedController: string,
+    selectedAction: string, selectedType: number): void {
     // update the columns of all rules
     rules.forEach(rule => {
         // compare control action of the rule with the selected one and  
@@ -95,8 +54,41 @@ export function determineResults(variables: Variable[], rules: Rule[], selectedC
             rule.column = undefined;
         }
     });
+}
 
-    return createResults(rules, hazardColumnsCount);
+/**
+ * Creates the result cells.
+ * @param rules The available rules. The column attribute must be set!
+ * @param hazardColumnsCount The number of columns the "Hazardous?"-column currently has.
+ * @returns The cells for the "Hazardous?"-column.
+ */
+export function createResults(rules: Rule[], hazardColumnsCount: number): BigCell[] {
+    const cells: BigCell[] = [];
+    // keeps track on how many neihbouring columns have no rule applied
+    let noAppliedRuleCounter: number = 0;
+    // go through all of the hazardous columns
+    for (let hazardColumn = 1; hazardColumn <= hazardColumnsCount; hazardColumn++) {
+        // TODO: can there be multiple rules with the same column?
+        const currentRule = rules.find(rule => rule.column === hazardColumn);
+        if (!currentRule) {
+            // there is no rule for this column
+            noAppliedRuleCounter++;
+            if (hazardColumn == hazardColumnsCount) {
+                // its the last column so we can fill the missing columns with a cell containing the value "No"
+                cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
+            }
+        } else {
+            // it may be that previous columns had no rule
+            // in this case a cell with value "No" must be created that covers these columns
+            if (noAppliedRuleCounter != 0) {
+                cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
+                noAppliedRuleCounter = 0;
+            }
+            // add the hazards, defined by the rule, as a cell
+            cells.push({ cssClass: "result", value: currentRule.hazards.toString(), colSpan: 1, title: currentRule.id });
+        }
+    }
+    return cells;
 }
 
 /**
