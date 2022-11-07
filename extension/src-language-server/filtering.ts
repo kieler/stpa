@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ActionUCAs, ContConstraint, Graph, Hazard, Loss, LossScenario, Model, Resps, SafetyConstraint, SystemConstraint } from "./generated/ast";
+import { ActionUCAs, ContConstraint, Graph, Hazard, Loss, LossScenario, Model, Resps, Rule, SafetyConstraint, SystemConstraint } from "./generated/ast";
 import { StpaSynthesisOptions } from "./options/synthesis-options";
 
 /**
@@ -31,6 +31,7 @@ export class CustomModel {
     scenarios: LossScenario[];
     safetyCons: SafetyConstraint[];
     controlStructure: Graph;
+    rules: Rule[];
 }
 
 /**
@@ -41,7 +42,7 @@ export class CustomModel {
  */
 export function filterModel(model: Model, options: StpaSynthesisOptions): CustomModel {
     // updates the control actions that can be used to filter the UCAs
-    setFilterUCAOption(model.allUCAs, options);
+    setFilterUCAOption(model.allUCAs, model.rules, options);
     let newModel = new CustomModel();
     // aspects for which no filter exists are just copied
     newModel.losses = model.losses;
@@ -53,6 +54,9 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
     // filter UCAs by the filteringUCA option
     newModel.allUCAs = model.allUCAs?.filter(allUCA =>
         (allUCA.system.ref?.name + "." + allUCA.action.ref?.name) == options.getFilteringUCAs()
+        || options.getFilteringUCAs() == "all UCAs");
+    newModel.rules = model.rules?.filter(rule =>
+        (rule.system.ref?.name + "." + rule.action.ref?.name) == options.getFilteringUCAs()
         || options.getFilteringUCAs() == "all UCAs");
     newModel.controllerConstraints = options.getHideContCons() ? [] :
         model.controllerConstraints?.filter(cons =>
@@ -72,10 +76,11 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
 
 /**
  * Updates the filterUCA option with the current available control actions.
- * @param allUCAs All UCAs.
+ * @param allUCAs All common UCAs.
+ * @param rules All rules for context UCAs.
  * @param options The synthesis options for the model.
  */
-function setFilterUCAOption(allUCAs: ActionUCAs[], options: StpaSynthesisOptions): void {
+function setFilterUCAOption(allUCAs: ActionUCAs[], rules: Rule[], options: StpaSynthesisOptions): void {
     const set = new Set<string>();
     set.add("all UCAs");
     // collect all available control actions
@@ -84,6 +89,12 @@ function setFilterUCAOption(allUCAs: ActionUCAs[], options: StpaSynthesisOptions
             set.add(uca.system.ref?.name + "." + uca.action.ref?.name);
         }
     });
+    rules.forEach(rule => {
+        if (!set.has(rule.system.ref?.name + "." + rule.action.ref?.name)) {
+            set.add(rule.system.ref?.name + "." + rule.action.ref?.name);
+        }
+    })
+    // generate the options for the UCAs
     const list: { displayName: string; id: string; }[] = [];
     set.forEach(entry => list.push({ displayName: entry, id: entry }));
     // update the option

@@ -18,7 +18,7 @@
 import { Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
 import { ContConstraint, Hazard, HazardList, Loss, Model, Node, 
-    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel } from './generated/ast';
+    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel, Context } from './generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
 
@@ -47,7 +47,7 @@ export class StpaValidationRegistry extends ValidationRegistry {
     }
 }
 
-type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command;
+type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context;
 type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint;
 
 /**
@@ -67,6 +67,7 @@ export class StpaValidator {
         const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
         const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
         const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1);
+        const contexts = model.rules?.map(rule => rule.contexts).flat(1)
         
         // collect elements that have an identifier and should be referenced
         let allElements: elementWithName[] = [
@@ -74,6 +75,7 @@ export class StpaValidator {
             ...hazards,
             ...sysCons,
             ...ucas,
+            ...contexts
         ];
 
         // collect all elements that have a reference list
@@ -82,6 +84,7 @@ export class StpaValidator {
             ...sysCons,
             ...responsibilities,
             ...ucas.map(uca => uca.list),
+            ...contexts.map(context => context.list),
             ...model.controllerConstraints,
             ...model.scenarios.map(scenario => scenario.list)
         ];

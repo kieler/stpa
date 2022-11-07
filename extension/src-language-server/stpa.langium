@@ -23,21 +23,23 @@ entry Model:
     ('SystemConstraints' systemLevelConstraints+=SystemConstraint*)?
     ('ControlStructure' controlStructure=Graph)?
     ('Responsibilities' responsibilities+=Resps*)?
-    ('UCAs' allUCAs+=ActionUCAs*)?
+    (('UCAs' allUCAs+=ActionUCAs*) | ('Context-Table' rules+=Rule*))?
     ('ControllerConstraints' controllerConstraints+=ContConstraint*)?
     ('LossScenarios' scenarios+=LossScenario*)?
-    ('SafetyRequirements' safetyCons+=SafetyConstraint*)?
-    ('Rules' rules+=Rule*)?;
+    ('SafetyRequirements' safetyCons+=SafetyConstraint*)?;
 
-// TODO: controlAction already determines the system, the contet variables dont need it too
 Rule:
     name=ID '{'
         'controlAction:' system=[Node] '.' action=[Command]
         'type:' type=Type
-        'context:' '{'
-            system=[Node] '.' vars+=[Variable] '=' values+=STRING (',' system=[Node] '.' vars+=[Variable] '=' values+=STRING)*
+        'contexts:' '{'
+            contexts+=Context*
         '}'
-    '}'
+    '}';
+
+// TODO: in validator the values should be checked whether they are available values
+Context:
+    name=ID '['vars+=[Variable] '=' values+=STRING (',' vars+=[Variable] '=' values+=STRING)*']' 
     list=HazardList;
 
 // TODO: write validator for this string

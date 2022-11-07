@@ -85,7 +85,7 @@ export function createResults(rules: Rule[], hazardColumnsCount: number): BigCel
                 noAppliedRuleCounter = 0;
             }
             // add the hazards, defined by the rule, as a cell
-            cells.push({ cssClass: "result", value: currentRule.hazards.toString(), colSpan: 1, title: currentRule.id });
+            cells.push({ cssClass: "result", value: currentRule.id, colSpan: 1, title: currentRule.hazards.toString() });
         }
     }
     return cells;

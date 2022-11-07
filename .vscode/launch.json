@@ -32,8 +32,8 @@
             ],
             "sourceMapPathOverrides": {
 				"meteor://💻app/*": "${workspaceFolder}/*",
-				"webpack:///./~/*": "${workspaceFolder}/node_modules/*",
-				"webpack://?:*/*": "${workspaceFolder}/language-server/*"
+				"webpack:///./~/*": "${workspaceFolder}/extension/node_modules/*",
+				"webpack://?:*/*": "${workspaceFolder}/extension/src-language-server/*"
 			},
             "type": "pwa-node"
         }

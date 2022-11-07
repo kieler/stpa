@@ -59,28 +59,33 @@ export class ContextTableProvider {
         });
         // collect rules
         model.rules.forEach(rule => {
-            // determine context variables
-            const contextVariables: Variable[] = [];
-            for (let i = 0; i < rule.values.length; i++) {
-                if (rule.vars[i].ref?.name) {
-                    contextVariables.push({ name: rule.vars[i].ref!.name, value: rule.values[i] });
+            rule.contexts.forEach(context => {
+                // determine context variables
+                const contextVariables: Variable[] = [];
+                for (let i = 0; i < context.values.length; i++) {
+                    if (context.vars[i].ref?.name) {
+                        contextVariables.push({ name: context.vars[i].ref!.name, value: context.values[i] });
+                    }
                 }
-            }
-            //determine hazards
-            const hazards: string[] = [];
-            const hazardList = rule.list.refs;
-            hazardList.forEach(hazard => {
-                if (hazard.ref?.name) {
-                    hazards.push(hazard.ref.name);
+                //determine hazards
+                const hazards: string[] = [];
+                const hazardList = context.list.refs;
+                hazardList.forEach(hazard => {
+                    if (hazard.ref?.name) {
+                        hazards.push(hazard.ref.name);
+                    }
+                });
+                // create rule/uca
+                if (rule.action.ref?.name && rule.system.ref?.name) {
+                    rules.push({
+                        id: context.name, controlAction: { controller: rule.system.ref!.name, action: rule.action.ref!.name }, type: rule.type.value,
+                        variables: contextVariables, hazards: hazards
+                    });
                 }
             });
-            // create rule
-            if (rule.action.ref?.name && rule.system.ref?.name) {
-                rules.push({
-                    id: rule.name, controlAction: { controller: rule.system.ref!.name, action: rule.action.ref!.name }, type: rule.type.value,
-                    variables: contextVariables, hazards: hazards
-                });
-            }
+            
+           
+            
         });
         return { rules: rules, actions: actions, systemVariables: variables };
     }

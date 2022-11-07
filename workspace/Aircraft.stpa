@@ -94,49 +94,71 @@ FlightCrew {
     R8 "Monitor braking and disable BSCU, manually brake in case of malfunction" [SC7.1, SC7.2]
 }
 
-UCAs
-BSCU.brake {
-    notProviding {
-        UCA1 "BSCU Autobrake does not provide the Brake control action during landing roll when the BSCU is armed" [H7.1]
-    }     
-    providing {
-        UCA2 "BSCU Autobrake provides Brake control action during takeoff" [H7.3, H7.6] 
-        UCA5 "BSCU Autobrake provides Brake control action with an insufficient level of braking during landing roll" [H7.1] 
-        UCA6 "BSCU Autobrake provides Brake control action with directional or asymmetrical braking during landing roll" [H7.1, H7.2]     
-    }     
-    tooEarly/Late {
-        UCA3 "BSCU Autobrake provides the Brake control action too late (>TBD seconds) after touchdown" [H7.1]
+
+Context-Table
+RL1 {
+    controlAction: FlightCrew.manual
+    type: "not provided"
+    contexts: {
+        UCA1 [BCSUmode = "off", aircraftPosition = "taxiing"] [H6, H7.9]
+        UCA2 [BCSUmode = "off", aircraftPosition = "takeoff"] [H7.1, H7.6]
+        UCA3 [BCSUmode = "off", aircraftPosition = "landing"] [H2, H3]
     }
-    stoppedTooSoon {
-        UCA4 "BSCU Autobrake stops providing the Brake control action too early (before TBD taxi speed attained) when aircraft lands" [H7.1]
+}
+RL4 {
+    controlAction: FlightCrew.manual
+    type: "too late"
+    contexts: {
+        UCA4 [BCSUmode = "off", aircraftPosition = "taxiing"] [H7.9]
+    }
+}
+RL5 {
+    controlAction: FlightCrew.manual
+    type: "anytime"
+    contexts: {
+        UCA5 [BCSUmode = "off", aircraftPosition = "takeoff"] [H7.8]
+        UCA6 [BCSUmode = "off", aircraftPosition = "landing"] [H7.1, H7.7]
+    }
+}
+RL7 {
+    controlAction: FlightCrew.powerOff
+    type: "not provided"
+    contexts: {
+        UCA7 [BCSUmode = "on", aircraftPosition = "taxiing"] [H6, H7.1]
+        UCA8 [BCSUmode = "on", aircraftPosition = "takeoff"] [H7.3]
+    }
+}
+RL9 {
+    controlAction: FlightCrew.powerOff
+    type: "anytime"
+    contexts: {
+        UCA9 [BCSUmode = "on", aircraftPosition = "landing"] [H7.1]
+    }
+}
+RL10 {
+    controlAction: FlightCrew.powerOn
+    type: "not provided"
+    contexts: {
+        UCA10 [BCSUmode = "off", aircraftPosition = "landing"] [H7.1]
+    }
+}
+RL11 {
+    controlAction: FlightCrew.powerOn
+    type: "anytime"
+    contexts: {
+        UCA11 [BCSUmode = "off", aircraftPosition = "taxiing"] [H6, H7.1]
+        UCA12 [BCSUmode = "off", aircraftPosition = "takeoff"] [H7.3]
+    }
+}
+RL13 {
+    controlAction: FlightCrew.mc
+    type: "not provided"
+    contexts: {
+        UCA13 [BCSUmode = "off"] [H3]
+        UCA14 [BCSUmode = "on"] [H2]
     }
 }
 
-FlightCrew.powerOff {
-    notProviding {
-        UCA7 "Crew does not provide BSCU Power Off when abnormal WBS behavior occurs" [H6, H7.1, H7.4]
-    }
-    providing {
-        UCA8 "Crew provides BSCU Power Off when Anti-Skid functionality is needed and WBS is functioning normally" [H6, H7.1]
-    }
-    tooEarly/Late {
-        UCA9 "Crew powers off BSCU too early before Autobrake or Anti-Skid behavior is completed when it is needed" [H6, H7.1]
-    }
-    stoppedTooSoon {}
-}
-
-/* FlightCrew.mc {
-    notProviding {
-        UCAM1 "Crew does not provide BSCU Power Off when abnormal WBS behavior occurs" [H6, H7.1, H7.4]
-    }
-    providing {
-        UCAM2 "Crew provides BSCU Power Off when Anti-Skid functionality is needed and WBS is functioning normally" [H6, H7.1]
-    }
-    tooEarly/Late {
-        UCAM3 "Crew powers off BSCU too early before Autobrake or Anti-Skid behavior is completed when it is needed" [H6, H7.1]
-    }
-    stoppedTooSoon {}
-} */
 
 ControllerConstraints
 C1 "BSCU Autobrake must provide the Brake control action during landing roll when the BSCU is armed" [UCA1] 
@@ -149,12 +171,12 @@ C6 "BSCU Autobrake must not provide directional or asymmetrical braking during l
 LossScenarios
 Scenario1 for UCA1 "The BSCU Autobrake physical controller fails during landing roll when BSCU is armed, 
                     causing the Brake control action to not be provided. As a result, 
-                    insufficient deceleration may be provided upon landing" [H7.1]
+                    insufficient deceleration may be provided upon landing" 
 Scenario2 for UCA3 "The aircraft lands, but processing delays within the BSCU result in the Brake control action being provided too late. 
-                    As a result, insufficient deceleration may be provided upon landing" [H7.1]
+                    As a result, insufficient deceleration may be provided upon landing"
 Scenario3 for UCA7 "Abnormal WBS behavior occurs and a BSCU fault indication is provided to the crew. 
                     The crew does not power off the BSCU because the operating procedures did not specify 
-                    that the crew must power off the BSCU upon receiving a BSCU fault indication." [H7.1, H7.4]
+                    that the crew must power off the BSCU upon receiving a BSCU fault indication." 
 Scenario4 for UCA2 "The BSCU is armed and the aircraft begins landing roll. The BSCU does not provide the Brake control action 
                     because the BSCU incorrectly believes the aircraft has already come to a stop. 
                     This flawed process model will occur if the received feedback momentarily indicates zero speed 
@@ -167,115 +189,3 @@ Scenario6 "The BSCU sends the Brake command upon landing, but insufficient braki
 Scenario7 "The BSCU does not send Brake command, but the brakes are applied due to hydraulic valve failure. 
             As a result, acceleration may be insufficient during takeoff" [H7.6]
 
-
-Rules
-RL1 {
-    controlAction: FlightCrew.manual
-    type: "not provided"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "taxiing"
-    }
-}[H6, H7.9]
-RL2 {
-    controlAction: FlightCrew.manual
-    type: "never"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "takeoff"
-    }
-}[H7.1, H7.6]
-RL3 {
-    controlAction: FlightCrew.manual
-    type: "Not Provided"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "landing"
-    }
-}[H2, H3]
-RL4 {
-    controlAction: FlightCrew.manual
-    type: "too late"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "taxiing"
-    }
-}[H7.9]
-RL5 {
-    controlAction: FlightCrew.manual
-    type: "anytime"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "takeoff"
-    }
-}[H7.8]
-RL6 {
-    controlAction: FlightCrew.manual
-    type: "anytime"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "landing"
-    }
-}[H7.1, H7.7]
-RL7 {
-    controlAction: FlightCrew.powerOff
-    type: "not provided"
-    context: {
-        FlightCrew.BCSUmode = "on",
-        FlightCrew.aircraftPosition = "taxiing"
-    }
-}[H6, H7.1]
-RL8 {
-    controlAction: FlightCrew.powerOff
-    type: "Never"
-    context: {
-        FlightCrew.BCSUmode = "on",
-        FlightCrew.aircraftPosition = "takeoff"
-    }
-}[H7.3]
-RL9 {
-    controlAction: FlightCrew.powerOff
-    type: "anytime"
-    context: {
-        FlightCrew.BCSUmode = "on",
-        FlightCrew.aircraftPosition = "landing"
-    }
-}[H7.1]
-RL10 {
-    controlAction: FlightCrew.powerOn
-    type: "not provided"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "landing"
-    }
-}[H7.1]
-RL11 {
-    controlAction: FlightCrew.powerOn
-    type: "anytime"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "taxiing"
-    }
-}[H6, H7.1]
-RL12 {
-    controlAction: FlightCrew.powerOn
-    type: "anytime"
-    context: {
-        FlightCrew.BCSUmode = "off",
-        FlightCrew.aircraftPosition = "takeoff"
-    }
-}[H7.3]
-RL13 {
-    controlAction: FlightCrew.mc
-    type: "not provided"
-    context: {
-        FlightCrew.BCSUmode = "off"
-    }
-}[H3]
-RL14 {
-   controlAction: FlightCrew.mc
-    type: "not provided"
-    context: {
-        FlightCrew.BCSUmode = "on"
-    } 
-} [H2]
