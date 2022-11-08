@@ -58,7 +58,7 @@
             {
                 "command": "stpa.contextTable.open",
                 "title": "Show Context Tables",
-                "icon": "$(window)",
+                "icon": "$(table)",
                 "category": "Context Table"
             },
             {
