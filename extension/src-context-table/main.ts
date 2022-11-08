@@ -19,7 +19,8 @@ import './css/table.css';
 import { Table } from '@kieler/table-webview/lib/table';
 import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
-import { addSelector, addText, BigCell, ControlAction, convertControlActionsToStrings, replaceSelector, Rule, SystemVariables, Type, Variable, VariableValues } from './utils';
+import { addSelector, addText, BigCell, ContexTableControlAction, convertControlActionsToStrings, replaceSelector, ContexTableRule, ContexTableSystemVariables, 
+    Type, ContexTableVariable, ContexTableVariableValues } from './utils';
 import { VNode } from "snabbdom";
 import { createResults, determineColumnsForRules } from './context-table-logic';
 
@@ -36,14 +37,14 @@ export class ContextTable extends Table {
     protected tableId = "context_table";
 
     // data of the table
-    protected rules: Rule[] = [];
-    protected controlActions: ControlAction[] = [];
-    protected systemVariables: SystemVariables[] = [];
+    protected rules: ContexTableRule[] = [];
+    protected controlActions: ContexTableControlAction[] = [];
+    protected systemVariables: ContexTableSystemVariables[] = [];
 
     // variables to store the currently selected options of the select elements in
-    protected selectedControlAction: ControlAction;
+    protected selectedControlAction: ContexTableControlAction;
     protected selectedType: Type = Type.PROVIDED;
-    protected currentVariables: VariableValues[] = [];
+    protected currentVariables: ContexTableVariableValues[] = [];
 
     protected handleMessages(message: any): void {
         const action = message.data.action;
@@ -267,7 +268,7 @@ export class ContextTable extends Table {
      * @param variables The context variable values that should be written into the current row.
      * @param id The id of the row.
      */
-    protected addRow(table: HTMLTableElement, variables: Variable[], id: string): void {
+    protected addRow(table: HTMLTableElement, variables: ContexTableVariable[], id: string): void {
         // create row placeholder
         const placeholderRow = document.createElement("tr");
         table.appendChild(placeholderRow);
@@ -337,8 +338,8 @@ export class ContextTable extends Table {
      * @param determinedValues The already determined variable values.
      * @returns All possible value combinations of the given variables.
      */
-    protected createContexts(variableIndex: number, variableValues: VariableValues[], determinedValues: Variable[]): (Variable[])[] {
-        let result: (Variable[])[] = [];
+    protected createContexts(variableIndex: number, variableValues: ContexTableVariableValues[], determinedValues: ContexTableVariable[]): (ContexTableVariable[])[] {
+        let result: (ContexTableVariable[])[] = [];
         // load the values of the current recursion's variable
         const currentValues = variableValues[variableIndex].values;
         const lastVariable = variableIndex == variableValues.length - 1;
@@ -348,7 +349,7 @@ export class ContextTable extends Table {
             determinedValues.push({ name: variableValues[variableIndex].name, value: currentValues[valueIndex] });
             // if this was the last value to be added, a complete collection of values has been assembled
             if (lastVariable) {
-                const context: Variable[] = [];
+                const context: ContexTableVariable[] = [];
                 determinedValues.forEach(variable => context.push(variable));
                 result.push(context);
             } else {

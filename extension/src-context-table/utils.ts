@@ -19,39 +19,39 @@ import { Cell } from "@kieler/table-webview/lib/helper";
 import { VNode } from "snabbdom";
 import { createSelector, createText, patch } from "./html";
 
-export class ControlAction {
+export class ContexTableControlAction {
     controller: string;
     action: string;
 }
 
-export class SystemVariables {
+export class ContexTableSystemVariables {
     system: string;
-    variables: VariableValues[];
+    variables: ContexTableVariableValues[];
 }
 
-export class VariableValues {
+export class ContexTableVariableValues {
     name: string;
     values: string[];
 }
 
-export class Variable {
+export class ContexTableVariable {
     name: string;
     value: string;
 }
 
-export class Rule {
+export class ContexTableRule {
     id: string;
-    controlAction: ControlAction;
+    controlAction: ContexTableControlAction;
     type: string;
-    variables: Variable[];
+    variables: ContexTableVariable[];
     hazards: string[];
     column?: number;
 }
 
 export class ContextTableData {
-    rules: Rule[];
-    actions: ControlAction[];
-    systemVariables: SystemVariables[];
+    rules: ContexTableRule[];
+    actions: ContexTableControlAction[];
+    systemVariables: ContexTableSystemVariables[];
 }
 
 export enum Type {
@@ -70,7 +70,7 @@ export class BigCell extends Cell {
  * @param controlactions A list containing controlactions that should be converted to strings.
  * @returns A list containing the resulting strings.
  */
-export function convertControlActionsToStrings(controlactions: ControlAction[]): string[] {
+export function convertControlActionsToStrings(controlactions: ContexTableControlAction[]): string[] {
     let result: string[] = [];
     controlactions.forEach(controlAction => {
         let combineStr = controlAction.controller + "." + controlAction.action;

@@ -31,7 +31,7 @@ entry Model:
 Rule:
     name=ID '{'
         'controlAction:' system=[Node] '.' action=[Command]
-        'type:' type=Type
+        'type:' type=('not-provided' | 'provided' | 'too-late' | 'too-early' | 'wrong-time' | 'applied-too-long' | 'stopped-too-soon')
         'contexts:' '{'
             contexts+=Context*
         '}'
@@ -41,10 +41,6 @@ Rule:
 Context:
     name=ID '['vars+=[Variable] '=' values+=STRING (',' vars+=[Variable] '=' values+=STRING)*']' 
     list=HazardList;
-
-// TODO: write validator for this string
-Type:
-    value=STRING;
 
 Loss:
     name=ID description=STRING;

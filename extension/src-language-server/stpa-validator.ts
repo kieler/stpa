@@ -18,7 +18,7 @@
 import { Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
 import { ContConstraint, Hazard, HazardList, Loss, Model, Node, 
-    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel, Context } from './generated/ast';
+    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel, Context, Rule } from './generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
 
@@ -41,7 +41,8 @@ export class StpaValidationRegistry extends ValidationRegistry {
             Responsibility: validator.checkResponsibility,
             ContConstraint: validator.checkControllerConstraints,
             HazardList: validator.checkHazardList,
-            Node: validator.checkNode
+            Node: validator.checkNode,
+            Context: validator.checkContext
         };
         this.register(checks, validator);
     }
@@ -100,6 +101,21 @@ export class StpaValidator {
         // add missing elements that have an ID to check uniques of all IDs
         allElements = allElements.concat(responsibilities, model.controllerConstraints, model.scenarios, model.safetyCons, model.controlStructure?.nodes/*, model.controlStructure?.edges*/);
         this.checkIDsAreUnique(allElements, accept);
+    }
+
+    checkContext(context: Context, accept: ValidationAcceptor): void {
+        for (let i = 0; i < context.vars.length; i++) {
+            const variable = context.vars[i];
+            const variableValues = variable.ref?.values
+            if (!variableValues?.includes(context.values[i])) {
+                const range = variable.$refNode.range;
+                // if (range) {
+                //     range.start.character = range.end.character - 1;
+                // }
+                console.log(range)
+                accept('error', 'This variable has an invalid value.', { node: context, range: range } )
+            }
+        }
     }
 
     /**

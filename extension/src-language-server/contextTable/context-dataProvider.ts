@@ -19,7 +19,7 @@ import { LangiumDocument } from "langium";
 import { StpaServices } from "../stpa-module";
 import { Model } from "../generated/ast";
 import { URI } from "vscode-languageserver";
-import { ContextTableData, ControlAction, Rule, SystemVariables, Variable, VariableValues } from "../../src-context-table/utils";
+import { ContextTableData, ContexTableControlAction, ContexTableRule, ContexTableSystemVariables, ContexTableVariable, ContexTableVariableValues } from "../../src-context-table/utils";
 
 export class ContextTableProvider {
     protected services: StpaServices;
@@ -38,9 +38,9 @@ export class ContextTableProvider {
         const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
-        let actions: ControlAction[] = [];
-        let variables: SystemVariables[] = [];
-        let rules: Rule[] = [];
+        let actions: ContexTableControlAction[] = [];
+        let variables: ContexTableSystemVariables[] = [];
+        let rules: ContexTableRule[] = [];
 
         // collect control actions and variables
         model.controlStructure.nodes.forEach(systemComponent => {
@@ -51,7 +51,7 @@ export class ContextTableProvider {
                 });
             });
             // variables of the current system component
-            const variableValues: VariableValues[] = [];
+            const variableValues: ContexTableVariableValues[] = [];
             systemComponent.variables.forEach(variable => {
                 variableValues.push({ name: variable.name, values: variable.values });
             });
@@ -61,7 +61,7 @@ export class ContextTableProvider {
         model.rules.forEach(rule => {
             rule.contexts.forEach(context => {
                 // determine context variables
-                const contextVariables: Variable[] = [];
+                const contextVariables: ContexTableVariable[] = [];
                 for (let i = 0; i < context.values.length; i++) {
                     if (context.vars[i].ref?.name) {
                         contextVariables.push({ name: context.vars[i].ref!.name, value: context.values[i] });
@@ -78,7 +78,7 @@ export class ContextTableProvider {
                 // create rule/uca
                 if (rule.action.ref?.name && rule.system.ref?.name) {
                     rules.push({
-                        id: context.name, controlAction: { controller: rule.system.ref!.name, action: rule.action.ref!.name }, type: rule.type.value,
+                        id: context.name, controlAction: { controller: rule.system.ref!.name, action: rule.action.ref!.name }, type: rule.type,
                         variables: contextVariables, hazards: hazards
                     });
                 }

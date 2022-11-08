@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { BigCell, Rule, Type, Variable, VariableValues } from "./utils";
+import { BigCell, ContexTableRule, Type, ContexTableVariable, ContexTableVariableValues } from "./utils";
 
 /**
  * Sets the column attribute of {@code rules}.
@@ -25,7 +25,7 @@ import { BigCell, Rule, Type, Variable, VariableValues } from "./utils";
  * @param selectedAction The currently selected control action.
  * @param selectedType The currently selected control action type.
  */
-export function determineColumnsForRules(variables: Variable[], rules: Rule[], selectedController: string,
+export function determineColumnsForRules(variables: ContexTableVariable[], rules: ContexTableRule[], selectedController: string,
     selectedAction: string, selectedType: number): void {
     // update the columns of all rules
     rules.forEach(rule => {
@@ -36,15 +36,15 @@ export function determineColumnsForRules(variables: Variable[], rules: Rule[], s
             // determine the column for which the rule applies
             const ruleType = rule.type.toLowerCase();
             let column = -1;
-            if (selectedType === Type.NOT_PROVIDED && (ruleType == "not provided" || ruleType == "never")) {
+            if (selectedType === Type.NOT_PROVIDED && ruleType == "not-provided") {
                 column = 1;
-            } else if (ruleType == "anytime") {
+            } else if (ruleType == "provided") {
                 column = 1;
-            } else if (ruleType == "too early" || ruleType == "too late") {
+            } else if (ruleType == "too-early" || ruleType == "too-late" || ruleType == "wrong-time") {
                 column = 2;
-            } else if (ruleType == "stopped too soon" || ruleType == "applied too long") {
+            } else if (ruleType == "stopped-too-soon" || ruleType == "applied-too-long") {
                 column = 3;
-            } else if (ruleType == "not provided" || ruleType == "never") {
+            } else if (ruleType == "not-provided") {
                 column = 4;
             } else {
                 console.log("The given control action type is not supported: " + ruleType);
@@ -62,7 +62,7 @@ export function determineColumnsForRules(variables: Variable[], rules: Rule[], s
  * @param hazardColumnsCount The number of columns the "Hazardous?"-column currently has.
  * @returns The cells for the "Hazardous?"-column.
  */
-export function createResults(rules: Rule[], hazardColumnsCount: number): BigCell[] {
+export function createResults(rules: ContexTableRule[], hazardColumnsCount: number): BigCell[] {
     const cells: BigCell[] = [];
     // keeps track on how many neihbouring columns have no rule applied
     let noAppliedRuleCounter: number = 0;
@@ -97,7 +97,7 @@ export function createResults(rules: Rule[], hazardColumnsCount: number): BigCel
  * @param variables2 Variables that should be compared to the other set.
  * @returns true if all values are equal; false otherwise.
  */
-function checkValues(variables1: Variable[], variables2: Variable[]): boolean {
+function checkValues(variables1: ContexTableVariable[], variables2: ContexTableVariable[]): boolean {
     for (let i = 0; i < variables1.length; i++) {
         const firstVariable = variables1[i];
         // get corresponding variable

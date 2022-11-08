@@ -98,7 +98,7 @@ FlightCrew {
 Context-Table
 RL1 {
     controlAction: FlightCrew.manual
-    type: "not provided"
+    type: not-provided
     contexts: {
         UCA1 [BCSUmode = "off", aircraftPosition = "taxiing"] [H6, H7.9]
         UCA2 [BCSUmode = "off", aircraftPosition = "takeoff"] [H7.1, H7.6]
@@ -107,14 +107,14 @@ RL1 {
 }
 RL4 {
     controlAction: FlightCrew.manual
-    type: "too late"
+    type: too-late
     contexts: {
         UCA4 [BCSUmode = "off", aircraftPosition = "taxiing"] [H7.9]
     }
 }
 RL5 {
     controlAction: FlightCrew.manual
-    type: "anytime"
+    type: provided
     contexts: {
         UCA5 [BCSUmode = "off", aircraftPosition = "takeoff"] [H7.8]
         UCA6 [BCSUmode = "off", aircraftPosition = "landing"] [H7.1, H7.7]
@@ -122,7 +122,7 @@ RL5 {
 }
 RL7 {
     controlAction: FlightCrew.powerOff
-    type: "not provided"
+    type: not-provided
     contexts: {
         UCA7 [BCSUmode = "on", aircraftPosition = "taxiing"] [H6, H7.1]
         UCA8 [BCSUmode = "on", aircraftPosition = "takeoff"] [H7.3]
@@ -130,21 +130,21 @@ RL7 {
 }
 RL9 {
     controlAction: FlightCrew.powerOff
-    type: "anytime"
+    type: provided
     contexts: {
         UCA9 [BCSUmode = "on", aircraftPosition = "landing"] [H7.1]
     }
 }
 RL10 {
     controlAction: FlightCrew.powerOn
-    type: "not provided"
+    type: not-provided
     contexts: {
         UCA10 [BCSUmode = "off", aircraftPosition = "landing"] [H7.1]
     }
 }
 RL11 {
     controlAction: FlightCrew.powerOn
-    type: "anytime"
+    type: provided
     contexts: {
         UCA11 [BCSUmode = "off", aircraftPosition = "taxiing"] [H6, H7.1]
         UCA12 [BCSUmode = "off", aircraftPosition = "takeoff"] [H7.3]
@@ -152,7 +152,7 @@ RL11 {
 }
 RL13 {
     controlAction: FlightCrew.mc
-    type: "not provided"
+    type: not-provided
     contexts: {
         UCA13 [BCSUmode = "off"] [H3]
         UCA14 [BCSUmode = "on"] [H2]
