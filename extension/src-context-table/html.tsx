@@ -60,7 +60,7 @@ export function createSelector(id: string, index: number, options: string[], top
  * @returns A table VNode.
  */
 export function createTable(id: string, topDistance: string): VNode {
-    return <table attrs={{ id: id }} style={{ position: "absolute", top: topDistance }}></table>;
+    return <table attrs={{ id: id }} style={{ position: "absolute", top: topDistance, width: "95%" }}></table>;
 }
 
 /**

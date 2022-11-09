@@ -163,17 +163,13 @@ export class ContextTable extends Table {
         table.appendChild(placeholderHeader);
 
         const headers: VNode[] = [];
-        // the first column is for the control action and has no subheader
-        const controlActionHeader = createHeaderElement("Control Action", 2);
-        headers.push(controlActionHeader);
-
-        // the second header column is for the context and needs to span as many columns as there are context variables
+        // the first header column is for the context and needs to span as many columns as there are context variables
         if (this.currentVariables.length > 0) {
             const contextVariablesHeader = createHeaderElement("Context Variables", undefined, this.currentVariables.length);
             headers.push(contextVariablesHeader);
         }
 
-        // The third header column is the hazardous column
+        // The second header column is the hazardous column
         // The column-/row-span depends on what action type has been selected
         let colSpan: number | undefined = undefined;
         let rowSpan: number | undefined = undefined;
@@ -274,15 +270,6 @@ export class ContextTable extends Table {
         table.appendChild(placeholderRow);
 
         let cells: BigCell[] = [];
-        // the control action text based on the currently selected options
-        let controlAction = "";
-        const type = document.getElementById("select_type") as HTMLSelectElement;
-        if (type.options[type.selectedIndex].text == "both") {
-            controlAction = this.selectedControlAction.action + " provided";
-        } else {
-            controlAction = this.selectedControlAction.action + " " + type.options[type.selectedIndex].text;
-        }
-        cells.push({ cssClass: "control-action", value: controlAction, colSpan: 1 });
 
         if (variables.length > 0) {
             // values of the context variables
