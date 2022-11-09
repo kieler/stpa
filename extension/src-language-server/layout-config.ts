@@ -45,6 +45,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             direction = 'DOWN';
         }
         return {
+            'org.eclipse.elk.layered.thoroughness': '70',
             'org.eclipse.elk.layered.layering.strategy': 'LONGEST_PATH',
             'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': direction,
@@ -54,7 +55,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
             'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
             'org.eclipse.elk.spacing.edgeNode': '4',
-            'org.eclipse.elk.spacing.portPort': '5',
+            'org.eclipse.elk.spacing.portPort': '10',
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]'
         };
     }
