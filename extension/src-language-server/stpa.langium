@@ -37,9 +37,8 @@ Rule:
         '}'
     '}';
 
-// TODO: in validator the values should be checked whether they are available values
 Context:
-    name=ID '['vars+=[Variable] '=' values+=STRING (',' vars+=[Variable] '=' values+=STRING)*']' 
+    name=ID '['vars+=[Variable] '=' values+=QualifiedName (',' vars+=[Variable] '=' values+=QualifiedName)*']' 
     list=HazardList;
 
 Loss:
@@ -76,7 +75,7 @@ Node:
     '}'; */
 
 Variable:
-    name=ID':' '['values+=STRING (',' values+=STRING)*']';
+    name=ID':' '['values+=QualifiedName (',' values+=QualifiedName)*']';
 
 VE:
     '[' comms+=Command (',' comms+=Command)* ']' '->' target=[Node];
@@ -120,6 +119,8 @@ SafetyConstraint:
 SubID returns string:
     ID('.'INT)*;
 
+QualifiedName returns string:
+    ID('-'ID)*;
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
