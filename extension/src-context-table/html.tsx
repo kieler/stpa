@@ -76,10 +76,11 @@ function createOption(option: string): VNode {
  * Creates a text VNode.
  * @param text The text that should be displayed.
  * @param topDistance The distance of the text to the top border.
+ * @param leftDistance The distance of the text to the left border.
  * @returns A text VNode.
  */
-export function createText(text: string, topDistance: string): VNode {
-    return <pre style={{ position: "absolute", left: "10px", top: topDistance }}>{text}</pre>;
+export function createText(text: string, topDistance: string, leftDistance: string): VNode {
+    return <pre style={{ position: "absolute", left: leftDistance, top: topDistance }}>{text}</pre>;
 }
 
 /**

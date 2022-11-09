@@ -22,6 +22,10 @@ table, th, td {
     margin-top: 50px;
 }
 
+pre {
+    font-family: var(--vscode-font-family);
+}
+
 /* 
 --vscode-checkbox-border
 --vscode-badge-background

@@ -74,7 +74,7 @@ export class ContextTable extends Table {
     protected handleResetTable(): void {
         const table = document.getElementById(this.tableId);
         if (table) {
-            const newTable = createTable(this.tableId, "80px");
+            const newTable = createTable(this.tableId, "60px");
             patch(table, newTable);
         }
     }
@@ -85,12 +85,12 @@ export class ContextTable extends Table {
         const mainDiv = document.getElementById(identifier + '_container');
         if (mainDiv) {
             // Create text and selector element for selecting a control action
-            addText(mainDiv, "Choose a Control Action:", "0px");
-            addSelector(mainDiv, this.actionSelectorId, 0, [], "11px", "210px");
+            addText(mainDiv, "Choose a Control Action:", "0px", "10px");
+            addSelector(mainDiv, this.actionSelectorId, 0, [], "13px", "170px");
 
             // Create text and selector element for selecting the action type
-            addText(mainDiv, "Choose a Type:", "40px");
-            addSelector(mainDiv, this.typeSelectorId, this.selectedType, ["provided", "not provided", "both"], "51px", "130px");
+            addText(mainDiv, "Choose a Type:", "30px", "10px");
+            addSelector(mainDiv, this.typeSelectorId, this.selectedType, ["provided", "not provided", "both"], "43px", "110px");
 
             // add listener
             const htmlTypeSelector = document.getElementById(this.typeSelectorId) as HTMLSelectElement;
@@ -110,11 +110,11 @@ export class ContextTable extends Table {
             });
 
             // Create text element for table
-            addText(mainDiv, "Hover over the hazards to see their associated rules!", "90px");
+            addText(mainDiv, "Hover over the UCAs to see their associated hazards!", "60px", "10px");
             // create a table
             const placeholderTable = document.createElement("table");
             mainDiv.append(placeholderTable);
-            const table = createTable(this.tableId, "80px");
+            const table = createTable(this.tableId, "0px");
             patch(placeholderTable, table);
         }
     }
