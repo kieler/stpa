@@ -1,31 +1,37 @@
-table {
-    width: 580px;
-    margin-top: 50px;
+th {
+    background-color: var(--vscode-sideBar-background);
 }
 
-th {
-    color: white;
-    background-color: midnightblue;
+/* tr:nth-child(odd){
+    background-color: var(--vscode-input-background);
+} */
+
+/* tr:nth-child(even) {
+    background-color: var(vscode-scrollbar-shadow);
+} */
+
+td {
+    text-align: center;
 }
 
 table, th, td {
-    border: 1px solid darkgrey;
-    border-collapse: collapse;
-}
-
-th, td {
+    border: 1px solid var(--vscode-input-foreground); 
+    border-collapse: collapse; 
     padding: 7px;
+    /* color: var(--vscode-foreground); */
+    margin-top: 50px;
 }
 
-tr:nth-child(odd){
-    background-color: white;
-}
+/* 
+--vscode-checkbox-border
+--vscode-badge-background
+--vscode-editorWidget-border
+--vscode-menu-separatorBackground
+--vscode-settings-dropdownBorder
 
-tr:nth-child(even) {
-    background-color: aliceblue;
-}
+--vscode-inputOption-activeBackground
 
-td {
-    color: black;
-    text-align: center;
-}
+--vscode-editor-selectionBackground
+--vscode-minimap-selectionHighlight
+--vscode-editorSuggestWidget-focusHighlightForeground
+*/
