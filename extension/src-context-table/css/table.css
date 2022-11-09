@@ -1,29 +1,35 @@
-th {
-    background-color: var(--vscode-sideBar-background);
+thead, td, th {
+    border: 1px solid var(--vscode-input-foreground); 
+    border-collapse: separate; 
 }
 
-/* tr:nth-child(odd){
-    background-color: var(--vscode-input-background);
-} */
+table {
+    margin-right: 10px;
+    border-spacing: 0px;
+}
 
-/* tr:nth-child(even) {
-    background-color: var(vscode-scrollbar-shadow);
-} */
+th, td {
+    padding: 7px;
+}
+
+thead, th {
+    position: sticky;
+    /* top: 0; */
+    background-color: var(--vscode-sideBar-background);
+}
 
 td {
     text-align: center;
 }
 
-table, th, td {
-    border: 1px solid var(--vscode-input-foreground); 
-    border-collapse: collapse; 
-    padding: 7px;
-    /* color: var(--vscode-foreground); */
-    margin-top: 50px;
-}
-
 pre {
     font-family: var(--vscode-font-family);
+}
+
+.context-table {
+    overflow-y: scroll;
+    /* TODO: adjust to monitor */
+    height: 1000px;
 }
 
 /* 

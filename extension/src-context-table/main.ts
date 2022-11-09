@@ -18,9 +18,11 @@
 import './css/table.css';
 import { Table } from '@kieler/table-webview/lib/table';
 import { SendContextTableDataAction } from './actions';
-import { createHeaderElement, createHeaders, createRow, createTable, patch } from './html';
-import { addSelector, addText, BigCell, ContexTableControlAction, convertControlActionsToStrings, replaceSelector, ContexTableRule, ContexTableSystemVariables, 
-    Type, ContexTableVariable, ContexTableVariableValues } from './utils';
+import { createHeaderElement, createHeaders, createRow, createTable, createTHead, patch } from './html';
+import {
+    addSelector, addText, BigCell, ContexTableControlAction, convertControlActionsToStrings, replaceSelector, ContexTableRule, ContexTableSystemVariables,
+    Type, ContexTableVariable, ContexTableVariableValues
+} from './utils';
 import { VNode } from "snabbdom";
 import { createResults, determineColumnsForRules } from './context-table-logic';
 
@@ -74,7 +76,7 @@ export class ContextTable extends Table {
     protected handleResetTable(): void {
         const table = document.getElementById(this.tableId);
         if (table) {
-            const newTable = createTable(this.tableId, "60px");
+            const newTable = createTable(this.tableId);
             patch(table, newTable);
         }
     }
@@ -85,12 +87,12 @@ export class ContextTable extends Table {
         const mainDiv = document.getElementById(identifier + '_container');
         if (mainDiv) {
             // Create text and selector element for selecting a control action
-            addText(mainDiv, "Choose a Control Action:", "0px", "10px");
+            addText(mainDiv, "Choose a Control Action:");
             addSelector(mainDiv, this.actionSelectorId, 0, [], "13px", "170px");
 
             // Create text and selector element for selecting the action type
-            addText(mainDiv, "Choose a Type:", "30px", "10px");
-            addSelector(mainDiv, this.typeSelectorId, this.selectedType, ["provided", "not provided", "both"], "43px", "110px");
+            addText(mainDiv, "Choose a Type:");
+            addSelector(mainDiv, this.typeSelectorId, this.selectedType, ["provided", "not provided", "both"], "43px", "115px");
 
             // add listener
             const htmlTypeSelector = document.getElementById(this.typeSelectorId) as HTMLSelectElement;
@@ -110,11 +112,11 @@ export class ContextTable extends Table {
             });
 
             // Create text element for table
-            addText(mainDiv, "Hover over the UCAs to see their associated hazards!", "60px", "10px");
+            addText(mainDiv, "Hover over the UCAs to see their associated hazards!");
             // create a table
-            const placeholderTable = document.createElement("table");
+            const placeholderTable = document.createElement("div");
             mainDiv.append(placeholderTable);
-            const table = createTable(this.tableId, "0px");
+            const table = createTable(this.tableId);
             patch(placeholderTable, table);
         }
     }
@@ -155,17 +157,12 @@ export class ContextTable extends Table {
 
     /**
      * Creates the header (first table row) of the context table.
-     * @param table The HTML table element to complete.
      */
-    protected createHeader(table: HTMLTableElement): void {
-        // create and add a header placeholder
-        const placeholderHeader = document.createElement("tr");
-        table.appendChild(placeholderHeader);
-
+    protected createHeader(): VNode {
         const headers: VNode[] = [];
         // the first header column is for the context and needs to span as many columns as there are context variables
         if (this.currentVariables.length > 0) {
-            const contextVariablesHeader = createHeaderElement("Context Variables", undefined, this.currentVariables.length);
+            const contextVariablesHeader = createHeaderElement("Context Variables", false, undefined, this.currentVariables.length);
             headers.push(contextVariablesHeader);
         }
 
@@ -184,27 +181,21 @@ export class ContextTable extends Table {
                 colSpan = 4;
                 break;
         }
-        const hazardousHeader = createHeaderElement("Hazardous?", rowSpan, colSpan);
+        const hazardousHeader = createHeaderElement("Hazardous?", false, rowSpan, colSpan);
         headers.push(hazardousHeader);
 
         // create correct header
-        const headersElement = createHeaders(headers);
-        patch(placeholderHeader, headersElement);
+        return createHeaders(headers);
     }
 
     /**
      * Creates the sub-header (second table row) of the context table.
-     * @param table The HTML table element to complete.
      */
-    protected createSubHeader(table: HTMLTableElement): void {
-        // create and add placeholder for subheaders
-        const placeholdersubHeaders = document.createElement("tr");
-        table.appendChild(placeholdersubHeaders);
-
+    protected createSubHeader(): VNode {
         const headers: VNode[] = [];
         // sub-headers for the context variables
         this.currentVariables.forEach(variable => {
-            const header = createHeaderElement(variable.name);
+            const header = createHeaderElement(variable.name, true);
             headers.push(header);
         });
         // hazardous sub-options, which depend on the selected action type
@@ -218,12 +209,11 @@ export class ContextTable extends Table {
                 break;
         }
         times.forEach(time => {
-            const header = createHeaderElement(time);
+            const header = createHeaderElement(time, true);
             headers.push(header);
         });
         // create correct header
-        const headersElement = createHeaders(headers);
-        patch(placeholdersubHeaders, headersElement);
+        return createHeaders(headers);
     }
 
     /**
@@ -244,8 +234,12 @@ export class ContextTable extends Table {
         const table = document.getElementById(this.tableId) as HTMLTableElement;
         if (table) {
             // create the headers
-            this.createHeader(table);
-            this.createSubHeader(table);
+
+            // create and add a header placeholder
+            const placeholderHeader = document.createElement("thead");
+            table.appendChild(placeholderHeader);
+            const newTHead = createTHead(this.createHeader(), this.createSubHeader());
+            patch(placeholderHeader, newTHead);
             if (this.currentVariables.length > 0) {
                 // generate all possible contexts
                 const contexts = this.createContexts(0, this.currentVariables, []);
@@ -293,7 +287,7 @@ export class ContextTable extends Table {
             }
             // determine the result cells
             determineColumnsForRules(variables, this.rules, this.selectedControlAction.controller,
-                this.selectedControlAction.action, this.selectedType)
+                this.selectedControlAction.action, this.selectedType);
             cells = cells.concat(createResults(this.rules, columns));
         } else {
             // no variables exist

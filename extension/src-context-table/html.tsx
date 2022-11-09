@@ -43,13 +43,13 @@ export const patch = init([
 export function createSelector(id: string, index: number, options: string[], topDistance?: string, leftDistance?: string): VNode {
     const optionHtmls = options.map(option => createOption(option));
     if (topDistance && leftDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", top: topDistance, left: leftDistance }}>{optionHtmls}</select>;
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "fixed", top: topDistance, left: leftDistance }}>{optionHtmls}</select>;
     } else if (topDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", top: topDistance }}>{optionHtmls}</select>;
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "fixed", top: topDistance }}>{optionHtmls}</select>;
     } else if (leftDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", left: leftDistance }}>{optionHtmls}</select>;
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "fixed", left: leftDistance }}>{optionHtmls}</select>;
     } else {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute" }}>{optionHtmls}</select>;
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "fixed" }}>{optionHtmls}</select>;
     }
 }
 
@@ -59,8 +59,8 @@ export function createSelector(id: string, index: number, options: string[], top
  * @param topDistance The distance of the text to the top border.
  * @returns A table VNode.
  */
-export function createTable(id: string, topDistance: string): VNode {
-    return <table attrs={{ id: id }} style={{ position: "absolute", top: topDistance, width: "95%" }}></table>;
+export function createTable(id: string): VNode {
+    return <div class-context-table="true"><table attrs={{ id: id }} /* style={{ top: topDistance} }*/></table></div>;
 }
 
 /**
@@ -75,12 +75,10 @@ function createOption(option: string): VNode {
 /**
  * Creates a text VNode.
  * @param text The text that should be displayed.
- * @param topDistance The distance of the text to the top border.
- * @param leftDistance The distance of the text to the left border.
  * @returns A text VNode.
  */
-export function createText(text: string, topDistance: string, leftDistance: string): VNode {
-    return <pre style={{ position: "absolute", left: leftDistance, top: topDistance }}>{text}</pre>;
+export function createText(text: string): VNode {
+    return <pre>{text}</pre>;
 }
 
 /**
@@ -90,15 +88,16 @@ export function createText(text: string, topDistance: string, leftDistance: stri
  * @param colspan The colspan of the header.
  * @returns A header element.
  */
-export function createHeaderElement(header: string, rowspan?: number, colspan?: number) {
+export function createHeaderElement(header: string, mainHeader: boolean, rowspan?: number, colspan?: number) {
+    const top = mainHeader ? "33px" : "0px";
     if (rowspan && colspan) {
-        return <th attrs={{ rowspan: rowspan, colspan: colspan }}>{header}</th>;
+        return <th attrs={{ rowspan: rowspan, colspan: colspan }} style={{ top: top }}>{header}</th>;
     } else if (rowspan) {
-        return <th attrs={{ rowspan: rowspan }}>{header}</th>;
+        return <th attrs={{ rowspan: rowspan }} style={{ top: top }}>{header}</th>;
     } else if (colspan) {
-        return <th attrs={{ colspan: colspan }}>{header}</th>;
+        return <th attrs={{ colspan: colspan }} style={{ top: top }}>{header}</th>;
     } else {
-        return <th>{header}</th>;
+        return <th style={{ top: top }}>{header}</th>;
     }
 }
 
@@ -111,6 +110,10 @@ export function createHeaders(headers: VNode[]) {
     return <tr>
         {...headers}
     </tr>;
+}
+
+export function createTHead(header: VNode, subHeader: VNode) {
+    return <thead>{header}{subHeader}</thead>
 }
 
 /**

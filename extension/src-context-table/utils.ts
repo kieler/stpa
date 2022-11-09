@@ -96,13 +96,11 @@ export function replaceSelector(selector: HTMLSelectElement, options: string[], 
  * Adds a text element to {@code parent} with the given attributes.
  * @param parent Element to which the text should be added.
  * @param text The text that should be added.
- * @param topDistance The distance of the text to the top border.
- * @param leftDistance The distance of the text to the left border.
  */
-export function addText(parent: HTMLElement, text: string, topDistance: string, leftDistance: string): void {
+export function addText(parent: HTMLElement, text: string): void {
     const placeholderActionDescriptions = document.createElement("pre");
     parent.appendChild(placeholderActionDescriptions);
-    const actionDescriptions = createText(text, topDistance, leftDistance);
+    const actionDescriptions = createText(text);
     patch(placeholderActionDescriptions, actionDescriptions);
 }
 
