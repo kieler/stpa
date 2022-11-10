@@ -18,6 +18,7 @@
 import { startLanguageServer } from 'langium';
 import { addDiagramHandler } from 'langium-sprotty';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
+import { addContextTableHandler } from './contextTable/message-handler';
 import { createStpaServices } from './stpa-module';
 
 // Create a connection to the client
@@ -30,8 +31,5 @@ const { shared, states } = createStpaServices({ connection });
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
-// handler for notification regarding the context table
-connection.onNotification('contextTable/getData', uri => {
-    const contextTable = states.contextTable.ContextTableProvider;
-    connection.sendNotification('contextTable/data', contextTable.getData(uri));
-});
+addContextTableHandler(connection, states);
+

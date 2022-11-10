@@ -13,6 +13,7 @@ table {
 th,
 td {
     padding: 7px;
+    cursor: pointer;
 }
 
 thead,
@@ -39,6 +40,6 @@ pre {
     background-color: var(--vscode-inputOption-hoverBackground);
 }
 
-.contextTable .selected {
+.contextTable tr .selected {
     background-color: var(--vscode-inputOption-hoverBackground);
 }

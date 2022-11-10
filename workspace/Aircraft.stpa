@@ -41,7 +41,7 @@ Aircraft {
         processModel {
             BCSUmode        : [on, off]
             aircraftPosition: [docked, taxiing, takeoff, air, landing]
-            test: [vas, asd, fa, sdf, as]
+            // test: [vas, asd, fa, sdf, as]
         }
         controlActions {
             [mc "Manual Controls" ]-> OtherSubsystems

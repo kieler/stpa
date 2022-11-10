@@ -18,7 +18,7 @@
 import { LangiumDocument } from "langium";
 import { StpaServices } from "../stpa-module";
 import { Model } from "../generated/ast";
-import { URI } from "vscode-languageserver";
+import { Range, URI } from "vscode-languageserver";
 import { ContextTableData, ContexTableControlAction, ContexTableRule, ContexTableSystemVariables, ContexTableVariable, ContexTableVariableValues } from "../../src-context-table/utils";
 
 export class ContextTableProvider {
@@ -26,6 +26,28 @@ export class ContextTableProvider {
 
     constructor(services: StpaServices) {
         this.services = services;
+    }
+
+    /**
+     * Determines the range in the current textdocument of the UCA which ID equals {@code ucaName}.
+     * @param uri The uri of the current textdocument.
+     * @param ucaName The name to identify the searched UCA.
+     * @returns The range of the searched UCA or undefined if no UCA with {@code ucaName} could be found.
+     */
+    getRangeOfUCA(uri: URI, ucaName: string): Range | undefined {
+        // get the current model
+        const textDocuments = this.services.shared.workspace.LangiumDocuments;
+        const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
+        const model: Model = currentDoc.parseResult.value;
+
+        let range: Range | undefined = undefined
+        model.rules.forEach(rule => rule.contexts.forEach(uca => {
+            if (uca.name === ucaName) {
+                range = uca.$cstNode?.range;
+                return;
+            }
+        }))
+        return range;
     }
 
     /**

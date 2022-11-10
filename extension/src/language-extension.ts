@@ -17,7 +17,7 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, Range, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
@@ -30,11 +30,26 @@ import { StpaLspWebview } from './wview';
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
     protected contextTable: ContextTablePanel;
+    protected lastUri: string;
 
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
         let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
+        this.languageClient.onReady().then(() => {
+            // handling of notifications regarding the context table
+            this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
+            this.languageClient.onNotification('contextTable/highlight', (msg: {startLine: number, startChar: number, endLine: number, endChar: number}) => {
+                // highlight and reveal the given range in the editor
+                const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === this.lastUri);
+                if (editor) {
+                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+                    editor.selection = new vscode.Selection(startPosition, endPosition);
+                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+                }
+            })
+        });
     }
 
     protected registerCommands(): void {
@@ -43,7 +58,8 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             vscode.commands.registerCommand(this.extensionPrefix + '.contextTable.open', async (...commandArgs: any[]) => {
                 this.createContextTable();
                 await this.contextTable.ready();
-                this.languageClient.sendNotification('contextTable/getData', (commandArgs[0] as vscode.Uri).toString());
+                this.lastUri = (commandArgs[0] as vscode.Uri).toString();
+                this.languageClient.sendNotification('contextTable/getData', this.lastUri);
             })
         );
     }
@@ -64,12 +80,14 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         );
         this.contextTable = tablePanel;
 
-        //TODO: add interactivity?
-        /* this.context.subscriptions.push(
-            this.contextTable.cellClicked((cell: { rowId: string; columnId: string } | undefined) => {
-                
+        // adds listener for mouse click on a cell
+        this.context.subscriptions.push(
+            this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string } | undefined) => {
+                if (cell?.text && cell.text !== "No") {
+                    this.languageClient.sendNotification('contextTable/selected', cell.text);
+                }
             })
-        )*/
+        )
     }
 
     createWebView(identifier: SprottyDiagramIdentifier): SprottyWebview {
@@ -128,13 +146,23 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // diagram is updated when file changes
         fileSystemWatcher.onDidChange((uri) => this.updateViews(languageClient, uri.toString()));
 
-        languageClient.onReady().then(() => {
-            languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
-        });
+        // languageClient.onReady().then(() => {
+        //     languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
+        //     languageClient.onNotification('contextTable/highlight', (msg: {startLine: number, startChar: number, endLine: number, endChar: number}) => {
+        //         const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === this.lastUri);
+        //         if (editor) {
+        //             const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+        //             const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+        //             editor.selection = new vscode.Selection(startPosition, endPosition);
+        //             editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+        //         }
+        //     })
+        // });
         return languageClient;
     }
 
     protected updateViews(languageClient: LanguageClient, uri: string) {
+        this.lastUri = uri;
         if (this.contextTable) {
             languageClient.sendNotification('contextTable/getData', uri);
         }

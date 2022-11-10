@@ -40,7 +40,7 @@ export class Table {
             const node = event.target;
             const owner = (node as HTMLElement).parentElement;
             if (owner) {
-                const action = SelectedCellAction.create(owner.id, (node as HTMLElement).id)
+                const action = SelectedCellAction.create(owner.id, (node as HTMLElement).id, (node as HTMLElement).innerText)
                 vscode.postMessage({ action: action });
             }
         });

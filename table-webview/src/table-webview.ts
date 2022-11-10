@@ -43,11 +43,11 @@ export class TableWebview {
 
     private readonly webviewReady = new Promise<void>((resolve) => (this.resolveWebviewReady = resolve))
 
-    protected selectedCell: {rowId: string, columnId: string};
+    protected selectedCell: {rowId: string, columnId: string, text?: string};
 
-    public readonly cellClickedEmitter = new vscode.EventEmitter<{rowId: string, columnId: string} | undefined>()
+    public readonly cellClickedEmitter = new vscode.EventEmitter<{rowId: string, columnId: string, text?: string} | undefined>()
 
-    public readonly cellClicked: vscode.Event<{rowId: string, columnId: string} | undefined> = this.cellClickedEmitter.event
+    public readonly cellClicked: vscode.Event<{rowId: string, columnId: string, text?: string} | undefined> = this.cellClickedEmitter.event
 
     public readonly initializedEmitter = new vscode.EventEmitter<void | undefined>()
 
@@ -175,7 +175,7 @@ export class TableWebview {
             this.initializedEmitter.fire()
         } else if (message.action) {
             if (SelectedCellAction.isThisAction(message.action)) {
-                this.selectedCell = {rowId: message.action.rowId, columnId: message.action.columnId}
+                this.selectedCell = {rowId: message.action.rowId, columnId: message.action.columnId, text: message.action.text}
                 this.cellClickedEmitter.fire(this.selectedCell)
             }
         }
