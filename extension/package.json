@@ -199,7 +199,8 @@
         "feather-icons": "^4.28.0",
         "sprotty": "~0.11.1",
         "sprotty-vscode-webview": "^0.2.0",
-        "@kieler/table-webview": "^0.0.1"
+        "@kieler/table-webview": "^0.0.1",
+        "snabbdom": "^3.5.1"
       },
     "devDependencies": {
         "@types/node": "^12.12.6",

@@ -15,9 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-/** @jsx html */
-import { html } from './jsx';
-import { attributesModule, Classes, classModule, eventListenersModule, init, propsModule, styleModule, VNode } from 'snabbdom';
+
+import { attributesModule, Classes, classModule, eventListenersModule, init, jsx, propsModule, styleModule, VNode } from 'snabbdom';
 import { BigCell } from './utils';
 
 /** Needed to update the html document */
@@ -43,13 +42,13 @@ export const patch = init([
 export function createSelector(id: string, index: number, options: string[], topDistance?: string, leftDistance?: string): VNode {
     const optionHtmls = options.map(option => createOption(option));
     if (topDistance && leftDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "fixed", top: topDistance, left: leftDistance }}>{optionHtmls}</select>;
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", top: topDistance, left: leftDistance }}>{optionHtmls}</select>;
     } else if (topDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "fixed", top: topDistance }}>{optionHtmls}</select>;
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", top: topDistance }}>{optionHtmls}</select>;
     } else if (leftDistance) {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "fixed", left: leftDistance }}>{optionHtmls}</select>;
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute", left: leftDistance }}>{optionHtmls}</select>;
     } else {
-        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "fixed" }}>{optionHtmls}</select>;
+        return <select attrs={{ id: id, selectedIndex: index }} style={{ position: "absolute" }}>{optionHtmls}</select>;
     }
 }
 
@@ -59,7 +58,7 @@ export function createSelector(id: string, index: number, options: string[], top
  * @returns A table VNode.
  */
 export function createTable(id: string): VNode {
-    return <div class-context-table="true"><table attrs={{ id: id }}></table></div>;
+    return <div class={{contextTable: true}}><table attrs={{ id: id }}></table></div>;
 }
 
 /**

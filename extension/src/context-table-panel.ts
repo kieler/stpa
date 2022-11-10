@@ -22,8 +22,6 @@ import { ContextTableData } from '../src-context-table/utils';
 
 export class ContextTablePanel extends TableWebview {
 
-  protected currentData: any[];
-
   constructor(identifier: string, localResourceRoots: vscode.Uri[], scriptUri: vscode.Uri) {
     super(identifier, localResourceRoots, scriptUri);
     this.createWebviewPanel([]);

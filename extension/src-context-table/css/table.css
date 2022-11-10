@@ -34,3 +34,11 @@ pre {
     /* TODO: adjust to monitor */
     height: 1000px;
 }
+
+.contextTable .focused .context-variable {
+    background-color: var(--vscode-inputOption-hoverBackground);
+}
+
+.contextTable .selected {
+    background-color: var(--vscode-inputOption-hoverBackground);
+}

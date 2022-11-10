@@ -5,6 +5,7 @@
       "outDir": "pack",
       "lib": ["es2019", "dom"],
       "jsx": "react",
+      "jsxFactory": "jsx",
       "sourceMap": true,
       "rootDir": "src",
       "strict": true, // enable all strict type-checking options

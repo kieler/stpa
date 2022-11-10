@@ -23,7 +23,7 @@ import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import { ActionMessage, JsonMap } from 'sprotty-protocol';
 import { UpdateViewAction } from './actions';
-import { ContextTablePanel } from './ContextTablePanel';
+import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
 
@@ -57,12 +57,12 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     }
 
     createContextTable(): void {
-        const tWebview = new ContextTablePanel(
+        const tablePanel = new ContextTablePanel(
             'Context-Table',
             [this.getExtensionFileUri('pack')],
             this.getExtensionFileUri('pack', 'context-table-panel.js')
         );
-        this.contextTable = tWebview;
+        this.contextTable = tablePanel;
 
         //TODO: add interactivity?
         /* this.context.subscriptions.push(

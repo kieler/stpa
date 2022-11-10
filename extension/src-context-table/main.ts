@@ -51,6 +51,25 @@ export class ContextTable extends Table {
     // position where the subheaders should stick
     protected stickValue = "33px";
 
+    protected lastSelected: HTMLElement;
+
+    constructor() {
+        super();
+        document.addEventListener('click', (event) => {
+            const node = event.target
+            const owner = (node as HTMLElement).parentElement
+            if (owner) {
+                if (this.lastSelected) {
+                    this.lastSelected.parentElement?.classList.remove('focused')
+                    this.lastSelected.classList.remove('selected')
+                }
+                this.lastSelected = node as  HTMLElement;
+                owner.classList.add('focused');
+                (node as HTMLElement).classList.add('selected')
+            }
+        })
+    }
+
     protected handleMessages(message: any): void {
         const action = message.data.action;
         if (action) {
