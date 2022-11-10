@@ -26,11 +26,14 @@ import { UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
+import { SelectAction } from 'sprotty-protocol'
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
     protected contextTable: ContextTablePanel;
     protected lastUri: string;
+    /** Saves the last selected UCA in the context table. */
+    protected lastSelectedUCA: string;
 
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
@@ -84,7 +87,12 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.context.subscriptions.push(
             this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string } | undefined) => {
                 if (cell?.text && cell.text !== "No") {
+                    // language server must determine the range of the selected uca in the editor in order to highlight it
                     this.languageClient.sendNotification('contextTable/selected', cell.text);
+                    // highlight corresponding node in the diagram and maybe deselect the last selected one
+                    const lastSelected = this.lastSelectedUCA ? [this.lastSelectedUCA] : []
+                    this.singleton?.dispatch(SelectAction.create({selectedElementsIDs: [cell.text], deselectedElementsIDs: lastSelected}))
+                    this.lastSelectedUCA = cell.text
                 }
             })
         )
