@@ -56,11 +56,10 @@ export function createSelector(id: string, index: number, options: string[], top
 /**
  * Creates a table VNode.
  * @param id The id of the table.
- * @param topDistance The distance of the text to the top border.
  * @returns A table VNode.
  */
 export function createTable(id: string): VNode {
-    return <div class-context-table="true"><table attrs={{ id: id }} /* style={{ top: topDistance} }*/></table></div>;
+    return <div class-context-table="true"><table attrs={{ id: id }}></table></div>;
 }
 
 /**
@@ -84,12 +83,12 @@ export function createText(text: string): VNode {
 /**
  * Creates a header element.
  * @param header The text of the header.
+ * @param top The distance to the table origin, where the header should stick.
  * @param rowspan The rowspan of the header.
  * @param colspan The colspan of the header.
  * @returns A header element.
  */
-export function createHeaderElement(header: string, mainHeader: boolean, rowspan?: number, colspan?: number) {
-    const top = mainHeader ? "33px" : "0px";
+export function createHeaderElement(header: string, top: string, rowspan?: number, colspan?: number) {
     if (rowspan && colspan) {
         return <th attrs={{ rowspan: rowspan, colspan: colspan }} style={{ top: top }}>{header}</th>;
     } else if (rowspan) {
@@ -106,14 +105,19 @@ export function createHeaderElement(header: string, mainHeader: boolean, rowspan
  * @param headers The headers of the header row.
  * @returns A header row element.
  */
-export function createHeaders(headers: VNode[]) {
+export function createHeaderRow(headers: VNode[]) {
     return <tr>
         {...headers}
     </tr>;
 }
 
-export function createTHead(header: VNode, subHeader: VNode) {
-    return <thead>{header}{subHeader}</thead>
+/**
+ * Create the header of a table.
+ * @param headers The header rows
+ * @returns A thead element containing the given header rows.
+ */
+export function createTHead(headers: VNode[]) {
+    return <thead>{...headers}</thead>;
 }
 
 /**

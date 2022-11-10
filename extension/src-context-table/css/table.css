@@ -1,20 +1,23 @@
-thead, td, th {
-    border: 1px solid var(--vscode-input-foreground); 
-    border-collapse: separate; 
+thead,
+td,
+th {
+    border: 1px solid var(--vscode-input-foreground);
 }
 
 table {
     margin-right: 10px;
     border-spacing: 0px;
+    border-collapse: separate;
 }
 
-th, td {
+th,
+td {
     padding: 7px;
 }
 
-thead, th {
+thead,
+th {
     position: sticky;
-    /* top: 0; */
     background-color: var(--vscode-sideBar-background);
 }
 
@@ -31,17 +34,3 @@ pre {
     /* TODO: adjust to monitor */
     height: 1000px;
 }
-
-/* 
---vscode-checkbox-border
---vscode-badge-background
---vscode-editorWidget-border
---vscode-menu-separatorBackground
---vscode-settings-dropdownBorder
-
---vscode-inputOption-activeBackground
-
---vscode-editor-selectionBackground
---vscode-minimap-selectionHighlight
---vscode-editorSuggestWidget-focusHighlightForeground
-*/

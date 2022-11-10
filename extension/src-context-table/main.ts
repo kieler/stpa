@@ -18,7 +18,7 @@
 import './css/table.css';
 import { Table } from '@kieler/table-webview/lib/table';
 import { SendContextTableDataAction } from './actions';
-import { createHeaderElement, createHeaders, createRow, createTable, createTHead, patch } from './html';
+import { createHeaderElement, createHeaderRow, createRow, createTable, createTHead, patch } from './html';
 import {
     addSelector, addText, BigCell, ContexTableControlAction, convertControlActionsToStrings, replaceSelector, ContexTableRule, ContexTableSystemVariables,
     Type, ContexTableVariable, ContexTableVariableValues
@@ -47,6 +47,9 @@ export class ContextTable extends Table {
     protected selectedControlAction: ContexTableControlAction;
     protected selectedType: Type = Type.PROVIDED;
     protected currentVariables: ContexTableVariableValues[] = [];
+
+    // position where the subheaders should stick
+    protected stickValue = "33px";
 
     protected handleMessages(message: any): void {
         const action = message.data.action;
@@ -162,7 +165,7 @@ export class ContextTable extends Table {
         const headers: VNode[] = [];
         // the first header column is for the context and needs to span as many columns as there are context variables
         if (this.currentVariables.length > 0) {
-            const contextVariablesHeader = createHeaderElement("Context Variables", false, undefined, this.currentVariables.length);
+            const contextVariablesHeader = createHeaderElement("Context Variables", "0px", undefined, this.currentVariables.length);
             headers.push(contextVariablesHeader);
         }
 
@@ -181,11 +184,11 @@ export class ContextTable extends Table {
                 colSpan = 4;
                 break;
         }
-        const hazardousHeader = createHeaderElement("Hazardous?", false, rowSpan, colSpan);
+        const hazardousHeader = createHeaderElement("Hazardous?", "0px", rowSpan, colSpan);
         headers.push(hazardousHeader);
 
-        // create correct header
-        return createHeaders(headers);
+        // create the header row
+        return createHeaderRow(headers);
     }
 
     /**
@@ -195,7 +198,7 @@ export class ContextTable extends Table {
         const headers: VNode[] = [];
         // sub-headers for the context variables
         this.currentVariables.forEach(variable => {
-            const header = createHeaderElement(variable.name, true);
+            const header = createHeaderElement(variable.name, this.stickValue);
             headers.push(header);
         });
         // hazardous sub-options, which depend on the selected action type
@@ -209,11 +212,11 @@ export class ContextTable extends Table {
                 break;
         }
         times.forEach(time => {
-            const header = createHeaderElement(time, true);
+            const header = createHeaderElement(time, this.stickValue);
             headers.push(header);
         });
-        // create correct header
-        return createHeaders(headers);
+        // create the header row
+        return createHeaderRow(headers);
     }
 
     /**
@@ -233,15 +236,16 @@ export class ContextTable extends Table {
         this.handleResetTable();
         const table = document.getElementById(this.tableId) as HTMLTableElement;
         if (table) {
-            // create the headers
-
             // create and add a header placeholder
             const placeholderHeader = document.createElement("thead");
             table.appendChild(placeholderHeader);
-            const newTHead = createTHead(this.createHeader(), this.createSubHeader());
+            // replace with correct header
+            const newTHead = createTHead([this.createHeader(), this.createSubHeader()]);
             patch(placeholderHeader, newTHead);
+
+            // fill the table
             if (this.currentVariables.length > 0) {
-                // generate all possible contexts
+                // generate all possible contexts and add them as rows
                 const contexts = this.createContexts(0, this.currentVariables, []);
                 contexts.forEach(context => this.addRow(table, context, "context"));
             } else {
