@@ -21,7 +21,7 @@ import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaderRow, createRow, createTable, createTHead, patch } from './html';
 import {
     addSelector, addText, BigCell, ContexTableControlAction, convertControlActionsToStrings, replaceSelector, ContexTableRule, ContexTableSystemVariables,
-    Type, ContexTableVariable, ContexTableVariableValues
+    Type, ContexTableVariable, ContexTableVariableValues, Row
 } from './utils';
 import { VNode } from "snabbdom";
 import { createResults, determineColumnsForRules } from './context-table-logic';
@@ -56,18 +56,18 @@ export class ContextTable extends Table {
     constructor() {
         super();
         document.addEventListener('click', (event) => {
-            const node = event.target
-            const owner = (node as HTMLElement).parentElement
+            const node = event.target;
+            const owner = (node as HTMLElement).parentElement;
             if (owner) {
                 if (this.lastSelected) {
-                    this.lastSelected.parentElement?.classList.remove('focused')
-                    this.lastSelected.classList.remove('selected')
+                    this.lastSelected.parentElement?.classList.remove('focused');
+                    this.lastSelected.classList.remove('selected');
                 }
-                this.lastSelected = node as  HTMLElement;
+                this.lastSelected = node as HTMLElement;
                 owner.classList.add('focused');
-                (node as HTMLElement).classList.add('selected')
+                (node as HTMLElement).classList.add('selected');
             }
-        })
+        });
     }
 
     protected handleMessages(message: any): void {
@@ -264,54 +264,79 @@ export class ContextTable extends Table {
 
             // fill the table
             if (this.currentVariables.length > 0) {
-                // generate all possible contexts and add them as rows
+                // generate all possible contexts
                 const contexts = this.createContexts(0, this.currentVariables, []);
-                contexts.forEach(context => this.addRow(table, context, "context"));
+                // determine the row for each context
+                const rows: Row[] = [];
+                contexts.forEach(context => rows.push(this.determineRow(context)));
+                // add the rows to the html table
+                rows.forEach(row => this.addRow(table, row, "context"));
             } else {
                 // table is empty
-                this.addRow(table, [], "empty-row");
+                this.addRow(table, { variables: [], results: [] }, "empty-table");
             }
         }
+    }
+
+    /**
+     * Creates a row instance for the given {@code variables} and the result columns.
+     * @param variables The current context for which a row should be created.
+     * @returns a row containing the current context and the values for the result columns.
+     */
+    protected determineRow(variables: ContexTableVariable[]): Row {
+        // determine the amount of hazardous columns
+        let columns = -1;
+        switch (this.selectedType) {
+            case Type.PROVIDED:
+                columns = 3;
+                break;
+            case Type.NOT_PROVIDED:
+                columns = 1;
+                break;
+            case Type.BOTH:
+                columns = 4;
+                break;
+            default:
+                console.log("The selected control action type is not supported: " + this.selectedType);
+        }
+        // determine the used rules and set their columns
+        const usedRules = determineColumnsForRules(variables, this.rules, this.selectedControlAction.controller,
+            this.selectedControlAction.action, this.selectedType);
+        const results: { hazards: string[], rules: ContexTableRule[]; }[] = [];
+        for (let currentColumn = 1; currentColumn <= columns; currentColumn++) {
+            // determine the used rules for each column and its hazards
+            const rules: ContexTableRule[] = [];
+            let hazards: string[] = [];
+            usedRules.forEach(rule => {
+                if (rule.column === currentColumn) {
+                    rules.push(rule);
+                    hazards = hazards.concat(rule.hazards);
+                }
+            });
+            results.push({ hazards: hazards, rules: rules });
+        }
+
+        return { variables: variables, results: results };
     }
 
 
     /**
      * Creates and appends one non-header row to the table. 
      * @param table The HTMLTableElement to apply the row to.
-     * @param variables The context variable values that should be written into the current row.
+     * @param row The row to add.
      * @param id The id of the row.
      */
-    protected addRow(table: HTMLTableElement, variables: ContexTableVariable[], id: string): void {
+    protected addRow(table: HTMLTableElement, row: Row, id: string): void {
         // create row placeholder
         const placeholderRow = document.createElement("tr");
         table.appendChild(placeholderRow);
 
         let cells: BigCell[] = [];
-
-        if (variables.length > 0) {
+        if (row.variables.length > 0) {
             // values of the context variables
-            const valueCells = variables.map(variable => { return { cssClass: "context-variable", value: variable.value, colSpan: 1 }; });
-            cells = cells.concat(valueCells);
-
-            // determine the amount of hazardous columns
-            let columns = -1;
-            switch (this.selectedType) {
-                case Type.PROVIDED:
-                    columns = 3;
-                    break;
-                case Type.NOT_PROVIDED:
-                    columns = 1;
-                    break;
-                case Type.BOTH:
-                    columns = 4;
-                    break;
-                default:
-                    console.log("The selected control action type is not supported: " + this.selectedType);
-            }
-            // determine the result cells
-            determineColumnsForRules(variables, this.rules, this.selectedControlAction.controller,
-                this.selectedControlAction.action, this.selectedType);
-            cells = cells.concat(createResults(this.rules, columns));
+            cells = row.variables.map(variable => { return { cssClass: "context-variable", value: variable.value, colSpan: 1 }; });
+            // append the result cells
+            cells = cells.concat(createResults(row.results));
         } else {
             // no variables exist
             let colSpan: number = 0;
@@ -330,8 +355,8 @@ export class ContextTable extends Table {
         }
 
         // create the row
-        const row = createRow(id, cells);
-        patch(placeholderRow, row);
+        const htmlRow = createRow(id, cells);
+        patch(placeholderRow, htmlRow);
     }
 
 

@@ -19,26 +19,31 @@ import { Cell } from "@kieler/table-webview/lib/helper";
 import { VNode } from "snabbdom";
 import { createSelector, createText, patch } from "./html";
 
+/** Type for control actions for the context table. */
 export class ContexTableControlAction {
     controller: string;
     action: string;
 }
 
+/** The variables for each system, needed for the context table. */
 export class ContexTableSystemVariables {
     system: string;
     variables: ContexTableVariableValues[];
 }
 
+/** The possible values for a variable in the context table. */
 export class ContexTableVariableValues {
     name: string;
     values: string[];
 }
 
+/** An instantation of a variable, needed for the contexts in the context table. */
 export class ContexTableVariable {
     name: string;
     value: string;
 }
 
+/** A rule for the context table. */
 export class ContexTableRule {
     id: string;
     controlAction: ContexTableControlAction;
@@ -48,21 +53,30 @@ export class ContexTableRule {
     column?: number;
 }
 
+/** Data the context table expects from the language server. */
 export class ContextTableData {
     rules: ContexTableRule[];
     actions: ContexTableControlAction[];
     systemVariables: ContexTableSystemVariables[];
 }
 
+/** Types of control actions. */
 export enum Type {
     PROVIDED,
     NOT_PROVIDED,
     BOTH
 }
 
+/** A cell in the context table. */
 export class BigCell extends Cell {
     colSpan: number;
     title?: string;
+}
+
+/** A row in the context table. */
+export class Row {
+    variables: ContexTableVariable[];
+    results: { hazards: string[], rules: ContexTableRule[]; }[];
 }
 
 /**

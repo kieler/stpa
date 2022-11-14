@@ -26,7 +26,8 @@ import { BigCell, ContexTableRule, Type, ContexTableVariable, ContexTableVariabl
  * @param selectedType The currently selected control action type.
  */
 export function determineColumnsForRules(variables: ContexTableVariable[], rules: ContexTableRule[], selectedController: string,
-    selectedAction: string, selectedType: number): void {
+    selectedAction: string, selectedType: number): ContexTableRule[] {
+    const usedRules: ContexTableRule[] = [];
     // update the columns of all rules
     rules.forEach(rule => {
         // compare control action of the rule with the selected one and  
@@ -35,45 +36,45 @@ export function determineColumnsForRules(variables: ContexTableVariable[], rules
             && checkValues(rule.variables, variables)) {
             // determine the column for which the rule applies
             const ruleType = rule.type.toLowerCase();
-            let column = -1;
+            let column: number | undefined = undefined;
             if (selectedType === Type.NOT_PROVIDED && ruleType == "not-provided") {
                 column = 1;
-            } else if (ruleType == "provided") {
+            } else if (selectedType !== Type.NOT_PROVIDED && ruleType == "provided") {
                 column = 1;
-            } else if (ruleType == "too-early" || ruleType == "too-late" || ruleType == "wrong-time") {
+            } else if (selectedType !== Type.NOT_PROVIDED && (ruleType == "too-early" || ruleType == "too-late" || ruleType == "wrong-time")) {
                 column = 2;
-            } else if (ruleType == "stopped-too-soon" || ruleType == "applied-too-long") {
+            } else if (selectedType !== Type.NOT_PROVIDED && (ruleType == "stopped-too-soon" || ruleType == "applied-too-long")) {
                 column = 3;
-            } else if (ruleType == "not-provided") {
+            } else if (selectedType !== Type.NOT_PROVIDED && ruleType == "not-provided") {
                 column = 4;
             } else {
-                console.log("The given control action type is not supported: " + ruleType);
+                // rule does not apply for the selected control action type.
+                column = undefined
             }
             rule.column = column;
+            usedRules.push(rule);
         } else {
             rule.column = undefined;
         }
     });
+    return usedRules;
 }
 
 /**
  * Creates the result cells.
- * @param rules The available rules. The column attribute must be set!
- * @param hazardColumnsCount The number of columns the "Hazardous?"-column currently has.
+ * @param results The hazards and rules for the result columns.
  * @returns The cells for the "Hazardous?"-column.
  */
-export function createResults(rules: ContexTableRule[], hazardColumnsCount: number): BigCell[] {
+export function createResults(results: { hazards: string[], rules: ContexTableRule[]; }[]): BigCell[] {
     const cells: BigCell[] = [];
     // keeps track on how many neihbouring columns have no rule applied
     let noAppliedRuleCounter: number = 0;
     // go through all of the hazardous columns
-    for (let hazardColumn = 1; hazardColumn <= hazardColumnsCount; hazardColumn++) {
-        // TODO: can there be multiple rules with the same column?
-        const currentRule = rules.find(rule => rule.column === hazardColumn);
-        if (!currentRule) {
+    for (let hazardColumn = 0; hazardColumn < results.length; hazardColumn++) {
+        if (results[hazardColumn].rules.length === 0) {
             // there is no rule for this column
             noAppliedRuleCounter++;
-            if (hazardColumn == hazardColumnsCount) {
+            if (hazardColumn + 1 === results.length) {
                 // its the last column so we can fill the missing columns with a cell containing the value "No"
                 cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
             }
@@ -84,8 +85,9 @@ export function createResults(rules: ContexTableRule[], hazardColumnsCount: numb
                 cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
                 noAppliedRuleCounter = 0;
             }
+            const ucas = results[hazardColumn].rules.map(rule => rule.id);
             // add the hazards, defined by the rule, as a cell
-            cells.push({ cssClass: "result", value: currentRule.id, colSpan: 1, title: currentRule.hazards.toString() });
+            cells.push({ cssClass: "result", value: ucas.toString(), colSpan: 1, title: results[hazardColumn].hazards.toString() });
         }
     }
     return cells;
