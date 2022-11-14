@@ -15,20 +15,36 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { BigCell, ContexTableRule, Type, ContexTableVariable, ContexTableVariableValues } from "./utils";
+import { BigCell, ContextTableRule, Type, ContextTableVariable, ContextTableVariableValues, Row } from "./utils";
 
 /**
- * Sets the column attribute of {@code rules}.
+/**
+ * Determines the used rules of {@code rules} and for which column they apply.
  * @param variables The variable values of the current row.
  * @param rules The available rules.
  * @param selectedController The currently selected controller.
  * @param selectedAction The currently selected control action.
  * @param selectedType The currently selected control action type.
+ * @returns the used rules, whereby the index determines the column they apply to.
  */
-export function determineColumnsForRules(variables: ContexTableVariable[], rules: ContexTableRule[], selectedController: string,
-    selectedAction: string, selectedType: number): ContexTableRule[] {
-    const usedRules: ContexTableRule[] = [];
-    // update the columns of all rules
+export function determineUsedRules(variables: ContextTableVariable[], rules: ContextTableRule[], selectedController: string,
+    selectedAction: string, selectedType: number): ContextTableRule[][] {
+    // keeps track of the used rules, whereby the index determines the column
+    let usedRules: ContextTableRule[][] = [[], [], [], []];
+    switch(selectedType) {
+        case Type.NOT_PROVIDED:
+            usedRules = [[]];
+            break;
+        case Type.PROVIDED:
+            usedRules = [[], [], []];
+            break;
+        case Type.BOTH:
+            usedRules = [[], [], [], []];
+            break;
+        default:
+            console.log("Something went wrong. An undefined control action type is selected.")
+    }
+    // determine the used rules
     rules.forEach(rule => {
         // compare control action of the rule with the selected one and  
         // the context of the rule with the current context
@@ -36,25 +52,17 @@ export function determineColumnsForRules(variables: ContexTableVariable[], rules
             && checkValues(rule.variables, variables)) {
             // determine the column for which the rule applies
             const ruleType = rule.type.toLowerCase();
-            let column: number | undefined = undefined;
             if (selectedType === Type.NOT_PROVIDED && ruleType == "not-provided") {
-                column = 1;
+                usedRules[0].push(rule);
             } else if (selectedType !== Type.NOT_PROVIDED && ruleType == "provided") {
-                column = 1;
+                usedRules[0].push(rule);
             } else if (selectedType !== Type.NOT_PROVIDED && (ruleType == "too-early" || ruleType == "too-late" || ruleType == "wrong-time")) {
-                column = 2;
+                usedRules[1].push(rule);
             } else if (selectedType !== Type.NOT_PROVIDED && (ruleType == "stopped-too-soon" || ruleType == "applied-too-long")) {
-                column = 3;
-            } else if (selectedType !== Type.NOT_PROVIDED && ruleType == "not-provided") {
-                column = 4;
-            } else {
-                // rule does not apply for the selected control action type.
-                column = undefined;
+                usedRules[2].push(rule);
+            } else if (selectedType === Type.BOTH && ruleType == "not-provided") {
+                usedRules[3].push(rule);
             }
-            rule.column = column;
-            usedRules.push(rule);
-        } else {
-            rule.column = undefined;
         }
     });
     return usedRules;
@@ -65,7 +73,7 @@ export function determineColumnsForRules(variables: ContexTableVariable[], rules
  * @param results The hazards and rules for the result columns.
  * @returns The cells for the "Hazardous?"-column.
  */
-export function createResults(results: { hazards: string[], rules: ContexTableRule[]; }[]): BigCell[] {
+export function createResults(results: { hazards: string[], rules: ContextTableRule[]; }[]): BigCell[] {
     const cells: BigCell[] = [];
     // keeps track on how many neihbouring columns have no rule applied
     let noAppliedRuleCounter: number = 0;
@@ -99,7 +107,7 @@ export function createResults(results: { hazards: string[], rules: ContexTableRu
  * @param variables2 Variables that should be compared to the other set.
  * @returns true if all values are equal; false otherwise.
  */
-function checkValues(variables1: ContexTableVariable[], variables2: ContexTableVariable[]): boolean {
+function checkValues(variables1: ContextTableVariable[], variables2: ContextTableVariable[]): boolean {
     for (let i = 0; i < variables1.length; i++) {
         const firstVariable = variables1[i];
         // get corresponding variable

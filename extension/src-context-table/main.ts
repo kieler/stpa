@@ -20,11 +20,11 @@ import { Table } from '@kieler/table-webview/lib/table';
 import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaderRow, createRow, createTable, createTHead, patch } from './html';
 import {
-    addSelector, addText, BigCell, ContexTableControlAction, convertControlActionsToStrings, replaceSelector, ContexTableRule, ContexTableSystemVariables,
-    Type, ContexTableVariable, ContexTableVariableValues, Row
+    addSelector, addText, BigCell, ContextTableControlAction, convertControlActionsToStrings, replaceSelector, ContextTableRule, ContextTableSystemVariables,
+    Type, ContextTableVariable, ContextTableVariableValues, Row
 } from './utils';
 import { VNode } from "snabbdom";
-import { createResults, determineColumnsForRules } from './context-table-logic';
+import { createResults, determineUsedRules } from './context-table-logic';
 
 interface vscode {
     postMessage(message: any): void;
@@ -39,18 +39,36 @@ export class ContextTable extends Table {
     protected tableId = "context_table";
 
     // data of the table
-    protected rules: ContexTableRule[] = [];
-    protected controlActions: ContexTableControlAction[] = [];
-    protected systemVariables: ContexTableSystemVariables[] = [];
+    protected rules: ContextTableRule[] = [];
+    protected controlActions: ContextTableControlAction[] = [];
+    protected systemVariables: ContextTableSystemVariables[] = [];
 
     // variables to store the currently selected options of the select elements in
-    protected selectedControlAction: ContexTableControlAction;
+    protected selectedControlAction: ContextTableControlAction;
     protected selectedType: Type = Type.PROVIDED;
-    protected currentVariables: ContexTableVariableValues[] = [];
+    protected currentVariables: ContextTableVariableValues[] = [];
 
     // position where the subheaders should stick
     protected stickValue = "33px";
 
+    // the calculated contexts and the rules for the result columns
+    protected contexts: ContextTableVariable[][] = [];
+    protected resultsRules: ContextTableRule[][][] = [];
+    // determines which resultsRules index belongs to which context index
+    protected resultRulesToContext = new Map<number, number>();
+
+
+
+    // protected resultToContext = new Map<string[], number[]>();
+    // protected resultToResultRules = new Map<string[], number[]>();
+
+
+    // TODO: change these properties to options
+    protected logicalSimplification = true;
+    protected mergeSubsets = true;
+    protected mergeNos = true;
+
+    // used for highlighting selected element
     protected lastSelected: HTMLElement;
 
     constructor() {
@@ -96,6 +114,8 @@ export class ContextTable extends Table {
     }
 
     protected handleResetTable(): void {
+        this.contexts = [];
+        this.resultsRules = [];
         const table = document.getElementById(this.tableId);
         if (table) {
             const newTable = createTable(this.tableId);
@@ -265,10 +285,11 @@ export class ContextTable extends Table {
             // fill the table
             if (this.currentVariables.length > 0) {
                 // generate all possible contexts
-                const contexts = this.createContexts(0, this.currentVariables, []);
-                // determine the row for each context
-                const rows: Row[] = [];
-                contexts.forEach(context => rows.push(this.determineRow(context)));
+                this.contexts = this.createContexts(0, this.currentVariables, []);
+                // determine the results for each context
+                this.determineResults();
+                // create the rows
+                const rows = this.determineRows();
                 // add the rows to the html table
                 rows.forEach(row => this.addRow(table, row, "context"));
             } else {
@@ -279,44 +300,56 @@ export class ContextTable extends Table {
     }
 
     /**
-     * Creates a row instance for the given {@code variables} and the result columns.
-     * @param variables The current context for which a row should be created.
-     * @returns a row containing the current context and the values for the result columns.
+     * Determine the results for each context.
      */
-    protected determineRow(variables: ContexTableVariable[]): Row {
-        // determine the amount of hazardous columns
-        let columns = -1;
-        switch (this.selectedType) {
-            case Type.PROVIDED:
-                columns = 3;
-                break;
-            case Type.NOT_PROVIDED:
-                columns = 1;
-                break;
-            case Type.BOTH:
-                columns = 4;
-                break;
-            default:
-                console.log("The selected control action type is not supported: " + this.selectedType);
-        }
-        // determine the used rules and set their columns
-        const usedRules = determineColumnsForRules(variables, this.rules, this.selectedControlAction.controller,
-            this.selectedControlAction.action, this.selectedType);
-        const results: { hazards: string[], rules: ContexTableRule[]; }[] = [];
-        for (let currentColumn = 1; currentColumn <= columns; currentColumn++) {
-            // determine the used rules for each column and its hazards
-            const rules: ContexTableRule[] = [];
-            let hazards: string[] = [];
-            usedRules.forEach(rule => {
-                if (rule.column === currentColumn) {
-                    rules.push(rule);
-                    hazards = hazards.concat(rule.hazards);
+    protected determineResults() {
+        for (let i = 0; i < this.contexts.length; i++) {
+            const variables = this.contexts[i];
+            // determine the used rules
+            const usedRules = determineUsedRules(variables, this.rules, this.selectedControlAction.controller,
+                this.selectedControlAction.action, this.selectedType);
+            // save them and connext to the current context
+            this.resultsRules.push(usedRules);
+            this.resultRulesToContext.set(this.resultsRules.length - 1, i);
+
+            //TODO
+            if (this.logicalSimplification) {
+                /* const hazards = usedRules.map(rules => rules.map(rule => rule.hazards).toString());
+                if (this.resultToContext.has(hazards)) {
+                    this.resultToContext.get(hazards)?.push(i);
+                } else {
+                    this.resultToContext.set(hazards, [i]);
                 }
+                if (this.resultToResultRules.has(hazards)) {
+                    this.resultToResultRules.get(hazards)?.push(this.resultsRules.length);
+                } else {
+                    this.resultToResultRules.set(hazards, [this.resultsRules.length]);
+                }
+
+                this.resultsRules.push(usedRules); */
+            }
+        }
+    }
+
+    /**
+     * Creates the row instances.
+     * @returns the rows containing the possible contexts and their result columns values.
+     */
+    protected determineRows(): Row[] {
+        const rows: Row[] = [];
+
+        for (let i = 0; i < this.resultsRules.length; i++) {
+            const context = this.contexts[this.resultRulesToContext.get(i)!];
+            const results: { hazards: string[], rules: ContextTableRule[]; }[] = [];
+
+            this.resultsRules[i].forEach(resultRules => {
+                results.push({ hazards: resultRules.map(rule => rule.hazards.toString()), rules: resultRules });
             });
-            results.push({ hazards: hazards, rules: rules });
+
+            rows.push({ variables: context, results: results });
         }
 
-        return { variables: variables, results: results };
+        return rows;
     }
 
 
@@ -367,8 +400,8 @@ export class ContextTable extends Table {
      * @param determinedValues The already determined variable values.
      * @returns All possible value combinations of the given variables.
      */
-    protected createContexts(variableIndex: number, variableValues: ContexTableVariableValues[], determinedValues: ContexTableVariable[]): (ContexTableVariable[])[] {
-        let result: (ContexTableVariable[])[] = [];
+    protected createContexts(variableIndex: number, variableValues: ContextTableVariableValues[], determinedValues: ContextTableVariable[]): (ContextTableVariable[])[] {
+        let result: (ContextTableVariable[])[] = [];
         // load the values of the current recursion's variable
         const currentValues = variableValues[variableIndex].values;
         const lastVariable = variableIndex == variableValues.length - 1;
@@ -378,7 +411,7 @@ export class ContextTable extends Table {
             determinedValues.push({ name: variableValues[variableIndex].name, value: currentValues[valueIndex] });
             // if this was the last value to be added, a complete collection of values has been assembled
             if (lastVariable) {
-                const context: ContexTableVariable[] = [];
+                const context: ContextTableVariable[] = [];
                 determinedValues.forEach(variable => context.push(variable));
                 result.push(context);
             } else {

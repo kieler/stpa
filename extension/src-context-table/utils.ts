@@ -20,44 +20,43 @@ import { VNode } from "snabbdom";
 import { createSelector, createText, patch } from "./html";
 
 /** Type for control actions for the context table. */
-export class ContexTableControlAction {
+export class ContextTableControlAction {
     controller: string;
     action: string;
 }
 
 /** The variables for each system, needed for the context table. */
-export class ContexTableSystemVariables {
+export class ContextTableSystemVariables {
     system: string;
-    variables: ContexTableVariableValues[];
+    variables: ContextTableVariableValues[];
 }
 
 /** The possible values for a variable in the context table. */
-export class ContexTableVariableValues {
+export class ContextTableVariableValues {
     name: string;
     values: string[];
 }
 
 /** An instantation of a variable, needed for the contexts in the context table. */
-export class ContexTableVariable {
+export class ContextTableVariable {
     name: string;
     value: string;
 }
 
 /** A rule for the context table. */
-export class ContexTableRule {
+export class ContextTableRule {
     id: string;
-    controlAction: ContexTableControlAction;
+    controlAction: ContextTableControlAction;
     type: string;
-    variables: ContexTableVariable[];
+    variables: ContextTableVariable[];
     hazards: string[];
-    column?: number;
 }
 
 /** Data the context table expects from the language server. */
 export class ContextTableData {
-    rules: ContexTableRule[];
-    actions: ContexTableControlAction[];
-    systemVariables: ContexTableSystemVariables[];
+    rules: ContextTableRule[];
+    actions: ContextTableControlAction[];
+    systemVariables: ContextTableSystemVariables[];
 }
 
 /** Types of control actions. */
@@ -75,8 +74,8 @@ export class BigCell extends Cell {
 
 /** A row in the context table. */
 export class Row {
-    variables: ContexTableVariable[];
-    results: { hazards: string[], rules: ContexTableRule[]; }[];
+    variables: ContextTableVariable[];
+    results: { hazards: string[], rules: ContextTableRule[]; }[];
 }
 
 /**
@@ -84,7 +83,7 @@ export class Row {
  * @param controlactions A list containing controlactions that should be converted to strings.
  * @returns A list containing the resulting strings.
  */
-export function convertControlActionsToStrings(controlactions: ContexTableControlAction[]): string[] {
+export function convertControlActionsToStrings(controlactions: ContextTableControlAction[]): string[] {
     let result: string[] = [];
     controlactions.forEach(controlAction => {
         let combineStr = controlAction.controller + "." + controlAction.action;
