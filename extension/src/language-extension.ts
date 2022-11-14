@@ -26,14 +26,14 @@ import { UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
-import { SelectAction } from 'sprotty-protocol'
+import { SelectAction } from 'sprotty-protocol';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
     protected contextTable: ContextTablePanel;
     protected lastUri: string;
     /** Saves the last selected UCA in the context table. */
-    protected lastSelectedUCA: string;
+    protected lastSelectedUCA: string[];
 
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
@@ -42,7 +42,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.languageClient.onReady().then(() => {
             // handling of notifications regarding the context table
             this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
-            this.languageClient.onNotification('contextTable/highlight', (msg: {startLine: number, startChar: number, endLine: number, endChar: number}) => {
+            this.languageClient.onNotification('contextTable/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; }) => {
                 // highlight and reveal the given range in the editor
                 const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === this.lastUri);
                 if (editor) {
@@ -51,7 +51,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                     editor.selection = new vscode.Selection(startPosition, endPosition);
                     editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
                 }
-            })
+            });
         });
     }
 
@@ -85,17 +85,22 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
         // adds listener for mouse click on a cell
         this.context.subscriptions.push(
-            this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string } | undefined) => {
-                if (cell?.text && cell.text !== "No") {
+            this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string; } | undefined) => {
+                if (cell?.text === "No") {
+                    // delete selection in the diagram
+                    this.singleton?.dispatch(SelectAction.create({  deselectedElementsIDs: this.lastSelectedUCA }));
+                    this.lastSelectedUCA = [];
+                } else if (cell?.text) {
+                    const texts = cell.text.split(",");
                     // language server must determine the range of the selected uca in the editor in order to highlight it
-                    this.languageClient.sendNotification('contextTable/selected', cell.text);
+                    // when there are multiple UCAs in the cell only the first one is highlighted in the editor
+                    this.languageClient.sendNotification('contextTable/selected', texts[0]);
                     // highlight corresponding node in the diagram and maybe deselect the last selected one
-                    const lastSelected = this.lastSelectedUCA ? [this.lastSelectedUCA] : []
-                    this.singleton?.dispatch(SelectAction.create({selectedElementsIDs: [cell.text], deselectedElementsIDs: lastSelected}))
-                    this.lastSelectedUCA = cell.text
+                    this.singleton?.dispatch(SelectAction.create({ selectedElementsIDs: texts, deselectedElementsIDs: this.lastSelectedUCA }));
+                    this.lastSelectedUCA = texts;
                 }
             })
-        )
+        );
     }
 
     createWebView(identifier: SprottyDiagramIdentifier): SprottyWebview {

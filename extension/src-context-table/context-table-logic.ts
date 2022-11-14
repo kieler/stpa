@@ -49,7 +49,7 @@ export function determineColumnsForRules(variables: ContexTableVariable[], rules
                 column = 4;
             } else {
                 // rule does not apply for the selected control action type.
-                column = undefined
+                column = undefined;
             }
             rule.column = column;
             usedRules.push(rule);
