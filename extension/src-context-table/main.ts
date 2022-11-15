@@ -57,6 +57,18 @@ export class ContextTable extends Table {
     // determines which resultsRules index belongs to which context index
     protected resultRulesToContext = new Map<number, number>();
 
+    // determines which hazard combinations in the result columns belong to which resultRules indices
+    // needed to detect which rows can be merged
+    // protected resultToResultRules = new Map<string, number[]>();
+    // needed to map a resultRules to its hazard string
+    // protected resultRulesToHazards = new Map<number, string>();
+
+
+    // TODO: change these properties to options
+    // protected logicalSimplification = true;
+    // protected mergeSubsets = true;
+    // protected mergeNos = true;
+
     // used for highlighting selected element
     protected lastSelected: HTMLElement;
 
@@ -300,6 +312,25 @@ export class ContextTable extends Table {
             // save them and map to the current context
             this.resultsRules.push(usedRules);
             this.resultRulesToContext.set(this.resultsRules.length - 1, i);
+
+            // if (this.logicalSimplification) {
+            //     // determine the hazard text
+            //     let hazards = "";
+            //     usedRules.forEach(rules => {
+            //         const text = rules.map(rule => rule.hazards).toString();
+            //         if (text !== "") {
+            //             hazards += text + "; ";
+            //         }
+            //     });
+            //     // save the resultRules to which this hazard text belongs
+            //     this.resultRulesToHazards.set(this.resultsRules.length - 1, hazards);
+            //     // save which contexts belong to the hazard text
+            //     if (this.resultToResultRules.has(hazards)) {
+            //         this.resultToResultRules.get(hazards)?.push(this.resultsRules.length - 1);
+            //     } else {
+            //         this.resultToResultRules.set(hazards, [this.resultsRules.length - 1]);
+            //     }
+            // }
         }
     }
 
@@ -309,12 +340,58 @@ export class ContextTable extends Table {
      */
     protected determineRows(): Row[] {
         const rows: Row[] = [];
-        for (let i = 0; i < this.resultsRules.length; i++) {
-            // add the row
-            rows.push(this.createRowInstance(i));
-        }
+
+        // if (!this.logicalSimplification) {
+            // go through the save results and create a row for each
+            for (let i = 0; i < this.resultsRules.length; i++) {
+                // add the row
+                rows.push(this.createRowInstance(i));
+            }
+        // } else {
+            // do logical simplification
+            // for (let i = 0; i < this.resultsRules.length; i++) {
+                // const hazards = this.resultRulesToHazards.get(i)!;
+                // const indices = this.resultToResultRules.get(hazards);
+                // if (indices?.length === 1 || !this.merge(hazards, i, indices!)) {
+                    // no simplification
+                    // add the row
+                    // rows.push(this.createRowInstance(i));
+                // } else {
+
+                // }
+            // }
+        // }
+
         return rows;
     }
+
+    // protected merge(hazards: string, resultRulesIndex: number, indices: number[]): boolean {
+    //     if (hazards === "") {
+    //         return this.mergeNos;
+    //     } else {
+    //         // TODO: this is currently not correct, it does not suffice that all values of one variables occur. all other variables must have the same value in all contexts. maybe just check the rules for missing/ANY variables
+    //         let found = false;
+    //         // get the contexts for which the hazards string is equal
+    //         const contexts = this.contexts.filter((_, index) => indices.includes(index));
+    //         // go through all variables
+    //         for (let i = 0; i < this.currentVariables.length && !found; i++) {
+    //             let mergeable = true;
+    //             const currentVariable = this.currentVariables[i];
+    //             // collect the corresponding variables in the contexts
+    //             const contextsVariable = contexts.map(context => context.find(variable => variable.name === currentVariable.name));
+    //             // go through all possible values for the variable and check whether one of the context variables has this value
+    //             for (let valueIndex = 0; valueIndex < currentVariable.values.length && mergeable; valueIndex++) {
+    //                 const currentValue = currentVariable.values[valueIndex];
+    //                 mergeable = contextsVariable.find(variable => variable?.value === currentValue) !== undefined;
+    //             }
+    //             // if all values of the variable occur, the rows can be merged
+    //             if (mergeable) {
+    //                 found = true;
+    //             }
+    //         }
+    //         return found;
+    //     }
+    // }
 
     /**
      * Creates a row instance based on the {@code resultRulesIndex}. 
