@@ -30,10 +30,10 @@ pre {
     font-family: var(--vscode-font-family);
 }
 
-.context-table {
+.contextTable {
     overflow-y: scroll;
     /* TODO: adjust to monitor */
-    height: 1000px;
+    height: calc(100vh - 125px);
 }
 
 .contextTable .focused .context-variable {
