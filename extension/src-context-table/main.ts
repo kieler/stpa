@@ -20,7 +20,7 @@ import { Table } from '@kieler/table-webview/lib/table';
 import { SendContextTableDataAction } from './actions';
 import { createHeaderElement, createHeaderRow, createRow, createTable, createTHead, patch } from './html';
 import {
-    addSelector, addText, BigCell, ContextTableControlAction, convertControlActionsToStrings, replaceSelector, ContextTableRule, ContextTableSystemVariables,
+    addSelector, addText, ContextCell, ContextTableControlAction, convertControlActionsToStrings, replaceSelector, ContextTableRule, ContextTableSystemVariables,
     Type, ContextTableVariable, ContextTableVariableValues, Row
 } from './utils';
 import { VNode } from "snabbdom";
@@ -56,17 +56,6 @@ export class ContextTable extends Table {
     protected resultsRules: ContextTableRule[][][] = [];
     // determines which resultsRules index belongs to which context index
     protected resultRulesToContext = new Map<number, number>();
-
-
-
-    // protected resultToContext = new Map<string[], number[]>();
-    // protected resultToResultRules = new Map<string[], number[]>();
-
-
-    // TODO: change these properties to options
-    protected logicalSimplification = true;
-    protected mergeSubsets = true;
-    protected mergeNos = true;
 
     // used for highlighting selected element
     protected lastSelected: HTMLElement;
@@ -308,26 +297,9 @@ export class ContextTable extends Table {
             // determine the used rules
             const usedRules = determineUsedRules(variables, this.rules, this.selectedControlAction.controller,
                 this.selectedControlAction.action, this.selectedType);
-            // save them and connext to the current context
+            // save them and map to the current context
             this.resultsRules.push(usedRules);
             this.resultRulesToContext.set(this.resultsRules.length - 1, i);
-
-            //TODO
-            if (this.logicalSimplification) {
-                /* const hazards = usedRules.map(rules => rules.map(rule => rule.hazards).toString());
-                if (this.resultToContext.has(hazards)) {
-                    this.resultToContext.get(hazards)?.push(i);
-                } else {
-                    this.resultToContext.set(hazards, [i]);
-                }
-                if (this.resultToResultRules.has(hazards)) {
-                    this.resultToResultRules.get(hazards)?.push(this.resultsRules.length);
-                } else {
-                    this.resultToResultRules.set(hazards, [this.resultsRules.length]);
-                }
-
-                this.resultsRules.push(usedRules); */
-            }
         }
     }
 
@@ -337,19 +309,27 @@ export class ContextTable extends Table {
      */
     protected determineRows(): Row[] {
         const rows: Row[] = [];
-
         for (let i = 0; i < this.resultsRules.length; i++) {
-            const context = this.contexts[this.resultRulesToContext.get(i)!];
-            const results: { hazards: string[], rules: ContextTableRule[]; }[] = [];
-
-            this.resultsRules[i].forEach(resultRules => {
-                results.push({ hazards: resultRules.map(rule => rule.hazards.toString()), rules: resultRules });
-            });
-
-            rows.push({ variables: context, results: results });
+            // add the row
+            rows.push(this.createRowInstance(i));
         }
-
         return rows;
+    }
+
+    /**
+     * Creates a row instance based on the {@code resultRulesIndex}. 
+     * @param resultRulesIndex Determines which resultsRule should be used.
+     * @returns a row instance with the context and the result determines by {@code resultRulesIndex}.
+     */
+    protected createRowInstance(resultRulesIndex: number): Row {
+        // get the context
+        const context = this.contexts[this.resultRulesToContext.get(resultRulesIndex)!];
+        // get the hazards and rules
+        const results: { hazards: string[], rules: ContextTableRule[]; }[] = [];
+        this.resultsRules[resultRulesIndex].forEach(resultRules => {
+            results.push({ hazards: resultRules.map(rule => rule.hazards.toString()), rules: resultRules });
+        });
+        return { variables: context, results: results };
     }
 
 
@@ -364,7 +344,7 @@ export class ContextTable extends Table {
         const placeholderRow = document.createElement("tr");
         table.appendChild(placeholderRow);
 
-        let cells: BigCell[] = [];
+        let cells: ContextCell[] = [];
         if (row.variables.length > 0) {
             // values of the context variables
             cells = row.variables.map(variable => { return { cssClass: "context-variable", value: variable.value, colSpan: 1 }; });

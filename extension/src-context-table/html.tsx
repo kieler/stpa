@@ -17,7 +17,7 @@
 
 
 import { attributesModule, Classes, classModule, eventListenersModule, init, jsx, propsModule, styleModule, VNode } from 'snabbdom';
-import { BigCell } from './utils';
+import { ContextCell } from './utils';
 
 /** Needed to update the html document */
 export const patch = init([
@@ -125,7 +125,7 @@ export function createTHead(headers: VNode[]) {
  * @param values The values of the row in the correct ordering.
  * @returns a row of a table as VNode.
  */
-export function createRow(id: string, values: BigCell[]): VNode {
+export function createRow(id: string, values: ContextCell[]): VNode {
     const children: VNode[] = [];
     for (const val of values) {
         const classes: Classes = {};

@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { BigCell, ContextTableRule, Type, ContextTableVariable, ContextTableVariableValues, Row } from "./utils";
+import { ContextCell, ContextTableRule, Type, ContextTableVariable, ContextTableVariableValues, Row } from "./utils";
 
 /**
 /**
@@ -31,7 +31,7 @@ export function determineUsedRules(variables: ContextTableVariable[], rules: Con
     selectedAction: string, selectedType: number): ContextTableRule[][] {
     // keeps track of the used rules, whereby the index determines the column
     let usedRules: ContextTableRule[][] = [[], [], [], []];
-    switch(selectedType) {
+    switch (selectedType) {
         case Type.NOT_PROVIDED:
             usedRules = [[]];
             break;
@@ -42,7 +42,7 @@ export function determineUsedRules(variables: ContextTableVariable[], rules: Con
             usedRules = [[], [], [], []];
             break;
         default:
-            console.log("Something went wrong. An undefined control action type is selected.")
+            console.log("Something went wrong. An undefined control action type is selected.");
     }
     // determine the used rules
     rules.forEach(rule => {
@@ -73,8 +73,8 @@ export function determineUsedRules(variables: ContextTableVariable[], rules: Con
  * @param results The hazards and rules for the result columns.
  * @returns The cells for the "Hazardous?"-column.
  */
-export function createResults(results: { hazards: string[], rules: ContextTableRule[]; }[]): BigCell[] {
-    const cells: BigCell[] = [];
+export function createResults(results: { hazards: string[], rules: ContextTableRule[]; }[]): ContextCell[] {
+    const cells: ContextCell[] = [];
     // keeps track on how many neihbouring columns have no rule applied
     let noAppliedRuleCounter: number = 0;
     // go through all of the hazardous columns

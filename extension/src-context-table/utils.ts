@@ -66,8 +66,8 @@ export enum Type {
     BOTH
 }
 
-/** A cell in the context table. */
-export class BigCell extends Cell {
+/** A cell in the context table. Can span mutliple columns. */
+export class ContextCell extends Cell {
     colSpan: number;
     title?: string;
 }
