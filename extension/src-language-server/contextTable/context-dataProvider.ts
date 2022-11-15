@@ -19,7 +19,7 @@ import { LangiumDocument } from "langium";
 import { StpaServices } from "../stpa-module";
 import { Model } from "../generated/ast";
 import { Range, URI } from "vscode-languageserver";
-import { ContextTableData, ContexTableControlAction, ContexTableRule, ContexTableSystemVariables, ContexTableVariable, ContexTableVariableValues } from "../../src-context-table/utils";
+import { ContextTableData, ContextTableControlAction, ContextTableRule, ContextTableSystemVariables, ContextTableVariable, ContextTableVariableValues } from "../../src-context-table/utils";
 
 export class ContextTableProvider {
     protected services: StpaServices;
@@ -60,9 +60,9 @@ export class ContextTableProvider {
         const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
-        let actions: ContexTableControlAction[] = [];
-        let variables: ContexTableSystemVariables[] = [];
-        let rules: ContexTableRule[] = [];
+        let actions: ContextTableControlAction[] = [];
+        let variables: ContextTableSystemVariables[] = [];
+        let rules: ContextTableRule[] = [];
 
         // collect control actions and variables
         model.controlStructure.nodes.forEach(systemComponent => {
@@ -73,7 +73,7 @@ export class ContextTableProvider {
                 });
             });
             // variables of the current system component
-            const variableValues: ContexTableVariableValues[] = [];
+            const variableValues: ContextTableVariableValues[] = [];
             systemComponent.variables.forEach(variable => {
                 variableValues.push({ name: variable.name, values: variable.values });
             });
@@ -83,7 +83,7 @@ export class ContextTableProvider {
         model.rules.forEach(rule => {
             rule.contexts.forEach(context => {
                 // determine context variables
-                const contextVariables: ContexTableVariable[] = [];
+                const contextVariables: ContextTableVariable[] = [];
                 for (let i = 0; i < context.values.length; i++) {
                     if (context.vars[i].ref?.name) {
                         contextVariables.push({ name: context.vars[i].ref!.name, value: context.values[i] });
