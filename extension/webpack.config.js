@@ -51,17 +51,11 @@ const lsConfig = {
     },
 };
 
+
 /**@type {import('webpack').Configuration}*/
-const webviewConfig = {
+const commonWebConfig = {
     target: 'web',
-
-    entry: path.resolve(__dirname, 'src-webview/main.ts'),
-    output: {
-		filename: 'webview.js',
-        path: path.resolve(__dirname, 'pack'),
-    },
     devtool: 'eval-source-map',
-
     resolve: {
         extensions: ['.ts', '.tsx', '.js']
     },
@@ -95,5 +89,27 @@ const webviewConfig = {
     }
 };
 
+/**@type {import('webpack').Configuration}*/
+const diagramWebviewConfig = {
+    ...commonWebConfig,
+    entry: path.resolve(__dirname, 'src-webview/main.ts'),
+    output: {
+		filename: 'webview.js',
+        path: path.resolve(__dirname, 'pack'),
+    }
+};
 
-module.exports = [vscodeConfig, webviewConfig, lsConfig];
+/**@type {import('webpack').Configuration}*/
+const contextTableConfig = {
+    ...commonWebConfig,
+    entry: path.resolve(__dirname, 'src-context-table/main.ts'),
+    output: {
+		filename: 'context-table-panel.js',
+        path: path.resolve(__dirname, 'pack')
+    },
+
+    externals: {vscode: "commonjs vscode"}
+};
+
+
+module.exports = [vscodeConfig, lsConfig, diagramWebviewConfig, contextTableConfig];

@@ -56,6 +56,12 @@
                 "category": "STPA Diagram"
             },
             {
+                "command": "stpa.contextTable.open",
+                "title": "Show Context Tables",
+                "icon": "$(table)",
+                "category": "Context Table"
+            },
+            {
                 "command": "stpa.diagram.fit",
                 "title": "Fit to Screen",
                 "category": "STPA Diagram"
@@ -81,6 +87,14 @@
                 {
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'"
+                },     
+                {
+                    "command": "stpa.contextTable.open",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "stpa.contextTable.open",
+                    "when": "editorLangId == 'stpa'"
                 },
                 {
                     "command": "stpa.diagram.fit",
@@ -104,6 +118,11 @@
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
+                },     
+                {
+                    "command": "stpa.contextTable.open",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
                 }
             ],
             "editor/title": [
@@ -111,11 +130,21 @@
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
+                },     
+                {
+                    "command": "stpa.contextTable.open",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
                 }
             ],
             "explorer/context": [
                 {
                     "command": "stpa.diagram.open",
+                    "when": "resourceExtname == '.stpa'",
+                    "group": "navigation"
+                }, 
+                {
+                    "command": "stpa.contextTable.open",
                     "when": "resourceExtname == '.stpa'",
                     "group": "navigation"
                 }
@@ -150,7 +179,8 @@
     },
     "activationEvents": [
         "onLanguage:stpa",
-        "onCommand:stpa.diagram.open"
+        "onCommand:stpa.diagram.open",
+        "onCommand:stpa.contextTable.open"
     ],
     "files": [
         "lib",
@@ -168,7 +198,9 @@
         "reflect-metadata": "^0.1.13",
         "feather-icons": "^4.28.0",
         "sprotty": "~0.11.1",
-        "sprotty-vscode-webview": "^0.2.0"
+        "sprotty-vscode-webview": "^0.2.0",
+        "@kieler/table-webview": "^0.0.1",
+        "snabbdom": "^3.5.1"
       },
     "devDependencies": {
         "@types/node": "^12.12.6",
@@ -194,7 +226,7 @@
         "langium:watch": "langium generate --watch",
         "lint": "eslint .",
         "build": "yarn run langium:generate && webpack --mode production",
-        "watch": "yarn run langium:watch && webpack --watch",
+        "watch": "webpack --watch",
         "package": "yarn run langium:generate && vsce package --yarn -o stpa-dsl.vsix",
         "vscode:prepublish": "yarn run build"
     }

@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2022 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -18,14 +18,18 @@
 import { startLanguageServer } from 'langium';
 import { addDiagramHandler } from 'langium-sprotty';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
+import { addContextTableHandler } from './contextTable/message-handler';
 import { createStpaServices } from './stpa-module';
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
 
 // Inject the language services
-const { shared } = createStpaServices({ connection });
+const { shared, states } = createStpaServices({ connection });
 
 // Start the language server with the language-specific services
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
+
+addContextTableHandler(connection, states);
+

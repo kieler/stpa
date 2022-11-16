@@ -18,7 +18,7 @@
 import { AstNode } from "langium";
 import {
     isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
-    isLoss, Hazard, SystemConstraint
+    isLoss, Hazard, SystemConstraint, isContext
 } from "./generated/ast";
 import { STPAAspect } from "./stpa-model";
 import { STPANode } from "./stpa-interfaces";
@@ -73,7 +73,7 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
             if (node.refs.ref) { targets.push(node.refs.ref); }
         } else if (isLossScenario(node) && node.uca && node.uca.ref) {
             targets.push(node.uca.ref);
-        } else if ((isUCA(node) || isLossScenario(node)) && node.list) {
+        } else if ((isUCA(node) || isContext(node) || isLossScenario(node)) && node.list) {
             const refs = node.list.refs.map(x => x.ref);
             for (const ref of refs) {
                 if (ref) { targets.push(ref); }
@@ -97,7 +97,7 @@ export function getAspect(node: AstNode): STPAAspect {
         return STPAAspect.HAZARD;
     } else if (isSystemConstraint(node)) {
         return STPAAspect.SYSTEMCONSTRAINT;
-    } else if (isUCA(node)) {
+    } else if (isUCA(node) || isContext(node)) {
         return STPAAspect.UCA;
     } else if (isResponsibility(node)) {
         return STPAAspect.RESPONSIBILITY;

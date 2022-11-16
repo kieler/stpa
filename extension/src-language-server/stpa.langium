@@ -23,11 +23,23 @@ entry Model:
     ('SystemConstraints' systemLevelConstraints+=SystemConstraint*)?
     ('ControlStructure' controlStructure=Graph)?
     ('Responsibilities' responsibilities+=Resps*)?
-    ('UCAs' allUCAs+=ActionUCAs*)?
+    (('UCAs' allUCAs+=ActionUCAs*) | ('Context-Table' rules+=Rule*))?
     ('ControllerConstraints' controllerConstraints+=ContConstraint*)?
     ('LossScenarios' scenarios+=LossScenario*)?
     ('SafetyRequirements' safetyCons+=SafetyConstraint*)?;
 
+Rule:
+    name=ID '{'
+        'controlAction:' system=[Node] '.' action=[Command]
+        'type:' type=('not-provided' | 'provided' | 'too-late' | 'too-early' | 'wrong-time' | 'applied-too-long' | 'stopped-too-soon')
+        'contexts:' '{'
+            contexts+=Context*
+        '}'
+    '}';
+
+Context:
+    name=ID '['vars+=[Variable] '=' values+=QualifiedName (',' vars+=[Variable] '=' values+=QualifiedName)*']' 
+    list=HazardList;
 
 Loss:
     name=ID description=STRING;
@@ -63,7 +75,7 @@ Node:
     '}'; */
 
 Variable:
-    name=ID':' '['values+=STRING (',' values+=STRING)*']';
+    name=ID':' '['values+=QualifiedName (',' values+=QualifiedName)*']';
 
 VE:
     '[' comms+=Command (',' comms+=Command)* ']' '->' target=[Node];
@@ -107,6 +119,8 @@ SafetyConstraint:
 SubID returns string:
     ID('.'INT)*;
 
+QualifiedName returns string:
+    ID('-'ID)*;
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;

@@ -17,8 +17,10 @@
 
 import { Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ContConstraint, Hazard, HazardList, Loss, Model, Node, 
-    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel } from './generated/ast';
+import {
+    ContConstraint, Hazard, HazardList, Loss, Model, Node,
+    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel, Context, Rule
+} from './generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
 
@@ -41,13 +43,14 @@ export class StpaValidationRegistry extends ValidationRegistry {
             Responsibility: validator.checkResponsibility,
             ContConstraint: validator.checkControllerConstraints,
             HazardList: validator.checkHazardList,
-            Node: validator.checkNode
+            Node: validator.checkNode,
+            Context: validator.checkContext
         };
         this.register(checks, validator);
     }
 }
 
-type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command;
+type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context;
 type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint;
 
 /**
@@ -67,13 +70,15 @@ export class StpaValidator {
         const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
         const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
         const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1);
-        
+        const contexts = model.rules?.map(rule => rule.contexts).flat(1);
+
         // collect elements that have an identifier and should be referenced
         let allElements: elementWithName[] = [
             ...model.losses,
             ...hazards,
             ...sysCons,
             ...ucas,
+            ...contexts
         ];
 
         // collect all elements that have a reference list
@@ -82,6 +87,7 @@ export class StpaValidator {
             ...sysCons,
             ...responsibilities,
             ...ucas.map(uca => uca.list),
+            ...contexts.map(context => context.list),
             ...model.controllerConstraints,
             ...model.scenarios.map(scenario => scenario.list)
         ];
@@ -97,6 +103,22 @@ export class StpaValidator {
         // add missing elements that have an ID to check uniques of all IDs
         allElements = allElements.concat(responsibilities, model.controllerConstraints, model.scenarios, model.safetyCons, model.controlStructure?.nodes/*, model.controlStructure?.edges*/);
         this.checkIDsAreUnique(allElements, accept);
+    }
+
+    /**
+     * Validates the variable values of {@code context}.
+     * @param context The Context to check.
+     * @param accept 
+     */
+    checkContext(context: Context, accept: ValidationAcceptor): void {
+        for (let i = 0; i < context.vars.length; i++) {
+            const variable = context.vars[i];
+            const variableValues = variable.ref?.values;
+            // the value of the variable in the context should be one of the values that are stated in the definition of the variable
+            if (!variableValues?.includes(context.values[i])) {
+                accept('error', 'This variable has an invalid value.', { node: context, range: variable.$refNode.range });
+            }
+        }
     }
 
     /**
@@ -180,7 +202,7 @@ export class StpaValidator {
         for (const node of allElements) {
             let name = node?.name;
             if (name !== "") {
-                if(names.has(name)) {
+                if (names.has(name)) {
                     accept('error', 'All identifiers must be unique.', { node: node, property: 'name' });
                 } else {
                     names.add(name);
@@ -200,50 +222,50 @@ export class StpaValidator {
         if (lineCount === undefined) {
             lineCount = 0;
         }
-        const start: Position = {line:lineCount, character:0};
-        const end: Position = {line:lineCount + 1, character:0};
+        const start: Position = { line: lineCount, character: 0 };
+        const end: Position = { line: lineCount + 1, character: 0 };
         let text = "The following aspects are missing:\n";
         let missing = false;
 
         // check which aspects of STPA are not defined
         if (!model.losses || model.losses?.length === 0) {
-            text+="Losses\n";
+            text += "Losses\n";
             missing = true;
         }
         if (!model.hazards || model.hazards?.length === 0) {
-            text+="Hazards\n";
+            text += "Hazards\n";
             missing = true;
         }
         if (!model.systemLevelConstraints || model.systemLevelConstraints?.length === 0) {
-            text+="SystemConstraints\n";
+            text += "SystemConstraints\n";
             missing = true;
         }
         if (!model.controlStructure || model.controlStructure?.nodes?.length === 0) {
-            text+="ControlStructure\n";
+            text += "ControlStructure\n";
             missing = true;
         }
         if (!model.responsibilities || model.responsibilities?.length === 0) {
-            text+="Responsibilities\n";
+            text += "Responsibilities\n";
             missing = true;
         }
         if (!model.allUCAs || model.allUCAs?.length === 0) {
-            text+="UCAs\n";
+            text += "UCAs\n";
             missing = true;
         }
         if (!model.controllerConstraints || model.controllerConstraints?.length === 0) {
-            text+="ControllerConstraints\n";
+            text += "ControllerConstraints\n";
             missing = true;
         }
         if (!model.scenarios || model.scenarios?.length === 0) {
-            text+="LossScenarios\n";
+            text += "LossScenarios\n";
             missing = true;
         }
         if (!model.safetyCons || model.safetyCons?.length === 0) {
-            text+="SafetyRequirements\n";
+            text += "SafetyRequirements\n";
             missing = true;
         }
         if (missing) {
-            accept('info', text, { node: model, range: {start: start, end: end} });
+            accept('info', text, { node: model, range: { start: start, end: end } });
         }
     }
 
@@ -253,17 +275,17 @@ export class StpaValidator {
      * @param list The list of the references to check.
      * @param accept 
      */
-     private checkReferenceListForDuplicates(main: elementWithRefs, list: Reference<elementWithName>[], accept: ValidationAcceptor): void {
+    private checkReferenceListForDuplicates(main: elementWithRefs, list: Reference<elementWithName>[], accept: ValidationAcceptor): void {
         const names = new Set();
         for (let i = 0; i < list.length; i++) {
             const ref = list[i];
             const element = ref.ref;
             // needs to be checked in order to get the name
-            if (element){
+            if (element) {
                 let name = element.name;
                 if (name !== "") {
-                    if(names.has(name)) {
-                        accept('warning', 'Duplicate reference.', { node: main, property: 'refs', index: i});
+                    if (names.has(name)) {
+                        accept('warning', 'Duplicate reference.', { node: main, property: 'refs', index: i });
                     } else {
                         names.add(name);
                     }
@@ -305,7 +327,6 @@ export class StpaValidator {
                     }
                 }
                 if (!found) {
-                    //TODO: should be in the scope provider?
                     accept('error', 'SubHazards are only allowed to reference losses the parent references too', { node: hazard, property: 'refs', index: i });
                 }
             }

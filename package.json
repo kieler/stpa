@@ -19,6 +19,7 @@
       "typescript": "^4.3.2"
     },
     "workspaces": [
-      "extension"
+      "extension",
+      "table-webview"
     ]
   }

@@ -81,3 +81,4 @@ C2 "Crew must not provide the BSCU Power Off control action when Anti-Skid funct
 LossScenarios
 Scenario1 for UCA1 "Abnormal WBS behavior occurs. Crew does not power off ..." [H2.1]
 Scenario2 "Insufficient braking is applied due to ..." [H2.1]
+

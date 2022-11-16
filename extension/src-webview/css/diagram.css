@@ -381,7 +381,6 @@
     stroke: black;
 }
 
-
 .sprotty-node.selected {
     stroke-width: 2;
     stroke: var(--vscode-button-hover-background);
@@ -460,4 +459,10 @@ body[class='vscode-light'] .sprotty-edge-arrow {
 .sprotty-hidden {
     width: 0px;
     height: 0px;
+}
+
+
+.node-selected {
+    stroke-width: 5;
+    stroke: var(--vscode-button-hover-background);
 }

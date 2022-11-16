@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2022 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -28,6 +28,7 @@ import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 import { URI } from 'vscode-uri';
 import { DiagramOptions } from 'sprotty-protocol';
 import { StpaSynthesisOptions } from './options/synthesis-options';
+import { ContextTableProvider } from './contextTable/context-dataProvider';
 
 
 /**
@@ -46,8 +47,11 @@ export type StpaAddedServices = {
         LayoutConfigurator: ILayoutConfigurator;
     },
     options: {
-        StpaSynthesisOptions: StpaSynthesisOptions;
-    };
+        StpaSynthesisOptions: StpaSynthesisOptions
+    },
+    contextTable: {
+        ContextTableProvider: ContextTableProvider
+    }
 };
 
 /**
@@ -81,6 +85,9 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
     },
     options: {
         StpaSynthesisOptions: () => new StpaSynthesisOptions()
+    },
+    contextTable: {
+        ContextTableProvider: services => new ContextTableProvider(services)
     }
 };
 

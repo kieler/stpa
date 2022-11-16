@@ -19,7 +19,7 @@ import { AstNode } from 'langium';
 import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty';
 import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
 import {
-    isContConstraint, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
+    isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
     isSystemConstraint, isUCA, Model, Node
 } from './generated/ast';
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
@@ -73,6 +73,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         stpaChildren = stpaChildren.concat([
             ...filteredModel.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
             ...filteredModel.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
+            ...filteredModel.rules?.map(rule => rule.contexts.map(context => this.generateAspectWithEdges(context, args))).flat(2),
             ...filteredModel.controllerConstraints?.map(c => this.generateAspectWithEdges(c, args)).flat(1),
             ...filteredModel.scenarios?.map(s => this.generateAspectWithEdges(s, args)).flat(1),
             ...filteredModel.safetyCons?.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
@@ -269,7 +270,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // node must be created first in order to access the id when creating the edges
         const stpaNode = this.generateSTPANode(node, args);
         // uca nodes need to save their control action in order to be able to group them by the actions
-        if (isUCA(node) && node.$container.system.ref) {
+        if ((isUCA(node) || isContext(node)) && node.$container.system.ref) {
             stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name
         }
         const elements: SModelElement[] = this.generateEdgesForSTPANode(node, args);
@@ -339,7 +340,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     private generateSTPANode(node: AstNode, args: GeneratorContext<Model>): STPANode {
         const idCache = args.idCache;
         if (isLoss(node) || isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node)
-            || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node)) {
+            || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isContext(node)) {
             const nodeId = idCache.uniqueId(node.name, node);
             // determines the hierarchy level for subcomponents. For other components the value is 0.
             let lvl = 0;
@@ -366,21 +367,40 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, args)));
             }
 
-            return {
-                type: STPA_NODE_TYPE,
-                id: nodeId,
-                aspect: getAspect(node),
-                description: node.description,
-                hierarchyLvl: lvl,
-                children: children,
-                layout: 'stack',
-                layoutOptions: {
-                    paddingTop: 10.0,
-                    paddingBottom: 10.0,
-                    paddngLeft: 10.0,
-                    paddingRight: 10.0
-                }
-            };
+            if (isContext(node)) {
+                // context UCAs have no description
+                return {
+                    type: STPA_NODE_TYPE,
+                    id: nodeId,
+                    aspect: getAspect(node),
+                    description: "",
+                    hierarchyLvl: lvl,
+                    children: children,
+                    layout: 'stack',
+                    layoutOptions: {
+                        paddingTop: 10.0,
+                        paddingBottom: 10.0,
+                        paddngLeft: 10.0,
+                        paddingRight: 10.0
+                    }
+                };
+            } else {
+                return {
+                    type: STPA_NODE_TYPE,
+                    id: nodeId,
+                    aspect: getAspect(node),
+                    description: node.description,
+                    hierarchyLvl: lvl,
+                    children: children,
+                    layout: 'stack',
+                    layoutOptions: {
+                        paddingTop: 10.0,
+                        paddingBottom: 10.0,
+                        paddngLeft: 10.0,
+                        paddingRight: 10.0
+                    }
+                };
+            }
         } else {
             throw new Error("generateSTPANode method should only be called with an STPA component");
         }

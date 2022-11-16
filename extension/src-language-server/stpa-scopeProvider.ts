@@ -15,10 +15,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription, 
-    EMPTY_SCOPE } from "langium";
-import { isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard, 
-    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario} from "./generated/ast";
+import {
+    DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription,
+    EMPTY_SCOPE
+} from "langium";
+import {
+    isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard,
+    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, isRule, Rule, Variable, isContext, Context
+} from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -29,6 +33,8 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     private HAZARD_TYPE = Hazard;
     private SYS_CONSTRAINT_TYPE = SystemConstraint;
     private UCA_TYPE = UCA;
+    private CONTEXT_TYPE = Context;
+    private VAR_TYPE = Variable;
 
     constructor(services: StpaServices) {
         super(services);
@@ -44,7 +50,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         }
         if (precomputed && model) {
             // determine the scope for the different aspects & reference types
-            if ((isContConstraint(node) || isLossScenario(node)) && referenceType === this.UCA_TYPE) {
+            if ((isContConstraint(node) || isLossScenario(node)) && (referenceType === this.UCA_TYPE || referenceType === this.CONTEXT_TYPE)) {
                 return this.getUCAs(model, precomputed);
             } else if (isHazardList(node) && isLossScenario(node.$container) && node.$container.uca && referenceType === this.HAZARD_TYPE) {
                 return this.getUCAHazards(node.$container, model, precomputed);
@@ -52,8 +58,10 @@ export class StpaScopeProvider extends DefaultScopeProvider {
                 return this.getSystemConstraints(model, precomputed);
             } else if ((isSystemConstraint(node) || isHazardList(node)) && referenceType === this.HAZARD_TYPE) {
                 return this.getHazards(model, precomputed);
-            } else if (isActionUCAs(node) && referenceType === this.CA_TYPE) {
+            } else if ((isActionUCAs(node) || isRule(node)) && referenceType === this.CA_TYPE) {
                 return this.getCAs(node, precomputed);
+            } else if (isContext(node) && referenceType === this.VAR_TYPE) {
+                return this.getVars(node, precomputed);
             } else {
                 return this.getStandardScope(node, referenceType, precomputed);
             }
@@ -72,7 +80,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     private getStandardScope(node: AstNode, referenceType: string, precomputed: PrecomputedScopes): Scope {
         let currentNode: AstNode | undefined = node;
         // responsibilities and UCAs should have references to the nodes in the control structure
-        if ((isResps(node) || isActionUCAs(node)) && referenceType === Node) {
+        if ((isResps(node) || isActionUCAs(node) || isRule(node)) && referenceType === Node) {
             const model = node.$container as Model;
             currentNode = model.controlStructure;
         }
@@ -101,7 +109,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @param precomputed Precomputed Scope of the document.
      * @returns Scope containing all VerticalEdges.
      */
-    private getCAs(node: ActionUCAs, precomputed: PrecomputedScopes): Scope {
+    private getCAs(node: ActionUCAs | Rule, precomputed: PrecomputedScopes): Scope {
         let allDescriptions: AstNodeDescription[] = [];
         let actionLists = node.system.ref?.actions;
 
@@ -109,6 +117,26 @@ export class StpaScopeProvider extends DefaultScopeProvider {
             for (const actionList of actionLists) {
                 let currentNode: AstNode | undefined = actionList;
                 const descs = this.getDescriptions(currentNode, this.CA_TYPE, precomputed);
+                allDescriptions = allDescriptions.concat(descs);
+            }
+        }
+        return this.descriptionsToScope(allDescriptions);
+    }
+
+    /**
+     * Creates scope containing the variables of the system component referenced by {@code node}.
+     * @param node Current Rule.
+     * @param precomputed Precomputed Scope of the document.
+     * @returns Scope containing all variables.
+     */
+    private getVars(node: Context, precomputed: PrecomputedScopes): Scope {
+        let allDescriptions: AstNodeDescription[] = [];
+        let varLists = node.$container.system.ref?.variables;
+
+        if (varLists) {
+            for (const varList of varLists) {
+                let currentNode: AstNode | undefined = varList;
+                const descs = this.getDescriptions(currentNode, this.VAR_TYPE, precomputed);
                 allDescriptions = allDescriptions.concat(descs);
             }
         }
@@ -168,12 +196,16 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      */
     private getUCAs(model: Model, precomputed: PrecomputedScopes): Scope {
         let allDescriptions: AstNodeDescription[] = [];
-        const allUCAs = model.allUCAs;
-        for (const systemUCAs of allUCAs) {
-            let currentNode: AstNode | undefined = systemUCAs;
-            const descs = this.getDescriptions(currentNode, this.UCA_TYPE, precomputed);
+        // common UCAs
+        model.allUCAs.forEach(systemUCAs => {
+            const descs = this.getDescriptions(systemUCAs, this.UCA_TYPE, precomputed);
             allDescriptions = allDescriptions.concat(descs);
-        }
+        })
+        // context UCAs
+        model.rules.forEach(rule => {
+            const descs = this.getDescriptions(rule, this.CONTEXT_TYPE, precomputed);
+            allDescriptions = allDescriptions.concat(descs);
+        })
         return this.descriptionsToScope(allDescriptions);
     }
 

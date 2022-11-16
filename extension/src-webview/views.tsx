@@ -26,7 +26,8 @@ import { collectAllChildren } from './helper-methods';
 import { DISymbol } from './di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
 
-let selectedNode: SNode | undefined;
+/** Determines if path/aspect highlighting is currently on. */
+let highlighting: boolean;
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
@@ -42,7 +43,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).highlight;
+        const hidden = edge.type == STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const printEdge = colorStyle == "black & white";
@@ -54,7 +55,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == STPA_EDGE_TYPE && selectedNode && !(edge as STPAEdge).highlight;
+        const hidden = edge.type == STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
 
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
@@ -148,16 +149,16 @@ export class STPANodeView extends RectangularNodeView {
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = (selectedNode instanceof STPANode) && !node.highlight;
+        const hidden = highlighting && !node.highlight;
 
         return <g
             class-print-node={printNode}
             class-stpa-node={coloredNode || lessColoredNode} aspect={aspect}
             class-sprotty-node={sprottyNode}
             class-sprotty-port={node instanceof SPort}
-            class-mouseover={node.hoverFeedback} class-selected={node.selected}
+            class-mouseover={node.hoverFeedback}
             class-hidden={hidden}>
-            <g>{element}</g>
+            <g class-node-selected={node.selected}>{element}</g>
             {context.renderChildren(node)}
         </g>;
     }
@@ -195,7 +196,9 @@ export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
     render(model: Readonly<SGraph>, context: RenderingContext, args?: IRenderingArgs): VNode {
         let allNodes: SNode[] = [];
         collectAllChildren(model.children as SNode[], allNodes);
-        selectedNode = allNodes.find(node => node.selected);
+        highlighting = allNodes.find(node => {
+            return node instanceof STPANode && node.highlight
+        }) !== undefined;
 
         return super.render(model, context, args);
     }
