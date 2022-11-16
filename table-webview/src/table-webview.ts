@@ -79,7 +79,8 @@ export class TableWebview {
         const title = this.createTitle();
         const diagramPanel = vscode.window.createWebviewPanel('table', title, vscode.ViewColumn.Beside, {
             localResourceRoots: this.localResourceRoots,
-            enableScripts: true
+            enableScripts: true,
+            enableFindWidget: true
         });
         this.initializeWebview(diagramPanel.webview, title, headers);
         this.diagramPanel = diagramPanel;
@@ -104,10 +105,6 @@ export class TableWebview {
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, height=device-height">
                     <title>${title}</title>
-                    <link
-                        rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
-                        integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/"
-                        crossorigin="anonymous">
                 </head>
                 <body>
                     <div id="${this.identifier}_container" style="height: 100%;"></div>

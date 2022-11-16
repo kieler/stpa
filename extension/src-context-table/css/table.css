@@ -32,7 +32,6 @@ pre {
 
 .contextTable {
     overflow-y: scroll;
-    /* TODO: adjust to monitor */
     height: calc(100vh - 125px);
 }
 
