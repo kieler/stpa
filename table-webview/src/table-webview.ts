@@ -97,7 +97,6 @@ export class TableWebview {
      */
     async initializeWebview(webview: vscode.Webview, title: string, headers: string[]) {
         this.headers = headers
-        // TODO: We should not require an internet connection and link to an external web page for this to load properly - fontawesome has some nicer ways to be embedded into Typescript code.
         webview.html = `
             <!DOCTYPE html>
             <html lang="en">
