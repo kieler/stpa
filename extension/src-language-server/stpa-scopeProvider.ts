@@ -21,7 +21,7 @@ import {
 } from "langium";
 import {
     isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard,
-    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, isRule, Rule, Variable, isContext, Context
+    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, isRule, Rule, Variable, isContext, Context, isSafetyConstraint
 } from "./generated/ast";
 import { StpaServices } from "./stpa-module";
 
@@ -50,7 +50,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         }
         if (precomputed && model) {
             // determine the scope for the different aspects & reference types
-            if ((isContConstraint(node) || isLossScenario(node)) && (referenceType === this.UCA_TYPE || referenceType === this.CONTEXT_TYPE)) {
+            if ((isContConstraint(node) || isLossScenario(node) || isSafetyConstraint(node)) && (referenceType === this.UCA_TYPE || referenceType === this.CONTEXT_TYPE)) {
                 return this.getUCAs(model, precomputed);
             } else if (isHazardList(node) && isLossScenario(node.$container) && node.$container.uca && referenceType === this.HAZARD_TYPE) {
                 return this.getUCAHazards(node.$container, model, precomputed);

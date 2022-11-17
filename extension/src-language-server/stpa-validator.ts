@@ -248,7 +248,7 @@ export class StpaValidator {
             text += "Responsibilities\n";
             missing = true;
         }
-        if (!model.allUCAs || model.allUCAs?.length === 0) {
+        if ((!model.allUCAs || model.allUCAs?.length === 0) && (!model.rules || model.rules?.length === 0)) {
             text += "UCAs\n";
             missing = true;
         }

@@ -61,7 +61,7 @@ import { groupValue } from "./options/synthesis-options";
 export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
     if (node) {
         const targets: AstNode[] = [];
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) {
+        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node) || isSafetyConstraint(node)) {
             for (const ref of node.refs) {
                 if (ref?.ref) { targets.push(ref.ref); }
             }
@@ -69,8 +69,6 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
             if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
                 targets.push(node.$container);
             }
-        } else if (isSafetyConstraint(node)) {
-            if (node.refs.ref) { targets.push(node.refs.ref); }
         } else if (isLossScenario(node) && node.uca && node.uca.ref) {
             targets.push(node.uca.ref);
         } else if ((isUCA(node) || isContext(node) || isLossScenario(node)) && node.list) {
