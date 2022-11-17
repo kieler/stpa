@@ -17,7 +17,7 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, Range, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { CommonLanguageClient, LanguageClient, LanguageClientOptions, Range, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
@@ -37,9 +37,20 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
+        // user changed configuration settings
+        vscode.workspace.onDidChangeConfiguration(() => {
+            this.updateViews(this.languageClient, this.lastUri);
+            // sends configuration of stpa to the language server
+            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('stpa')));
+        });
+
+        // add auto formatting provider
         let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
+
         this.languageClient.onReady().then(() => {
+            // sends configuration of stpa to the language server
+            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('stpa')));
             // handling of notifications regarding the context table
             this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
             this.languageClient.onNotification('contextTable/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; }) => {
@@ -55,6 +66,20 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
     }
 
+    /**
+     * Collects the STPA options of the configuration settings and returns them as a list of their ids and values.
+     * @param configuration The workspace configuration options.
+     * @returns A list of the workspace options, whereby a option is represented with an id and its value.
+     */
+    protected collectOptions(configuration: vscode.WorkspaceConfiguration): { id: string, value: any; }[] {
+        const values: { id: string, value: any; }[] = [];
+        values.push({ id: "checkResponsibilitiesForConstraints", value: configuration.get("checkResponsibilitiesForConstraints") });
+        values.push({ id: "checkConstraintsForUCAs", value: configuration.get("checkConstraintsForUCAs") });
+        values.push({ id: "checkScenariosForUCAs", value: configuration.get("checkScenariosForUCAs") });
+        values.push({ id: "checkSafetyRequirementsForUCAs", value: configuration.get("checkSafetyRequirementsForUCAs") });
+        return values;
+    }
+
     protected registerCommands(): void {
         super.registerCommands();
         this.context.subscriptions.push(
@@ -65,6 +90,48 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 this.languageClient.sendNotification('contextTable/getData', this.lastUri);
             })
         );
+        // commands for toggling the provided validation checks
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async (...commandArgs: any[]) => {
+                this.createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints")
+            })
+        );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkConstraintsForUCAs', async (...commandArgs: any[]) => {
+                this.createQuickPickForWorkspaceOptions("checkConstraintsForUCAs")
+            })
+        );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkScenariosForUCAs', async (...commandArgs: any[]) => {
+                this.createQuickPickForWorkspaceOptions("checkScenariosForUCAs")
+            })
+        );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async (...commandArgs: any[]) => {
+                this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs")
+            })
+        );
+    }
+
+    /**
+     * Creates a quickpick containing the values "true" and "false". The selected value is set for the 
+     * configuration option determined by {@code id}.
+     * @param id The id of the configuration option that should be set.
+     */
+    protected createQuickPickForWorkspaceOptions(id: string) {
+        const quickPick = vscode.window.createQuickPick();
+        quickPick.items = [{ label: "true" }, { label: "false" }];
+        quickPick.onDidChangeSelection((selection) => {
+            if (selection[0]?.label === "true") {
+                vscode.workspace.getConfiguration('stpa').update(id, true);
+            } else {
+                vscode.workspace.getConfiguration('stpa').update(id, false);
+            }
+            quickPick.hide();
+        });
+        quickPick.onDidHide(() => quickPick.dispose());
+        quickPick.show();
+
     }
 
     protected getDiagramType(commandArgs: any[]): string | undefined {
@@ -88,7 +155,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string; } | undefined) => {
                 if (cell?.text === "No") {
                     // delete selection in the diagram
-                    this.singleton?.dispatch(SelectAction.create({  deselectedElementsIDs: this.lastSelectedUCA }));
+                    this.singleton?.dispatch(SelectAction.create({ deselectedElementsIDs: this.lastSelectedUCA }));
                     this.lastSelectedUCA = [];
                 } else if (cell?.text) {
                     const texts = cell.text.split(",");
@@ -158,23 +225,10 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         context.subscriptions.push(languageClient.start());
         // diagram is updated when file changes
         fileSystemWatcher.onDidChange((uri) => this.updateViews(languageClient, uri.toString()));
-
-        // languageClient.onReady().then(() => {
-        //     languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
-        //     languageClient.onNotification('contextTable/highlight', (msg: {startLine: number, startChar: number, endLine: number, endChar: number}) => {
-        //         const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === this.lastUri);
-        //         if (editor) {
-        //             const startPosition = new vscode.Position(msg.startLine, msg.startChar);
-        //             const endPosition = new vscode.Position(msg.endLine, msg.endChar);
-        //             editor.selection = new vscode.Selection(startPosition, endPosition);
-        //             editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
-        //         }
-        //     })
-        // });
         return languageClient;
     }
 
-    protected updateViews(languageClient: LanguageClient, uri: string) {
+    protected updateViews(languageClient: CommonLanguageClient, uri: string) {
         this.lastUri = uri;
         if (this.contextTable) {
             languageClient.sendNotification('contextTable/getData', uri);

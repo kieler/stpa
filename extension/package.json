@@ -45,6 +45,26 @@
                     "default": "fewer colors",
                     "enum": ["colorful", "standard", "black & white", "fewer colors"],
                     "enumDescription": ["Each STPA aspect has a different color", "All nodes have the standard color (blue)", "The diagrams are colored in black and white"]
+                },
+                "stpa.checkResponsibilitiesForConstraints": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check whether all system-level constraints are covered by a responsibility"
+                },
+                "stpa.checkConstraintsForUCAs": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check whether all UCAs are covered by constraints"
+                },
+                "stpa.checkScenariosForUCAs": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check whether all UCAs are covered by scenarios"
+                },
+                "stpa.checkSafetyRequirementsForUCAs": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check whether all UCAs are covered by safety requirements"
                 }
             }
         },
@@ -80,6 +100,26 @@
                 "command": "stpa.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "STPA Diagram"
+            },
+            {
+                "command": "stpa.checks.setCheckResponsibilitiesForConstraints",
+                "title": "Set the responsibilities for constraints check",
+                "category": "STPA Checks"
+            },
+            {
+                "command": "stpa.checks.checkConstraintsForUCAs",
+                "title": "Set the constraints for UCA check",
+                "category": "STPA Checks"
+            },
+            {
+                "command": "stpa.checks.checkScenariosForUCAs",
+                "title": "Set the scenarios for UCA check",
+                "category": "STPA Checks"
+            },
+            {
+                "command": "stpa.checks.checkSafetyRequirementsForUCAs",
+                "title": "Set the safety requirements for UCA check",
+                "category": "STPA Checks"
             }
         ],
         "menus": {
@@ -111,6 +151,22 @@
                 {
                     "command": "stpa.diagram.export",
                     "when": "stpa-diagram-focused"
+                },
+                {
+                    "command": "stpa.checks.setCheckResponsibilitiesForConstraints",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "stpa.checks.checkConstraintsForUCAs",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "stpa.checks.checkScenariosForUCAs",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "stpa.checks.checkSafetyRequirementsForUCAs",
+                    "when": "editorLangId == 'stpa'"
                 }
             ],
             "editor/context": [
@@ -122,6 +178,32 @@
                 {
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "submenu": "stpa.checks",
+                    "group": "checks"
+                }
+            ],
+            "stpa.checks": [
+                {
+                    "command": "stpa.checks.setCheckResponsibilitiesForConstraints",
+                    "title": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "stpa.checks.checkConstraintsForUCAs",
+                    "title": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "stpa.checks.checkScenariosForUCAs",
+                    "title": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "stpa.checks.checkSafetyRequirementsForUCAs",
+                    "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }
             ],
@@ -150,6 +232,12 @@
                 }
             ]
         },
+        "submenus": [
+            {
+                "id": "stpa.checks",
+                "label": "Validation Checks"
+            }
+        ],
         "keybindings": [
             {
                 "key": "alt+f",
