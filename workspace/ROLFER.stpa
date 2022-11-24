@@ -23,7 +23,7 @@ SC4 "The UAV must not violate the minimum separation distance between itself and
 SC5 "The UAV must approach the SP and must provide rescue assistance to them" [H5]
 
 ControlStructure
-ROFLER {
+ROLFER {
     Admin {
         hierarchyLevel 0
         controlActions {
