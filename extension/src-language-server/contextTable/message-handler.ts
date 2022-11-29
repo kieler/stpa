@@ -35,7 +35,7 @@ export function addContextTableHandler(connection: Connection, services: StpaSer
         const contextTable = services.contextTable.ContextTableProvider;
         const range = contextTable.getRangeOfUCA(lastUri, text);
         if (range) {
-            connection.sendNotification('contextTable/highlight', ({startLine: range.start.line, startChar:range.start.character, endLine: range.end.line, endChar: range.end.character}));
+            connection.sendNotification('editor/highlight', ({startLine: range.start.line, startChar:range.start.character, endLine: range.end.line, endChar: range.end.character, uri: lastUri}));
         } else {
             console.log("The selected UCA could not be found in the editor.")
         }

@@ -19,6 +19,7 @@ import { startLanguageServer } from 'langium';
 import { addDiagramHandler } from 'langium-sprotty';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
 import { addContextTableHandler } from './contextTable/message-handler';
+import { addNotificationHandler } from './handler';
 import { createStpaServices } from './stpa-module';
 
 // Create a connection to the client
@@ -32,6 +33,7 @@ startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
 addContextTableHandler(connection, states);
+addNotificationHandler(connection, shared);
 
 // handle configuration changes for the validation checks
 connection.onNotification('configuration', options => {

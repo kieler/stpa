@@ -53,9 +53,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('stpa')));
             // handling of notifications regarding the context table
             this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
-            this.languageClient.onNotification('contextTable/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; }) => {
+            this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string}) => {
                 // highlight and reveal the given range in the editor
-                const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === this.lastUri);
+                const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === msg.uri);
                 if (editor) {
                     const startPosition = new vscode.Position(msg.startLine, msg.startChar);
                     const endPosition = new vscode.Position(msg.endLine, msg.endChar);
