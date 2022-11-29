@@ -91,6 +91,7 @@ export class StpaValidator {
             ...ucas.map(uca => uca.list),
             ...contexts.map(context => context.list)
         ];
+
         // collect nodes that should be checked whether they are referenced
         let nodesToCheck: elementWithName[] = [...model.losses, ...hazards];
         if (this.checkResponsibilitiesForConstraints) {
@@ -150,6 +151,16 @@ export class StpaValidator {
         ];
         //check that their IDs are unique
         this.checkIDsAreUnique(allElements, accept);
+
+
+        // check that each control action has at least one UCA
+        const ucaActions = [...model.allUCAs.map(alluca => alluca.system.ref?.name + "." + alluca.action.ref?.name), ...model.rules.map(rule => rule.system.ref?.name + "." + rule.action.ref?.name)]
+        model.controlStructure.nodes.forEach(node => node.actions.forEach(action => action.comms.forEach(command => {
+            const name = node.name + "." + command.name
+            if (!ucaActions.includes(name)) {
+                accept('warning', 'This element is not referenced by a UCA', { node: command, property: 'name' });
+            }
+        })))
     }
 
     /**
