@@ -22,7 +22,7 @@ Aircraft {
     FlightCrew {
         hierarchyLevel 0
         processModel {
-            BCSUmode: ["on", "off"]
+            BCSUmode: [on, off]
         }
         controlActions {
             [mc "Manual Controls" ]-> OtherSubsystems

@@ -35,7 +35,7 @@ Aircraft {
     FlightCrew {
     hierarchyLevel 0
     processModel {
-        BCSUmode: ["on", "off"]
+        BCSUmode: [on, off]
     }
     controlActions {
         [mc "Manual Controls" ]-> OtherSubsystems
@@ -144,5 +144,3 @@ As a result, insufficient deceleration may be provided upon landing" [H7.1]
 Scenario7 "The BSCU does not send Brake command, but the brakes are applied due to hydraulic valve failure. 
 As a result, acceleration may be insufficient during takeoff" [H7.6]
 
-SafetyRequirements
-SR1 "Sufficient braking must be applied when sending the Brake comman upon landing" [Scenario6]

@@ -72,7 +72,7 @@ Trajectory {
         hierarchyLevel 4
         feedback {
             [zustand "Ladezustand"] -> AutoBox
-            [zustand "Ladezustand"] -> DriveBox
+            [zustand2 "Ladezustand"] -> DriveBox
         }
     }
     IMU {
