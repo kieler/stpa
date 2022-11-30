@@ -16,7 +16,7 @@
  */
 
 import * as vscode from 'vscode';
-import { hasOwnProperty,isActionMessage } from 'sprotty-protocol';
+import { hasOwnProperty, isActionMessage, SelectAction } from 'sprotty-protocol';
 import { SprottyLspWebview } from "sprotty-vscode/lib/lsp";
 import { SendConfigAction } from './actions';
 
@@ -26,16 +26,39 @@ export class StpaLspWebview extends SprottyLspWebview {
         // TODO: for multiple language support here the current language muste be determined
         if (isRenderOptionsRegistryReadyMessage(message)) {
             this.sendConfigValues();
-        } else if (isActionMessage(message) && message.action.kind === SendConfigAction.KIND) {
-            this.updateConfigValues(message.action as SendConfigAction);
+        } else if (isActionMessage(message)) {
+            switch (message.action.kind) {
+                case SendConfigAction.KIND:
+                    this.updateConfigValues(message.action as SendConfigAction);
+                    break;
+                case SelectAction.KIND:
+                    this.handleSelectAction(message.action as SelectAction)
+                    break;
+            }
+
         }
         return super.receiveFromWebview(message);
+    }
+    
+    /**
+     * Handles a SelectAction by sending the ID of the selected element to the language server.
+     * @param action The SelectAction.
+     */
+    protected handleSelectAction(action: SelectAction): void {
+        // the uri string must be desrialized first, since sprotty serializes it and langium does not
+        let uriString = this.diagramIdentifier.uri.toString();
+        const match = uriString.match(/file:\/\/\/([a-z]):/i);
+        if (match) {
+            uriString = 'file:///' + match[1] + '%3A' + uriString.substring(match[0].length);
+        }
+        // send ID of the first selected element to the language server to highlight the textual definition in the editor
+        this.languageClient.sendNotification('diagram/selected', {text: action.selectedElementsIDs[0], uri: uriString});
     }
 
     /**
      * Sends the config option values to the webview
      */
-    protected sendConfigValues() {
+    protected sendConfigValues(): void {
         const renderOptions: { id: string, value: any; }[] = [];
         const configOptions = vscode.workspace.getConfiguration('stpa');
         renderOptions.push({ id: "colorStyle", value: configOptions.get("colorStyle") });
@@ -44,9 +67,9 @@ export class StpaLspWebview extends SprottyLspWebview {
         this.dispatch({ kind: SendConfigAction.KIND, options: renderOptions } as SendConfigAction);
     }
 
-    protected updateConfigValues(action: SendConfigAction) {
+    protected updateConfigValues(action: SendConfigAction): void {
         const configOptions = vscode.workspace.getConfiguration('stpa');
-        action.options.forEach(element => configOptions.update(element.id, element.value))
+        action.options.forEach(element => configOptions.update(element.id, element.value));
     }
 }
 

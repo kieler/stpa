@@ -46,7 +46,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         }
         return {
             'org.eclipse.elk.layered.thoroughness': '70',
-            'org.eclipse.elk.layered.layering.strategy': 'LONGEST_PATH',
+            // 'org.eclipse.elk.layered.layering.strategy': 'LONGEST_PATH',
             'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': direction,
             'org.eclipse.elk.algorithm': 'layered',

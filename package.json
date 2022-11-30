@@ -12,7 +12,8 @@
       "build": "lerna run build",
       "watch": "lerna run watch --parallel",
       "package": "lerna run build && lerna run package --parallel",
-      "prettier": "prettier --write extension/src/"
+      "prettier": "prettier --write extension/src/",
+      "distribute": "lerna run build && lerna run distribute --parallel"
   },
     "devDependencies": {
       "lerna": "^3.20.2",

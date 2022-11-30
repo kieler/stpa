@@ -58,6 +58,18 @@ type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList |
  */
 export class StpaValidator {
 
+    /** Boolean option to toggle the check whether all system-level constraints are covered by a responsibility. */
+    checkResponsibilitiesForConstraints = true;
+
+    /** Boolean option to toggle the check whether all UCAs are covered by constraints. */
+    checkConstraintsForUCAs = true;
+
+    /** Boolean option to toggle the check whether all UCAs are covered by scenarios. */
+    checkScenariosForUCAs = true;
+
+    /** Boolean option to toggle the check whether all UCAs are covered by safety requirements. */
+    checkSafetyRequirementsForUCAs = true;
+
     /**
      * Executes validation checks for the whole model.
      * @param model The model to validate.
@@ -72,37 +84,83 @@ export class StpaValidator {
         const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1);
         const contexts = model.rules?.map(rule => rule.contexts).flat(1);
 
+        // collect all elements that have a reference list
+        let elementsWithRefs: elementWithRefs[] = [
+            ...hazards,
+            ...sysCons,
+            ...ucas.map(uca => uca.list),
+            ...contexts.map(context => context.list)
+        ];
+
+        // collect nodes that should be checked whether they are referenced
+        let nodesToCheck: elementWithName[] = [...model.losses, ...hazards];
+        if (this.checkResponsibilitiesForConstraints) {
+            nodesToCheck.push(...sysCons);
+            elementsWithRefs.push(...responsibilities);
+        }
+        // get all reference names
+        const references = this.collectReferences(elementsWithRefs);
+        // check if all elements are referenced at least once
+        for (const node of nodesToCheck) {
+            if (!references.has(node.name)) {
+                accept('warning', 'This element is not referenced', { node: node, property: 'name' });
+            }
+        }
+
+        //check referenced UCAs
+        elementsWithRefs = [];
+        // get referenced ucas from the different aspects
+        let constraintsRefs = new Set<string>();
+        let scenarioRefs: (string | undefined)[] = [];
+        let safetyRequirementsRefs = new Set<string>();
+        if (this.checkConstraintsForUCAs) {
+            constraintsRefs = this.collectReferences(model.controllerConstraints);
+        }
+        if (this.checkScenariosForUCAs) {
+            scenarioRefs = model.scenarios.map(scenario => scenario.uca.ref?.name);
+        }
+        if (this.checkSafetyRequirementsForUCAs) {
+            safetyRequirementsRefs = this.collectReferences(model.safetyCons);
+        }
+        // check if ucas are referenced by the other aspects
+        nodesToCheck = [...ucas, ...contexts];
+        for (const node of nodesToCheck) {
+            if (this.checkConstraintsForUCAs && !constraintsRefs.has(node.name)) {
+                accept('warning', 'This element is not referenced by a constraint', { node: node, property: 'name' });
+            }
+            if (this.checkScenariosForUCAs && !scenarioRefs.includes(node.name)) {
+                accept('warning', 'This element is not referenced by a scenario', { node: node, property: 'name' });
+            }
+            if (this.checkSafetyRequirementsForUCAs && !safetyRequirementsRefs.has(node.name)) {
+                accept('warning', 'This element is not referenced by a safety requirement', { node: node, property: 'name' });
+            }
+        }
+
         // collect elements that have an identifier and should be referenced
         let allElements: elementWithName[] = [
             ...model.losses,
             ...hazards,
             ...sysCons,
             ...ucas,
-            ...contexts
-        ];
-
-        // collect all elements that have a reference list
-        let elementsWithRefs: elementWithRefs[] = [
-            ...hazards,
-            ...sysCons,
+            ...contexts,
             ...responsibilities,
-            ...ucas.map(uca => uca.list),
-            ...contexts.map(context => context.list),
             ...model.controllerConstraints,
-            ...model.scenarios.map(scenario => scenario.list)
+            ...model.scenarios,
+            ...model.safetyCons,
+            ...model.controlStructure?.nodes
         ];
-        // get all reference names
-        const references = this.collectReferences(elementsWithRefs);
-        // check if all elements are referenced at least once
-        for (const node of allElements) {
-            if (!references.has(node.name)) {
-                accept('warning', 'This element is referenced nowhere', { node: node, property: 'name' });
-            }
-        }
-
-        // add missing elements that have an ID to check uniques of all IDs
-        allElements = allElements.concat(responsibilities, model.controllerConstraints, model.scenarios, model.safetyCons, model.controlStructure?.nodes/*, model.controlStructure?.edges*/);
+        //check that their IDs are unique
         this.checkIDsAreUnique(allElements, accept);
+
+
+        // check that each control action has at least one UCA
+        const ucaActions = [...model.allUCAs.map(alluca => alluca.system.ref?.name + "." + alluca.action.ref?.name), ...model.rules.map(rule => rule.system.ref?.name + "." + rule.action.ref?.name)]
+        model.controlStructure.nodes.forEach(node => node.actions.forEach(action => action.comms.forEach(command => {
+            const name = node.name + "." + command.name
+            if (!ucaActions.includes(name)) {
+                accept('warning', 'This element is not referenced by a UCA', { node: command, property: 'name' });
+            }
+        })))
     }
 
     /**
@@ -248,7 +306,7 @@ export class StpaValidator {
             text += "Responsibilities\n";
             missing = true;
         }
-        if (!model.allUCAs || model.allUCAs?.length === 0) {
+        if ((!model.allUCAs || model.allUCAs?.length === 0) && (!model.rules || model.rules?.length === 0)) {
             text += "UCAs\n";
             missing = true;
         }
@@ -335,7 +393,7 @@ export class StpaValidator {
 
     /**
      * Collects all IDs that are referenced by any element.
-     * @param allElements All Elements with a reference list.
+     * @param allElements Elements which references should be collected.
      * @returns A set with all referenced IDs.
      */
     private collectReferences(allElements: elementWithRefs[]): Set<string> {
