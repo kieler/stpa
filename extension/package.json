@@ -5,6 +5,11 @@
     "version": "0.0.1",
     "publisher": "kieler",
     "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+    "license": "EPL-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kieler/stpa"
+    },
     "engines": {
         "vscode": "^1.46.0"
     },
@@ -320,7 +325,7 @@
         "package": "vsce package --yarn -o stpa-dsl.vsix",
         "predistribute": "yarn run package",
         "distribute": "yarn run distribute:vsce && yarn run distribute:ovsx",
-        "distribute:vsce": "vsce publish --yarn --packagePath klighd-vscode.vsix",
-        "distribute:ovsx": "ovsx publish --yarn klighd-vscode.vsix"
+        "distribute:vsce": "vsce publish --yarn --packagePath stpa-dsl.vsix",
+        "distribute:ovsx": "ovsx publish --yarn stpa-dsl.vsix"
     }
 }
