@@ -305,7 +305,9 @@
         "css-loader": "^6.5.1",
         "file-loader": "^6.2.0",
         "langium-cli": "0.3.0-next.5e9d27d",
-        "style-loader": "^1.2.1"
+        "style-loader": "^1.2.1",
+        "vsce": "^2.14.0",
+        "ovsx": "^0.5.2"
     },
     "scripts": {
         "prepare": "yarn run clean && yarn run langium:generate && yarn run build",
@@ -315,7 +317,10 @@
         "lint": "eslint .",
         "build": "yarn run langium:generate && webpack --mode production",
         "watch": "webpack --watch",
-        "package": "yarn run langium:generate && vsce package --yarn -o stpa-dsl.vsix",
-        "vscode:prepublish": "yarn run build"
+        "package": "vsce package --yarn -o stpa-dsl.vsix",
+        "predistribute": "yarn run package",
+        "distribute": "yarn run distribute:vsce && yarn run distribute:ovsx",
+        "distribute:vsce": "vsce publish --yarn --packagePath klighd-vscode.vsix",
+        "distribute:ovsx": "ovsx publish --yarn klighd-vscode.vsix"
     }
 }
