@@ -1,11 +1,11 @@
 # Workflow that publishes the VS Code extension to the VS Marketplace and
-# Open VSX, the packages to npm, and attaches assets to the new release.
+# Open VSX, and attaches assets to the new release.
 
 name: publish
 
 on:
-    release:
-        types: [published]
+    push:
+        branches: [master]
 
 jobs:
     distribute:
