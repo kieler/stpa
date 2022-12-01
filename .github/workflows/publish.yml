@@ -4,8 +4,8 @@
 name: publish
 
 on:
-    push:
-        branches: [master]
+    release:
+        types: [published]
 
 jobs:
     distribute:
@@ -43,4 +43,4 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  args: ./extension/stpa-dsl.vsix application/octet-stream
+                  args: ./extension/pasta.vsix application/octet-stream

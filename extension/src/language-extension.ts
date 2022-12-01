@@ -41,7 +41,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         vscode.workspace.onDidChangeConfiguration(() => {
             this.updateViews(this.languageClient, this.lastUri);
             // sends configuration of stpa to the language server
-            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('stpa')));
+            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
 
         // add auto formatting provider
@@ -50,7 +50,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
         this.languageClient.onReady().then(() => {
             // sends configuration of stpa to the language server
-            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('stpa')));
+            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
             // handling of notifications regarding the context table
             this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
             this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string}) => {
@@ -123,9 +123,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         quickPick.items = [{ label: "true" }, { label: "false" }];
         quickPick.onDidChangeSelection((selection) => {
             if (selection[0]?.label === "true") {
-                vscode.workspace.getConfiguration('stpa').update(id, true);
+                vscode.workspace.getConfiguration('pasta').update(id, true);
             } else {
-                vscode.workspace.getConfiguration('stpa').update(id, false);
+                vscode.workspace.getConfiguration('pasta').update(id, false);
             }
             quickPick.hide();
         });

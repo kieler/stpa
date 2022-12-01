@@ -1,5 +1,5 @@
 {
-    "projectName": "Stpa",
+    "projectName": "Pasta",
     "languages": [{
         "id": "stpa",
         "grammar": "src-language-server/stpa.langium",
