@@ -19,6 +19,7 @@ import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
 import { LangiumDocument } from "langium";
 import { Connection, Range } from "vscode-languageserver";
+import { generateLTLFormulae } from "./modelChecking/model-checking";
 
 /**
  * Adds handler for notifications.
@@ -26,11 +27,10 @@ import { Connection, Range } from "vscode-languageserver";
  * @param shared Shared services containing the workspace.
  */
 export function addNotificationHandler(connection: Connection, shared: LangiumSprottySharedServices): void {
+    // diagram
     connection.onNotification('diagram/selected', (msg: {label: string, uri: string}) => {
         // get the current model
-        const textDocuments = shared.workspace.LangiumDocuments;
-        const currentDoc = textDocuments.getOrCreateDocument(msg.uri as any) as LangiumDocument<Model>;
-        const model: Model = currentDoc.parseResult.value;
+        const model = getModel(msg.uri, shared)
 
         // determine the range in the editor of the component identified by "label"
         const range = getRangeOfNode(model, msg.label);
@@ -41,6 +41,28 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
             console.log("The selected UCA could not be found in the editor.");
         }
     });
+
+    // model checking
+    connection.onRequest('modelChecking/generateLTL', (uri: string) => {
+        // get the current model
+        const model = getModel(uri, shared)
+        // generate and send back the LTL formula based on the STPA UCAs
+        const formulas = generateLTLFormulae(model)
+        return formulas
+    })
+}
+
+/**
+ * Determines the model for {@code uri}.
+ * @param uri The URI for which the model is desired.
+ * @param shared The shared service.
+ * @returns the model for the given uri.
+ */
+function getModel(uri: string, shared: LangiumSprottySharedServices): Model {
+    const textDocuments = shared.workspace.LangiumDocuments;
+    const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
+    // TODO: parseResult may be empty!
+    return currentDoc.parseResult.value;
 }
 
 /**
