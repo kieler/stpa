@@ -33,12 +33,12 @@ export function generateLTLFormulae(model: Model): LTLFormula[] {
     if (model.rules) {
         for (const rule of model.rules) {
             // control action string
-            const controlAction = rule.action.ref?.name + "." + rule.system.ref?.name;
+            const controlAction = rule.action.$refText + "." + rule.system.$refText;
             for (const uca of rule.contexts) {
                 // calculate the contextVariable string
-                let contextVariables = uca.vars[0].ref?.name + "==" + uca.values[0];
+                let contextVariables = uca.vars[0].$refText + "==" + uca.values[0];
                 for (let i = 1; i < uca.vars.length; i++) {
-                    contextVariables += " && " + uca.vars[i].ref?.name + "=" + uca.values[i];
+                    contextVariables += " && " + uca.vars[i].$refText + "=" + uca.values[i];
                 }
                 // translate uca based on the rule type
                 let formula = "";
