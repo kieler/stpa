@@ -60,7 +60,7 @@ export class StpaLspWebview extends SprottyLspWebview {
      */
     protected sendConfigValues(): void {
         const renderOptions: { id: string, value: any; }[] = [];
-        const configOptions = vscode.workspace.getConfiguration('stpa');
+        const configOptions = vscode.workspace.getConfiguration('pasta');
         renderOptions.push({ id: "colorStyle", value: configOptions.get("colorStyle") });
         renderOptions.push({ id: "differentForms", value: configOptions.get("differentForms") });
 
@@ -68,7 +68,7 @@ export class StpaLspWebview extends SprottyLspWebview {
     }
 
     protected updateConfigValues(action: SendConfigAction): void {
-        const configOptions = vscode.workspace.getConfiguration('stpa');
+        const configOptions = vscode.workspace.getConfiguration('pasta');
         action.options.forEach(element => configOptions.update(element.id, element.value));
     }
 }
