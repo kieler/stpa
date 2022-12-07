@@ -52,7 +52,7 @@ export class StpaLspWebview extends SprottyLspWebview {
             uriString = 'file:///' + match[1] + '%3A' + uriString.substring(match[0].length);
         }
         // send ID of the first selected element to the language server to highlight the textual definition in the editor
-        this.languageClient.sendNotification('diagram/selected', {text: action.selectedElementsIDs[0], uri: uriString});
+        this.languageClient.sendNotification('diagram/selected', {label: action.selectedElementsIDs[0], uri: uriString});
     }
 
     /**
