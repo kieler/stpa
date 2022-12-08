@@ -38,35 +38,35 @@
             }
         ],
         "configuration": {
-            "title": "PASTA",
+            "title": "pasta",
             "properties": {
-                "stpa.differentForms": {
+                "pasta.differentForms": {
                     "type": "boolean",
                     "default": false,
                     "description": "Different forms for STPA aspects"
                 },
-                "stpa.colorStyle": {
+                "pasta.colorStyle": {
                     "type": "string",
                     "default": "fewer colors",
                     "enum": ["colorful", "standard", "black & white", "fewer colors"],
                     "enumDescription": ["Each STPA aspect has a different color", "All nodes have the standard color (blue)", "The diagrams are colored in black and white"]
                 },
-                "stpa.checkResponsibilitiesForConstraints": {
+                "pasta.checkResponsibilitiesForConstraints": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all system-level constraints are covered by a responsibility"
                 },
-                "stpa.checkConstraintsForUCAs": {
+                "pasta.checkConstraintsForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by constraints"
                 },
-                "stpa.checkScenariosForUCAs": {
+                "pasta.checkScenariosForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by scenarios"
                 },
-                "stpa.checkSafetyRequirementsForUCAs": {
+                "pasta.checkSafetyRequirementsForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by safety requirements"
