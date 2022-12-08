@@ -5,6 +5,7 @@
     "version": "0.1.0",
     "publisher": "kieler",
     "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+    "icon": "icon.png",
     "license": "EPL-2.0",
     "repository": {
         "type": "git",
