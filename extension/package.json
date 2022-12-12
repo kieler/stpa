@@ -1,10 +1,16 @@
 {
-    "name": "stpa",
-    "displayName": "STPA-DSL",
+    "name": "pasta",
+    "displayName": "PASTA (STPA-DSL)",
     "description": "A DSL for STPA. Includes an automatic visualization of the defined relationships and control structure.",
-    "version": "0.0.1",
+    "version": "0.1.1",
     "publisher": "kieler",
     "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+    "icon": "icon.png",
+    "license": "EPL-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kieler/stpa"
+    },
     "engines": {
         "vscode": "^1.46.0"
     },
@@ -33,35 +39,44 @@
             }
         ],
         "configuration": {
-            "title": "STPA",
+            "title": "pasta",
             "properties": {
-                "stpa.differentForms": {
+                "pasta.differentForms": {
                     "type": "boolean",
                     "default": false,
                     "description": "Different forms for STPA aspects"
                 },
-                "stpa.colorStyle": {
+                "pasta.colorStyle": {
                     "type": "string",
                     "default": "fewer colors",
-                    "enum": ["colorful", "standard", "black & white", "fewer colors"],
-                    "enumDescription": ["Each STPA aspect has a different color", "All nodes have the standard color (blue)", "The diagrams are colored in black and white"]
+                    "enum": [
+                        "colorful",
+                        "standard",
+                        "black & white",
+                        "fewer colors"
+                    ],
+                    "enumDescription": [
+                        "Each STPA aspect has a different color",
+                        "All nodes have the standard color (blue)",
+                        "The diagrams are colored in black and white"
+                    ]
                 },
-                "stpa.checkResponsibilitiesForConstraints": {
+                "pasta.checkResponsibilitiesForConstraints": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all system-level constraints are covered by a responsibility"
                 },
-                "stpa.checkConstraintsForUCAs": {
+                "pasta.checkConstraintsForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by constraints"
                 },
-                "stpa.checkScenariosForUCAs": {
+                "pasta.checkScenariosForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by scenarios"
                 },
-                "stpa.checkSafetyRequirementsForUCAs": {
+                "pasta.checkSafetyRequirementsForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by safety requirements"
@@ -127,7 +142,7 @@
                 {
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'"
-                },     
+                },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'"
@@ -174,7 +189,7 @@
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
-                },     
+                },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'",
@@ -212,7 +227,7 @@
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
-                },     
+                },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'",
@@ -224,7 +239,7 @@
                     "command": "stpa.diagram.open",
                     "when": "resourceExtname == '.stpa'",
                     "group": "navigation"
-                }, 
+                },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "resourceExtname == '.stpa'",
@@ -278,7 +293,6 @@
         "webview"
     ],
     "main": "./pack/extension",
-
     "dependencies": {
         "langium-sprotty": "0.3.0-next.5e9d27d",
         "sprotty-elk": "^0.11.0",
@@ -289,7 +303,7 @@
         "sprotty-vscode-webview": "^0.2.0",
         "@kieler/table-webview": "^0.0.1",
         "snabbdom": "^3.5.1"
-      },
+    },
     "devDependencies": {
         "@types/node": "^12.12.6",
         "@types/vscode": "1.46.0",
@@ -317,10 +331,10 @@
         "lint": "eslint .",
         "build": "yarn run langium:generate && webpack --mode production",
         "watch": "webpack --watch",
-        "package": "vsce package --yarn -o stpa-dsl.vsix",
+        "package": "vsce package --yarn -o pasta.vsix",
         "predistribute": "yarn run package",
         "distribute": "yarn run distribute:vsce && yarn run distribute:ovsx",
-        "distribute:vsce": "vsce publish --yarn --packagePath klighd-vscode.vsix",
-        "distribute:ovsx": "ovsx publish --yarn klighd-vscode.vsix"
+        "distribute:vsce": "vsce publish --yarn --packagePath pasta.vsix",
+        "distribute:ovsx": "ovsx publish --yarn pasta.vsix"
     }
 }

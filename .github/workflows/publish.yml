@@ -1,5 +1,5 @@
 # Workflow that publishes the VS Code extension to the VS Marketplace and
-# Open VSX, the packages to npm, and attaches assets to the new release.
+# Open VSX, and attaches assets to the new release.
 
 name: publish
 
@@ -43,4 +43,4 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  args: ./extension/stpa-dsl.vsix application/octet-stream
+                  args: ./extension/pasta.vsix application/octet-stream

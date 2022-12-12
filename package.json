@@ -1,26 +1,24 @@
 {
-    "name": "stpa-extension",
-    "version": "0.1.0",
-    "private": true,
-    "description": "DSL for STPA",
-    "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
-    "homepage": "https://rtsys.informatik.uni-kiel.de/kieler",
-    "scripts": {
-      "clean": "lerna run clean --parallel",
-      "lint": "lerna run lint --parallel",
-      "prebuild": "yarn clean",
-      "build": "lerna run build",
-      "watch": "lerna run watch --parallel",
-      "package": "lerna run build && lerna run package --parallel",
-      "prettier": "prettier --write extension/src/",
-      "distribute": "lerna run build && lerna run distribute --parallel"
+  "private": true,
+  "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+  "license": "EPL-2.0",
+  "homepage": "https://rtsys.informatik.uni-kiel.de/kieler",
+  "scripts": {
+    "clean": "lerna run clean --parallel",
+    "lint": "lerna run lint --parallel",
+    "prebuild": "yarn clean",
+    "build": "lerna run build",
+    "watch": "lerna run watch --parallel",
+    "package": "lerna run build && lerna run package --parallel",
+    "prettier": "prettier --write extension/src/",
+    "distribute": "lerna run build && lerna run distribute --parallel"
   },
-    "devDependencies": {
-      "lerna": "^3.20.2",
-      "typescript": "^4.3.2"
-    },
-    "workspaces": [
-      "extension",
-      "table-webview"
-    ]
-  }
+  "devDependencies": {
+    "lerna": "^3.20.2",
+    "typescript": "^4.3.2"
+  },
+  "workspaces": [
+    "extension",
+    "table-webview"
+  ]
+}
