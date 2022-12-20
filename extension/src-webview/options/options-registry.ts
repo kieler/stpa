@@ -15,9 +15,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { injectable } from "inversify";
+import { /* inject, */ injectable } from "inversify";
 import { ActionHandlerRegistry, IActionHandlerInitializer, ICommand } from "sprotty";
 import { Action } from "sprotty-protocol";
+// import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
 import { Registry } from "../base/registry";
 import {
     SetSynthesisOptionsAction,
@@ -26,7 +27,6 @@ import {
 import {
     SynthesisOption,
 } from "./option-models";
-import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
 
 /**
  * {@link Registry} that stores and manages STPA-DSL options provided by the server.
@@ -36,6 +36,8 @@ import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
  */
 @injectable()
 export class OptionsRegistry extends Registry implements IActionHandlerInitializer {
+
+    // @inject(VsCodeApi) private vscodeApi: VsCodeApi;
 
     private _clientId = "";
     private _synthesisOptions: SynthesisOption[] = [];
@@ -89,7 +91,7 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
         );
         this.notifyListeners();
 
-        vscodeApi.postMessage({clientId: this._clientId, action: action});
+        // this.vscodeApi.postMessage({clientId: this._clientId, action: action});
     }
 
 }

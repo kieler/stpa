@@ -30,7 +30,7 @@ export class CustomModel {
     controllerConstraints: ContConstraint[];
     scenarios: LossScenario[];
     safetyCons: SafetyConstraint[];
-    controlStructure: Graph;
+    controlStructure?: Graph;
     rules: Rule[];
 }
 
