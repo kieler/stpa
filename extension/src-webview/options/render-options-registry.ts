@@ -21,7 +21,7 @@ import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
-// import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
+import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
 
 /**
  * Diffrent options for the color style of the relationship graph.
@@ -92,7 +92,7 @@ export class RenderOptionsRegistry extends Registry {
     private _renderOptions: Map<string, RenderOption> = new Map();
 
 
-    // @inject(VsCodeApi) private vscodeApi: VsCodeApi;
+    @inject(VsCodeApi) private vscodeApi: VsCodeApi;
 
     constructor() {
         super();
@@ -122,7 +122,7 @@ export class RenderOptionsRegistry extends Registry {
 
             option.currentValue = action.value;
             const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
-            // this.vscodeApi.postMessage({ action: sendAction });
+            this.vscodeApi.postMessage({ action: sendAction });
             this.notifyListeners();
 
         } else if (ResetRenderOptionsAction.isThisAction(action)) {
