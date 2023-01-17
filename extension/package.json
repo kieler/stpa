@@ -2,9 +2,10 @@
     "name": "pasta",
     "displayName": "PASTA (STPA-DSL)",
     "description": "A DSL for STPA. Includes an automatic visualization of the defined relationships and control structure.",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "kieler",
     "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+    "icon": "icon.png",
     "license": "EPL-2.0",
     "repository": {
         "type": "git",
@@ -38,35 +39,44 @@
             }
         ],
         "configuration": {
-            "title": "PASTA",
+            "title": "pasta",
             "properties": {
-                "stpa.differentForms": {
+                "pasta.differentForms": {
                     "type": "boolean",
                     "default": false,
                     "description": "Different forms for STPA aspects"
                 },
-                "stpa.colorStyle": {
+                "pasta.colorStyle": {
                     "type": "string",
                     "default": "fewer colors",
-                    "enum": ["colorful", "standard", "black & white", "fewer colors"],
-                    "enumDescription": ["Each STPA aspect has a different color", "All nodes have the standard color (blue)", "The diagrams are colored in black and white"]
+                    "enum": [
+                        "colorful",
+                        "standard",
+                        "black & white",
+                        "fewer colors"
+                    ],
+                    "enumDescription": [
+                        "Each STPA aspect has a different color",
+                        "All nodes have the standard color (blue)",
+                        "The diagrams are colored in black and white"
+                    ]
                 },
-                "stpa.checkResponsibilitiesForConstraints": {
+                "pasta.checkResponsibilitiesForConstraints": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all system-level constraints are covered by a responsibility"
                 },
-                "stpa.checkConstraintsForUCAs": {
+                "pasta.checkConstraintsForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by constraints"
                 },
-                "stpa.checkScenariosForUCAs": {
+                "pasta.checkScenariosForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by scenarios"
                 },
-                "stpa.checkSafetyRequirementsForUCAs": {
+                "pasta.checkSafetyRequirementsForUCAs": {
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by safety requirements"
@@ -132,7 +142,7 @@
                 {
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'"
-                },     
+                },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'"
@@ -179,7 +189,7 @@
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
-                },     
+                },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'",
@@ -217,7 +227,7 @@
                     "command": "stpa.diagram.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
-                },     
+                },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'",
@@ -229,7 +239,7 @@
                     "command": "stpa.diagram.open",
                     "when": "resourceExtname == '.stpa'",
                     "group": "navigation"
-                }, 
+                },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "resourceExtname == '.stpa'",
@@ -283,7 +293,6 @@
         "webview"
     ],
     "main": "./pack/extension",
-
     "dependencies": {
         "langium-sprotty": "^1.0.0",
         "sprotty-elk": "^0.12.0",
@@ -295,7 +304,7 @@
         "sprotty-vscode-webview": "^0.4.0",
         "@kieler/table-webview": "^0.0.1",
         "snabbdom": "^3.5.1"
-      },
+    },
     "devDependencies": {
         "@types/node": "^12.12.6",
         "@types/vscode": "1.46.0",
