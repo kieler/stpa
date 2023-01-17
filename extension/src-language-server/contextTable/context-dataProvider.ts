@@ -65,7 +65,7 @@ export class ContextTableProvider {
         let rules: ContextTableRule[] = [];
 
         // collect control actions and variables
-        model.controlStructure.nodes.forEach(systemComponent => {
+        model.controlStructure?.nodes.forEach(systemComponent => {
             // control actions of the current system component
             systemComponent.actions.forEach(action => {
                 action.comms.forEach(command => {

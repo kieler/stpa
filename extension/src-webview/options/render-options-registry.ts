@@ -15,13 +15,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { injectable, postConstruct } from "inversify";
+import { inject, injectable, postConstruct } from "inversify";
 import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
-import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
+import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
 
 /**
  * Diffrent options for the color style of the relationship graph.
@@ -92,6 +92,8 @@ export class RenderOptionsRegistry extends Registry {
     private _renderOptions: Map<string, RenderOption> = new Map();
 
 
+    @inject(VsCodeApi) private vscodeApi: VsCodeApi;
+
     constructor() {
         super();
         // Add available render options to this registry
@@ -101,7 +103,7 @@ export class RenderOptionsRegistry extends Registry {
         this.register(ShowCSOption);
         this.register(ShowRelationshipGraphOption);
 
-        vscodeApi.postMessage({ optionRegistryReadyMessage: "Option Registry ready" });
+        // this.vscodeApi.postMessage({ optionRegistryReadyMessage: "Option Registry ready" });
     }
 
     @postConstruct()
@@ -120,7 +122,7 @@ export class RenderOptionsRegistry extends Registry {
 
             option.currentValue = action.value;
             const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
-            vscodeApi.postMessage({ action: sendAction });
+            this.vscodeApi.postMessage({ action: sendAction });
             this.notifyListeners();
 
         } else if (ResetRenderOptionsAction.isThisAction(action)) {
