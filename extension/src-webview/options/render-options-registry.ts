@@ -102,12 +102,11 @@ export class RenderOptionsRegistry extends Registry {
 
         this.register(ShowCSOption);
         this.register(ShowRelationshipGraphOption);
-
-        // this.vscodeApi.postMessage({ optionRegistryReadyMessage: "Option Registry ready" });
     }
 
     @postConstruct()
     init(): void {
+        this.vscodeApi.postMessage({ optionRegistryReadyMessage: "Option Registry ready" });
     }
 
     register(Option: RenderOptionType): void {

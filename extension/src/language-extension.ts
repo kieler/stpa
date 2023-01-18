@@ -48,22 +48,22 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
-        // this.languageClient.onReady().then(() => {
-        //     // sends configuration of stpa to the language server
-        //     this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
-        //     // handling of notifications regarding the context table
-        //     this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
-        //     this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string}) => {
-        //         // highlight and reveal the given range in the editor
-        //         const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === msg.uri);
-        //         if (editor) {
-        //             const startPosition = new vscode.Position(msg.startLine, msg.startChar);
-        //             const endPosition = new vscode.Position(msg.endLine, msg.endChar);
-        //             editor.selection = new vscode.Selection(startPosition, endPosition);
-        //             editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
-        //         }
-        //     });
-        // });
+        // sends configuration of stpa to the language server
+        this.languageClient.onNotification("ready", () => {
+            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
+        });
+        // handling of notifications regarding the context table
+        this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
+        this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string; }) => {
+            // highlight and reveal the given range in the editor
+            const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === msg.uri);
+            if (editor) {
+                const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+                const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+                editor.selection = new vscode.Selection(startPosition, endPosition);
+                editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+            }
+        });
     }
 
     /**
@@ -93,22 +93,22 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // commands for toggling the provided validation checks
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async (...commandArgs: any[]) => {
-                this.createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints")
+                this.createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkConstraintsForUCAs', async (...commandArgs: any[]) => {
-                this.createQuickPickForWorkspaceOptions("checkConstraintsForUCAs")
+                this.createQuickPickForWorkspaceOptions("checkConstraintsForUCAs");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkScenariosForUCAs', async (...commandArgs: any[]) => {
-                this.createQuickPickForWorkspaceOptions("checkScenariosForUCAs")
+                this.createQuickPickForWorkspaceOptions("checkScenariosForUCAs");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async (...commandArgs: any[]) => {
-                this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs")
+                this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
             })
         );
     }
