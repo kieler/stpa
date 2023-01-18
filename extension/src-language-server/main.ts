@@ -39,19 +39,21 @@ addNotificationHandler(connection, shared);
 // handle configuration changes for the validation checks
 connection.onNotification('configuration', options => {
     for (const option of options) {
-        switch(option.id) {
+        switch (option.id) {
             case "checkResponsibilitiesForConstraints":
-                states.validation.StpaValidator.checkResponsibilitiesForConstraints = option.value
+                states.validation.StpaValidator.checkResponsibilitiesForConstraints = option.value;
                 break;
             case "checkConstraintsForUCAs":
-                states.validation.StpaValidator.checkConstraintsForUCAs = option.value
+                states.validation.StpaValidator.checkConstraintsForUCAs = option.value;
                 break;
             case "checkScenariosForUCAs":
-                states.validation.StpaValidator.checkScenariosForUCAs = option.value
+                states.validation.StpaValidator.checkScenariosForUCAs = option.value;
                 break;
             case "checkSafetyRequirementsForUCAs":
-                states.validation.StpaValidator.checkSafetyRequirementsForUCAs = option.value
+                states.validation.StpaValidator.checkSafetyRequirementsForUCAs = option.value;
                 break;
         }
     }
 });
+
+connection.onInitialized(() => connection.sendNotification('ready'));
