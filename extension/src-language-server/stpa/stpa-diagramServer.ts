@@ -16,10 +16,10 @@
  */
 
 import { Action, DiagramServices, DiagramServer, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
-import { UpdateViewAction } from './actions';
-import { SetSynthesisOptionsAction, UpdateOptionsAction } from './options/actions';
-import { StpaSynthesisOptions } from './options/synthesis-options';
-import { DropDownOption } from './options/option-models';
+import { UpdateViewAction } from '../actions';
+import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
+import { StpaSynthesisOptions } from './synthesis-options';
+import { DropDownOption } from '../options/option-models';
 
 export class StpaDiagramServer extends DiagramServer {
 

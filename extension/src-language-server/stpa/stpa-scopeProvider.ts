@@ -19,10 +19,7 @@ import {
     DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription,
     EMPTY_SCOPE, ReferenceInfo
 } from "langium";
-import {
-    isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard,
-    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, isRule, Rule, Variable, isContext, Context, isSafetyConstraint
-} from "./generated/ast";
+import { Hazard, SystemConstraint, UCA, Context, Variable, isModel, isContConstraint, isLossScenario, isSafetyConstraint, isHazardList, isResponsibility, isSystemConstraint, isActionUCAs, isRule, isContext, isResps, Model, LossScenario, ActionUCAs, Rule, Command, Node } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
