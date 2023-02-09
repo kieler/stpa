@@ -16,41 +16,44 @@
  */
 
 import { startLanguageServer } from 'langium';
+import { NodeFileSystem } from 'langium/node';
 import { addDiagramHandler } from 'langium-sprotty';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
-import { addContextTableHandler } from './contextTable/message-handler';
+import { addContextTableHandler } from './stpa/contextTable/message-handler';
 import { addNotificationHandler } from './handler';
-import { createStpaServices } from './stpa-module';
+import { createServices } from './module';
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
 
 // Inject the language services
-const { shared, states } = createStpaServices({ connection });
+const { shared, stpa } = createServices({ connection, ...NodeFileSystem });
 
 // Start the language server with the language-specific services
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
-addContextTableHandler(connection, states);
+addContextTableHandler(connection, stpa);
 addNotificationHandler(connection, shared);
 
 // handle configuration changes for the validation checks
 connection.onNotification('configuration', options => {
     for (const option of options) {
-        switch(option.id) {
+        switch (option.id) {
             case "checkResponsibilitiesForConstraints":
-                states.validation.StpaValidator.checkResponsibilitiesForConstraints = option.value
+                stpa.validation.StpaValidator.checkResponsibilitiesForConstraints = option.value;
                 break;
             case "checkConstraintsForUCAs":
-                states.validation.StpaValidator.checkConstraintsForUCAs = option.value
+                stpa.validation.StpaValidator.checkConstraintsForUCAs = option.value;
                 break;
             case "checkScenariosForUCAs":
-                states.validation.StpaValidator.checkScenariosForUCAs = option.value
+                stpa.validation.StpaValidator.checkScenariosForUCAs = option.value;
                 break;
             case "checkSafetyRequirementsForUCAs":
-                states.validation.StpaValidator.checkSafetyRequirementsForUCAs = option.value
+                stpa.validation.StpaValidator.checkSafetyRequirementsForUCAs = option.value;
                 break;
         }
     }
 });
+
+connection.onInitialized(() => connection.sendNotification('ready'));

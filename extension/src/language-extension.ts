@@ -17,7 +17,7 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { CommonLanguageClient, LanguageClient, LanguageClientOptions, Range, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
@@ -48,21 +48,21 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
-        this.languageClient.onReady().then(() => {
-            // sends configuration of stpa to the language server
+        // sends configuration of stpa to the language server
+        this.languageClient.onNotification("ready", () => {
             this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
-            // handling of notifications regarding the context table
-            this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
-            this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string}) => {
-                // highlight and reveal the given range in the editor
-                const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === msg.uri);
-                if (editor) {
-                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
-                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
-                    editor.selection = new vscode.Selection(startPosition, endPosition);
-                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
-                }
-            });
+        });
+        // handling of notifications regarding the context table
+        this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
+        this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string; }) => {
+            // highlight and reveal the given range in the editor
+            const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === msg.uri);
+            if (editor) {
+                const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+                const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+                editor.selection = new vscode.Selection(startPosition, endPosition);
+                editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+            }
         });
     }
 
@@ -93,22 +93,22 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // commands for toggling the provided validation checks
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async (...commandArgs: any[]) => {
-                this.createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints")
+                this.createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkConstraintsForUCAs', async (...commandArgs: any[]) => {
-                this.createQuickPickForWorkspaceOptions("checkConstraintsForUCAs")
+                this.createQuickPickForWorkspaceOptions("checkConstraintsForUCAs");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkScenariosForUCAs', async (...commandArgs: any[]) => {
-                this.createQuickPickForWorkspaceOptions("checkScenariosForUCAs")
+                this.createQuickPickForWorkspaceOptions("checkScenariosForUCAs");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async (...commandArgs: any[]) => {
-                this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs")
+                this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
             })
         );
     }
@@ -222,13 +222,13 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         );
 
         // Start the client. This will also launch the server
-        context.subscriptions.push(languageClient.start());
+        languageClient.start();
         // diagram is updated when file changes
         fileSystemWatcher.onDidChange((uri) => this.updateViews(languageClient, uri.toString()));
         return languageClient;
     }
 
-    protected updateViews(languageClient: CommonLanguageClient, uri: string) {
+    protected updateViews(languageClient: LanguageClient, uri: string) {
         this.lastUri = uri;
         if (this.contextTable) {
             languageClient.sendNotification('contextTable/getData', uri);

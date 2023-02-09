@@ -19,10 +19,10 @@ import { AstNode } from "langium";
 import {
     isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
     isLoss, Hazard, SystemConstraint, isContext
-} from "./generated/ast";
-import { STPAAspect } from "./stpa-model";
+} from "../generated/ast";
+import { groupValue } from "./synthesis-options";
 import { STPANode } from "./stpa-interfaces";
-import { groupValue } from "./options/synthesis-options";
+import { STPAAspect } from "./stpa-model";
 
 /* export function determineLayerForCSNodes(nodes: CSNode[]): void {
     let layer = nodes.length

@@ -17,9 +17,9 @@
 
 import { LangiumDocument } from "langium";
 import { StpaServices } from "../stpa-module";
-import { Model } from "../generated/ast";
 import { Range, URI } from "vscode-languageserver";
-import { ContextTableData, ContextTableControlAction, ContextTableRule, ContextTableSystemVariables, ContextTableVariable, ContextTableVariableValues } from "../../src-context-table/utils";
+import { ContextTableData, ContextTableControlAction, ContextTableRule, ContextTableSystemVariables, ContextTableVariable, ContextTableVariableValues } from "../../../src-context-table/utils";
+import { Model } from "../../generated/ast";
 
 export class ContextTableProvider {
     protected services: StpaServices;
@@ -65,7 +65,7 @@ export class ContextTableProvider {
         let rules: ContextTableRule[] = [];
 
         // collect control actions and variables
-        model.controlStructure.nodes.forEach(systemComponent => {
+        model.controlStructure?.nodes.forEach(systemComponent => {
             // control actions of the current system component
             systemComponent.actions.forEach(action => {
                 action.comms.forEach(command => {

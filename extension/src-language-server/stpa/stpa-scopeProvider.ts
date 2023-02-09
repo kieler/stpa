@@ -17,12 +17,9 @@
 
 import {
     DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription,
-    EMPTY_SCOPE
+    EMPTY_SCOPE, ReferenceInfo
 } from "langium";
-import {
-    isResponsibility, isResps, isSystemConstraint, isActionUCAs, Model, Node, UCA, Command, ActionUCAs, Hazard,
-    SystemConstraint, isModel, isHazardList, isContConstraint, isLossScenario, LossScenario, isRule, Rule, Variable, isContext, Context, isSafetyConstraint
-} from "./generated/ast";
+import { Hazard, SystemConstraint, UCA, Context, Variable, isModel, isContConstraint, isLossScenario, isSafetyConstraint, isHazardList, isResponsibility, isSystemConstraint, isActionUCAs, isRule, isContext, isResps, Model, LossScenario, ActionUCAs, Rule, Command, Node } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -40,8 +37,9 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         super(services);
     }
 
-    getScope(node: AstNode, referenceId: string): Scope {
-        const referenceType = this.reflection.getReferenceType(referenceId);
+    getScope(context: ReferenceInfo): Scope {
+        const referenceType = this.reflection.getReferenceType(context);
+        const node = context.container;
         const precomputed = getDocument(node).precomputedScopes;
         // get the root container which should be the Model
         let model = node.$container;
@@ -200,12 +198,12 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         model.allUCAs.forEach(systemUCAs => {
             const descs = this.getDescriptions(systemUCAs, this.UCA_TYPE, precomputed);
             allDescriptions = allDescriptions.concat(descs);
-        })
+        });
         // context UCAs
         model.rules.forEach(rule => {
             const descs = this.getDescriptions(rule, this.CONTEXT_TYPE, precomputed);
             allDescriptions = allDescriptions.concat(descs);
-        })
+        });
         return this.descriptionsToScope(allDescriptions);
     }
 

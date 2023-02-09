@@ -21,12 +21,12 @@ import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
 import {
     isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
     isSystemConstraint, isUCA, Model, Node
-} from './generated/ast';
+} from '../generated/ast';
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
 import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
-import { StpaSynthesisOptions } from './options/synthesis-options';
+import { StpaSynthesisOptions } from './synthesis-options';
 import { filterModel } from './filtering';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {

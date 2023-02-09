@@ -20,14 +20,14 @@ import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleCont
 import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { StpaDiagramGenerator } from './diagram-generator';
-import { StpaGeneratedModule, StpaGeneratedSharedModule } from './generated/module';
 import { StpaLayoutConfigurator } from './layout-config';
 import { StpaDiagramServer } from './stpa-diagramServer';
 import { StpaScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 import { URI } from 'vscode-uri';
 import { DiagramOptions } from 'sprotty-protocol';
-import { StpaSynthesisOptions } from './options/synthesis-options';
+import { StpaGeneratedSharedModule, StpaGeneratedModule } from '../generated/module';
+import { StpaSynthesisOptions } from './synthesis-options';
 import { ContextTableProvider } from './contextTable/context-dataProvider';
 
 
@@ -137,7 +137,7 @@ export const StpaSprottySharedModule: Module<LangiumSprottySharedServices, Sprot
  * @param context Optional module context with the LSP connection
  * @returns An object wrapping the shared services and the language-specific services
  */
-export function createStpaServices(context?: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, states: StpaServices; } {
+export function createStpaServices(context: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, states: StpaServices; } {
     const shared = inject(
         createDefaultSharedModule(context),
         StpaGeneratedSharedModule,

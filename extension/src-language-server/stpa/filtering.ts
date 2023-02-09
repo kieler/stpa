@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ActionUCAs, ContConstraint, Graph, Hazard, Loss, LossScenario, Model, Resps, Rule, SafetyConstraint, SystemConstraint } from "./generated/ast";
-import { StpaSynthesisOptions } from "./options/synthesis-options";
+import { ActionUCAs, ContConstraint, Graph, Hazard, Loss, LossScenario, Model, Resps, Rule, SafetyConstraint, SystemConstraint } from "../generated/ast";
+import { StpaSynthesisOptions } from "./synthesis-options";
 
 /**
  * Needed to work on a filtered model without changing the original model.
@@ -30,7 +30,7 @@ export class CustomModel {
     controllerConstraints: ContConstraint[];
     scenarios: LossScenario[];
     safetyCons: SafetyConstraint[];
-    controlStructure: Graph;
+    controlStructure?: Graph;
     rules: Rule[];
 }
 

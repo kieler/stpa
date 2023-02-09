@@ -15,19 +15,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Reference, ValidationAcceptor, ValidationCheck, ValidationRegistry } from 'langium';
+import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import {
-    ContConstraint, Hazard, HazardList, Loss, Model, Node,
-    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel, Context, Rule
-} from './generated/ast';
+import { StpaAstType, Loss, Hazard, Command, SystemConstraint, Node, Responsibility, UCA, ContConstraint, LossScenario, SafetyConstraint, Variable, Graph, Context, HazardList, Model, isModel } from '../generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
-
-/**
- * Map AST node types to validation checks.
- */
-type StpaChecks = { [type in StpaAstType]?: ValidationCheck | ValidationCheck[] };
 
 /**
  * Registry for validation checks.
@@ -36,7 +28,7 @@ export class StpaValidationRegistry extends ValidationRegistry {
     constructor(services: StpaServices) {
         super(services);
         const validator = services.validation.StpaValidator;
-        const checks: StpaChecks = {
+        const checks: ValidationChecks<StpaAstType> = {
             Model: validator.checkModel,
             Hazard: validator.checkHazard,
             SystemConstraint: validator.checkSystemConstraint,
@@ -50,8 +42,8 @@ export class StpaValidationRegistry extends ValidationRegistry {
     }
 }
 
-type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context;
-type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint;
+export type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context;
+export type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint | SafetyConstraint;
 
 /**
  * Implementation of custom validations.
@@ -117,7 +109,7 @@ export class StpaValidator {
             constraintsRefs = this.collectReferences(model.controllerConstraints);
         }
         if (this.checkScenariosForUCAs) {
-            scenarioRefs = model.scenarios.map(scenario => scenario.uca.ref?.name);
+            scenarioRefs = model.scenarios.map(scenario => scenario.uca?.ref?.name);
         }
         if (this.checkSafetyRequirementsForUCAs) {
             safetyRequirementsRefs = this.collectReferences(model.safetyCons);
@@ -146,16 +138,18 @@ export class StpaValidator {
             ...responsibilities,
             ...model.controllerConstraints,
             ...model.scenarios,
-            ...model.safetyCons,
-            ...model.controlStructure?.nodes
+            ...model.safetyCons
         ];
+        if (model.controlStructure) {
+            allElements.push(model.controlStructure)
+        }
         //check that their IDs are unique
         this.checkIDsAreUnique(allElements, accept);
 
 
         // check that each control action has at least one UCA
         const ucaActions = [...model.allUCAs.map(alluca => alluca.system.ref?.name + "." + alluca.action.ref?.name), ...model.rules.map(rule => rule.system.ref?.name + "." + rule.action.ref?.name)]
-        model.controlStructure.nodes.forEach(node => node.actions.forEach(action => action.comms.forEach(command => {
+        model.controlStructure?.nodes.forEach(node => node.actions.forEach(action => action.comms.forEach(command => {
             const name = node.name + "." + command.name
             if (!ucaActions.includes(name)) {
                 accept('warning', 'This element is not referenced by a UCA', { node: command, property: 'name' });
@@ -174,7 +168,7 @@ export class StpaValidator {
             const variableValues = variable.ref?.values;
             // the value of the variable in the context should be one of the values that are stated in the definition of the variable
             if (!variableValues?.includes(context.values[i])) {
-                accept('error', 'This variable has an invalid value.', { node: context, range: variable.$refNode.range });
+                accept('error', 'This variable has an invalid value.', { node: context, range: variable.$refNode?.range });
             }
         }
     }
