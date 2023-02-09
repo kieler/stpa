@@ -17,10 +17,7 @@
 
 import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import {
-    ContConstraint, Hazard, HazardList, Loss, Model, Node,
-    Responsibility, StpaAstType, SystemConstraint, LossScenario, UCA, SafetyConstraint, Variable, Graph, Command, isModel, Context, Rule
-} from './generated/ast';
+import { StpaAstType, Loss, Hazard, Command, SystemConstraint, Node, Responsibility, UCA, ContConstraint, LossScenario, SafetyConstraint, Variable, Graph, Context, HazardList, Model, isModel } from '../generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
 
