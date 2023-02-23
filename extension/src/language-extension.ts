@@ -35,6 +35,10 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     /** Saves the last selected UCA in the context table. */
     protected lastSelectedUCA: string[];
 
+    /** Indicates whether the language server is ready */
+    private resolveLSReady: () => void;
+    readonly lsReady = new Promise<void>((resolve) => this.resolveLSReady = resolve);
+
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
         // user changed configuration settings
@@ -50,6 +54,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
         // sends configuration of stpa to the language server
         this.languageClient.onNotification("ready", () => {
+            this.resolveLSReady();
             this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
         // handling of notifications regarding the context table
