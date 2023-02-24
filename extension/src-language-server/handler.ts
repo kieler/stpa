@@ -19,7 +19,7 @@ import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
 import { LangiumDocument } from "langium";
 import { Connection, Range } from "vscode-languageserver";
-import { elementWithName } from "./stpa-validator";
+import { elementWithName } from "./stpa/stpa-validator";
 
 /**
  * Adds handler for notifications.
