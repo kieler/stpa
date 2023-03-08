@@ -48,7 +48,7 @@ export class IDEnforcer {
             let elements: elementWithName[] = [];
             let prefix = "";
 
-
+            // offsets of the different aspects to calculate in which aspect the user changed something
             const safetyConsOffset = model.safetyCons.length !== 0 ? model.safetyCons[0].$cstNode?.offset : Number.MAX_VALUE;
             const scenarioOffset = model.scenarios.length !== 0 ? model.scenarios[0].$cstNode?.offset : safetyConsOffset;
             const ucaConstraintOffset = model.controllerConstraints.length !== 0 ? model.controllerConstraints[0].$cstNode?.offset : scenarioOffset;
@@ -56,6 +56,8 @@ export class IDEnforcer {
             const responsibilitiesOffset = model.responsibilities.length !== 0 ? model.responsibilities[0].$cstNode?.offset : ucaOffset;
             const constraintOffset = model.systemLevelConstraints.length !== 0 ? model.systemLevelConstraints[0].$cstNode?.offset : responsibilitiesOffset;
             const hazardOffset = model.hazards.length !== 0 ? model.hazards[0].$cstNode?.offset : constraintOffset;
+            
+            // determine the aspect which element names must be updated
             if (!hazardOffset || !constraintOffset || !responsibilitiesOffset || !ucaOffset || !ucaConstraintOffset || !scenarioOffset || !safetyConsOffset) {
                 console.log("Offset could not be determined for all aspects.");
             } else if (offset < hazardOffset) {
@@ -84,40 +86,48 @@ export class IDEnforcer {
                 prefix = "Scenario";
             }
 
-            // TODO: find the element which offset is greater with the find function isntead of a loop
-            for (let i = 0; i < elements.length; i++) {
-                const element = elements[i];
-                if (element.$cstNode!.offset > offset) {
-                    const edits = await this.renameIDs(elements.filter((_, index) => index >= i), prefix, elements.length, uri, currentDoc);
-                    if (elements[i - 1].$cstNode !== undefined) {
-                        const range = elements[i - 1].$cstNode!.range
-                        range.end.character = range.start.character + elements[i-1].name.length
-                        const test = TextEdit.replace(range, prefix + i);
-                        edits.push(test)
-                    }
-                    return edits;
-                }
+            // compute edits to rename all elements below the modified element
+            // TODO: does not work if the modified element has the same name as one of the elements below it
+            const index = elements.findIndex(element => element.$cstNode!.offset > offset);
+            const edits = await this.renameIDs(elements.slice(index), prefix, elements.length, uri, currentDoc);
+
+            // create edit to rename the modified element
+            const modifiedElement = elements[index - 1]
+            if (edits.length !== 0 && modifiedElement.$cstNode !== undefined) {
+                const range = modifiedElement.$cstNode!.range;
+                range.end.character = range.start.character + modifiedElement.name.length;
+                const modifiedElementEdit = TextEdit.replace(range, prefix + index);
+                edits.push(modifiedElementEdit);
             }
+
+            return edits;
         }
     }
 
     protected async renameIDs(elements: elementWithName[], prefix: string, counter: number, uri: string, document: LangiumDocument) {
         let edits: TextEdit[] = [];
         for (let i = elements.length - 1; i >= 0; i--) {
-            // TODO: check whether element already has the correct ID
+            // when elements already have the correct ID, renaming is not needed
             const element = elements[i];
+            if (element.name === prefix + counter) {
+                break;
+            }
+            // parameters needed for renaming
             const params: RenameParams = {
                 textDocument: document.textDocument,
                 position: element.$cstNode!.range.start,
                 newName: prefix + counter
             };
-            counter--;
+            // compute the textedits for renaming
             const edit = await this.services.lsp.RenameProvider!.rename(document, params);
             if (edit !== undefined && edit.changes !== undefined) {
-                const test = edit.changes;
-                edits = edits.concat(test[uri]);
+                const changes = edit.changes;
+                edits = edits.concat(changes[uri]);
             }
+            // update number for the element name
+            counter--;
         }
+        // return the needed textedits
         return edits;
     }
 
