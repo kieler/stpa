@@ -56,7 +56,7 @@ export class IDEnforcer {
             const responsibilitiesOffset = model.responsibilities.length !== 0 ? model.responsibilities[0].$cstNode?.offset : ucaOffset;
             const constraintOffset = model.systemLevelConstraints.length !== 0 ? model.systemLevelConstraints[0].$cstNode?.offset : responsibilitiesOffset;
             const hazardOffset = model.hazards.length !== 0 ? model.hazards[0].$cstNode?.offset : constraintOffset;
-            
+
             // determine the aspect which element names must be updated
             if (!hazardOffset || !constraintOffset || !responsibilitiesOffset || !ucaOffset || !ucaConstraintOffset || !scenarioOffset || !safetyConsOffset) {
                 console.log("Offset could not be determined for all aspects.");
@@ -89,10 +89,25 @@ export class IDEnforcer {
             // compute edits to rename all elements below the modified element
             // TODO: does not work if the modified element has the same name as one of the elements below it
             const index = elements.findIndex(element => element.$cstNode!.offset > offset);
-            const edits = await this.renameIDs(elements.slice(index), prefix, elements.length, uri, currentDoc);
+            let edits: TextEdit[] = [];
+            // when elements already have the correct ID, renaming is not needed
+            const element = elements[elements.length - 1];
+            if (element.name !== prefix + elements.length) {
+                if (change.text === '') {
+                    for (let i = index; i < elements.length; i++) {
+                        const renameEdits = await this.renameIDs(elements[i], prefix, i, uri, currentDoc);
+                        edits = edits.concat(renameEdits);
+                    }
+                } else {
+                    for (let i = elements.length - 1; i >= index; i--) {
+                        const renameEdits = await this.renameIDs(elements[i], prefix, i, uri, currentDoc);
+                        edits = edits.concat(renameEdits);
+                    }
+                }
+            }
 
             // create edit to rename the modified element
-            const modifiedElement = elements[index - 1]
+            const modifiedElement = elements[index - 1];
             if (edits.length !== 0 && modifiedElement.$cstNode !== undefined) {
                 const range = modifiedElement.$cstNode!.range;
                 range.end.character = range.start.character + modifiedElement.name.length;
@@ -104,29 +119,22 @@ export class IDEnforcer {
         }
     }
 
-    protected async renameIDs(elements: elementWithName[], prefix: string, counter: number, uri: string, document: LangiumDocument) {
+    protected async renameIDs(element: elementWithName, prefix: string, counter: number, uri: string, document: LangiumDocument) {
         let edits: TextEdit[] = [];
-        for (let i = elements.length - 1; i >= 0; i--) {
-            // when elements already have the correct ID, renaming is not needed
-            const element = elements[i];
-            if (element.name === prefix + counter) {
-                break;
-            }
-            // parameters needed for renaming
-            const params: RenameParams = {
-                textDocument: document.textDocument,
-                position: element.$cstNode!.range.start,
-                newName: prefix + counter
-            };
-            // compute the textedits for renaming
-            const edit = await this.services.lsp.RenameProvider!.rename(document, params);
-            if (edit !== undefined && edit.changes !== undefined) {
-                const changes = edit.changes;
-                edits = edits.concat(changes[uri]);
-            }
-            // update number for the element name
-            counter--;
+
+        // parameters needed for renaming
+        const params: RenameParams = {
+            textDocument: document.textDocument,
+            position: element.$cstNode!.range.start,
+            newName: prefix + (counter + 1)
+        };
+        // compute the textedits for renaming
+        const edit = await this.services.lsp.RenameProvider!.rename(document, params);
+        if (edit !== undefined && edit.changes !== undefined) {
+            const changes = edit.changes;
+            edits = edits.concat(changes[uri]);
         }
+
         // return the needed textedits
         return edits;
     }
