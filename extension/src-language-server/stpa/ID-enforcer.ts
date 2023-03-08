@@ -18,8 +18,7 @@
 
 import { LangiumDocument } from "langium";
 import { TextDocumentContentChangeEvent } from "vscode";
-import { RenameParams, TextEdit, WorkspaceEdit } from "vscode-languageserver";
-import { TextDocument } from "vscode-languageserver-textdocument";
+import { RenameParams, TextEdit } from "vscode-languageserver";
 import { Model } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { elementWithName } from "./stpa-validator";
@@ -34,15 +33,15 @@ export class IDEnforcer {
         this.services = services;
     }
 
-    enforceIDs(changes: TextDocumentContentChangeEvent[], uri: string) {
+    async enforceIDs(changes: TextDocumentContentChangeEvent[], uri: string) {
         // get the current model
         const textDocuments = this.services.shared.workspace.LangiumDocuments;
         const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
-        // if (currentDoc.parseResult.lexerErrors.length !== 0) {
-        //     return undefined;
-        // }
+        if (currentDoc.parseResult.lexerErrors.length !== 0 || currentDoc.parseResult.parserErrors.length !== 0) {
+            return undefined;
+        }
 
         for (const change of changes) {
             const offset = change.rangeOffset;
@@ -89,7 +88,8 @@ export class IDEnforcer {
             for (let i = 0; i < elements.length; i++) {
                 const element = elements[i];
                 if (element.$cstNode!.offset > offset) {
-                    return this.renameIDs(elements.filter((_, index) => index >= i), prefix, elements.length, uri, currentDoc);
+                    const edits = await this.renameIDs(elements.filter((_, index) => index >= i), prefix, elements.length, uri, currentDoc);
+                    return edits
                 }
             }
         }
