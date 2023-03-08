@@ -89,7 +89,13 @@ export class IDEnforcer {
                 const element = elements[i];
                 if (element.$cstNode!.offset > offset) {
                     const edits = await this.renameIDs(elements.filter((_, index) => index >= i), prefix, elements.length, uri, currentDoc);
-                    return edits
+                    if (elements[i - 1].$cstNode !== undefined) {
+                        const range = elements[i - 1].$cstNode!.range
+                        range.end.character = range.start.character + elements[i-1].name.length
+                        const test = TextEdit.replace(range, prefix + i);
+                        edits.push(test)
+                    }
+                    return edits;
                 }
             }
         }
