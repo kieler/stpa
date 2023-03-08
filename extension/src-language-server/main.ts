@@ -19,7 +19,7 @@ import { startLanguageServer } from 'langium';
 import { NodeFileSystem } from 'langium/node';
 import { addDiagramHandler } from 'langium-sprotty';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
-import { addContextTableHandler } from './stpa/contextTable/message-handler';
+import { addSTPANotificationHandler } from './stpa/contextTable/message-handler';
 import { addNotificationHandler } from './handler';
 import { createServices } from './module';
 
@@ -33,7 +33,7 @@ const { shared, stpa } = createServices({ connection, ...NodeFileSystem });
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
-addContextTableHandler(connection, stpa);
+addSTPANotificationHandler(connection, stpa);
 addNotificationHandler(connection, shared);
 
 // handle configuration changes for the validation checks

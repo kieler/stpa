@@ -17,7 +17,7 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, WorkspaceEdit } from 'vscode-languageclient/node';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
@@ -51,7 +51,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // sends configuration of stpa to the language server
         this.languageClient.onNotification("ready", () => {
             this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
+            vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
         });
+        this.languageClient.onNotification('editor/workspaceedit', ({edits, uri}) => this.applyTextEdits(edits, uri));
         // handling of notifications regarding the context table
         this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
         this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string; }) => {
@@ -64,6 +66,31 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
             }
         });
+    }
+
+    protected handleTextChangeEvent(changeEvent: vscode.TextDocumentChangeEvent) {
+        const changes = changeEvent.contentChanges;
+        const uri = changeEvent.document.uri.toString();
+        this.languageClient.sendNotification('editor/textChange', { changes: changes, uri: uri });
+
+    }
+
+    /**
+     * Applies WorkSpaceEdits
+     * @param msg Message contianing the uri of the document, the text to insert, and the position in the document ot insert it to.
+     */
+    protected async applyTextEdits(edits: vscode.TextEdit[], uri: string) {
+        const workSpaceEdit = new vscode.WorkspaceEdit();
+        workSpaceEdit.set(vscode.Uri.parse(uri), edits);
+        // Apply and save the edit. Report possible failures.
+        const edited = await vscode.workspace.applyEdit(workSpaceEdit);
+        if (!edited) {
+            console.error("Workspace edit could not be applied!");
+            return;
+        }
+
+        //await textDocument.save();
+        return;
     }
 
     /**
