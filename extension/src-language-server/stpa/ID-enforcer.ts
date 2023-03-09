@@ -48,6 +48,11 @@ export class IDEnforcer {
             return [];
         }
 
+        // the cross-references in the file must be updated otherwise renaming is not properly functioning
+        // and to calculate the references correctly the linking must be updated first
+        await this.services.references.Linker.link(this.currentDocument);
+        await this.services.shared.workspace.IndexManager.updateReferences(this.currentDocument);
+
         let edits: TextEdit[] = [];
         for (const change of changes) {
             const modificationOffset = change.rangeOffset;
