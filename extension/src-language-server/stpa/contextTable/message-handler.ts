@@ -15,6 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection, URI } from "vscode-languageserver";
 import { StpaServices } from "../stpa-module";
 
@@ -23,16 +24,16 @@ let lastUri: URI;
 /**
  * Adds handlers for notificaions regarding the context table.
  * @param connection 
- * @param services 
+ * @param stpaServices 
  */
-export function addSTPANotificationHandler(connection: Connection, services: StpaServices) {
+export function addSTPANotificationHandler(connection: Connection, stpaServices: StpaServices, shared: LangiumSprottySharedServices) {
     connection.onNotification('contextTable/getData', uri => {
         lastUri = uri;
-        const contextTable = services.contextTable.ContextTableProvider;
+        const contextTable = stpaServices.contextTable.ContextTableProvider;
         connection.sendNotification('contextTable/data', contextTable.getData(uri));
     });
     connection.onNotification('contextTable/selected', text => {
-        const contextTable = services.contextTable.ContextTableProvider;
+        const contextTable = stpaServices.contextTable.ContextTableProvider;
         const range = contextTable.getRangeOfUCA(lastUri, text);
         if (range) {
             connection.sendNotification('editor/highlight', ({ startLine: range.start.line, startChar: range.start.character, endLine: range.end.line, endChar: range.end.character, uri: lastUri }));
@@ -41,7 +42,8 @@ export function addSTPANotificationHandler(connection: Connection, services: Stp
         }
     });
     connection.onNotification('editor/textChange', async ({ changes, uri }) => {
-        const edits = await services.utility.IDEnforcer.enforceIDs(changes, uri);
+        await shared.workspace.DocumentBuilder.update([uri], []);
+        const edits = await stpaServices.utility.IDEnforcer.enforceIDs(changes, uri);
         if (edits.length !== 0) {
             connection.sendNotification('editor/workspaceedit', ({ edits, uri }));
         }

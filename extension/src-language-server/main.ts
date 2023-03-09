@@ -33,7 +33,7 @@ const { shared, stpa } = createServices({ connection, ...NodeFileSystem });
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
-addSTPANotificationHandler(connection, stpa);
+addSTPANotificationHandler(connection, stpa, shared);
 addNotificationHandler(connection, shared);
 
 // handle configuration changes for the validation checks
