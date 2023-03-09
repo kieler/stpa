@@ -15,11 +15,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { DocumentState } from 'langium';
 import { LangiumSprottySharedServices } from "langium-sprotty";
+import { TextDocumentContentChangeEvent } from 'vscode';
 import { Connection, URI } from "vscode-languageserver";
 import { StpaServices } from "../stpa-module";
 
 let lastUri: URI;
+let textChange: boolean = false;
+let textChanges: TextDocumentContentChangeEvent[] = [];
+let changeUri: string;
 
 /**
  * Adds handlers for notificaions regarding the context table.
@@ -42,10 +47,18 @@ export function addSTPANotificationHandler(connection: Connection, stpaServices:
         }
     });
     connection.onNotification('editor/textChange', async ({ changes, uri }) => {
-        await shared.workspace.DocumentBuilder.update([uri], []);
-        const edits = await stpaServices.utility.IDEnforcer.enforceIDs(changes, uri);
-        if (edits.length !== 0) {
-            connection.sendNotification('editor/workspaceedit', ({ edits, uri }));
+        textChange = true;
+        textChanges = changes;
+        changeUri = uri;
+    });
+    shared.workspace.DocumentBuilder.onBuildPhase(DocumentState.Validated, async () => {
+        if (textChange) {
+            const edits = await stpaServices.utility.IDEnforcer.enforceIDs(textChanges, changeUri);
+            if (edits.length !== 0) {
+                connection.sendNotification('editor/workspaceedit', ({ edits, uri: changeUri }));
+            }
+            textChange = false;
+            textChanges = [];
         }
     });
 }
