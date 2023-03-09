@@ -29,114 +29,149 @@ export class IDEnforcer {
     protected readonly options: StpaServices;
     protected services: StpaServices;
 
+    protected currentUri: string;
+    protected currentDocument: LangiumDocument<Model>;
+
     constructor(services: StpaServices) {
         this.services = services;
     }
 
-    async enforceIDs(changes: TextDocumentContentChangeEvent[], uri: string) {
+    async enforceIDs(changes: TextDocumentContentChangeEvent[], uri: string): Promise<TextEdit[]> {
+        this.currentUri = uri;
         // get the current model
         const textDocuments = this.services.shared.workspace.LangiumDocuments;
-        const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
-        const model: Model = currentDoc.parseResult.value;
+        this.currentDocument = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
+        const model: Model = this.currentDocument.parseResult.value;
 
-        if (currentDoc.parseResult.lexerErrors.length !== 0 || currentDoc.parseResult.parserErrors.length !== 0) {
-            return undefined;
+        // ID enforcement can only be done if the parser has no errors. Otherwise other syntax elements than IDs are interpreted as IDs.
+        if (this.currentDocument.parseResult.lexerErrors.length !== 0 || this.currentDocument.parseResult.parserErrors.length !== 0) {
+            return [];
         }
 
+        let edits: TextEdit[] = [];
         for (const change of changes) {
-            const offset = change.rangeOffset;
-            let elements: elementWithName[] = [];
-            let prefix = "";
+            const modificationOffset = change.rangeOffset;
+            // calculates the elements that need to be considered for ID enforcement and the prefix that should be used for it
+            const modifiedAspect = findModifiedAspect(model, modificationOffset);
+            if (modifiedAspect) {
+                const elements: elementWithName[] = modifiedAspect.elements;
+                const prefix = modifiedAspect.prefix;
 
-            // offsets of the different aspects to calculate in which aspect the user changed something
-            const safetyConsOffset = model.safetyCons.length !== 0 ? model.safetyCons[0].$cstNode?.offset : Number.MAX_VALUE;
-            const scenarioOffset = model.scenarios.length !== 0 ? model.scenarios[0].$cstNode?.offset : safetyConsOffset;
-            const ucaConstraintOffset = model.controllerConstraints.length !== 0 ? model.controllerConstraints[0].$cstNode?.offset : scenarioOffset;
-            const ucaOffset = model.rules.length !== 0 ? model.rules[0].$cstNode?.offset : (model.allUCAs.length !== 0 ? model.allUCAs[0].$cstNode?.offset : ucaConstraintOffset);
-            const responsibilitiesOffset = model.responsibilities.length !== 0 ? model.responsibilities[0].$cstNode?.offset : ucaOffset;
-            const constraintOffset = model.systemLevelConstraints.length !== 0 ? model.systemLevelConstraints[0].$cstNode?.offset : responsibilitiesOffset;
-            const hazardOffset = model.hazards.length !== 0 ? model.hazards[0].$cstNode?.offset : constraintOffset;
+                // edits for renaming the elements below the modified element
+                const index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset > modificationOffset);
+                console.log("index: " + index);
+                if (index < 0) {
+                    console.log("IDs could not be enforce. Index of modified element not found.");
+                    continue;
+                }
+                edits = edits.concat(await this.enforceIdsBelowModifiedElement(index, elements, prefix, change.text === ''));
 
-            // determine the aspect which element names must be updated
-            if (!hazardOffset || !constraintOffset || !responsibilitiesOffset || !ucaOffset || !ucaConstraintOffset || !scenarioOffset || !safetyConsOffset) {
-                console.log("Offset could not be determined for all aspects.");
-            } else if (offset < hazardOffset) {
-                elements = model.losses;
-                prefix = "L";
-            } else if (offset < constraintOffset && offset > hazardOffset) {
-                elements = model.hazards;
-                //TODO: subcomponents
-                prefix = "H";
-            } else if (offset < responsibilitiesOffset && offset > constraintOffset) {
-                elements = model.systemLevelConstraints;
-                prefix = "SC";
-            } else if (offset < ucaOffset && offset > responsibilitiesOffset) {
-                elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
-                prefix = "R";
-            } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
-                elements = model.allUCAs.flatMap(uca => uca.ucas);
-                elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
-                //TODO: RL (context table) must be unique too
-                prefix = "UCA";
-            } else if (offset < scenarioOffset && offset > ucaConstraintOffset) {
-                elements = model.controllerConstraints;
-                prefix = "C";
-            } else if (offset < safetyConsOffset && offset > scenarioOffset) {
-                elements = model.scenarios;
-                prefix = "Scenario";
-            }
-
-            // compute edits to rename all elements below the modified element
-            // TODO: does not work if the modified element has the same name as one of the elements below it
-            const index = elements.findIndex(element => element.$cstNode!.offset > offset);
-            let edits: TextEdit[] = [];
-            // when elements already have the correct ID, renaming is not needed
-            const element = elements[elements.length - 1];
-            if (element.name !== prefix + elements.length) {
-                if (change.text === '') {
-                    for (let i = index; i < elements.length; i++) {
-                        const renameEdits = await this.renameIDs(elements[i], prefix, i, uri, currentDoc);
-                        edits = edits.concat(renameEdits);
-                    }
-                } else {
-                    for (let i = elements.length - 1; i >= index; i--) {
-                        const renameEdits = await this.renameIDs(elements[i], prefix, i, uri, currentDoc);
-                        edits = edits.concat(renameEdits);
-                    }
+                // create edit to rename the modified element
+                const modifiedElement = elements[index - 1];
+                if (edits.length !== 0 && modifiedElement.$cstNode) {
+                    const range = modifiedElement.$cstNode.range;
+                    range.end.character = range.start.character + modifiedElement.name.length;
+                    const modifiedElementEdit = TextEdit.replace(range, prefix + index);
+                    edits.push(modifiedElementEdit);
                 }
             }
-
-            // create edit to rename the modified element
-            const modifiedElement = elements[index - 1];
-            if (edits.length !== 0 && modifiedElement.$cstNode !== undefined) {
-                const range = modifiedElement.$cstNode!.range;
-                range.end.character = range.start.character + modifiedElement.name.length;
-                const modifiedElementEdit = TextEdit.replace(range, prefix + index);
-                edits.push(modifiedElementEdit);
-            }
-
-            return edits;
         }
+        return edits;
     }
 
-    protected async renameIDs(element: elementWithName, prefix: string, counter: number, uri: string, document: LangiumDocument) {
+    protected async enforceIdsBelowModifiedElement(index: number, elements: elementWithName[], prefix: string, decrease: boolean): Promise<TextEdit[]> {
+        // guarantee that the index is not out of bounds
+        if (index < 0) {
+            index = 0;
+        }
+        // compute edits to rename all elements below the modified element
+        // TODO: does not work if the modified element has the same name as one of the elements below it
         let edits: TextEdit[] = [];
+        // when elements already have the correct ID, renaming is not needed
+        const element = elements[elements.length - 1];
+        if (element.name !== prefix + elements.length) {
+            if (decrease) {
+                // IDs of the elements are decreased so we must start with the lowest ID
+                for (let i = index; i < elements.length; i++) {
+                    const renameEdits = await this.renameID(elements[i], prefix, i);
+                    edits = edits.concat(renameEdits);
+                }
+            } else {
+                // IDs of the elements are increased so we must start with the largest ID
+                for (let i = elements.length - 1; i >= index; i--) {
+                    const renameEdits = await this.renameID(elements[i], prefix, i);
+                    edits = edits.concat(renameEdits);
+                }
+            }
+        }
+        return edits;
+    }
 
-        // parameters needed for renaming
-        const params: RenameParams = {
-            textDocument: document.textDocument,
-            position: element.$cstNode!.range.start,
-            newName: prefix + (counter + 1)
-        };
-        // compute the textedits for renaming
-        const edit = await this.services.lsp.RenameProvider!.rename(document, params);
-        if (edit !== undefined && edit.changes !== undefined) {
-            const changes = edit.changes;
-            edits = edits.concat(changes[uri]);
+    protected async renameID(element: elementWithName, prefix: string, counter: number): Promise<TextEdit[]> {
+        let edits: TextEdit[] = [];
+        if (element && element.$cstNode) {
+            // parameters needed for renaming
+            const params: RenameParams = {
+                textDocument: this.currentDocument.textDocument,
+                position: element.$cstNode.range.start,
+                newName: prefix + (counter + 1)
+            };
+            // compute the textedits for renaming
+            const edit = await this.services.lsp.RenameProvider!.rename(this.currentDocument, params);
+            if (edit !== undefined && edit.changes !== undefined) {
+                const changes = edit.changes;
+                edits = edits.concat(changes[this.currentUri]);
+            }
         }
 
         // return the needed textedits
         return edits;
     }
 
+}
+
+function findModifiedAspect(model: Model, offset: number): { elements: elementWithName[], prefix: string; } | undefined {
+    let elements: elementWithName[] = [];
+    let prefix = "";
+
+    // offsets of the different aspects to calculate in which aspect the user changed something
+    const safetyConsOffset = model.safetyCons.length !== 0 ? model.safetyCons[0].$cstNode?.offset : Number.MAX_VALUE;
+    const scenarioOffset = model.scenarios.length !== 0 ? model.scenarios[0].$cstNode?.offset : safetyConsOffset;
+    const ucaConstraintOffset = model.controllerConstraints.length !== 0 ? model.controllerConstraints[0].$cstNode?.offset : scenarioOffset;
+    const ucaOffset = model.rules.length !== 0 ? model.rules[0].$cstNode?.offset : (model.allUCAs.length !== 0 ? model.allUCAs[0].$cstNode?.offset : ucaConstraintOffset);
+    const responsibilitiesOffset = model.responsibilities.length !== 0 ? model.responsibilities[0].$cstNode?.offset : ucaOffset;
+    const constraintOffset = model.systemLevelConstraints.length !== 0 ? model.systemLevelConstraints[0].$cstNode?.offset : responsibilitiesOffset;
+    const hazardOffset = model.hazards.length !== 0 ? model.hazards[0].$cstNode?.offset : constraintOffset;
+
+    // determine the aspect which element names must be updated
+    if (!hazardOffset || !constraintOffset || !responsibilitiesOffset || !ucaOffset || !ucaConstraintOffset || !scenarioOffset || !safetyConsOffset) {
+        console.log("Offset could not be determined for all aspects.");
+        return undefined;
+    } else if (offset < hazardOffset) {
+        elements = model.losses;
+        prefix = "L";
+    } else if (offset < constraintOffset && offset > hazardOffset) {
+        elements = model.hazards;
+        //TODO: subcomponents
+        prefix = "H";
+    } else if (offset < responsibilitiesOffset && offset > constraintOffset) {
+        elements = model.systemLevelConstraints;
+        prefix = "SC";
+    } else if (offset < ucaOffset && offset > responsibilitiesOffset) {
+        elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
+        prefix = "R";
+    } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
+        elements = model.allUCAs.flatMap(uca => uca.ucas);
+        elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
+        //TODO: RL (context table) must be unique too
+        prefix = "UCA";
+    } else if (offset < scenarioOffset && offset > ucaConstraintOffset) {
+        elements = model.controllerConstraints;
+        prefix = "C";
+    } else if (offset < safetyConsOffset && offset > scenarioOffset) {
+        elements = model.scenarios;
+        prefix = "Scenario";
+    }
+
+    return { elements, prefix };
 }

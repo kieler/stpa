@@ -42,7 +42,7 @@ export function addSTPANotificationHandler(connection: Connection, services: Stp
     });
     connection.onNotification('editor/textChange', async ({ changes, uri }) => {
         const edits = await services.utility.IDEnforcer.enforceIDs(changes, uri);
-        if (edits !== undefined) {
+        if (edits.length !== 0) {
             connection.sendNotification('editor/workspaceedit', ({ edits, uri }));
         }
     });
