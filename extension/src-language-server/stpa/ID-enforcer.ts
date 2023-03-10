@@ -59,7 +59,6 @@ export class IDEnforcer {
 
                 // edits for renaming the elements below the modified element
                 const index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset > modificationOffset);
-                console.log("index: " + index);
                 if (index < 0) {
                     console.log("IDs could not be enforce. Index of modified element not found.");
                     continue;
@@ -85,11 +84,10 @@ export class IDEnforcer {
             index = 0;
         }
         // compute edits to rename all elements below the modified element
-        // TODO: does not work if the modified element has the same name as one of the elements below it
         let edits: TextEdit[] = [];
         // when elements already have the correct ID, renaming is not needed
-        const element = elements[elements.length - 1];
-        if (element.name !== prefix + elements.length) {
+        if (elements[elements.length - 1].name !== prefix + elements.length) {
+            const modifiedElement = elements[index - 1];
             if (decrease) {
                 // IDs of the elements are decreased so we must start with the lowest ID
                 for (let i = index; i < elements.length; i++) {
@@ -99,8 +97,27 @@ export class IDEnforcer {
             } else {
                 // IDs of the elements are increased so we must start with the largest ID
                 for (let i = elements.length - 1; i >= index; i--) {
-                    const renameEdits = await this.renameID(elements[i], prefix, i);
-                    edits = edits.concat(renameEdits);
+                    let elementToRename = elements[i];
+                    if (modifiedElement && elementToRename.name === modifiedElement.name) {
+                        // if the element to rename has the same name as the modified element it must be renamed manually 
+                        // and the references are updated by calling the rename function with the modified element
+                        if (elementToRename.$cstNode) {
+                            const range = elementToRename.$cstNode.range;
+                            range.end.character = range.start.character + modifiedElement.name.length;
+                            const modifiedElementEdit = TextEdit.replace(range, prefix + (i + 1));
+                            edits.push(modifiedElementEdit);
+                        }
+
+                        let renameEdits = await this.renameID(modifiedElement, prefix, i);
+                        if (modifiedElement.$cstNode) {
+                            const range = modifiedElement.$cstNode.range;
+                            range.end.character = range.start.character + modifiedElement.name.length;
+                            renameEdits = renameEdits.filter(edit => !(edit.range.start.line === range.start.line && edit.range.start.character === range.start.character))
+                        }
+                        edits = edits.concat(renameEdits);
+                    } else {
+                    const renameEdits = await this.renameID(elementToRename, prefix, i);
+                    edits = edits.concat(renameEdits);}
                 }
             }
         }
