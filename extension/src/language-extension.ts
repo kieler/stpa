@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -51,12 +51,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
-        // sends configuration of stpa to the language server
-        this.languageClient.onNotification("ready", () => {
-            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
-            vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
-        });
-        this.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
         // handling of notifications regarding the context table
         this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
         this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string; }) => {
@@ -69,34 +63,49 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
             }
         });
+
+        // textdocument has changed
+        vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
+        // language client sent workspace edits
+        this.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
+        // laguage server is ready
+        this.languageClient.onNotification("ready", () => {
+            // sends configuration of stpa to the language server
+            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
+        });
     }
 
+    /**
+     * Notifies the language server that a textdocument has changed.
+     * @param changeEvent The change in the text document.
+     */
     protected handleTextChangeEvent(changeEvent: vscode.TextDocumentChangeEvent): void {
+        // if the change should be ignored (e.g. for a redo/undo action), the language server is not notified.
         if (this.ignoreNextTextChange) {
             this.ignoreNextTextChange = false;
             return;
         }
+        // send the changes to the language server
         const changes = changeEvent.contentChanges;
         const uri = changeEvent.document.uri.toString();
         this.languageClient.sendNotification('editor/textChange', { changes: changes, uri: uri });
     }
 
     /**
-     * Applies WorkSpaceEdits
-     * @param msg Message contianing the uri of the document, the text to insert, and the position in the document ot insert it to.
+     * Applies text edits to the document.
+     * @param edits The edits to apply.
+     * @param uri The uri of the document that should be edited.
      */
-    protected async applyTextEdits(edits: vscode.TextEdit[], uri: string) {
+    protected async applyTextEdits(edits: vscode.TextEdit[], uri: string): Promise<void> {
+        // create a workspace edit
         const workSpaceEdit = new vscode.WorkspaceEdit();
         workSpaceEdit.set(vscode.Uri.parse(uri), edits);
-        // Apply and save the edit. Report possible failures.
+        // Apply the edit. Report possible failures.
         const edited = await vscode.workspace.applyEdit(workSpaceEdit);
         if (!edited) {
             console.error("Workspace edit could not be applied!");
             return;
         }
-
-        //await textDocument.save();
-        return;
     }
 
     /**

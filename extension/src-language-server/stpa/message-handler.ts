@@ -19,44 +19,76 @@ import { DocumentState } from 'langium';
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { TextDocumentContentChangeEvent } from 'vscode';
 import { Connection, URI } from "vscode-languageserver";
-import { StpaServices } from "../stpa-module";
+import { StpaServices } from "./stpa-module";
 
 let lastUri: URI;
+
+/** Needed to enforce IDs on a document that has been changed. */
 let textChange: boolean = false;
 let textChanges: TextDocumentContentChangeEvent[] = [];
 let changeUri: string;
 
 /**
- * Adds handlers for notificaions regarding the context table.
+ * Adds handlers for notifications regarding stpa.
  * @param connection 
  * @param stpaServices 
  */
-export function addSTPANotificationHandler(connection: Connection, stpaServices: StpaServices, shared: LangiumSprottySharedServices) {
+export function addSTPANotificationHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
+    addContextTableHandler(connection, stpaServices);
+    addTextChangeHandler(connection, stpaServices, sharedServices);
+}
+
+/**
+ * Adds handlers for notifications regarding the context table.
+ * @param connection 
+ * @param stpaServices 
+ */
+function addContextTableHandler(connection: Connection, stpaServices: StpaServices): void {
+    // the data needed to create the context table is requested
     connection.onNotification('contextTable/getData', uri => {
+        // data is computed and send back to the extension
         lastUri = uri;
         const contextTable = stpaServices.contextTable.ContextTableProvider;
         connection.sendNotification('contextTable/data', contextTable.getData(uri));
     });
+    // a cell in the context table is selected
     connection.onNotification('contextTable/selected', text => {
+        // compute the range of the textual definition of the selected UCA
         const contextTable = stpaServices.contextTable.ContextTableProvider;
         const range = contextTable.getRangeOfUCA(lastUri, text);
         if (range) {
+            // highlight the textual definition in the editor
             connection.sendNotification('editor/highlight', ({ startLine: range.start.line, startChar: range.start.character, endLine: range.end.line, endChar: range.end.character, uri: lastUri }));
         } else {
             console.log("The selected UCA could not be found in the editor.");
         }
     });
+}
+
+/**
+ * Adds handlers for notifications regarding changes in the editor.
+ * @param connection 
+ * @param stpaServices 
+ * @param sharedServices 
+ */
+function addTextChangeHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
+    // text in the editor changed
     connection.onNotification('editor/textChange', async ({ changes, uri }) => {
+        // save the changes and the uri of the file. Before we can do something we have to wait until the document is built (see below).
         textChange = true;
         textChanges = changes;
         changeUri = uri;
     });
-    shared.workspace.DocumentBuilder.onBuildPhase(DocumentState.Validated, async () => {
+    sharedServices.workspace.DocumentBuilder.onBuildPhase(DocumentState.Validated, async () => {
+        // document built is finished
         if (textChange) {
+            // built was triggered because of changes in the editor
+            // enforce correct IDs for the STPA components by sending the computed edits to the extension
             const edits = await stpaServices.utility.IDEnforcer.enforceIDs(textChanges, changeUri);
             if (edits.length !== 0) {
                 connection.sendNotification('editor/workspaceedit', ({ edits, uri: changeUri }));
             }
+            // reset saved changes
             textChange = false;
             textChanges = [];
         }

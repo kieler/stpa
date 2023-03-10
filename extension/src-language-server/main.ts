@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021-2022 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -19,7 +19,7 @@ import { startLanguageServer } from 'langium';
 import { NodeFileSystem } from 'langium/node';
 import { addDiagramHandler } from 'langium-sprotty';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
-import { addSTPANotificationHandler } from './stpa/contextTable/message-handler';
+import { addSTPANotificationHandler } from './stpa/message-handler';
 import { addNotificationHandler } from './handler';
 import { createServices } from './module';
 
