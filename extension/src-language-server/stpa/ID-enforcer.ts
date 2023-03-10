@@ -112,7 +112,7 @@ export class IDEnforcer {
             if (decrease) {
                 // IDs of the elements are decreased so we must start with the lowest ID
                 for (let i = index; i < elements.length; i++) {
-                    const renameEdits = await this.renameID(elements[i], prefix, i);
+                    const renameEdits = await this.renameID(elements[i], prefix, i + 1);
                     edits = edits.concat(renameEdits);
                 }
             } else {
