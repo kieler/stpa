@@ -26,6 +26,11 @@ import { elementWithName } from "./stpa-validator";
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
+    // TODO: deleting SC above a SC with subcomponents
+    // TODO: deleting scenario
+    // TODO: adding hazard
+    // TODO: ID enforcement for subcomponents
+    // TODO: when deleting a component the references should be deleted too
 
     protected readonly stpaServices: StpaServices;
 
@@ -78,7 +83,8 @@ export class IDEnforcer {
 
                 // create edit to rename the modified element
                 const modifiedElement = elements[index - 1];
-                if (modifiedElement.$cstNode && modifiedElement.name !== prefix + index) {
+                if (modifiedElement && modifiedElement.$cstNode && modifiedElement.name !== prefix + index) {
+                    // TODO: range for hazards is wrong
                     const range = modifiedElement.$cstNode.range;
                     range.end.character = range.start.character + modifiedElement.name.length;
                     const modifiedElementEdit = TextEdit.replace(range, prefix + index);
@@ -187,13 +193,22 @@ export class IDEnforcer {
         let prefix = "";
 
         // offsets of the different aspects to determine the aspect for the given offset 
-        const safetyConsOffset = model.safetyCons.length !== 0 ? model.safetyCons[0].$cstNode?.offset : Number.MAX_VALUE;
-        const scenarioOffset = model.scenarios.length !== 0 ? model.scenarios[0].$cstNode?.offset : safetyConsOffset;
-        const ucaConstraintOffset = model.controllerConstraints.length !== 0 ? model.controllerConstraints[0].$cstNode?.offset : scenarioOffset;
-        const ucaOffset = model.rules.length !== 0 ? model.rules[0].$cstNode?.offset : (model.allUCAs.length !== 0 ? model.allUCAs[0].$cstNode?.offset : ucaConstraintOffset);
-        const responsibilitiesOffset = model.responsibilities.length !== 0 ? model.responsibilities[0].$cstNode?.offset : ucaOffset;
-        const constraintOffset = model.systemLevelConstraints.length !== 0 ? model.systemLevelConstraints[0].$cstNode?.offset : responsibilitiesOffset;
-        const hazardOffset = model.hazards.length !== 0 ? model.hazards[0].$cstNode?.offset : constraintOffset;
+        const subtractOffset = 5
+        const safetyConsOffset = model.safetyCons.length !== 0 && model.safetyCons[0].$cstNode?.offset ?
+            model.safetyCons[0].$cstNode.offset - subtractOffset : Number.MAX_VALUE;
+        const scenarioOffset = model.scenarios.length !== 0 && model.scenarios[0].$cstNode?.offset ?
+            model.scenarios[0].$cstNode.offset - subtractOffset : safetyConsOffset;
+        const ucaConstraintOffset = model.controllerConstraints.length !== 0 && model.controllerConstraints[0].$cstNode?.offset ?
+            model.controllerConstraints[0].$cstNode.offset - subtractOffset : scenarioOffset;
+        const ucaOffset = model.rules.length !== 0 && model.rules[0].$cstNode?.offset ?
+            model.rules[0].$cstNode.offset - subtractOffset : (model.allUCAs.length !== 0 && model.allUCAs[0].$cstNode?.offset ?
+                model.allUCAs[0].$cstNode.offset - subtractOffset : ucaConstraintOffset);
+        const responsibilitiesOffset = model.responsibilities.length !== 0 && model.responsibilities[0].$cstNode?.offset ?
+            model.responsibilities[0].$cstNode.offset - subtractOffset : ucaOffset;
+        const constraintOffset = model.systemLevelConstraints.length !== 0 && model.systemLevelConstraints[0].$cstNode?.offset ?
+            model.systemLevelConstraints[0].$cstNode.offset - subtractOffset : responsibilitiesOffset;
+        const hazardOffset = model.hazards.length !== 0 && model.hazards[0].$cstNode?.offset ?
+            model.hazards[0].$cstNode.offset - subtractOffset : constraintOffset;
 
         // determine the aspect for the given offset
         if (!hazardOffset || !constraintOffset || !responsibilitiesOffset || !ucaOffset || !ucaConstraintOffset || !scenarioOffset || !safetyConsOffset) {
