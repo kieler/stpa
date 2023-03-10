@@ -26,8 +26,7 @@ import { elementWithName } from "./stpa-validator";
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
-    // TODO: deleting SC above a SC with subcomponents
-    // TODO: deleting scenario
+    // TODO: deleting H4 deletes the subcompoenents of SC7
     // TODO: adding hazard
     // TODO: ID enforcement for subcomponents
     // TODO: when deleting a component the references should be deleted too
@@ -72,7 +71,7 @@ export class IDEnforcer {
                 const prefix = modifiedAspect.prefix;
 
                 // index of the modified element
-                let index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset > modificationOffset);
+                let index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset >= modificationOffset);
                 if (index < 0) {
                     // modified element is the last one
                     index = elements.length;
