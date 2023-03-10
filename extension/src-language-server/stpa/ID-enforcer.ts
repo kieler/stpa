@@ -58,16 +58,17 @@ export class IDEnforcer {
                 const prefix = modifiedAspect.prefix;
 
                 // edits for renaming the elements below the modified element
-                const index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset > modificationOffset);
+                let index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset > modificationOffset);
                 if (index < 0) {
-                    console.log("IDs could not be enforce. Index of modified element not found.");
-                    continue;
+                    // modified element is the last one
+                    index = elements.length;
+                } else {
+                    edits = edits.concat(await this.enforceIdsBelowModifiedElement(index, elements, prefix, change.text === ''));
                 }
-                edits = edits.concat(await this.enforceIdsBelowModifiedElement(index, elements, prefix, change.text === ''));
 
                 // create edit to rename the modified element
                 const modifiedElement = elements[index - 1];
-                if (edits.length !== 0 && modifiedElement.$cstNode) {
+                if (modifiedElement.$cstNode && modifiedElement.name !== prefix + index) {
                     const range = modifiedElement.$cstNode.range;
                     range.end.character = range.start.character + modifiedElement.name.length;
                     const modifiedElementEdit = TextEdit.replace(range, prefix + index);
@@ -112,12 +113,13 @@ export class IDEnforcer {
                         if (modifiedElement.$cstNode) {
                             const range = modifiedElement.$cstNode.range;
                             range.end.character = range.start.character + modifiedElement.name.length;
-                            renameEdits = renameEdits.filter(edit => !(edit.range.start.line === range.start.line && edit.range.start.character === range.start.character))
+                            renameEdits = renameEdits.filter(edit => !(edit.range.start.line === range.start.line && edit.range.start.character === range.start.character));
                         }
                         edits = edits.concat(renameEdits);
                     } else {
-                    const renameEdits = await this.renameID(elementToRename, prefix, i);
-                    edits = edits.concat(renameEdits);}
+                        const renameEdits = await this.renameID(elementToRename, prefix, i);
+                        edits = edits.concat(renameEdits);
+                    }
                 }
             }
         }
