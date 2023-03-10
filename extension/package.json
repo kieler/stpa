@@ -135,6 +135,16 @@
                 "command": "stpa.checks.checkSafetyRequirementsForUCAs",
                 "title": "Set the safety requirements for UCA check",
                 "category": "STPA Checks"
+            },
+            {
+                "command": "stpa.IDs.undo",
+                "title": "Executes the undo action",
+                "category": "STPA ID Enforcement"
+            },
+            {
+                "command": "stpa.IDs.redo",
+                "title": "Executes the redo action",
+                "category": "STPA ID Enforcement"
             }
         ],
         "menus": {
@@ -277,6 +287,18 @@
                 "mac": "delete",
                 "command": "stpa.diagram.delete",
                 "when": "stpa-diagram-focused"
+            },
+            {
+                "key": "ctrl+z",
+                "mac": "cmd+z",
+                "command": "stpa.IDs.undo",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+y",
+                "mac": "cmd+y",
+                "command": "stpa.IDs.redo",
+                "when": "editorTextFocus"
             }
         ]
     },

@@ -35,6 +35,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     /** Saves the last selected UCA in the context table. */
     protected lastSelectedUCA: string[];
 
+    /** needed for undo/redo actions when ID enforcement is active*/
+    protected ignoreNextTextChange: boolean = false;
+
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
         // user changed configuration settings
@@ -53,7 +56,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
             vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
         });
-        this.languageClient.onNotification('editor/workspaceedit', ({edits, uri}) => this.applyTextEdits(edits, uri));
+        this.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
         // handling of notifications regarding the context table
         this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
         this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string; }) => {
@@ -68,11 +71,14 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
     }
 
-    protected handleTextChangeEvent(changeEvent: vscode.TextDocumentChangeEvent) {
+    protected handleTextChangeEvent(changeEvent: vscode.TextDocumentChangeEvent): void {
+        if (this.ignoreNextTextChange) {
+            this.ignoreNextTextChange = false;
+            return;
+        }
         const changes = changeEvent.contentChanges;
         const uri = changeEvent.document.uri.toString();
         this.languageClient.sendNotification('editor/textChange', { changes: changes, uri: uri });
-
     }
 
     /**
@@ -136,6 +142,18 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async (...commandArgs: any[]) => {
                 this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
+            })
+        );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.IDs.undo', async (...commandArgs: any[]) => {
+                this.ignoreNextTextChange = true;
+                vscode.commands.executeCommand("undo");
+            })
+        );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.IDs.redo', async (...commandArgs: any[]) => {
+                this.ignoreNextTextChange = true;
+                vscode.commands.executeCommand("redo");
             })
         );
     }
