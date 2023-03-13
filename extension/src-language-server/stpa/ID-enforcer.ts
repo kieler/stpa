@@ -18,7 +18,7 @@
 import { isCompositeCstNode, LangiumDocument } from "langium";
 import { TextDocumentContentChangeEvent } from "vscode";
 import { RenameParams, TextEdit } from "vscode-languageserver";
-import { Hazard, LossScenario, Model, SystemConstraint } from "../generated/ast";
+import { Hazard, LossScenario, Model, Rule, SystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { elementWithName, elementWithRefs } from "./stpa-validator";
 import { collectElementsWithSubComps } from "./utils";
@@ -59,34 +59,53 @@ export class IDEnforcer {
 
         let edits: TextEdit[] = [];
         for (const change of changes) {
-            // offset where the change happened
-            const modificationOffset = change.rangeOffset;
             // calculates the elements that need to be considered for ID enforcement and the prefix that should be used for it
-            const modifiedAspect = this.findModifiedAspect(modificationOffset);
+            const modifiedAspect = this.findModifiedAspect(change.rangeOffset);
             if (modifiedAspect) {
                 const elements: elementWithName[] = modifiedAspect.elements;
                 const prefix = modifiedAspect.prefix;
+                // enforce IDs on the affected elements
+                edits = edits.concat(await this.enforceIDsOnElements(elements, prefix, change));
 
-                // index of the modified element
-                let index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset >= modificationOffset);
-                if (index < 0) {
-                    // modified element is the last one
-                    index = elements.length;
-                } else {
-                    // compute edits for renaming the elements below the modified element
-                    edits = edits.concat(await this.enforceIDsBelowModifiedElement(index, elements, prefix, change.text === ''));
-                }
-
-                // create edit to rename the modified element
-                const modifiedElement = elements[index - 1];
-                if (modifiedElement && modifiedElement.$cstNode && modifiedElement.name !== prefix + index) {
-                    // TODO: range for hazards is wrong
-                    const range = modifiedElement.$cstNode.range;
-                    range.end.character = range.start.character + modifiedElement.name.length;
-                    const modifiedElementEdit = TextEdit.replace(range, prefix + index);
-                    edits.push(modifiedElementEdit);
+                // rule IDs must be handled separately
+                if (modifiedAspect.ruleElements.length !== 0) {
+                    edits = edits.concat(await this.enforceIDsOnElements(modifiedAspect.ruleElements, "RL", change));
                 }
             }
+        }
+        return edits;
+    }
+
+    /**
+     * Enforces IDs on the given elements using the given {@code prefix}.
+     * @param elements The elements which IDs should be checked and possibly updated.
+     * @param prefix The prefix for the new IDs.
+     * @param change The text change that triggered the enforcing of IDs. Needed because only the elements below the modified one are checked.
+     * @param edits The edits needed to enforce the calculated IDs.
+     */
+    protected async enforceIDsOnElements(elements: elementWithName[], prefix: string, change: TextDocumentContentChangeEvent) {
+        let edits: TextEdit[] = [];
+        // index of the modified element
+        let index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset >= change.rangeOffset);
+        if (index < 0) {
+            // modified element is the last one
+            index = elements.length;
+        } else {
+            // compute edits for renaming the elements below the modified element
+            edits = await this.enforceIDsBelowModifiedElement(index, elements, prefix, change.text === '');
+        }
+
+        // create edit to rename the modified element
+        const modifiedElement = elements[index - 1];
+        if (modifiedElement && modifiedElement.$cstNode && modifiedElement.name !== prefix + index) {
+            // TODO: range for hazards is wrong
+            // calculate the range of the ID of the modified element
+            const range = modifiedElement.$cstNode.range;
+            range.end.character = range.start.character + modifiedElement.name.length;
+            range.end.line = range.start.line;
+            // create the edit
+            const modifiedElementEdit = TextEdit.replace(range, prefix + index);
+            edits.push(modifiedElementEdit);
         }
         return edits;
     }
@@ -137,6 +156,7 @@ export class IDEnforcer {
                             // rename current element manually
                             const range = elementToRename.$cstNode.range;
                             range.end.character = range.start.character + elementToRename.name.length;
+                            range.end.line = range.start.line;
                             const modifiedElementEdit = TextEdit.replace(range, prefix + (i + 1));
                             edits.push(modifiedElementEdit);
                         }
@@ -145,7 +165,6 @@ export class IDEnforcer {
                         // delete the edit that renames the modified element (undo the renaming for this element)
                         if (modifiedElement.$cstNode) {
                             const range = modifiedElement.$cstNode.range;
-                            range.end.character = range.start.character + modifiedElement.name.length;
                             renameEdits = renameEdits.filter(edit => !(edit.range.start.line === range.start.line && edit.range.start.character === range.start.character));
                         }
                         // add the edits to the list
@@ -240,11 +259,12 @@ export class IDEnforcer {
      * @param offset Offset in the file, for which the corresponding aspect should be determined.
      * @returns the elements and prefix of the STPA aspect corresponding to the given offset.
      */
-    protected findModifiedAspect(offset: number): { elements: elementWithName[], prefix: string; } | undefined {
+    protected findModifiedAspect(offset: number): { elements: elementWithName[], prefix: string, ruleElements: elementWithName[]; } | undefined {
         const model: Model = this.currentDocument.parseResult.value;
 
         let elements: elementWithName[] = [];
         let prefix = "";
+        let ruleElements: elementWithName[] = [];
 
         // offsets of the different aspects to determine the aspect for the given offset 
         const subtractOffset = 5;
@@ -285,8 +305,9 @@ export class IDEnforcer {
         } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
             elements = model.allUCAs.flatMap(uca => uca.ucas);
             elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
-            //TODO: RL (context table) must be unique too
             prefix = "UCA";
+            // rules must be handled separately since they are mixed with the UCAs
+            ruleElements = model.rules;
         } else if (offset < scenarioOffset && offset > ucaConstraintOffset) {
             elements = model.controllerConstraints;
             prefix = "C";
@@ -295,6 +316,6 @@ export class IDEnforcer {
             prefix = "Scenario";
         }
 
-        return { elements, prefix };
+        return { elements, prefix, ruleElements };
     }
 }
