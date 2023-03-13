@@ -27,7 +27,6 @@ import { collectElementsWithSubComps } from "./utils";
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
-    // TODO: adding hazard
     // TODO: ID enforcement for subcomponents
     // TODO: deleting a hazard above H7 deletes the subcomponents of SC7
 
@@ -98,9 +97,12 @@ export class IDEnforcer {
         // create edit to rename the modified element
         const modifiedElement = elements[index - 1];
         if (modifiedElement && modifiedElement.$cstNode && modifiedElement.name !== prefix + index) {
-            // TODO: range for hazards is wrong
             // calculate the range of the ID of the modified element
             const range = modifiedElement.$cstNode.range;
+            if (prefix === "H") {
+                // range for hazards is wrong (dont know why), so it must be adjusted
+                range.start.character -= 2 + modifiedElement.name.length;
+            }
             range.end.character = range.start.character + modifiedElement.name.length;
             range.end.line = range.start.line;
             // create the edit
