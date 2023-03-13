@@ -18,7 +18,7 @@
 import { isCompositeCstNode, LangiumDocument } from "langium";
 import { TextDocumentContentChangeEvent } from "vscode";
 import { RenameParams, TextEdit } from "vscode-languageserver";
-import { Hazard, LossScenario, Model, Rule, SystemConstraint } from "../generated/ast";
+import { Hazard, isHazard, isSystemConstraint, LossScenario, Model, SystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { elementWithName, elementWithRefs } from "./stpa-validator";
 import { collectElementsWithSubComps } from "./utils";
@@ -28,7 +28,6 @@ import { collectElementsWithSubComps } from "./utils";
  */
 export class IDEnforcer {
     // TODO: ID enforcement for subcomponents
-    // TODO: deleting a hazard above H7 deletes the subcomponents of SC7
 
     protected readonly stpaServices: StpaServices;
 
@@ -250,6 +249,14 @@ export class IDEnforcer {
             const edit = await this.stpaServices.lsp.RenameProvider!.rename(this.currentDocument, params);
             if (edit !== undefined && edit.changes !== undefined) {
                 edits = edits.concat(edit.changes[this.currentUri]);
+            }
+            // rename children
+            if ((isHazard(element) || isSystemConstraint(element)) && element.subComps.length !== 0) {
+                let index = 1;
+                for (const child of element.subComps) {
+                    edits = edits.concat(await this.renameID(child, prefix + counter + ".", index));
+                    index++;
+                }
             }
         }
         // return the edits
