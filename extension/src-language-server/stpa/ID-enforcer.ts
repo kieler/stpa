@@ -264,7 +264,7 @@ export class IDEnforcer {
     }
 
     /**
-     * Determines the STPA aspect the given {@code offset} belongs to.
+     * Determines the STPA aspect the given {@code offset} belongs to. When the offset belongs to a subcomponent only the elements on the same hierarchy level are considered.
      * @param offset Offset in the file, for which the corresponding aspect should be determined.
      * @returns the elements and prefix of the STPA aspect corresponding to the given offset.
      */
@@ -301,13 +301,15 @@ export class IDEnforcer {
             elements = model.losses;
             prefix = "L";
         } else if (offset < constraintOffset && offset > hazardOffset) {
-            elements = model.hazards;
-            //TODO: subcomponents
-            prefix = "H";
+            // sub-components must be considered when determining the affected elements
+            const modified = this.findAffectedSubComponents(model.hazards, "H", offset);
+            elements = modified.elements;
+            prefix = modified.prefix;
         } else if (offset < responsibilitiesOffset && offset > constraintOffset) {
-            elements = model.systemLevelConstraints;
-            //TODO: subcomponents
-            prefix = "SC";
+            // sub-components must be considered when determining the affected elements
+            const modified = this.findAffectedSubComponents(model.systemLevelConstraints, "SC", offset);
+            elements = modified.elements;
+            prefix = modified.prefix;
         } else if (offset < ucaOffset && offset > responsibilitiesOffset) {
             elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
             prefix = "R";
@@ -326,5 +328,34 @@ export class IDEnforcer {
         }
 
         return { elements, prefix, ruleElements };
+    }
+
+    /**
+     * Determines the elements affected by the given {@code offfset}.
+     * @param originalElements The top-level elements which may be affected by the offset. 
+     * @param originalPrefix The prefix for the top-level elements.
+     * @param offset Offset in the file for which the affected components should be determined.
+     * @returns the elements affected by the offset and their prefix.
+     */
+    protected findAffectedSubComponents(originalElements: Hazard[] | SystemConstraint[], originalPrefix: string, offset: number): { elements: Hazard[] | SystemConstraint[], prefix: string; } {
+        let elements = originalElements;
+        let prefix = originalPrefix;
+        // index of the affected element
+        let index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset >= offset);
+        if (index < 0) {
+            // modified element is the last one
+            index = elements.length - 1;
+        }
+        const element = elements[index];
+
+        // check whether the children are affected
+        // if the children are affected, it must be checked whether they have again affected children
+        // otherwise the current elements are the affected ones
+        if (element.subComps.length !== 0 && element.subComps[0].$cstNode && element.subComps[0].$cstNode.offset <= offset) {
+            const modified = this.findAffectedSubComponents(element.subComps, element.name + ".", offset);
+            elements = modified.elements;
+            prefix = modified.prefix;
+        }
+        return { elements, prefix };
     }
 }
