@@ -15,21 +15,21 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { LangiumDocument } from "langium";
+import { isCompositeCstNode, LangiumDocument } from "langium";
 import { TextDocumentContentChangeEvent } from "vscode";
 import { RenameParams, TextEdit } from "vscode-languageserver";
-import { Model } from "../generated/ast";
+import { Hazard, LossScenario, Model, SystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
-import { elementWithName } from "./stpa-validator";
+import { elementWithName, elementWithRefs } from "./stpa-validator";
+import { collectElementsWithSubComps } from "./utils";
 
 /**
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
-    // TODO: deleting H4 deletes the subcompoenents of SC7
     // TODO: adding hazard
     // TODO: ID enforcement for subcomponents
-    // TODO: when deleting a component the references should be deleted too
+    // TODO: deleting a hazard above H7 deletes the subcomponents of SC7
 
     protected readonly stpaServices: StpaServices;
 
@@ -52,9 +52,6 @@ export class IDEnforcer {
         this.currentUri = uri;
         this.currentDocument = this.stpaServices.shared.workspace.LangiumDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
 
-        // get the current model
-        const model: Model = this.currentDocument.parseResult.value;
-
         // ID enforcement can only be done if the parser has no errors. Otherwise other syntax elements than IDs are interpreted as IDs.
         if (this.currentDocument.parseResult.lexerErrors.length !== 0 || this.currentDocument.parseResult.parserErrors.length !== 0) {
             return [];
@@ -65,7 +62,7 @@ export class IDEnforcer {
             // offset where the change happened
             const modificationOffset = change.rangeOffset;
             // calculates the elements that need to be considered for ID enforcement and the prefix that should be used for it
-            const modifiedAspect = this.findModifiedAspect(model, modificationOffset);
+            const modifiedAspect = this.findModifiedAspect(modificationOffset);
             if (modifiedAspect) {
                 const elements: elementWithName[] = modifiedAspect.elements;
                 const prefix = modifiedAspect.prefix;
@@ -116,6 +113,11 @@ export class IDEnforcer {
             const modifiedElement = elements[index - 1];
             if (decrease) {
                 // IDs of the elements are decreased so we must start with the lowest ID
+
+                // references to a deleted element must be deleted
+                edits = edits.concat(this.deleteReferences(prefix + (index + 1)));
+
+                // rename elements below the deleted one
                 for (let i = index; i < elements.length; i++) {
                     const renameEdits = await this.renameID(elements[i], prefix, i + 1);
                     edits = edits.concat(renameEdits);
@@ -156,6 +158,58 @@ export class IDEnforcer {
     }
 
     /**
+     * Deleted references to the component with the given {@code name}.
+     * @param name Name of the component to which references should be deleted.
+     * @returns edits to delete references to the component with the given name.
+     */
+    protected deleteReferences(name: string) {
+        // components of the model
+        const model: Model = this.currentDocument.parseResult.value;
+        const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
+        const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
+        const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
+        const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1);
+        const contexts = model.rules?.map(rule => rule.contexts).flat(1);
+        const scenarioHazards = model.scenarios.map(scenario => scenario.list);
+        const scenarioUCAs = model.scenarios;
+
+        // collect all elements that have a reference list
+        let elementsWithRefs: (elementWithRefs | LossScenario)[] = [
+            ...hazards,
+            ...sysCons,
+            ...responsibilities,
+            ...ucas.map(uca => uca.list),
+            ...contexts.map(context => context.list),
+            ...model.controllerConstraints,
+            ...scenarioHazards,
+            ...scenarioUCAs,
+            ...model.safetyCons
+        ];
+
+        // compute edits to delete references to the given name
+        let edits: TextEdit[] = [];
+        for (const node of elementsWithRefs) {
+            if (node && isCompositeCstNode(node.$cstNode)) {
+                const children = node.$cstNode.children;
+                const index = children.findIndex(token => token.text === name);
+                if (index !== -1) {
+                    // delete the reference
+                    const range = children[index].range;
+                    // if it es not the only reference in the reference list a comma must be deleted as well
+                    if (children[index - 1].text === ",") {
+                        range.start = children[index - 1].range.start;
+                    } else if (children[index + 1].text === ",") {
+                        range.end = children[index + 1].range.end;
+                    }
+                    const modifiedElementEdit = TextEdit.del(range);
+                    edits.push(modifiedElementEdit);
+                }
+            }
+        }
+        return edits;
+    }
+
+    /**
      * Renames the given {@code element} with {@code prefix} + {@code counter}.
      * @param element The element to rename.
      * @param prefix The prefix for the new ID.
@@ -183,16 +237,17 @@ export class IDEnforcer {
 
     /**
      * Determines the STPA aspect the given {@code offset} belongs to.
-     * @param model The parsed model of the STPA file.
      * @param offset Offset in the file, for which the corresponding aspect should be determined.
      * @returns the elements and prefix of the STPA aspect corresponding to the given offset.
      */
-    protected findModifiedAspect(model: Model, offset: number): { elements: elementWithName[], prefix: string; } | undefined {
+    protected findModifiedAspect(offset: number): { elements: elementWithName[], prefix: string; } | undefined {
+        const model: Model = this.currentDocument.parseResult.value;
+
         let elements: elementWithName[] = [];
         let prefix = "";
 
         // offsets of the different aspects to determine the aspect for the given offset 
-        const subtractOffset = 5
+        const subtractOffset = 5;
         const safetyConsOffset = model.safetyCons.length !== 0 && model.safetyCons[0].$cstNode?.offset ?
             model.safetyCons[0].$cstNode.offset - subtractOffset : Number.MAX_VALUE;
         const scenarioOffset = model.scenarios.length !== 0 && model.scenarios[0].$cstNode?.offset ?
