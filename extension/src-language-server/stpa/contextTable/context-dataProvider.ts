@@ -75,7 +75,7 @@ export class ContextTableProvider {
             // variables of the current system component
             const variableValues: ContextTableVariableValues[] = [];
             systemComponent.variables.forEach(variable => {
-                variableValues.push({ name: variable.name, values: variable.values });
+                variableValues.push({ name: variable.name, values: variable.values.map(value => value.name) });
             });
             variables.push({ system: systemComponent.name, variables: variableValues });
         });

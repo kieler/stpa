@@ -75,7 +75,10 @@ Node:
     '}'; */
 
 Variable:
-    name=ID':' '['values+=QualifiedName (',' values+=QualifiedName)*']';
+    name=ID':' '['values+=VariableValue (',' values+=VariableValue)*']';
+
+VariableValue:
+    name=QualifiedName ('=' '[' firstValue=(QualifiedName | INT | 'MIN') (',' secondValue=(QualifiedName | INT | 'MAX'))? ']')?;
 
 VE:
     '[' comms+=Command (',' comms+=Command)* ']' '->' target=[Node];

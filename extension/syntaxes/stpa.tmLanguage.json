@@ -10,7 +10,7 @@
     },
     {
       "name": "keyword.control.stpa",
-      "match": "\\b(applied-too-long|Context-Table|controlActions|ControllerConstraints|ControlStructure|feedback|for|Hazards|hierarchyLevel|label|Losses|LossScenarios|not-provided|notProviding|processModel|provided|providing|Responsibilities|SafetyRequirements|stopped-too-soon|stoppedTooSoon|SystemConstraints|too-early|too-late|tooEarly/Late|UCAs|wrong-time)\\b|\\b(contexts:|controlAction:|type:)\\B"
+      "match": "\\b(applied-too-long|Context-Table|controlActions|ControllerConstraints|ControlStructure|feedback|for|Hazards|hierarchyLevel|label|Losses|LossScenarios|MAX|MIN|not-provided|notProviding|processModel|provided|providing|Responsibilities|SafetyRequirements|stopped-too-soon|stoppedTooSoon|SystemConstraints|too-early|too-late|tooEarly/Late|UCAs|wrong-time)\\b|\\b(contexts:|controlAction:|type:)\\B"
     },
     {
       "name": "string.quoted.double.stpa",

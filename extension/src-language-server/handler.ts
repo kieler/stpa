@@ -21,7 +21,7 @@ import { URI } from 'vscode-uri';
 import { LangiumDocument } from "langium";
 import { Connection, Range } from "vscode-languageserver";
 import { elementWithName } from "./stpa/stpa-validator";
-import { generateLTLFormulae } from "./modelChecking/model-checking";
+import { generateLTLFormulae } from "./stpa/modelChecking/model-checking";
 
 /**
  * Adds handler for notifications.
