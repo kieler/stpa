@@ -291,7 +291,7 @@ export class ContextTable extends Table {
     /**
      * Determine the results for each context.
      */
-    protected determineResults() {
+    protected determineResults(): void {
         for (let i = 0; i < this.contexts.length; i++) {
             const variables = this.contexts[i];
             // determine the used rules

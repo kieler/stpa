@@ -26,7 +26,7 @@ import { StpaDiagramServer } from './diagram-server';
 
 export class StpaSprottyStarter extends SprottyLspEditStarter {
 
-    createContainer(diagramIdentifier: SprottyDiagramIdentifier) {
+    createContainer(diagramIdentifier: SprottyDiagramIdentifier): Container {
         return createSTPADiagramContainer(diagramIdentifier.clientId);
     }
 

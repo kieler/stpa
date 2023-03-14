@@ -21,7 +21,7 @@ import { SprottyLspVscodeExtension } from 'sprotty-vscode/lib/lsp';
 
 let extension: SprottyLspVscodeExtension;
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
     vscode.window.showInformationMessage('Activating STPA extension');
     extension = new StpaLspVscodeExtension(context);
 }
