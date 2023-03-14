@@ -18,7 +18,7 @@
 /** Extension ID corresponding to the name property in the package.json */
 export const extensionId = "pasta";
 
-const withPrefix = (name: string) => `${extensionId}.${name}`;
+const withPrefix = (name: string): string => `${extensionId}.${name}`;
 
 /** Commands that are registered by this extension for other extensions.*/
 export const command = {

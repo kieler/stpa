@@ -31,7 +31,7 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
     // diagram
     connection.onNotification('diagram/selected', (msg: {label: string, uri: string}) => {
         // get the current model
-        const model = getModel(msg.uri, shared)
+        const model = getModel(msg.uri, shared);
 
         // determine the range in the editor of the component identified by "label"
         const range = getRangeOfNode(model, msg.label);
@@ -46,11 +46,11 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
     // model checking
     connection.onRequest('modelChecking/generateLTL', (uri: string) => {
         // get the current model
-        const model = getModel(uri, shared)
+        const model = getModel(uri, shared);
         // generate and send back the LTL formula based on the STPA UCAs
-        const formulas = generateLTLFormulae(model)
-        return formulas
-    })
+        const formulas = generateLTLFormulae(model);
+        return formulas;
+    });
 }
 
 /**
