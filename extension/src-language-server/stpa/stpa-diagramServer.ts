@@ -73,7 +73,7 @@ export class StpaDiagramServer extends DiagramServer {
         return Promise.resolve();
     }
 
-    protected async handleUpdateView(action: UpdateViewAction) {
+    protected async handleUpdateView(action: UpdateViewAction): Promise<void> {
         this.state.options = action.options;
         try {
             const newRoot = await this.diagramGenerator.generate({

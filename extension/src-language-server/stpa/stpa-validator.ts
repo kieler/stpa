@@ -17,7 +17,7 @@
 
 import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { StpaAstType, Loss, Hazard, Command, SystemConstraint, Node, Responsibility, UCA, ContConstraint, LossScenario, SafetyConstraint, Variable, Graph, Context, HazardList, Model, isModel } from '../generated/ast';
+import { StpaAstType, Loss, Hazard, Command, SystemConstraint, Node, Responsibility, UCA, ContConstraint, LossScenario, SafetyConstraint, Variable, Graph, Context, HazardList, Model, isModel, Rule } from '../generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps } from './utils';
 
@@ -42,7 +42,7 @@ export class StpaValidationRegistry extends ValidationRegistry {
     }
 }
 
-export type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context;
+export type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context | Rule;
 export type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint | SafetyConstraint;
 
 /**
@@ -141,20 +141,20 @@ export class StpaValidator {
             ...model.safetyCons
         ];
         if (model.controlStructure) {
-            allElements.push(model.controlStructure)
+            allElements.push(model.controlStructure);
         }
         //check that their IDs are unique
         this.checkIDsAreUnique(allElements, accept);
 
 
         // check that each control action has at least one UCA
-        const ucaActions = [...model.allUCAs.map(alluca => alluca.system.ref?.name + "." + alluca.action.ref?.name), ...model.rules.map(rule => rule.system.ref?.name + "." + rule.action.ref?.name)]
+        const ucaActions = [...model.allUCAs.map(alluca => alluca.system.ref?.name + "." + alluca.action.ref?.name), ...model.rules.map(rule => rule.system.ref?.name + "." + rule.action.ref?.name)];
         model.controlStructure?.nodes.forEach(node => node.actions.forEach(action => action.comms.forEach(command => {
-            const name = node.name + "." + command.name
+            const name = node.name + "." + command.name;
             if (!ucaActions.includes(name)) {
                 accept('warning', 'This element is not referenced by a UCA', { node: command, property: 'name' });
             }
-        })))
+        })));
     }
 
     /**

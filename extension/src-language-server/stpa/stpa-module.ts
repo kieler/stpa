@@ -29,6 +29,7 @@ import { DiagramOptions } from 'sprotty-protocol';
 import { StpaGeneratedSharedModule, StpaGeneratedModule } from '../generated/module';
 import { StpaSynthesisOptions } from './synthesis-options';
 import { ContextTableProvider } from './contextTable/context-dataProvider';
+import { IDEnforcer } from './ID-enforcer';
 
 
 /**
@@ -51,6 +52,9 @@ export type StpaAddedServices = {
     },
     contextTable: {
         ContextTableProvider: ContextTableProvider
+    },
+    utility: {
+        IDEnforcer: IDEnforcer
     }
 };
 
@@ -88,6 +92,9 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
     },
     contextTable: {
         ContextTableProvider: services => new ContextTableProvider(services)
+    },
+    utility: {
+        IDEnforcer: services => new IDEnforcer(services)
     }
 };
 

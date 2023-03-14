@@ -28,7 +28,7 @@ export class StpaMouseListener extends MouseListener {
     /**
      * Resets the highlight attribute of the highlighted nodes.
      */
-    protected reset() {
+    protected reset(): void {
         for (const element of this.flaggedElements) {
             element.highlight = false;
         }
