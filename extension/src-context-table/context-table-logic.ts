@@ -52,15 +52,15 @@ export function determineUsedRules(variables: ContextTableVariable[], rules: Con
             && checkValues(rule.variables, variables)) {
             // determine the column for which the rule applies
             const ruleType = rule.type.toLowerCase();
-            if (selectedType === Type.NOT_PROVIDED && ruleType == "not-provided") {
+            if (selectedType === Type.NOT_PROVIDED && ruleType === "not-provided") {
                 usedRules[0].push(rule);
-            } else if (selectedType !== Type.NOT_PROVIDED && ruleType == "provided") {
+            } else if (selectedType !== Type.NOT_PROVIDED && ruleType === "provided") {
                 usedRules[0].push(rule);
-            } else if (selectedType !== Type.NOT_PROVIDED && (ruleType == "too-early" || ruleType == "too-late" || ruleType == "wrong-time")) {
+            } else if (selectedType !== Type.NOT_PROVIDED && (ruleType === "too-early" || ruleType === "too-late" || ruleType === "wrong-time")) {
                 usedRules[1].push(rule);
-            } else if (selectedType !== Type.NOT_PROVIDED && (ruleType == "stopped-too-soon" || ruleType == "applied-too-long")) {
+            } else if (selectedType !== Type.NOT_PROVIDED && (ruleType === "stopped-too-soon" || ruleType === "applied-too-long")) {
                 usedRules[2].push(rule);
-            } else if (selectedType === Type.BOTH && ruleType == "not-provided") {
+            } else if (selectedType === Type.BOTH && ruleType === "not-provided") {
                 usedRules[3].push(rule);
             }
         }
@@ -89,7 +89,7 @@ export function createResults(results: { hazards: string[], rules: ContextTableR
         } else {
             // it may be that previous columns had no rule
             // in this case a cell with value "No" must be created that covers these columns
-            if (noAppliedRuleCounter != 0) {
+            if (noAppliedRuleCounter !== 0) {
                 cells.push({ cssClass: "result", value: "No", colSpan: noAppliedRuleCounter });
                 noAppliedRuleCounter = 0;
             }
@@ -113,7 +113,7 @@ function checkValues(variables1: ContextTableVariable[], variables2: ContextTabl
         // get corresponding variable
         const correspondingVariable = variables2.find(secondVariable => secondVariable.name === firstVariable.name);
         // check values
-        if (firstVariable.value != correspondingVariable?.value) {
+        if (firstVariable.value !== correspondingVariable?.value) {
             return false;
         }
     }

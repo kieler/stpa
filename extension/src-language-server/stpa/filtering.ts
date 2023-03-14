@@ -53,21 +53,21 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
 
     // filter UCAs by the filteringUCA option
     newModel.allUCAs = model.allUCAs?.filter(allUCA =>
-        (allUCA.system.ref?.name + "." + allUCA.action.ref?.name) == options.getFilteringUCAs()
-        || options.getFilteringUCAs() == "all UCAs");
+        (allUCA.system.ref?.name + "." + allUCA.action.ref?.name) === options.getFilteringUCAs()
+        || options.getFilteringUCAs() === "all UCAs");
     newModel.rules = model.rules?.filter(rule =>
-        (rule.system.ref?.name + "." + rule.action.ref?.name) == options.getFilteringUCAs()
-        || options.getFilteringUCAs() == "all UCAs");
+        (rule.system.ref?.name + "." + rule.action.ref?.name) === options.getFilteringUCAs()
+        || options.getFilteringUCAs() === "all UCAs");
     newModel.controllerConstraints = options.getHideContCons() ? [] :
         model.controllerConstraints?.filter(cons =>
             (cons.refs[0].ref?.$container.system.ref?.name + "."
-                + cons.refs[0].ref?.$container.action.ref?.name) == options.getFilteringUCAs()
-            || options.getFilteringUCAs() == "all UCAs");
+                + cons.refs[0].ref?.$container.action.ref?.name) === options.getFilteringUCAs()
+            || options.getFilteringUCAs() === "all UCAs");
     newModel.scenarios = options.getHideScenarios() ? [] :
         model.scenarios?.filter(scenario =>
             (!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "."
-                + scenario.uca?.ref?.$container.action.ref?.name) == options.getFilteringUCAs()
-            || options.getFilteringUCAs() == "all UCAs");
+                + scenario.uca?.ref?.$container.action.ref?.name) === options.getFilteringUCAs()
+            || options.getFilteringUCAs() === "all UCAs");
 
     newModel.safetyCons = options.getHideScenarios() ? [] : model.safetyCons;
     newModel.controlStructure = model.controlStructure;
@@ -93,7 +93,7 @@ function setFilterUCAOption(allUCAs: ActionUCAs[], rules: Rule[], options: StpaS
         if (!set.has(rule.system.ref?.name + "." + rule.action.ref?.name)) {
             set.add(rule.system.ref?.name + "." + rule.action.ref?.name);
         }
-    })
+    });
     // generate the options for the UCAs
     const list: { displayName: string; id: string; }[] = [];
     set.forEach(entry => list.push({ displayName: entry, id: entry }));

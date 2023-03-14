@@ -25,7 +25,7 @@ import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./stpa-model";
  */
 export function collectAllChildren(nodes: SNode[], children: SNode[]): void {
     for (const node of nodes) {
-        if (node.children.length != 0) {
+        if (node.children.length !== 0) {
             const childrenNodes = node.children.filter(child => child.type.startsWith('node')) as SNode[];
             children.push(...childrenNodes);
             collectAllChildren(childrenNodes, children);
@@ -78,8 +78,8 @@ function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
     if (isSubConstraint(node)) {
         flagSubConsParent(node as STPANode, elements);
     }
-    if (node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.HAZARD) {
-        const subHazards = node.children.filter(child => child.type == STPA_NODE_TYPE) as STPANode[];
+    if (node.type === STPA_NODE_TYPE && (node as STPANode).aspect === STPAAspect.HAZARD) {
+        const subHazards = node.children.filter(child => child.type === STPA_NODE_TYPE) as STPANode[];
         for (const subH of subHazards) {
             subH.highlight = true;
             elements.push(subH);
@@ -130,8 +130,8 @@ function flagSuccNodes(edge: SEdge, elements: SModelElement[]): void {
  * @returns whether {@code node} is a sub-hazard.
  */
 function isSubHazard(node: SNode): boolean {
-    return node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.HAZARD
-        && node.parent.type == STPA_NODE_TYPE && (node.parent as STPANode).aspect == STPAAspect.HAZARD;
+    return node.type === STPA_NODE_TYPE && (node as STPANode).aspect === STPAAspect.HAZARD
+        && node.parent.type === STPA_NODE_TYPE && (node.parent as STPANode).aspect === STPAAspect.HAZARD;
 }
 
 /**
@@ -140,8 +140,8 @@ function isSubHazard(node: SNode): boolean {
  * @returns whether {@code node} is a sub-constraint.
  */
 function isSubConstraint(node: SNode): boolean {
-    return node.type == STPA_NODE_TYPE && (node as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT
-        && node.parent.type == STPA_NODE_TYPE && (node.parent as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT;
+    return node.type === STPA_NODE_TYPE && (node as STPANode).aspect === STPAAspect.SYSTEMCONSTRAINT
+        && node.parent.type === STPA_NODE_TYPE && (node.parent as STPANode).aspect === STPAAspect.SYSTEMCONSTRAINT;
 }
 
 /**
@@ -150,7 +150,7 @@ function isSubConstraint(node: SNode): boolean {
  */
 function flagSubConsParent(node: STPANode, elements: SModelElement[]): void {
     let parent = node;
-    while (parent.parent.type == STPA_NODE_TYPE && (parent.parent as STPANode).aspect == STPAAspect.SYSTEMCONSTRAINT) {
+    while (parent.parent.type === STPA_NODE_TYPE && (parent.parent as STPANode).aspect === STPAAspect.SYSTEMCONSTRAINT) {
         parent = parent.parent as STPANode;
         parent.highlight = true;
         elements.push(parent);

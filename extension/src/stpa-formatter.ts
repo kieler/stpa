@@ -63,7 +63,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
                     break;
                 case '"':
                     quotation++;
-                    if (quotation % 2 == 0) {
+                    if (quotation % 2 === 0) {
                         this.formatQuotes(offset, document, openParens, edits, splits[i]);
                     }
                     break;

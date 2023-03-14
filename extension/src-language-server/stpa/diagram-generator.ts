@@ -47,7 +47,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const { document } = args;
         let model: Model = document.parseResult.value;
         // filter model based on the options set by the user
-        let filteredModel = filterModel(model, this.options)
+        let filteredModel = filterModel(model, this.options);
 
         // determine the children for the STPA graph
         // for each component a node is generated with edges representing the references of the component
@@ -204,7 +204,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string[], direction: EdgeDirection, { idCache }: GeneratorContext<Model>): CSEdge {
         // needed for correct layout
         const children: SModelElement[] = [];
-        if (label.find(l => l != '')) {
+        if (label.find(l => l !== '')) {
             label.forEach(l => {
                 children.push({
                     type: 'label:xref',
@@ -271,7 +271,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const stpaNode = this.generateSTPANode(node, args);
         // uca nodes need to save their control action in order to be able to group them by the actions
         if ((isUCA(node) || isContext(node)) && node.$container.system.ref) {
-            stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name
+            stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name;
         }
         const elements: SModelElement[] = this.generateEdgesForSTPANode(node, args);
         elements.push(stpaNode);

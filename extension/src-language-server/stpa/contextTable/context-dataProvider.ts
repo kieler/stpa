@@ -40,13 +40,13 @@ export class ContextTableProvider {
         const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
-        let range: Range | undefined = undefined
+        let range: Range | undefined = undefined;
         model.rules.forEach(rule => rule.contexts.forEach(uca => {
             if (uca.name === ucaName) {
                 range = uca.$cstNode?.range;
                 return;
             }
-        }))
+        }));
         return range;
     }
 

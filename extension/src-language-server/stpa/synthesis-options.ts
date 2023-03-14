@@ -204,7 +204,7 @@ export class StpaSynthesisOptions {
             (option.synthesisOption as DropDownOption).availableValues = values;
             // if the last selected control action is not available anymore, 
             // set the option to the first control action of the new list
-            if (!values.find(val => val.id == (option.synthesisOption as DropDownOption).currentId)) {
+            if (!values.find(val => val.id === (option.synthesisOption as DropDownOption).currentId)) {
                 (option.synthesisOption as DropDownOption).currentId = values[0].id;
                 option.synthesisOption.currentValue = values[0].id;
                 option.synthesisOption.initialValue = values[0].id;
