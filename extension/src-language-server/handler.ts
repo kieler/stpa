@@ -17,6 +17,7 @@
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
+import { URI } from 'vscode-uri';
 import { LangiumDocument } from "langium";
 import { Connection, Range } from "vscode-languageserver";
 import { elementWithName } from "./stpa/stpa-validator";
@@ -61,7 +62,7 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
  */
 function getModel(uri: string, shared: LangiumSprottySharedServices): Model {
     const textDocuments = shared.workspace.LangiumDocuments;
-    const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
+    const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<Model>;
     // TODO: parseResult may be empty!
     return currentDoc.parseResult.value;
 }
