@@ -10,10 +10,10 @@
     ],
     "rules": {
         "@typescript-eslint/naming-convention": "off",
-        "@typescript-eslint/semi": "warn",
+        "@typescript-eslint/semi": "error",
         "@typescript-eslint/explicit-function-return-type": ["error", { "allowTypedFunctionExpressions": true }],
         "curly": "warn",
-        "eqeqeq": "warn",
+        "eqeqeq": "error",
         "no-throw-literal": "warn",
         "semi": "warn"
     },
