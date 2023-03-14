@@ -172,7 +172,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
      * configuration option determined by {@code id}.
      * @param id The id of the configuration option that should be set.
      */
-    protected createQuickPickForWorkspaceOptions(id: string) {
+    protected createQuickPickForWorkspaceOptions(id: string): void {
         const quickPick = vscode.window.createQuickPick();
         quickPick.items = [{ label: "true" }, { label: "false" }];
         quickPick.onDidChangeSelection((selection) => {
@@ -282,7 +282,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         return languageClient;
     }
 
-    protected updateViews(languageClient: LanguageClient, uri: string) {
+    protected updateViews(languageClient: LanguageClient, uri: string): void {
         this.lastUri = uri;
         if (this.contextTable) {
             languageClient.sendNotification('contextTable/getData', uri);
