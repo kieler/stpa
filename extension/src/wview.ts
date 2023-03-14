@@ -32,7 +32,7 @@ export class StpaLspWebview extends SprottyLspWebview {
                     this.updateConfigValues(message.action as SendConfigAction);
                     break;
                 case SelectAction.KIND:
-                    this.handleSelectAction(message.action as SelectAction)
+                    this.handleSelectAction(message.action as SelectAction);
                     break;
             }
 

@@ -291,7 +291,7 @@ export class ContextTable extends Table {
     /**
      * Determine the results for each context.
      */
-    protected determineResults() {
+    protected determineResults(): void {
         for (let i = 0; i < this.contexts.length; i++) {
             const variables = this.contexts[i];
             // determine the used rules
@@ -384,7 +384,7 @@ export class ContextTable extends Table {
         let result: (ContextTableVariable[])[] = [];
         // load the values of the current recursion's variable
         const currentValues = variableValues[variableIndex].values;
-        const lastVariable = variableIndex == variableValues.length - 1;
+        const lastVariable = variableIndex === variableValues.length - 1;
         // go through all the values of the current variable
         for (let valueIndex = 0; valueIndex < currentValues.length; valueIndex++) {
             // push the currently indexed value

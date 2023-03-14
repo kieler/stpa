@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -17,7 +17,7 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, WorkspaceEdit } from 'vscode-languageclient/node';
 import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
@@ -39,6 +39,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     private resolveLSReady: () => void;
     readonly lsReady = new Promise<void>((resolve) => this.resolveLSReady = resolve);
 
+    /** needed for undo/redo actions when ID enforcement is active*/
+    protected ignoreNextTextChange: boolean = false;
+
     constructor(context: vscode.ExtensionContext) {
         super('stpa', context);
         // user changed configuration settings
@@ -52,11 +55,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
-        // sends configuration of stpa to the language server
-        this.languageClient.onNotification("ready", () => {
-            this.resolveLSReady();
-            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
-        });
         // handling of notifications regarding the context table
         this.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
         this.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string; }) => {
@@ -69,6 +67,50 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
             }
         });
+
+        // textdocument has changed
+        vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
+        // language client sent workspace edits
+        this.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
+        // laguage server is ready
+        this.languageClient.onNotification("ready", () => {
+            this.resolveLSReady();
+            // sends configuration of stpa to the language server
+            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
+        });
+    }
+
+    /**
+     * Notifies the language server that a textdocument has changed.
+     * @param changeEvent The change in the text document.
+     */
+    protected handleTextChangeEvent(changeEvent: vscode.TextDocumentChangeEvent): void {
+        // if the change should be ignored (e.g. for a redo/undo action), the language server is not notified.
+        if (this.ignoreNextTextChange) {
+            this.ignoreNextTextChange = false;
+            return;
+        }
+        // send the changes to the language server
+        const changes = changeEvent.contentChanges;
+        const uri = changeEvent.document.uri.toString();
+        this.languageClient.sendNotification('editor/textChange', { changes: changes, uri: uri });
+    }
+
+    /**
+     * Applies text edits to the document.
+     * @param edits The edits to apply.
+     * @param uri The uri of the document that should be edited.
+     */
+    protected async applyTextEdits(edits: vscode.TextEdit[], uri: string): Promise<void> {
+        // create a workspace edit
+        const workSpaceEdit = new vscode.WorkspaceEdit();
+        workSpaceEdit.set(vscode.Uri.parse(uri), edits);
+        // Apply the edit. Report possible failures.
+        const edited = await vscode.workspace.applyEdit(workSpaceEdit);
+        if (!edited) {
+            console.error("Workspace edit could not be applied!");
+            return;
+        }
     }
 
     /**
@@ -116,6 +158,18 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
             })
         );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.IDs.undo', async (...commandArgs: any[]) => {
+                this.ignoreNextTextChange = true;
+                vscode.commands.executeCommand("undo");
+            })
+        );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.IDs.redo', async (...commandArgs: any[]) => {
+                this.ignoreNextTextChange = true;
+                vscode.commands.executeCommand("redo");
+            })
+        );
     }
 
     /**
@@ -123,7 +177,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
      * configuration option determined by {@code id}.
      * @param id The id of the configuration option that should be set.
      */
-    protected createQuickPickForWorkspaceOptions(id: string) {
+    protected createQuickPickForWorkspaceOptions(id: string): void {
         const quickPick = vscode.window.createQuickPick();
         quickPick.items = [{ label: "true" }, { label: "false" }];
         quickPick.onDidChangeSelection((selection) => {
@@ -233,7 +287,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         return languageClient;
     }
 
-    protected updateViews(languageClient: LanguageClient, uri: string) {
+    protected updateViews(languageClient: LanguageClient, uri: string): void {
         this.lastUri = uri;
         if (this.contextTable) {
             languageClient.sendNotification('contextTable/getData', uri);

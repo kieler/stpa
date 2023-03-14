@@ -63,7 +63,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
                     break;
                 case '"':
                     quotation++;
-                    if (quotation % 2 == 0) {
+                    if (quotation % 2 === 0) {
                         this.formatQuotes(offset, document, openParens, edits, splits[i]);
                     }
                     break;
@@ -86,7 +86,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text to indent.
      */
-    protected formatIndentation(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
+    protected formatIndentation(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
         let whiteSpaces = 0;
         while (line[whiteSpaces] === ' ') {
             whiteSpaces++;
@@ -106,7 +106,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text at which end a newline should be inserted.
      */
-    protected formatNewLineBefore(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
+    protected formatNewLineBefore(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
         let trimmed = line.trim();
         if (trimmed !== '}') {
             const newOffset = offset - 1;
@@ -125,7 +125,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text before which a newline should be inserted.
      */
-    protected formatNewLineAfter(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
+    protected formatNewLineAfter(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
         let nextChar = 0;
         while (line[nextChar] === ' ') {
             nextChar++;
@@ -150,7 +150,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text before which a newline should be inserted.
      */
-    protected formatClosedBracket(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
+    protected formatClosedBracket(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
         const trimmed = line.trim();
         if (trimmed[0] === '-') {
             // bracket belongs to a control action or feedback in the control structure
@@ -181,7 +181,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text before which a newline should be inserted.
      */
-    protected formatQuotes(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string) {
+    protected formatQuotes(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
         let nextChar = 0;
         while (line[nextChar] === ' ') {
             nextChar++;
@@ -206,7 +206,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param desired The desired number of whitespaces.
      * @param edits Array to push the created edits to.
      */
-    protected adjustWhitespaces(whiteSpaces: number, document: TextDocument, offset: number, desired: number, edits: TextEdit[]) {
+    protected adjustWhitespaces(whiteSpaces: number, document: TextDocument, offset: number, desired: number, edits: TextEdit[]): void {
         if (whiteSpaces < desired) {
             let insertWhiteSpaces = '';
             while (whiteSpaces < desired) {

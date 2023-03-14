@@ -20,14 +20,14 @@ import { Action } from "sprotty-protocol";
 import { Sidebar } from "./sidebar";
 
 /** Wrapper action around {@link SetUIExtensionVisibilityAction} which shows the sidebar. */
-export type ShowSidebarAction = SetUIExtensionVisibilityAction
+export type ShowSidebarAction = SetUIExtensionVisibilityAction;
 
 export namespace ShowSidebarAction {
     export function create():  ShowSidebarAction {
         return SetUIExtensionVisibilityAction.create({
             extensionId: Sidebar.ID,
             visible: true,
-        })
+        });
     }
 }
 
@@ -57,7 +57,7 @@ export namespace ToggleSidebarPanelAction {
             kind: KIND,
             id: id,
             state: state
-        }
+        };
     }
 
     /** Type predicate to narrow an action to this action. */

@@ -77,7 +77,7 @@ function getRangeOfNode(model: Model, label: string): Range | undefined {
     const elements: elementWithName[] = [...model.losses, ...model.hazards, ...model.hazards.flatMap(hazard => hazard.subComps), ...model.systemLevelConstraints, ...model.systemLevelConstraints.flatMap(constraint => constraint.subComps), ...model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem),
     ...model.allUCAs.flatMap(ucas => ucas.ucas), ...model.rules.flatMap(rule => rule.contexts), ...model.controllerConstraints, ...model.scenarios, ...model.safetyCons];
     if (model.controlStructure) {
-        elements.push(...model.controlStructure.nodes)
+        elements.push(...model.controlStructure.nodes);
     }
     elements.forEach(component => {
         if (component.name === label) {

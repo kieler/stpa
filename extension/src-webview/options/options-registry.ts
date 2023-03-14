@@ -84,7 +84,7 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
         this.notifyListeners();
     }
 
-    private handleSetSynthesisOptions(action: SetSynthesisOptionsAction) {
+    private handleSetSynthesisOptions(action: SetSynthesisOptionsAction): void {
         // Optimistic update. Replaces all changed options with the new options
         this._synthesisOptions = this._synthesisOptions.map(
             (option) => action.options.find((newOpt) => newOpt.id === option.id) ?? option

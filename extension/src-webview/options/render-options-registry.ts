@@ -117,7 +117,7 @@ export class RenderOptionsRegistry extends Registry {
         if (SetRenderOptionAction.isThisAction(action)) {
             const option = this._renderOptions.get(action.id);
 
-            if (!option) return;
+            if (!option) {return;}
 
             option.currentValue = action.value;
             const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
@@ -133,7 +133,7 @@ export class RenderOptionsRegistry extends Registry {
         } else if (SendConfigAction.isThisAction(action)) {
             action.options.forEach(element => {
                 const option = this._renderOptions.get(element.id);
-                if (!option) return;
+                if (!option) {return;}
                 option.currentValue = element.value;
             });
             this.notifyListeners();

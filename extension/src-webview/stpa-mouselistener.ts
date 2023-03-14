@@ -10,7 +10,7 @@ export class StpaMouseListener extends MouseListener {
     mouseDown(target: SModelElement, event: MouseEvent): (Action | Promise<Action>)[] {
         // when a label is selected, we are interested in its parent node
         target = target instanceof SLabel ? target.parent : target;
-        if (target.type == STPA_NODE_TYPE) {
+        if (target.type === STPA_NODE_TYPE) {
             if (event.ctrlKey) {
                 // when ctrl is pressed all nodes with the same aspect as the selected one should be highlighted
                 this.flaggedElements.push(...flagSameAspect(target as STPANode));
@@ -28,7 +28,7 @@ export class StpaMouseListener extends MouseListener {
     /**
      * Resets the highlight attribute of the highlighted nodes.
      */
-    protected reset() {
+    protected reset(): void {
         for (const element of this.flaggedElements) {
             element.highlight = false;
         }

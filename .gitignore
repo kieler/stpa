@@ -5,3 +5,4 @@ out
 settings.json
 lib
 extension/src-language-server/generated/
+*.vsix

@@ -21,7 +21,7 @@ import { command } from './constants';
 
 let extension: StpaLspVscodeExtension;
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
     vscode.window.showInformationMessage('Activating STPA extension');
     extension = new StpaLspVscodeExtension(context);
     // register commands that other extensions can use
@@ -38,6 +38,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate(): Thenable<void> {
     if (!extension)
-        return Promise.resolve();
+       {return Promise.resolve();}
     return extension.deactivateLanguageClient();
 }
