@@ -17,7 +17,7 @@
 
 import { isCompositeCstNode, LangiumDocument } from "langium";
 import { TextDocumentContentChangeEvent } from "vscode";
-import { RenameParams, TextEdit } from "vscode-languageserver";
+import { Range, RenameParams, TextEdit } from "vscode-languageserver";
 import { Hazard, isHazard, isSystemConstraint, LossScenario, Model, SystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { elementWithName, elementWithRefs } from "./stpa-validator";
@@ -27,12 +27,13 @@ import { collectElementsWithSubComps } from "./utils";
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
-    // TODO: ID enforcement for subcomponents
 
+    /** langium services for the stpa DSL */
     protected readonly stpaServices: StpaServices;
 
-    /** Current document and its uri for which IDs are enforced.  */
+    /** Current document uri for which IDs are enforced.  */
     protected currentUri: string;
+    /** Current document for which IDs are enforced.  */
     protected currentDocument: LangiumDocument<Model>;
 
     constructor(stpaServices: StpaServices) {
@@ -81,7 +82,7 @@ export class IDEnforcer {
      * @param change The text change that triggered the enforcing of IDs. Needed because only the elements below the modified one are checked.
      * @param edits The edits needed to enforce the calculated IDs.
      */
-    protected async enforceIDsOnElements(elements: elementWithName[], prefix: string, change: TextDocumentContentChangeEvent) {
+    protected async enforceIDsOnElements(elements: elementWithName[], prefix: string, change: TextDocumentContentChangeEvent): Promise<TextEdit[]> {
         let edits: TextEdit[] = [];
         // index of the modified element
         let index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset >= change.rangeOffset);
@@ -98,10 +99,7 @@ export class IDEnforcer {
         if (modifiedElement && modifiedElement.$cstNode && modifiedElement.name !== prefix + index) {
             // calculate the range of the ID of the modified element
             const range = modifiedElement.$cstNode.range;
-            if (prefix === "H") {
-                // range for hazards is wrong (dont know why), so it must be adjusted
-                range.start.character -= 2 + modifiedElement.name.length;
-            }
+            this.fixHazardRange(range, prefix, modifiedElement);
             range.end.character = range.start.character + modifiedElement.name.length;
             range.end.line = range.start.line;
             // create the edit
@@ -109,6 +107,19 @@ export class IDEnforcer {
             edits.push(modifiedElementEdit);
         }
         return edits;
+    }
+
+    /**
+     * For some reason the range of the hazard is not correct. This method fixes this manually.
+     * @param range The range of the hazard.
+     * @param prefix The prefix to check whether the modified element is a hazard.
+     * @param modifiedElement The modified element.
+     */
+    protected fixHazardRange(range: Range, prefix: string, modifiedElement: elementWithName): void {
+        // range for hazards is wrong (dont know why), so it must be adjusted
+        if (prefix === "H") {
+            range.start.character -= 2 + modifiedElement.name.length;
+        }
     }
 
     /**
@@ -182,7 +193,7 @@ export class IDEnforcer {
      * @param name Name of the component to which references should be deleted.
      * @returns edits to delete references to the component with the given name.
      */
-    protected deleteReferences(name: string) {
+    protected deleteReferences(name: string): TextEdit[] {
         // components of the model
         const model: Model = this.currentDocument.parseResult.value;
         const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
