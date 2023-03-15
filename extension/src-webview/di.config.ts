@@ -35,6 +35,11 @@ import { StpaMouseListener } from './stpa-mouselistener';
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
+    rebind(TYPES.CommandStackOptions).toConstantValue({
+        // Override the default animation speed to be 700 ms, as the default value is too quick.
+        defaultDuration: 700,
+        undoHistoryLimit: 50
+    });
     bind(TYPES.MouseListener).to(StpaMouseListener).inSingletonScope();
     rebind(ModelViewer).to(StpaModelViewer).inSingletonScope();
 
