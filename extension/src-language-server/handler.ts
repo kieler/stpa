@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -17,11 +17,9 @@
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
-import { URI } from 'vscode-uri';
-import { LangiumDocument } from "langium";
 import { Connection, Range } from "vscode-languageserver";
 import { elementWithName } from "./stpa/stpa-validator";
-import { generateLTLFormulae } from "./stpa/modelChecking/model-checking";
+import { getModel } from "./utils";
 
 /**
  * Adds handler for notifications.
@@ -43,29 +41,8 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
             console.log("The selected UCA could not be found in the editor.");
         }
     });
-
-    // model checking
-    connection.onRequest('modelChecking/generateLTL', (uri: string) => {
-        // get the current model
-        const model = getModel(uri, shared);
-        // generate and send back the LTL formula based on the STPA UCAs
-        const formulas = generateLTLFormulae(model);
-        return formulas;
-    });
 }
 
-/**
- * Determines the model for {@code uri}.
- * @param uri The URI for which the model is desired.
- * @param shared The shared service.
- * @returns the model for the given uri.
- */
-function getModel(uri: string, shared: LangiumSprottySharedServices): Model {
-    const textDocuments = shared.workspace.LangiumDocuments;
-    const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<Model>;
-    // TODO: parseResult may be empty!
-    return currentDoc.parseResult.value;
-}
 
 /**
  * Determines the range of the component identified by {@code label} in the editor,

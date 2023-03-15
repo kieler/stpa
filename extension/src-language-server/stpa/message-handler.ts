@@ -19,6 +19,7 @@ import { DocumentState } from 'langium';
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { TextDocumentContentChangeEvent } from 'vscode';
 import { Connection, URI } from "vscode-languageserver";
+import { generateLTLFormulae } from './modelChecking/model-checking';
 import { StpaServices } from "./stpa-module";
 
 let lastUri: URI;
@@ -36,6 +37,7 @@ let changeUri: string;
 export function addSTPANotificationHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
     addContextTableHandler(connection, stpaServices);
     addTextChangeHandler(connection, stpaServices, sharedServices);
+    addModelCheckingHandler(connection, sharedServices);
 }
 
 /**
@@ -92,5 +94,14 @@ function addTextChangeHandler(connection: Connection, stpaServices: StpaServices
             textChange = false;
             textChanges = [];
         }
+    });
+}
+
+function addModelCheckingHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    // model checking
+    connection.onRequest('modelChecking/generateLTL', async (uri: string) => {
+        // generate and send back the LTL formula based on the STPA UCAs
+        const formulas = await generateLTLFormulae(uri, sharedServices);
+        return formulas;
     });
 }

@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,7 +15,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Context, Model, Rule, Variable } from "../../generated/ast";
+import { LangiumSprottySharedServices } from "langium-sprotty";
+import { Context, Model, Rule } from "../../generated/ast";
+import { getModel } from "../../utils";
+
+import { URI } from 'vscode-uri';
 
 class LTLFormula {
     formula: string;
@@ -25,20 +29,30 @@ class LTLFormula {
 
 /**
  * Generates the LTL formulae for {@code model}.
- * @param model The model containing the UCAs which should be translated to LTLs.
  * @returns LTL formulae for the UCAs in the given model.
  */
-export function generateLTLFormulae(model: Model): LTLFormula[] {
+export async function generateLTLFormulae(uri:string, shared: LangiumSprottySharedServices): Promise<LTLFormula[]> {
     const result: LTLFormula[] = [];
+    // get the current model
+    let model = getModel(uri, shared);
+
+    // references are not found if the stpa file has not been opened since then the linter has not been activated yet
+    if (model.rules[0].contexts[0].vars[0].ref=== undefined) {
+        // build document
+        await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
+        // update the model
+        model = getModel(uri, shared);
+    }
+
     if (model.rules) {
         for (const rule of model.rules) {
             // control action string
             const controlAction = rule.system.$refText + "_" + rule.action.$refText;
             for (const uca of rule.contexts) {
                 // calculate the contextVariable string
-                let contextVariables = createLTLContextVariable(uca, 0);
+                let contextVariables = await createLTLContextVariable(uri, shared, uca, 0);
                 for (let i = 1; i < uca.vars.length; i++) {
-                    contextVariables += "&&" + createLTLContextVariable(uca, i);
+                    contextVariables += "&&" + await createLTLContextVariable(uri, shared, uca, i);
                 }
                 // translate uca based on the rule type
                 const ltlString = createLTLString(rule, contextVariables, controlAction);
@@ -50,11 +64,11 @@ export function generateLTLFormulae(model: Model): LTLFormula[] {
     return result;
 }
 
-function createLTLContextVariable(uca: Context, index: number): string {
-    // TODO: reference is not found if the stpa file has not been opened since then the linter has not been activated yet
+async function createLTLContextVariable(uri: string, shared: LangiumSprottySharedServices, uca: Context, index: number): Promise<string> {
+    // TODO: 
 
     //used variable in the uca
-    const variable = uca.vars[index];
+    let variable = uca.vars[index];
     // range definition of the used variable value in the UCA
     const valueRange = variable.ref?.values?.find(value => value.name === uca.values[index]);
     // variable name
