@@ -89,6 +89,8 @@ export class IDEnforcer {
         if (index < 0) {
             // modified element is the last one
             index = elements.length;
+            // references to a deleted element must be deleted
+            edits = edits.concat(this.deleteReferences(prefix + (index + 1)));
         } else {
             // compute edits for renaming the elements below the modified element
             edits = await this.enforceIDsBelowModifiedElement(index, elements, prefix, change.text === '');
