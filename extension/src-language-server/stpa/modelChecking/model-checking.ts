@@ -21,9 +21,15 @@ import { getModel } from "../../utils";
 
 import { URI } from 'vscode-uri';
 
+/**
+ * Respresents a ltl formula.
+ */
 class LTLFormula {
+    /** formula of the LTL formula */
     formula: string;
+    /** text representing the LTL formula */
     text: string;
+    /** UCA that was used to create the LTL formula */
     ucaId: string;
 }
 
@@ -52,9 +58,9 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
             const controlAction = rule.system.$refText + "_" + rule.action.$refText;
             for (const uca of rule.contexts) {
                 // calculate the contextVariable string
-                let contextVariables = await createLTLContextVariable(uri, shared, uca, 0);
+                let contextVariables = await createLTLContextVariable(uca, 0);
                 for (let i = 1; i < uca.vars.length; i++) {
-                    contextVariables += "&&" + await createLTLContextVariable(uri, shared, uca, i);
+                    contextVariables += "&&" + await createLTLContextVariable(uca, i);
                 }
                 // translate uca based on the rule type
                 const ltlString = createLTLString(rule, contextVariables, controlAction);
@@ -67,14 +73,12 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
 }
 
 /**
- * Creates a string of a context variable value for the LTL formula 
- * @param uri URI of the file for which the LTL should be generated.
- * @param shared Langium/Sprotty services.
+ * Creates a string of a context variable value for the LTL formula.
  * @param uca UCA which context should be translated to a LTL.
  * @param index Index of the variable in the UCA which is currently inspected.
  * @returns the string for the currently inspected context variable.
  */
-async function createLTLContextVariable(uri: string, shared: LangiumSprottySharedServices, uca: Context, index: number): Promise<string> {
+async function createLTLContextVariable(uca: Context, index: number): Promise<string> {
     //used variable in the uca
     let variable = uca.vars[index];
     // range definition of the used variable value in the UCA

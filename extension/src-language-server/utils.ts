@@ -29,6 +29,5 @@ import { LangiumDocument } from "langium";
 export function getModel(uri: string, shared: LangiumSprottySharedServices): Model {
     const textDocuments = shared.workspace.LangiumDocuments;
     const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<Model>;
-    // TODO: parseResult may be empty!
     return currentDoc.parseResult.value;
 }

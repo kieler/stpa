@@ -97,6 +97,11 @@ function addTextChangeHandler(connection: Connection, stpaServices: StpaServices
     });
 }
 
+/**
+ * Adds handlers for model checking.
+ * @param connection 
+ * @param sharedServices 
+ */
 function addModelCheckingHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
     // model checking
     connection.onRequest('modelChecking/generateLTL', async (uri: string) => {
