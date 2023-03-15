@@ -75,6 +75,8 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // laguage server is ready
         this.languageClient.onNotification("ready", () => {
             this.resolveLSReady();
+            // open diagram
+            vscode.commands.executeCommand(this.extensionPrefix + '.diagram.open', vscode.window.activeTextEditor?.document.uri);
             // sends configuration of stpa to the language server
             this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
