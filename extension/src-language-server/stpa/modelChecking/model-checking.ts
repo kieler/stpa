@@ -28,16 +28,18 @@ class LTLFormula {
 }
 
 /**
- * Generates the LTL formulae for {@code model}.
+ * Generates the LTL formulae for the UCAs in the file given by {@code uri}.
+ * @param uri URI of the file for which the LTL should be generated.
+ * @param shared Langium/Sprotty services.
  * @returns LTL formulae for the UCAs in the given model.
  */
-export async function generateLTLFormulae(uri:string, shared: LangiumSprottySharedServices): Promise<LTLFormula[]> {
+export async function generateLTLFormulae(uri: string, shared: LangiumSprottySharedServices): Promise<LTLFormula[]> {
     const result: LTLFormula[] = [];
     // get the current model
     let model = getModel(uri, shared);
 
     // references are not found if the stpa file has not been opened since then the linter has not been activated yet
-    if (model.rules[0].contexts[0].vars[0].ref=== undefined) {
+    if (model.rules[0].contexts[0].vars[0].ref === undefined) {
         // build document
         await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
         // update the model
@@ -64,9 +66,15 @@ export async function generateLTLFormulae(uri:string, shared: LangiumSprottyShar
     return result;
 }
 
+/**
+ * Creates a string of a context variable value for the LTL formula 
+ * @param uri URI of the file for which the LTL should be generated.
+ * @param shared Langium/Sprotty services.
+ * @param uca UCA which context should be translated to a LTL.
+ * @param index Index of the variable in the UCA which is currently inspected.
+ * @returns the string for the currently inspected context variable.
+ */
 async function createLTLContextVariable(uri: string, shared: LangiumSprottySharedServices, uca: Context, index: number): Promise<string> {
-    // TODO: 
-
     //used variable in the uca
     let variable = uca.vars[index];
     // range definition of the used variable value in the UCA
@@ -125,6 +133,13 @@ async function createLTLContextVariable(uri: string, shared: LangiumSprottyShare
     return ltl;
 }
 
+/**
+ * Creates the LTL string for the given arguments.
+ * @param rule The rule that should be translated to a LTL.
+ * @param contextVariables The string for the context variable values.
+ * @param controlAction The controlaction for the rule.
+ * @returns the LTL for the given arguments.
+ */
 function createLTLString(rule: Rule, contextVariables: string, controlAction: string): { formula: string, text: string; } {
     let formula = "";
     let text = "";
@@ -145,7 +160,7 @@ function createLTLString(rule: Rule, contextVariables: string, controlAction: st
             formula = "G (((" + contextVariables + ") -> (controlAction==" + controlAction + ")) && !((" + contextVariables + ")U(controlAction==" + controlAction + ")))";
             text = controlAction + " not provided too late in context " + contextVariables;
             break;
-        // TODO momentarily not supported
+        // momentarily not supported
         case "wrong-time":
         case "applied-too-long":
         case "stopped-too-soon":
