@@ -52,20 +52,63 @@ export function generateLTLFormulae(model: Model): LTLFormula[] {
 
 function createLTLContextVariable(uca: Context, index: number): string {
     // TODO: reference is not found if the stpa file has not been opened since then the linter has not been activated yet
-    const variableValue = uca.vars[index].ref?.values?.find(value => value.name === uca.values[index]);
-    if (variableValue === undefined || variableValue?.firstValue === undefined) {
-        return uca.vars[index].$refText + "==" + uca.values[index];
-    } else if (variableValue.secondValue === undefined) {
-        return uca.vars[index].$refText + "==" + variableValue.firstValue;
-    } else {
-        if (variableValue.firstValue === "MIN") {
-            return uca.vars[index].$refText + "<=" + variableValue.secondValue;
-        } else if (variableValue.secondValue === "MAX") {
-            return uca.vars[index].$refText + ">=" + variableValue.firstValue;
+
+    //used variable in the uca
+    const variable = uca.vars[index];
+    // range definition of the used variable value in the UCA
+    const valueRange = variable.ref?.values?.find(value => value.name === uca.values[index]);
+    // variable name
+    let ltl = variable.$refText;
+
+    if (valueRange === undefined || valueRange?.firstValue === undefined) {
+        // no value range defined for the value
+        ltl += "==" + uca.values[index];
+    } else if (valueRange?.operator === "!=") {
+        // value is not in the given range
+        if (valueRange.secondValue === undefined) {
+            // only one value is given
+            if (valueRange.firstValue === "true") {
+                // we dont want to write "!= true"
+                ltl = "!" + ltl;
+            } else if (valueRange.firstValue !== "true") {
+                ltl += "!=" + valueRange.firstValue;
+            }
         } else {
-            return "(" + uca.vars[index].$refText + "<=" + variableValue.secondValue + " && " + uca.vars[index].$refText + ">=" + variableValue.firstValue + ")";
+            if (valueRange.firstValue === "MIN") {
+                // MIN value is used 
+                ltl += ">" + valueRange.secondValue;
+            } else if (valueRange.secondValue === "MAX") {
+                // MAX value is used
+                ltl += "<" + valueRange.firstValue;
+            } else {
+                // two range values are given without use of MIN or MAX
+                ltl = "(" + uca.vars[index].$refText + "<" + valueRange.firstValue + " && " + uca.vars[index].$refText + ">" + valueRange.secondValue + ")";
+            }
+        }
+    } else {
+        // value is in the given range
+        if (valueRange.secondValue === undefined) {
+            // only one value is given
+            if (valueRange.firstValue === "false") {
+                // we dont want to write "== false"
+                ltl = "!" + ltl;
+            } else if (valueRange.firstValue !== "true") {
+                ltl += "==" + valueRange.firstValue;
+            }
+        } else {
+            if (valueRange.firstValue === "MIN") {
+                // MIN value is used 
+                ltl += "<=" + valueRange.secondValue;
+            } else if (valueRange.secondValue === "MAX") {
+                // MAX value is used
+                ltl += ">=" + valueRange.firstValue;
+            } else {
+                // two range values are given without use of MIN or MAX
+                ltl = "(" + uca.vars[index].$refText + "<=" + valueRange.secondValue + " && " + uca.vars[index].$refText + ">=" + valueRange.firstValue + ")";
+            }
         }
     }
+    return ltl;
 }
 
 function createLTLString(rule: Rule, contextVariables: string, controlAction: string): { formula: string, text: string; } {
