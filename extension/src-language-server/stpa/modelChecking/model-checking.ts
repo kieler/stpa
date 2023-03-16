@@ -16,8 +16,9 @@
  */
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { Context, Model, Rule } from "../../generated/ast";
+import { Rule, Variable } from "../../generated/ast";
 import { getModel } from "../../utils";
+import { Reference } from 'langium';
 
 import { URI } from 'vscode-uri';
 
@@ -58,9 +59,9 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
             const controlAction = rule.system.$refText + "_" + rule.action.$refText;
             for (const uca of rule.contexts) {
                 // calculate the contextVariable string
-                let contextVariables = await createLTLContextVariable(uca, 0);
+                let contextVariables = await createLTLContextVariable(uca.vars[0], uca.values[0]);
                 for (let i = 1; i < uca.vars.length; i++) {
-                    contextVariables += "&&" + await createLTLContextVariable(uca, i);
+                    contextVariables += "&&" + await createLTLContextVariable(uca.vars[i], uca.values[i]);
                 }
                 // translate uca based on the rule type
                 const ltlString = createLTLString(rule, contextVariables, controlAction);
@@ -74,21 +75,19 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
 
 /**
  * Creates a string of a context variable value for the LTL formula.
- * @param uca UCA which context should be translated to a LTL.
- * @param index Index of the variable in the UCA which is currently inspected.
+ * @param variable Reference to a variable that should be translated to a LTL formula string.
+ * @param value Value of the variable.
  * @returns the string for the currently inspected context variable.
  */
-async function createLTLContextVariable(uca: Context, index: number): Promise<string> {
-    //used variable in the uca
-    let variable = uca.vars[index];
+async function createLTLContextVariable(variable: Reference<Variable>, value: string): Promise<string> {
     // range definition of the used variable value in the UCA
-    const valueRange = variable.ref?.values?.find(value => value.name === uca.values[index]);
+    const valueRange = variable.ref?.values?.find(variableRange => variableRange.name === value);
     // variable name
     let ltl = variable.$refText;
 
     if (valueRange === undefined || valueRange?.firstValue === undefined) {
         // no value range defined for the value
-        ltl += "==" + uca.values[index];
+        ltl += "==" + value;
     } else if (valueRange?.operator === "!=") {
         // value is not in the given range
         if (valueRange.secondValue === undefined) {
@@ -108,7 +107,7 @@ async function createLTLContextVariable(uca: Context, index: number): Promise<st
                 ltl += "<" + valueRange.firstValue;
             } else {
                 // two range values are given without use of MIN or MAX
-                ltl = "(" + uca.vars[index].$refText + "<" + valueRange.firstValue + " && " + uca.vars[index].$refText + ">" + valueRange.secondValue + ")";
+                ltl = "(" + variable.$refText + "<" + valueRange.firstValue + " && " + variable.$refText + ">" + valueRange.secondValue + ")";
             }
         }
     } else {
@@ -130,7 +129,7 @@ async function createLTLContextVariable(uca: Context, index: number): Promise<st
                 ltl += ">=" + valueRange.firstValue;
             } else {
                 // two range values are given without use of MIN or MAX
-                ltl = "(" + uca.vars[index].$refText + "<=" + valueRange.secondValue + " && " + uca.vars[index].$refText + ">=" + valueRange.firstValue + ")";
+                ltl = "(" + variable.$refText + "<=" + valueRange.secondValue + " && " + variable.$refText + ">=" + valueRange.firstValue + ")";
             }
         }
     }
