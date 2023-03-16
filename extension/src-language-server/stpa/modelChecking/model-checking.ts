@@ -23,13 +23,13 @@ import { Reference } from 'langium';
 import { URI } from 'vscode-uri';
 
 /**
- * Respresents a ltl formula.
+ * Respresents an LTL formula.
  */
 class LTLFormula {
-    /** formula of the LTL formula */
+    /** LTL formula */
     formula: string;
-    /** text representing the LTL formula */
-    text: string;
+    /** description of the LTL formula */
+    description: string;
     /** UCA that was used to create the LTL formula */
     ucaId: string;
 }
@@ -65,8 +65,7 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
                 }
                 // translate uca based on the rule type
                 const ltlString = createLTLString(rule, contextVariables, controlAction);
-
-                result.push({ formula: ltlString.formula, text: ltlString.text, ucaId: uca.name });
+                result.push({ formula: ltlString.formula, description: ltlString.text, ucaId: uca.name });
             }
         }
     }
@@ -82,7 +81,6 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
 async function createLTLContextVariable(variable: Reference<Variable>, value: string): Promise<string> {
     // range definition of the used variable value in the UCA
     const valueRange = variable.ref?.values?.find(variableRange => variableRange.name === value);
-
     if (valueRange === undefined || valueRange?.firstValue === undefined) {
         // no value range defined for the value
         return oneValue(variable.$refText, value, true);
