@@ -15,12 +15,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Rule, Variable } from "../../generated/ast";
-import { getModel } from "../../utils";
+import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Reference } from 'langium';
-
 import { URI } from 'vscode-uri';
+import { getModel } from "../../utils";
+
 
 /**
  * Respresents an LTL formula.

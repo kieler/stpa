@@ -60,9 +60,9 @@ export class ContextTableProvider {
         const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
-        let actions: ContextTableControlAction[] = [];
-        let variables: ContextTableSystemVariables[] = [];
-        let rules: ContextTableRule[] = [];
+        const actions: ContextTableControlAction[] = [];
+        const variables: ContextTableSystemVariables[] = [];
+        const rules: ContextTableRule[] = [];
 
         // collect control actions and variables
         model.controlStructure?.nodes.forEach(systemComponent => {

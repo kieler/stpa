@@ -129,7 +129,7 @@ export class StpaValidator {
         }
 
         // collect elements that have an identifier and should be referenced
-        let allElements: elementWithName[] = [
+        const allElements: elementWithName[] = [
             ...model.losses,
             ...hazards,
             ...sysCons,
@@ -252,7 +252,7 @@ export class StpaValidator {
     private checkIDsAreUnique(allElements: elementWithName[], accept: ValidationAcceptor): void {
         const names = new Set();
         for (const node of allElements) {
-            let name = node?.name;
+            const name = node?.name;
             if (name !== "") {
                 if (names.has(name)) {
                     accept('error', 'All identifiers must be unique.', { node: node, property: 'name' });
@@ -334,7 +334,7 @@ export class StpaValidator {
             const element = ref.ref;
             // needs to be checked in order to get the name
             if (element) {
-                let name = element.name;
+                const name = element.name;
                 if (name !== "") {
                     if (names.has(name)) {
                         accept('warning', 'Duplicate reference.', { node: main, property: 'refs', index: i });
@@ -391,7 +391,7 @@ export class StpaValidator {
      * @returns A set with all referenced IDs.
      */
     private collectReferences(allElements: elementWithRefs[]): Set<string> {
-        let refs = new Set<string>();
+        const refs = new Set<string>();
         for (const node of allElements) {
             if (node) {
                 for (const ref of node.refs) {

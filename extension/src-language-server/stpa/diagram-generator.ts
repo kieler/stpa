@@ -45,9 +45,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      */
     protected generateRoot(args: GeneratorContext<Model>): SModelRoot {
         const { document } = args;
-        let model: Model = document.parseResult.value;
+        const model: Model = document.parseResult.value;
         // filter model based on the options set by the user
-        let filteredModel = filterModel(model, this.options);
+        const filteredModel = filterModel(model, this.options);
 
         // determine the children for the STPA graph
         // for each component a node is generated with edges representing the references of the component
@@ -140,7 +140,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      */
     private generateVerticalCSEdges(nodes: Node[], args: GeneratorContext<Model>): CSEdge[] {
         const idCache = args.idCache;
-        let edges: CSEdge[] = [];
+        const edges: CSEdge[] = [];
         // for every control action and feedback of every a node, a edge should be created
         for (const node of nodes) {
             // create edges representing the control actions
@@ -149,7 +149,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 const targetId = idCache.getId(edge.target.ref);
                 const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
                 // multiple control actions to same target are represented by on edge
-                let label: string[] = [];
+                const label: string[] = [];
                 for (let i = 0; i < edge.comms.length; i++) {
                     const com = edge.comms[i];
                     label.push(com.label);
@@ -164,7 +164,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 const targetId = idCache.getId(edge.target.ref);
                 const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
                 // multiple feedback to same target is represented by on edge
-                let label: string[] = [];
+                const label: string[] = [];
                 for (let i = 0; i < edge.comms.length; i++) {
                     const com = edge.comms[i];
                     label.push(com.label);
@@ -292,7 +292,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // if hierarchy option is false, edges from subcomponents to parents are created too
         const targets = getTargets(node, this.options.getHierarchy());
         for (const target of targets) {
-            let targetId = idCache.getId(target);
+            const targetId = idCache.getId(target);
             const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
             if (sourceId && targetId) {
                 const e = this.generateSTPAEdge(edgeId, sourceId, targetId, '', args);

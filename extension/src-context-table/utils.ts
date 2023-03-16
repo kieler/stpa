@@ -84,9 +84,9 @@ export class Row {
  * @returns A list containing the resulting strings.
  */
 export function convertControlActionsToStrings(controlactions: ContextTableControlAction[]): string[] {
-    let result: string[] = [];
+    const result: string[] = [];
     controlactions.forEach(controlAction => {
-        let combineStr = controlAction.controller + "." + controlAction.action;
+        const combineStr = controlAction.controller + "." + controlAction.action;
         result.push(combineStr);
     });
     return result;

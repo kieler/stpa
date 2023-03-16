@@ -25,8 +25,8 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
         this.tabSize = options.tabSize;
         const edits: TextEdit[] = [];
         const text = document.getText();
-        let offset = 0;
-        let splits = text.split(/(?<=])|(?<={)|(?<=})|(?<=\n)|(?<=")/);
+        const offset = 0;
+        const splits = text.split(/(?<=])|(?<={)|(?<=})|(?<=\n)|(?<=")/);
         this.format(offset, document, edits, splits);
         return edits;
     }
@@ -107,7 +107,7 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param line The text at which end a newline should be inserted.
      */
     protected formatNewLineBefore(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
-        let trimmed = line.trim();
+        const trimmed = line.trim();
         if (trimmed !== '}') {
             const newOffset = offset - 1;
             const pos: Position = document.positionAt(newOffset);

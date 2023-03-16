@@ -43,7 +43,7 @@ export class CustomModel {
 export function filterModel(model: Model, options: StpaSynthesisOptions): CustomModel {
     // updates the control actions that can be used to filter the UCAs
     setFilterUCAOption(model.allUCAs, model.rules, options);
-    let newModel = new CustomModel();
+    const newModel = new CustomModel();
     // aspects for which no filter exists are just copied
     newModel.losses = model.losses;
     newModel.hazards = model.hazards;
