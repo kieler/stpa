@@ -82,59 +82,85 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
 async function createLTLContextVariable(variable: Reference<Variable>, value: string): Promise<string> {
     // range definition of the used variable value in the UCA
     const valueRange = variable.ref?.values?.find(variableRange => variableRange.name === value);
-    // variable name
-    let ltl = variable.$refText;
 
     if (valueRange === undefined || valueRange?.firstValue === undefined) {
         // no value range defined for the value
-        ltl += "==" + value;
-    } else if (valueRange?.operator === "!=") {
-        // value is not in the given range
-        if (valueRange.secondValue === undefined) {
-            // only one value is given
-            if (valueRange.firstValue === "true") {
-                // we dont want to write "!= true"
-                ltl = "!" + ltl;
-            } else if (valueRange.firstValue !== "true") {
-                ltl += "!=" + valueRange.firstValue;
-            }
-        } else {
-            if (valueRange.firstValue === "MIN") {
-                // MIN value is used 
-                ltl += ">" + valueRange.secondValue;
-            } else if (valueRange.secondValue === "MAX") {
-                // MAX value is used
-                ltl += "<" + valueRange.firstValue;
-            } else {
-                // two range values are given without use of MIN or MAX
-                ltl = "(" + variable.$refText + "<" + valueRange.firstValue + " && " + variable.$refText + ">" + valueRange.secondValue + ")";
-            }
-        }
+        return oneValue(variable.$refText, value, true);
     } else {
-        // value is in the given range
         if (valueRange.secondValue === undefined) {
             // only one value is given
-            if (valueRange.firstValue === "false") {
-                // we dont want to write "== false"
-                ltl = "!" + ltl;
-            } else if (valueRange.firstValue !== "true") {
-                ltl += "==" + valueRange.firstValue;
+            if (valueRange.firstValue === "false" || valueRange.firstValue === "true") {
+                // given value is a boolean
+                return booleanValue(variable.$refText, (valueRange?.operator === "=" && valueRange.firstValue === "true") || (valueRange?.operator === "!=" && valueRange.firstValue === "false"));
+            } else {
+                // given value is string or number
+                return oneValue(variable.$refText, "" + valueRange.firstValue, valueRange?.operator === "=");
             }
         } else {
             if (valueRange.firstValue === "MIN") {
                 // MIN value is used 
-                ltl += "<=" + valueRange.secondValue;
+                return minAsRangeValue(variable.$refText, "" + valueRange.secondValue, valueRange?.operator === "=");
             } else if (valueRange.secondValue === "MAX") {
                 // MAX value is used
-                ltl += ">=" + valueRange.firstValue;
+                return maxAsRangeValue(variable.$refText, "" + valueRange.firstValue, valueRange?.operator === "=");
             } else {
                 // two range values are given without use of MIN or MAX
-                ltl = "(" + variable.$refText + "<=" + valueRange.secondValue + " && " + variable.$refText + ">=" + valueRange.firstValue + ")";
+                return twoRanges(variable.$refText, "" + valueRange.firstValue, "" + valueRange.secondValue, valueRange?.operator === "=");
             }
         }
     }
-    return ltl;
 }
+
+/**
+ * A LTL string for a variable which value should be in a given range or outside of it.
+ * @param variable The variable to create the LTL string for.
+ * @param value1 The first value of the range.
+ * @param value2 The second value of the range.
+ * @param equal Determines whether the variable should be in the given range or outside of it.
+ * @returns the LTL string for the given variable.
+ */
+const twoRanges = (variable: string, value1: string, value2: string, equal: boolean): string => {
+    return "(" + variable + (equal ? ">=" : "<") + value1 + " && " + (equal ? "<=" : ">") + value2;
+};
+/**
+ * A LTL string for a variable which value should be in or outside of a given range in which a MAX value is used as second value of the range.
+ * @param variable The variable to create the LTL string for.
+ * @param value The first value of the range.
+ * @param equal Determines whether the variable should be in the given range or outside of it.
+ * @returns the LTL string for the given variable.
+ */
+const maxAsRangeValue = (variable: string, value: string, equal: boolean): string => {
+    return variable + (equal ? ">=" : "<") + value;
+};
+/**
+ * A LTL string for a variable which value should be in or outside of a given range in which a MIN value is used as first value of the range.
+ * @param variable The variable to create the LTL string for.
+ * @param value The second value of the range.
+ * @param equal Determines whether the variable should be in the given range or outside of it.
+ * @returns the LTL string for the given variable.
+ */
+const minAsRangeValue = (variable: string, value: string, equal: boolean): string => {
+    return variable + (equal ? "<=" : ">") + value;
+};
+/**
+ * A LTL string for a variable which value is a boolean.
+ * @param variable The variable to create the LTL string for.
+ * @param equal Determines whether the variable should be true or false.
+ * @returns the LTL string for the given variable.
+ */
+const booleanValue = (variable: string, equal: boolean): string => {
+    return (equal ? "" : "!") + variable;
+};
+/**
+ * A LTL string for a variable with a given value.
+ * @param variable The variable to create the LTL string for.
+ * @param value The value of the variable.
+ * @param equal Determines whether the variable should be (un)equal to the value.
+ * @returns the LTL string for the given variable.
+ */
+const oneValue = (variable: string, value: string, equal: boolean): string => {
+    return variable + (equal ? "==" : "!=") + value;
+};
 
 /**
  * Creates the LTL string for the given arguments.
