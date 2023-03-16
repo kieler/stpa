@@ -15,6 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { SGraph, SModelElement, SModelIndex, SNode } from 'sprotty-protocol';

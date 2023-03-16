@@ -304,8 +304,7 @@
     },
     "activationEvents": [
         "onLanguage:stpa",
-        "onCommand:stpa.diagram.open",
-        "onCommand:stpa.contextTable.open"
+        "onCommand:pasta.getLTLFormula"
     ],
     "files": [
         "lib",

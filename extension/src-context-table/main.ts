@@ -112,7 +112,7 @@ export class ContextTable extends Table {
         }
     }
 
-    protected initHtml(identifier: string, headers: string[]): void {
+    protected initHtml(identifier: string): void {
         this.identifier = identifier;
         this.tableId = this.identifier + "_table";
         const mainDiv = document.getElementById(identifier + '_container');

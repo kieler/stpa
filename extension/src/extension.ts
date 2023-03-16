@@ -17,13 +17,23 @@
 
 import * as vscode from 'vscode';
 import { StpaLspVscodeExtension } from './language-extension';
-import { SprottyLspVscodeExtension } from 'sprotty-vscode/lib/lsp';
+import { command } from './constants';
 
-let extension: SprottyLspVscodeExtension;
+let extension: StpaLspVscodeExtension;
 
 export function activate(context: vscode.ExtensionContext): void {
     vscode.window.showInformationMessage('Activating STPA extension');
     extension = new StpaLspVscodeExtension(context);
+    // register commands that other extensions can use
+    context.subscriptions.push(vscode.commands.registerCommand(
+        command.getLTLFormula,
+        async (uri: string) => {
+            // generate and send back the LTLs based on the STPA UCAs
+            await extension.lsReady;
+            const formulas: {formula: string, text: string, ucaId: string}[] = await extension.languageClient.sendRequest('modelChecking/generateLTL', uri);
+            return formulas;
+        }
+    ));
 }
 
 export function deactivate(): Thenable<void> {

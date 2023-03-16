@@ -109,11 +109,11 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      */
     private getCAs(node: ActionUCAs | Rule, precomputed: PrecomputedScopes): Scope {
         let allDescriptions: AstNodeDescription[] = [];
-        let actionLists = node.system.ref?.actions;
+        const actionLists = node.system.ref?.actions;
 
         if (actionLists) {
             for (const actionList of actionLists) {
-                let currentNode: AstNode | undefined = actionList;
+                const currentNode: AstNode | undefined = actionList;
                 const descs = this.getDescriptions(currentNode, this.CA_TYPE, precomputed);
                 allDescriptions = allDescriptions.concat(descs);
             }
@@ -129,11 +129,11 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      */
     private getVars(node: Context, precomputed: PrecomputedScopes): Scope {
         let allDescriptions: AstNodeDescription[] = [];
-        let varLists = node.$container.system.ref?.variables;
+        const varLists = node.$container.system.ref?.variables;
 
         if (varLists) {
             for (const varList of varLists) {
-                let currentNode: AstNode | undefined = varList;
+                const currentNode: AstNode | undefined = varList;
                 const descs = this.getDescriptions(currentNode, this.VAR_TYPE, precomputed);
                 allDescriptions = allDescriptions.concat(descs);
             }
@@ -174,7 +174,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         if (type === this.HAZARD_TYPE || type === this.SYS_CONSTRAINT_TYPE) {
             let res: AstNodeDescription[] = [];
             for (const node of nodes) {
-                let currentNode: AstNode | undefined = node;
+                const currentNode: AstNode | undefined = node;
                 if (node.subComps.length !== 0) {
                     res = this.getHazardSysCompsDescriptions(node.subComps, precomputed, type);
                 }
