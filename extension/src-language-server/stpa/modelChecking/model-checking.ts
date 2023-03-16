@@ -145,31 +145,68 @@ async function createLTLContextVariable(uca: Context, index: number): Promise<st
  * @returns the LTL for the given arguments.
  */
 function createLTLString(rule: Rule, contextVariables: string, controlAction: string): { formula: string, text: string; } {
-    let formula = "";
-    let text = "";
     switch (rule.type) {
         case "not-provided":
-            formula = "G ((" + contextVariables + ") -> (controlAction==" + controlAction + "))";
-            text = controlAction + " provided in context " + contextVariables;
-            break;
+            return notProvidedLTL(contextVariables, controlAction);
         case "provided":
-            formula = "G ((" + contextVariables + ") -> !(controlAction==" + controlAction + "))";
-            text = controlAction + " not provided in context " + contextVariables;
-            break;
+            return providedLTL(contextVariables, controlAction);
         case "too-early":
-            formula = "G (((controlAction==" + controlAction + ") -> (" + contextVariables + ")) && !((controlAction==" + controlAction + ")U(" + contextVariables + ")))";
-            text = controlAction + " not provided too early in context " + contextVariables;
-            break;
+            return tooEarlyLTL(contextVariables, controlAction);
         case "too-late":
-            formula = "G (((" + contextVariables + ") -> (controlAction==" + controlAction + ")) && !((" + contextVariables + ")U(controlAction==" + controlAction + ")))";
-            text = controlAction + " not provided too late in context " + contextVariables;
-            break;
+            return tooLateLTL(contextVariables, controlAction);
         // momentarily not supported
         case "wrong-time":
         case "applied-too-long":
         case "stopped-too-soon":
-        default: break;
+        default: return { formula: "", text: "" };
     }
-    return { formula, text };
 }
 
+/**
+ * LTL formula for the not provided rule type.
+ * @param contextVariables The used context variables that are already translated to string for the LTL formula.
+ * @param controlAction The inspected control action that is already translated to string for the LTL formula.
+ * @returns the LTL formula for the not provided rule type and a textual representation.
+ */
+const notProvidedLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+    return {
+        formula: "G ((" + contextVariables + ") -> (controlAction==" + controlAction + "))",
+        text: controlAction + " provided in context " + contextVariables
+    };
+};
+/**
+ * LTL formula for the provided rule type.
+ * @param contextVariables The used context variables that are already translated to string for the LTL formula.
+ * @param controlAction The inspected control action that is already translated to string for the LTL formula.
+ * @returns the LTL formula for the provided rule type and a textual representation.
+ */
+const providedLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+    return {
+        formula: "G ((" + contextVariables + ") -> !(controlAction==" + controlAction + "))",
+        text: controlAction + " not provided in context " + contextVariables
+    };
+};
+/**
+ * LTL formula for the too early rule type.
+ * @param contextVariables The used context variables that are already translated to string for the LTL formula.
+ * @param controlAction The inspected control action that is already translated to string for the LTL formula.
+ * @returns the LTL formula for the too eraly rule type and a textual representation.
+ */
+const tooEarlyLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+    return {
+        formula: "G (((controlAction==" + controlAction + ") -> (" + contextVariables + ")) && !((controlAction==" + controlAction + ")U(" + contextVariables + ")))",
+        text: controlAction + " not provided too early in context " + contextVariables
+    };
+};
+/**
+ * LTL formula for the too late rule type.
+ * @param contextVariables The used context variables that are already translated to string for the LTL formula.
+ * @param controlAction The inspected control action that is already translated to string for the LTL formula.
+ * @returns the LTL formula for the too late rule type and a textual representation.
+ */
+const tooLateLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+    return {
+        formula: "G (((" + contextVariables + ") -> (controlAction==" + controlAction + ")) && !((" + contextVariables + ")U(controlAction==" + controlAction + ")))",
+        text: controlAction + " not provided too late in context " + contextVariables
+    };
+};
