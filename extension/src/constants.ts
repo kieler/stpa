@@ -23,6 +23,6 @@ const withPrefix = (name: string): string => `${extensionId}.${name}`;
 /** Commands that are registered by this extension for other extensions.*/
 export const command = {
     getLTLFormula: withPrefix("getLTLFormula"),
-    sendModelCheckerResult: withPrefix("sendModelCheckerResult"),
+    // sendModelCheckerResult: withPrefix("sendModelCheckerResult"),
 };
 
