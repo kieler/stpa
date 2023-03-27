@@ -112,7 +112,7 @@ export class ContextTable extends Table {
         }
     }
 
-    protected initHtml(identifier: string, headers: string[]): void {
+    protected initHtml(identifier: string): void {
         this.identifier = identifier;
         this.tableId = this.identifier + "_table";
         const mainDiv = document.getElementById(identifier + '_container');
@@ -384,7 +384,7 @@ export class ContextTable extends Table {
         let result: (ContextTableVariable[])[] = [];
         // load the values of the current recursion's variable
         const currentValues = variableValues[variableIndex].values;
-        const lastVariable = variableIndex == variableValues.length - 1;
+        const lastVariable = variableIndex === variableValues.length - 1;
         // go through all the values of the current variable
         for (let valueIndex = 0; valueIndex < currentValues.length; valueIndex++) {
             // push the currently indexed value

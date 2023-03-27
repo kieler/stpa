@@ -41,17 +41,17 @@ export class TableWebview {
 
     private resolveWebviewReady: () => void;
 
-    private readonly webviewReady = new Promise<void>((resolve) => (this.resolveWebviewReady = resolve))
+    private readonly webviewReady = new Promise<void>((resolve) => (this.resolveWebviewReady = resolve));
 
     protected selectedCell: {rowId: string, columnId: string, text?: string};
 
-    public readonly cellClickedEmitter = new vscode.EventEmitter<{rowId: string, columnId: string, text?: string} | undefined>()
+    public readonly cellClickedEmitter = new vscode.EventEmitter<{rowId: string, columnId: string, text?: string} | undefined>();
 
-    public readonly cellClicked: vscode.Event<{rowId: string, columnId: string, text?: string} | undefined> = this.cellClickedEmitter.event
+    public readonly cellClicked: vscode.Event<{rowId: string, columnId: string, text?: string} | undefined> = this.cellClickedEmitter.event;
 
-    public readonly initializedEmitter = new vscode.EventEmitter<void | undefined>()
+    public readonly initializedEmitter = new vscode.EventEmitter<void | undefined>();
 
-    public readonly initialized: vscode.Event<void | undefined> = this.initializedEmitter.event
+    public readonly initialized: vscode.Event<void | undefined> = this.initializedEmitter.event;
 
     constructor(identifier: string, localResourceRoots: vscode.Uri[], scriptUri: vscode.Uri) {
         this.identifier = identifier;
@@ -68,7 +68,7 @@ export class TableWebview {
     }
 
     getSelectedRow() {
-        return this.selectedCell
+        return this.selectedCell;
     }
 
     /**
@@ -85,8 +85,8 @@ export class TableWebview {
         this.initializeWebview(diagramPanel.webview, title, headers);
         this.diagramPanel = diagramPanel;
         this.diagramPanel.onDidDispose(() => {
-            this.disposables.forEach(d => d.dispose())
-        })
+            this.disposables.forEach(d => d.dispose());
+        });
     }
 
     /**
@@ -96,7 +96,7 @@ export class TableWebview {
      * @param headers The headers of the table.
      */
     async initializeWebview(webview: vscode.Webview, title: string, headers: string[]) {
-        this.headers = headers
+        this.headers = headers;
         webview.html = `
             <!DOCTYPE html>
             <html lang="en">
@@ -148,7 +148,7 @@ export class TableWebview {
      * Registers listener for webview notifications.
      */
     protected async connect() {
-        this.disposables.push(this.webview.onDidReceiveMessage((message) => this.receiveFromWebview(message)))
+        this.disposables.push(this.webview.onDidReceiveMessage((message) => this.receiveFromWebview(message)));
         await this.ready();
     }
 
@@ -168,11 +168,11 @@ export class TableWebview {
         if (message.readyMessage) {
             this.resolveWebviewReady();
             await this.sendTableIdentifier();
-            this.initializedEmitter.fire()
+            this.initializedEmitter.fire();
         } else if (message.action) {
             if (SelectedCellAction.isThisAction(message.action)) {
-                this.selectedCell = {rowId: message.action.rowId, columnId: message.action.columnId, text: message.action.text}
-                this.cellClickedEmitter.fire(this.selectedCell)
+                this.selectedCell = {rowId: message.action.rowId, columnId: message.action.columnId, text: message.action.text};
+                this.cellClickedEmitter.fire(this.selectedCell);
             }
         }
     }
@@ -186,8 +186,8 @@ export class TableWebview {
     }
 
     dispose() {
-        this.diagramPanel.dispose()
-        this.disposables.forEach(d => d.dispose())
+        this.diagramPanel.dispose();
+        this.disposables.forEach(d => d.dispose());
     }
 
 }

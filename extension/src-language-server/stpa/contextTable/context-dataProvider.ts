@@ -40,13 +40,13 @@ export class ContextTableProvider {
         const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
-        let range: Range | undefined = undefined
+        let range: Range | undefined = undefined;
         model.rules.forEach(rule => rule.contexts.forEach(uca => {
             if (uca.name === ucaName) {
                 range = uca.$cstNode?.range;
                 return;
             }
-        }))
+        }));
         return range;
     }
 
@@ -60,9 +60,9 @@ export class ContextTableProvider {
         const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
-        let actions: ContextTableControlAction[] = [];
-        let variables: ContextTableSystemVariables[] = [];
-        let rules: ContextTableRule[] = [];
+        const actions: ContextTableControlAction[] = [];
+        const variables: ContextTableSystemVariables[] = [];
+        const rules: ContextTableRule[] = [];
 
         // collect control actions and variables
         model.controlStructure?.nodes.forEach(systemComponent => {
@@ -75,7 +75,7 @@ export class ContextTableProvider {
             // variables of the current system component
             const variableValues: ContextTableVariableValues[] = [];
             systemComponent.variables.forEach(variable => {
-                variableValues.push({ name: variable.name, values: variable.values });
+                variableValues.push({ name: variable.name, values: variable.values.map(value => value.name) });
             });
             variables.push({ system: systemComponent.name, variables: variableValues });
         });

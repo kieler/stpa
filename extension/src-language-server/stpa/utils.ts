@@ -118,7 +118,7 @@ export function collectElementsWithSubComps(topElements: (Hazard | SystemConstra
     let result = topElements;
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {
-        let current = todo[i];
+        const current = todo[i];
         if (current.subComps) {
             result = result.concat(current.subComps);
             todo = todo.concat(current.subComps);
@@ -192,7 +192,7 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
     }
 
     // used to determine which control action or system component belongs to which group number
-    let map = new Map<string, number>();
+    const map = new Map<string, number>();
     // sets level property to the layer of the nodes.
     for (const node of nodes) {
         const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth, map, groupUCAs);

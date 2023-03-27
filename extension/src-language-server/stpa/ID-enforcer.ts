@@ -89,6 +89,8 @@ export class IDEnforcer {
         if (index < 0) {
             // modified element is the last one
             index = elements.length;
+            // references to a deleted element must be deleted
+            edits = edits.concat(this.deleteReferences(prefix + (index + 1)));
         } else {
             // compute edits for renaming the elements below the modified element
             edits = await this.enforceIDsBelowModifiedElement(index, elements, prefix, change.text === '');
@@ -156,7 +158,7 @@ export class IDEnforcer {
             } else {
                 // IDs of the elements are increased so we must start with the largest ID
                 for (let i = elements.length - 1; i >= index; i--) {
-                    let elementToRename = elements[i];
+                    const elementToRename = elements[i];
                     if (modifiedElement && elementToRename.name !== modifiedElement.name) {
                         // rename the current element
                         const renameEdits = await this.renameID(elementToRename, prefix, i + 1);
@@ -205,7 +207,7 @@ export class IDEnforcer {
         const scenarioUCAs = model.scenarios;
 
         // collect all elements that have a reference list
-        let elementsWithRefs: (elementWithRefs | LossScenario)[] = [
+        const elementsWithRefs: (elementWithRefs | LossScenario)[] = [
             ...hazards,
             ...sysCons,
             ...responsibilities,
@@ -218,7 +220,7 @@ export class IDEnforcer {
         ];
 
         // compute edits to delete references to the given name
-        let edits: TextEdit[] = [];
+        const edits: TextEdit[] = [];
         for (const node of elementsWithRefs) {
             if (node && isCompositeCstNode(node.$cstNode)) {
                 const children = node.$cstNode.children;

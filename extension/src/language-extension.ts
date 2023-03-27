@@ -16,17 +16,16 @@
  */
 
 import * as path from 'path';
-import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, WorkspaceEdit } from 'vscode-languageclient/node';
-import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
+import { ActionMessage, JsonMap, SelectAction } from 'sprotty-protocol';
 import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
+import { LspLabelEditActionHandler, SprottyLspEditVscodeExtension, WorkspaceEditActionHandler } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
-import { ActionMessage, JsonMap } from 'sprotty-protocol';
+import * as vscode from 'vscode';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
-import { SelectAction } from 'sprotty-protocol';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -34,6 +33,10 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     protected lastUri: string;
     /** Saves the last selected UCA in the context table. */
     protected lastSelectedUCA: string[];
+
+    /** Indicates whether the language server is ready */
+    private resolveLSReady: () => void;
+    readonly lsReady = new Promise<void>((resolve) => this.resolveLSReady = resolve);
 
     /** needed for undo/redo actions when ID enforcement is active*/
     protected ignoreNextTextChange: boolean = false;
@@ -48,7 +51,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
 
         // add auto formatting provider
-        let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
+        const sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
         // handling of notifications regarding the context table
@@ -70,6 +73,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
         // laguage server is ready
         this.languageClient.onNotification("ready", () => {
+            this.resolveLSReady();
+            // open diagram
+            vscode.commands.executeCommand(this.extensionPrefix + '.diagram.open', vscode.window.activeTextEditor?.document.uri);
             // sends configuration of stpa to the language server
             this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
@@ -134,33 +140,33 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         );
         // commands for toggling the provided validation checks
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async (...commandArgs: any[]) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async () => {
                 this.createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints");
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkConstraintsForUCAs', async (...commandArgs: any[]) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkConstraintsForUCAs', async () => {
                 this.createQuickPickForWorkspaceOptions("checkConstraintsForUCAs");
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkScenariosForUCAs', async (...commandArgs: any[]) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkScenariosForUCAs', async () => {
                 this.createQuickPickForWorkspaceOptions("checkScenariosForUCAs");
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async (...commandArgs: any[]) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async () => {
                 this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.IDs.undo', async (...commandArgs: any[]) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.IDs.undo', async () => {
                 this.ignoreNextTextChange = true;
                 vscode.commands.executeCommand("undo");
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.IDs.redo', async (...commandArgs: any[]) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.IDs.redo', async () => {
                 this.ignoreNextTextChange = true;
                 vscode.commands.executeCommand("redo");
             })

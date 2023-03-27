@@ -15,9 +15,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import * as vscode from 'vscode';
 import { hasOwnProperty, isActionMessage, SelectAction } from 'sprotty-protocol';
 import { SprottyLspWebview } from "sprotty-vscode/lib/lsp";
+import * as vscode from 'vscode';
 import { SendConfigAction } from './actions';
 
 export class StpaLspWebview extends SprottyLspWebview {
@@ -32,7 +32,7 @@ export class StpaLspWebview extends SprottyLspWebview {
                     this.updateConfigValues(message.action as SendConfigAction);
                     break;
                 case SelectAction.KIND:
-                    this.handleSelectAction(message.action as SelectAction)
+                    this.handleSelectAction(message.action as SelectAction);
                     break;
             }
 

@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -17,9 +17,9 @@
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
-import { LangiumDocument } from "langium";
 import { Connection, Range } from "vscode-languageserver";
 import { elementWithName } from "./stpa/stpa-validator";
+import { getModel } from "./utils";
 
 /**
  * Adds handler for notifications.
@@ -27,11 +27,10 @@ import { elementWithName } from "./stpa/stpa-validator";
  * @param shared Shared services containing the workspace.
  */
 export function addNotificationHandler(connection: Connection, shared: LangiumSprottySharedServices): void {
+    // diagram
     connection.onNotification('diagram/selected', (msg: {label: string, uri: string}) => {
         // get the current model
-        const textDocuments = shared.workspace.LangiumDocuments;
-        const currentDoc = textDocuments.getOrCreateDocument(msg.uri as any) as LangiumDocument<Model>;
-        const model: Model = currentDoc.parseResult.value;
+        const model = getModel(msg.uri, shared);
 
         // determine the range in the editor of the component identified by "label"
         const range = getRangeOfNode(model, msg.label);
@@ -44,6 +43,7 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
     });
 }
 
+
 /**
  * Determines the range of the component identified by {@code label} in the editor,
  * @param model The current STPA model.
@@ -55,7 +55,7 @@ function getRangeOfNode(model: Model, label: string): Range | undefined {
     const elements: elementWithName[] = [...model.losses, ...model.hazards, ...model.hazards.flatMap(hazard => hazard.subComps), ...model.systemLevelConstraints, ...model.systemLevelConstraints.flatMap(constraint => constraint.subComps), ...model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem),
     ...model.allUCAs.flatMap(ucas => ucas.ucas), ...model.rules.flatMap(rule => rule.contexts), ...model.controllerConstraints, ...model.scenarios, ...model.safetyCons];
     if (model.controlStructure) {
-        elements.push(...model.controlStructure.nodes)
+        elements.push(...model.controlStructure.nodes);
     }
     elements.forEach(component => {
         if (component.name === label) {
