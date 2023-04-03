@@ -29,7 +29,7 @@ class LTLFormula {
     /** LTL formula */
     formula: string;
     /** description of the LTL formula */
-    description: string;
+    text: string;
     /** UCA that was used to create the LTL formula */
     ucaId: string;
 }
@@ -70,7 +70,7 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
                 }
                 // translate uca based on the rule type
                 const ltlString = createLTLString(rule, contextVariables, controlAction);
-                result.push({ formula: ltlString.formula, description: ltlString.text, ucaId: uca.name });
+                result.push({ formula: ltlString.formula, text: ltlString.text, ucaId: uca.name });
             }
         }
     }
