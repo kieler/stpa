@@ -61,7 +61,7 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
     if (model.rules) {
         for (const rule of model.rules) {
             // control action string
-            const controlAction = rule.system.$refText + "_" + rule.action.$refText;
+            const controlAction = rule.system.$refText + "." + rule.action.$refText;
             for (const uca of rule.contexts) {
                 // calculate the contextVariable string
                 let contextVariables = await createLTLContextVariable(uca.vars[0], uca.values[0]);
@@ -210,7 +210,7 @@ const notProvidedLTL = (contextVariables: string, controlAction: string): { form
  */
 const providedLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
     return {
-        formula: "G ((" + contextVariables + ") -> !(controlAction==" + controlAction + "))",
+        formula: "G ((" + contextVariables + ") -> (controlAction!=" + controlAction + "))",
         text: controlAction + " not provided in context " + contextVariables
     };
 };
