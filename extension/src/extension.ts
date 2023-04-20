@@ -21,6 +21,18 @@ import { command } from './constants';
 
 let extension: StpaLspVscodeExtension;
 
+/**
+ * Respresents an LTL formula.
+ */
+class LTLFormula {
+    /** LTL formula */
+    formula: string;
+    /** description of the LTL formula */
+    description: string;
+    /** UCA that was used to create the LTL formula */
+    ucaId: string;
+}
+
 export function activate(context: vscode.ExtensionContext): void {
     vscode.window.showInformationMessage('Activating STPA extension');
     extension = new StpaLspVscodeExtension(context);
@@ -30,14 +42,13 @@ export function activate(context: vscode.ExtensionContext): void {
         async (uri: string) => {
             // generate and send back the LTLs based on the STPA UCAs
             await extension.lsReady;
-            const formulas: {formula: string, text: string, ucaId: string}[] = await extension.languageClient.sendRequest('modelChecking/generateLTL', uri);
+            const formulas: Record<string, LTLFormula[]> = await extension.languageClient.sendRequest('modelChecking/generateLTL', uri);
             return formulas;
         }
     ));
 }
 
 export function deactivate(): Thenable<void> {
-    if (!extension)
-       {return Promise.resolve();}
+    if (!extension) { return Promise.resolve(); }
     return extension.deactivateLanguageClient();
 }
