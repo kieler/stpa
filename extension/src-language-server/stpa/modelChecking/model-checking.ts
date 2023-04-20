@@ -29,7 +29,7 @@ class LTLFormula {
     /** LTL formula */
     formula: string;
     /** description of the LTL formula */
-    text: string;
+    description: string;
     /** UCA that was used to create the LTL formula */
     ucaId: string;
 }
@@ -40,14 +40,15 @@ class LTLFormula {
  * @param shared Langium/Sprotty services.
  * @returns LTL formulae for the UCAs in the given model.
  */
-export async function generateLTLFormulae(uri: string, shared: LangiumSprottySharedServices): Promise<LTLFormula[]> {
-    const result: LTLFormula[] = [];
+export async function generateLTLFormulae(uri: string, shared: LangiumSprottySharedServices): Promise<Record<string, LTLFormula[]>> {
+    // ltl dormulas are saved per controller
+    const map: Record<string, LTLFormula[]> = {};
     // get the current model
     let model = getModel(uri, shared);
 
     // no UCAs exist
-    if(model.rules.length === 0) {
-        return result;
+    if (model.rules.length === 0) {
+        return map;
     }
 
     // references are not found if the stpa file has not been opened since then the linter has not been activated yet
@@ -60,8 +61,9 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
 
     if (model.rules) {
         for (const rule of model.rules) {
+            const controller = rule.system.$refText;
             // control action string
-            const controlAction = rule.system.$refText + "." + rule.action.$refText;
+            const controlAction = controller + "." + rule.action.$refText;
             for (const uca of rule.contexts) {
                 // calculate the contextVariable string
                 let contextVariables = await createLTLContextVariable(uca.vars[0], uca.values[0]);
@@ -70,11 +72,18 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
                 }
                 // translate uca based on the rule type
                 const ltlString = createLTLString(rule, contextVariables, controlAction);
-                result.push({ formula: ltlString.formula, text: ltlString.text, ucaId: uca.name });
+                const ltlFormula = { formula: ltlString.formula, description: ltlString.description, ucaId: uca.name };
+                // add ltl to the map based on the controller reponsible for the UCA
+                const ltlList = map[controller];
+                if (ltlList !== undefined) {
+                    ltlList.push(ltlFormula);
+                } else {
+                    map[controller] = [ltlFormula];
+                }
             }
         }
     }
-    return result;
+    return map;
 }
 
 /**
@@ -172,7 +181,7 @@ const oneValue = (variable: string, value: string, equal: boolean): string => {
  * @param controlAction The controlaction for the rule.
  * @returns the LTL for the given arguments.
  */
-function createLTLString(rule: Rule, contextVariables: string, controlAction: string): { formula: string, text: string; } {
+function createLTLString(rule: Rule, contextVariables: string, controlAction: string): { formula: string, description: string; } {
     switch (rule.type) {
         case "not-provided":
             return notProvidedLTL(contextVariables, controlAction);
@@ -189,7 +198,7 @@ function createLTLString(rule: Rule, contextVariables: string, controlAction: st
         // momentarily not supported
         case "wrong-time":
             return wrongTimeLTL(contextVariables, controlAction);
-        default: return { formula: "", text: "" };
+        default: return { formula: "", description: "" };
     }
 }
 
@@ -199,10 +208,10 @@ function createLTLString(rule: Rule, contextVariables: string, controlAction: st
  * @param controlAction The inspected control action that is already translated to string for the LTL formula.
  * @returns the LTL formula for the not provided rule type and a textual representation.
  */
-const notProvidedLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+const notProvidedLTL = (contextVariables: string, controlAction: string): { formula: string, description: string; } => {
     return {
         formula: "G ((" + contextVariables + ") -> (controlAction==" + controlAction + "))",
-        text: controlAction + " provided in context " + contextVariables
+        description: controlAction + " provided in context " + contextVariables
     };
 };
 /**
@@ -211,10 +220,10 @@ const notProvidedLTL = (contextVariables: string, controlAction: string): { form
  * @param controlAction The inspected control action that is already translated to string for the LTL formula.
  * @returns the LTL formula for the provided rule type and a textual representation.
  */
-const providedLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+const providedLTL = (contextVariables: string, controlAction: string): { formula: string, description: string; } => {
     return {
         formula: "G ((" + contextVariables + ") -> (controlAction!=" + controlAction + "))",
-        text: controlAction + " not provided in context " + contextVariables
+        description: controlAction + " not provided in context " + contextVariables
     };
 };
 /**
@@ -223,11 +232,11 @@ const providedLTL = (contextVariables: string, controlAction: string): { formula
  * @param controlAction The inspected control action that is already translated to string for the LTL formula.
  * @returns the LTL formula for the too eraly rule type and a textual representation.
  */
-const tooEarlyLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+const tooEarlyLTL = (contextVariables: string, controlAction: string): { formula: string, description: string; } => {
     return {
         // formula: "G (((controlAction==" + controlAction + ") -> (" + contextVariables + ")) && !((controlAction==" + controlAction + ")U(" + contextVariables + ")))",
         formula: "G ((!(" + contextVariables + ") && X(" + contextVariables + ")) -> (controlAction!=" + controlAction + "))",
-        text: controlAction + " not provided too early in context " + contextVariables
+        description: controlAction + " not provided too early in context " + contextVariables
     };
 };
 /**
@@ -236,11 +245,11 @@ const tooEarlyLTL = (contextVariables: string, controlAction: string): { formula
  * @param controlAction The inspected control action that is already translated to string for the LTL formula.
  * @returns the LTL formula for the too late rule type and a textual representation.
  */
-const tooLateLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+const tooLateLTL = (contextVariables: string, controlAction: string): { formula: string, description: string; } => {
     return {
         // formula: "G (((" + contextVariables + ") -> (controlAction==" + controlAction + ")) && !((" + contextVariables + ")U(controlAction==" + controlAction + ")))",
         formula: "((" + contextVariables + ") -> (controlAction==" + controlAction + ")) && G ((!(" + contextVariables + ")) -> (X((" + contextVariables + ") -> (controlAction==" + controlAction + "))))",
-        text: controlAction + " not provided too late in context " + contextVariables
+        description: controlAction + " not provided too late in context " + contextVariables
     };
 };
 /**
@@ -249,10 +258,10 @@ const tooLateLTL = (contextVariables: string, controlAction: string): { formula:
  * @param controlAction The inspected control action that is already translated to string for the LTL formula.
  * @returns the LTL formula for the applied too long rule type and a textual representation.
  */
-const appliedTooLongLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+const appliedTooLongLTL = (contextVariables: string, controlAction: string): { formula: string, description: string; } => {
     return {
         formula: "G ((" + contextVariables + " && controlAction==" + controlAction + ") -> (X((!(" + contextVariables + ")) -> controlAction!=" + controlAction + ")))",
-        text: controlAction + " not applied too long in context " + contextVariables
+        description: controlAction + " not applied too long in context " + contextVariables
     };
 };
 /**
@@ -261,10 +270,10 @@ const appliedTooLongLTL = (contextVariables: string, controlAction: string): { f
  * @param controlAction The inspected control action that is already translated to string for the LTL formula.
  * @returns the LTL formula for the stopped too soon rule type and a textual representation.
  */
-const stoppedTooSoonLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+const stoppedTooSoonLTL = (contextVariables: string, controlAction: string): { formula: string, description: string; } => {
     return {
         formula: "G ((" + contextVariables + " && controlAction==" + controlAction + ") -> (X((controlAction!=" + controlAction + ") -> (!(" + contextVariables + ")))))",
-        text: controlAction + " not stopped too soon in context " + contextVariables
+        description: controlAction + " not stopped too soon in context " + contextVariables
     };
 };
 /**
@@ -273,11 +282,11 @@ const stoppedTooSoonLTL = (contextVariables: string, controlAction: string): { f
  * @param controlAction The inspected control action that is already translated to string for the LTL formula.
  * @returns the LTL formula for the wrong time rule type and a textual representation.
  */
-const wrongTimeLTL = (contextVariables: string, controlAction: string): { formula: string, text: string; } => {
+const wrongTimeLTL = (contextVariables: string, controlAction: string): { formula: string, description: string; } => {
     const tooEarly = tooEarlyLTL(contextVariables, controlAction);
     const tooLate = tooLateLTL(contextVariables, controlAction);
     return {
         formula: tooEarly.formula + " && " + tooLate.formula,
-        text: controlAction + " not provided at the wrong time in context " + contextVariables
+        description: controlAction + " not provided at the wrong time in context " + contextVariables
     };
 };
