@@ -19,7 +19,7 @@ import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } f
 import { Position } from 'vscode-languageserver-types';
 import { StpaAstType, Loss, Hazard, Command, SystemConstraint, Node, Responsibility, UCA, ContConstraint, LossScenario, SafetyConstraint, Variable, Graph, Context, HazardList, Model, isModel, Rule } from '../generated/ast';
 import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps } from './utils';
+import { collectElementsWithSubComps } from './diagram/utils';
 
 /**
  * Registry for validation checks.

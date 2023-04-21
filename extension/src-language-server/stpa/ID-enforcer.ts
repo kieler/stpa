@@ -21,7 +21,7 @@ import { Range, RenameParams, TextEdit } from "vscode-languageserver";
 import { Hazard, isHazard, isSystemConstraint, LossScenario, Model, SystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { elementWithName, elementWithRefs } from "./stpa-validator";
-import { collectElementsWithSubComps } from "./utils";
+import { collectElementsWithSubComps } from "./diagram/utils";
 
 /**
  * Contains methods to enforce correct IDs on STPA components.

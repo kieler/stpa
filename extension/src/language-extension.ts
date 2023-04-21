@@ -26,6 +26,7 @@ import { UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
+import { LTLFormula, createSBMs } from './sbm/sbm-generation';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -138,6 +139,15 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 this.languageClient.sendNotification('contextTable/getData', this.lastUri);
             })
         );
+
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.SBM.generation', async (uri: string) => {
+                await this.lsReady;
+                const formulas: Record<string, LTLFormula[]> = await this.languageClient.sendRequest('verification/generateLTL', uri);
+                const controlActions: Record<string, string[]> = await this.languageClient.sendRequest('verification/getControlActions', uri);
+                createSBMs(controlActions, formulas);
+            })
+        );
         // commands for toggling the provided validation checks
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async () => {
@@ -159,6 +169,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
             })
         );
+        // commands for undo and redo (must be recognized to turn off automatic ID generation for the next text change)
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.IDs.undo', async () => {
                 this.ignoreNextTextChange = true;

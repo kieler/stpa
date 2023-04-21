@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ActionUCAs, ContConstraint, Graph, Hazard, Loss, LossScenario, Model, Resps, Rule, SafetyConstraint, SystemConstraint } from "../generated/ast";
+import { ActionUCAs, ContConstraint, Graph, Hazard, Loss, LossScenario, Model, Resps, Rule, SafetyConstraint, SystemConstraint } from "../../generated/ast";
 import { StpaSynthesisOptions } from "./synthesis-options";
 
 /**

@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { DropDownOption, TransformationOptionType, ValuedSynthesisOption } from "../options/option-models";
+import { DropDownOption, TransformationOptionType, ValuedSynthesisOption } from "../../options/option-models";
 
 const hierarchyID = "hierarchy";
 const groupingUCAsID = "groupingUCAs";
