@@ -47,8 +47,15 @@ export class State {
     transitions: Transition[];
 }
 
+export const EMPTY_STATE_NAME = "EmptyState";
+
 export class Transition {
     target: string;
-    trigger: string;
-    effect: string;
+    trigger?: string;
+    effect?: string;
+}
+
+export class Variable {
+    name: string;
+    type: string;
 }

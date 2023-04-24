@@ -26,7 +26,8 @@ import { UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
-import { LTLFormula, createSBMs } from './sbm/sbm-generation';
+import { createSBMs } from './sbm/sbm-generation';
+import { LTLFormula } from './sbm/utils';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -141,10 +142,11 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         );
 
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.SBM.generation', async (uri: string) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.SBM.generation', async (uri: vscode.Uri) => {
                 await this.lsReady;
-                const formulas: Record<string, LTLFormula[]> = await this.languageClient.sendRequest('verification/generateLTL', uri);
-                const controlActions: Record<string, string[]> = await this.languageClient.sendRequest('verification/getControlActions', uri);
+                const formulas: Record<string, LTLFormula[]> = await this.languageClient.sendRequest('verification/generateLTL', uri.path);
+                // controlAction names are just the aciton without the controller as prefix
+                const controlActions: Record<string, string[]> = await this.languageClient.sendRequest('verification/getControlActions', uri.path);
                 createSBMs(controlActions, formulas);
             })
         );
