@@ -110,7 +110,7 @@ function addVerificationHandler(connection: Connection, sharedServices: LangiumS
         const formulas = await generateLTLFormulae(uri, sharedServices);
         return formulas;
     });
-    // get control actions
+    // get the control actions
     connection.onRequest('verification/getControlActions', async (uri: string) => {
         const controlActions = getControlActions(uri, sharedServices);
         return controlActions;

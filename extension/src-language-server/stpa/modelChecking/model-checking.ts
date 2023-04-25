@@ -37,6 +37,9 @@ class LTLFormula {
     type: string;
 }
 
+/**
+ * Provides the different UCA types.
+ */
 class UCA_TYPE {
     static NOT_PROVIDED = "not-provided";
     static PROVIDED = "provided";

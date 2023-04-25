@@ -20,21 +20,28 @@ import { LangiumSprottySharedServices } from "langium-sprotty";
 import { LangiumSharedServices } from "langium";
 import { getModel } from "../utils";
 
+/**
+ * Returns the control actions defined in the file given by the {@code uri}.
+ * @param uri Uri of the file which control actions should be returned.
+ * @param shared The shared services of Langium.
+ * @returns the control actions that are defined in the file determined by the {@code uri}.
+ */
 export function getControlActions(uri: string, shared: LangiumSprottySharedServices | LangiumSharedServices): Record<string, string[]> {
-    const actions: Record<string, string[]> = {};
+    const controlActionsMap: Record<string, string[]> = {};
+    // get the model from the file determined by the uri
     const model = getModel(uri, shared);
+    // collect control actions grouped by their controller
     model.controlStructure?.nodes.forEach(systemComponent => {
-        // control actions of the current system component
         systemComponent.actions.forEach(action => {
             action.comms.forEach(command => {
-                const actionList = actions[systemComponent.name];
+                const actionList = controlActionsMap[systemComponent.name];
                 if (actionList !== undefined) {
                     actionList.push(command.name);
                 } else {
-                    actions[systemComponent.name] = [command.name];
+                    controlActionsMap[systemComponent.name] = [command.name];
                 }
             });
         });
     });
-    return actions;
+    return controlActionsMap;
 }
