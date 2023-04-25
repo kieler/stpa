@@ -53,7 +53,7 @@ async function createControllerSBM(controllerName: string, controlActions: strin
     // determine variables for scchart
     const variables = collectVariables(ltlFormulas);
     // create the scchart
-    const scchartText = createSCChartText(controllerName, states, variables, ltlFormulas, controlActions);
+    const scchartText = createSCChartText(controllerName, states, variables, ltlFormulas, controlActions.concat(["NULL"]));
     createSCChartFile(uri.path, scchartText);
 }
 
@@ -128,7 +128,7 @@ function createStatesForActions(controlActions: string[]): State[] {
     });
     states.push({
         name: EMPTY_STATE_NAME,
-        controlAction: "",
+        controlAction: "NULL",
         transitions: []
     });
     return states;

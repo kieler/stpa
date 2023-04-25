@@ -16,7 +16,7 @@
  */
 
 import * as vscode from 'vscode';
-import { LTLFormula, State, Variable } from "./utils";
+import { EMPTY_STATE_NAME, LTLFormula, State, Variable } from "./utils";
 
 export function createSCChartText(controllerName: string, states: State[], variables: Variable[], ltlFormulas: LTLFormula[], controlActions: string[]): string {
     let result = "";
@@ -25,7 +25,7 @@ export function createSCChartText(controllerName: string, states: State[], varia
     result += createEnum(controllerName, controlActions);
     // TODO: AssumeRange annotation for variables?
     result += createVariables(variables);
-    result += createStates(states);
+    result += createStates(states, controllerName);
     result += "}";
     return result;
 }
@@ -50,15 +50,19 @@ function createVariables(variables: Variable[]): string {
     variables.forEach(variable => {
         variableDecl += `${variable.type} ${variable.name}\n`;
     });
-    return variableDecl;
+    return variableDecl + "\n";
 }
 
-function createStates(states: State[]): string {
-    // TODO: "Initial" is missing and control actions
+function createStates(states: State[], controllerName: string): string {
     let stateDecl = "";
     states.forEach(state => {
+        if (state.name === EMPTY_STATE_NAME) {
+            stateDecl += "initial ";
+        }
         stateDecl += `state ${state.name} {\n`;
-
+        if (state.controlAction !== "") {
+            stateDecl += `entry do controlAction = ${controllerName}.${state.controlAction}\n`;
+        }
         stateDecl += "}\n";
         state.transitions.forEach(transition => {
             if (transition.trigger) {
@@ -69,6 +73,7 @@ function createStates(states: State[]): string {
             }
             stateDecl += `go to ${transition.target}\n`;
         });
+        stateDecl += "\n";
     });
     return stateDecl;
 }
@@ -95,6 +100,10 @@ export async function createSCChartFile(uri: string, text: string): Promise<void
     if (doc === undefined) {
         doc = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === vscode.Uri.parse(uri).toString());
     }
-    await doc?.save();
+    const saved = await doc?.save();
+    if (!saved) {
+        console.error(`TextDocument ${doc?.uri} could not be saved!`);
+        return;
+    }
 }
 
