@@ -148,7 +148,7 @@
             },
             {
                 "command": "stpa.SBM.generation",
-                "title": "Generate SBM",
+                "title": "Generate Safe Behavioral Model (SBM)",
                 "category": "STPA SBM"
             }
         ],

@@ -145,8 +145,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             vscode.commands.registerCommand(this.extensionPrefix + '.SBM.generation', async (uri: vscode.Uri) => {
                 await this.lsReady;
                 const formulas: Record<string, LTLFormula[]> = await this.languageClient.sendRequest('verification/generateLTL', uri.path);
-                // controlAction names are just the aciton without the controller as prefix
+                // controlAction names are just the action without the controller as prefix
                 const controlActions: Record<string, string[]> = await this.languageClient.sendRequest('verification/getControlActions', uri.path);
+                // generate a safe behavioral model
                 createSBMs(controlActions, formulas);
             })
         );

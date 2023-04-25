@@ -19,10 +19,22 @@ import * as vscode from 'vscode';
 import { EMPTY_STATE_NAME, LTLFormula, State, Transition, UCA_TYPE, Variable } from "./utils";
 import { createSCChartText, createSCChartFile } from "./scchart-creation";
 
+/**
+ * Creates a safe behavioral model for each controller.
+ * @param controlActionsMap The control actions for each controller.
+ * @param formulaMap The ltl formulas for each controller.
+ */
 export function createSBMs(controlActionsMap: Record<string, string[]>, formulaMap: Record<string, LTLFormula[]>): void {
     Object.keys(controlActionsMap).forEach(controller => createControllerSBM(controller, controlActionsMap[controller], formulaMap[controller]));
 }
 
+/**
+ * Creates a safe behavioral model with the given components.
+ * @param controllerName The name of the controller to model.
+ * @param controlActions The control actions of the controller.
+ * @param ltlFormulas The ltl formulas for the controller.
+ * @returns 
+ */
 async function createControllerSBM(controllerName: string, controlActions: string[], ltlFormulas: LTLFormula[]): Promise<void> {
     // Ask the user where to save the sbm
     const currentFolder = vscode.workspace.workspaceFolders
@@ -50,22 +62,30 @@ async function createControllerSBM(controllerName: string, controlActions: strin
             addTransitions(states, controlAction, formulas);
         }
     }
-    // determine variables for scchart
-    const variables = collectVariables(ltlFormulas);
+    // determine the variables for the scchart includign a variable for the controlaction
+    const controlActionVariable = {name: "controlAction", type: `ref ${controllerName}`};
+    const variables = [controlActionVariable].concat(collectContextVariables(ltlFormulas));
     // create the scchart
     const scchartText = createSCChartText(controllerName, states, variables, ltlFormulas, controlActions.concat(["NULL"]));
     createSCChartFile(uri.path, scchartText);
 }
 
-function collectVariables(ltlFormulas: LTLFormula[]): Variable[] {
+/**
+ * Collects the context variables that occur in the {@code ltlFormulas}.
+ * @param ltlFormulas The formulas which context variables should be collected.
+ * @returns the context variables that occur in the {@code ltlFormulas}.
+ */
+function collectContextVariables(ltlFormulas: LTLFormula[]): Variable[] {
+    // variables should not be collected more than once
     const variableNames = new Set<string>;
     const variables: Variable[] = [];
     ltlFormulas.forEach(ltlFormula => {
-        const splits = ltlFormula.contextVariables.split("&&");
-        splits.forEach(split => {
-            const operands = split.split(/>=|<=|>|<|==|!=/);
+        // the variables are connected by logical ands
+        const expressions = ltlFormula.contextVariables.split("&&");
+        expressions.forEach(expression => {
+            const operands = expression.split(/>=|<=|>|<|==|!=/);
             if (operands.length === 1) {
-                // is a boolean
+                // variable is a boolean
                 let varName = "";
                 if (operands[0].charAt(0) === '!') {
                     varName = operands[0].substring(1);
@@ -77,11 +97,12 @@ function collectVariables(ltlFormulas: LTLFormula[]): Variable[] {
                     variables.push({ name: varName, type: "bool" });
                 }
             } else {
-                if (!variableNames.has(operands[0]) && checkOperand(operands[0])) {
+                // operands may be variables or numbers so we need to check that before collecting them
+                if (!variableNames.has(operands[0]) && !isNumber(operands[0])) {
                     variableNames.add(operands[0]);
                     variables.push({ name: operands[0], type: "int" });
                 }
-                if (!variableNames.has(operands[1]) && checkOperand(operands[1])) {
+                if (!variableNames.has(operands[1]) && !isNumber(operands[1])) {
                     variableNames.add(operands[1]);
                     variables.push({ name: operands[1], type: "int" });
                 }
@@ -91,18 +112,33 @@ function collectVariables(ltlFormulas: LTLFormula[]): Variable[] {
     return variables;
 }
 
-function checkOperand(operand: string): boolean {
-    return isNaN(parseInt(operand));
+/**
+ * Checks whether {@code text} is a number.
+ * @param text The operand check.
+ * @returns true if {@code text} is a number.
+ */
+function isNumber(text: string): boolean {
+    return !isNaN(parseInt(text));
 }
 
+/**
+ * Determines the control action the {@code ltlFormula} is defined for.
+ * @param ltlFormula The ltl formula for which the control action should be determined.
+ * @returns the control action the {@code ltlFormula} is defined for.
+ */
 function getControlActionFromLTL(ltlFormula: LTLFormula): string {
-    // Calculation based on the assumption the the control action is stated first in the description and has the form <controller.action>
+    // Calculation based on the assumption that the control action is stated first in the description and has the form <controller.action>
     const startIndex = ltlFormula.description.indexOf(".");
     const endIndex = ltlFormula.description.indexOf(" ");
     const action = ltlFormula.description.substring(startIndex + 1, endIndex);
     return action;
 }
 
+/**
+ * Groups the {@code ltlFormulas} by their control action.
+ * @param ltlFormulas The ltl formulas to group.
+ * @returns the {@code ltlFormulas} grouped by their control action.
+ */
 function groupFormulasByAction(ltlFormulas: LTLFormula[]): Map<string, LTLFormula[]> {
     const map: Map<string, LTLFormula[]> = new Map<string, LTLFormula[]>();
     ltlFormulas.forEach(formula => {
@@ -116,16 +152,23 @@ function groupFormulasByAction(ltlFormulas: LTLFormula[]): Map<string, LTLFormul
     });
     return map;
 }
+
+/**
+ * Creates a state for each of the {@code controlActions}.
+ * @param controlActions The control actions for which states should be created.
+ * @returns the states representing the {@code controlActions}.
+ */
 function createStatesForActions(controlActions: string[]): State[] {
     const states: State[] = [];
     controlActions.forEach(controlAction => {
         const state: State = {
-            name: controlAction.substring(controlAction.indexOf(".") + 1),
+            name: controlAction,
             controlAction: controlAction,
             transitions: []
         };
         states.push(state);
     });
+    // one state representing that no control action is active
     states.push({
         name: EMPTY_STATE_NAME,
         controlAction: "NULL",
@@ -133,28 +176,38 @@ function createStatesForActions(controlActions: string[]): State[] {
     });
     return states;
 }
+
+/**
+ * Adds transitions to the {@code states} such that the {@code ltlFormulas} for the {@code controlAction} are respected.
+ * @param states The states of the SBM.
+ * @param controlAction The control action which ltl formulas are translated.
+ * @param ltlFormulas The ltl formulas for the {@code controlAction}.
+ */
 function addTransitions(states: State[], controlAction: string, ltlFormulas: LTLFormula[]): void {
     const controlActionStateIndex = states.findIndex(state => state.name === controlAction);
     const controlActionState = states[controlActionStateIndex];
     ltlFormulas.forEach(ltlFormula => {
         switch (ltlFormula.type) {
             case UCA_TYPE.PROVIDED:
+                // transition from controlaction state to the empty state
                 const transition = {
                     target: EMPTY_STATE_NAME,
                     trigger: ltlFormula.contextVariables
                 };
-                const newTransitions: Transition[] = [transition];
-                newTransitions.push(... controlActionState.transitions);
-                controlActionState.transitions = newTransitions;
+                controlActionState.transitions.push(transition);
                 break;
             case UCA_TYPE.NOT_PROVIDED:
                 states.forEach((state, index) => {
                     if (index !== controlActionStateIndex) {
+                        // transition from all other states to the controlaction state
                         const transition = {
                             target: controlActionState.name,
                             trigger: ltlFormula.contextVariables
                         };
-                        state.transitions.push(transition);
+                        // transition must have the highest priority
+                        const newTransitions: Transition[] = [transition];
+                        newTransitions.push(... state.transitions);
+                        state.transitions = newTransitions;
                     }
                 });
                 break;

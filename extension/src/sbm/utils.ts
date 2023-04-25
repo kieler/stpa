@@ -30,6 +30,9 @@ export class LTLFormula {
     type: string;
 }
 
+/**
+ * Provides the different UCA types.
+ */
 export class UCA_TYPE {
     static NOT_PROVIDED = "not-provided";
     static PROVIDED = "provided";
@@ -41,20 +44,32 @@ export class UCA_TYPE {
     static UNDEFINED = "undefined";
 }
 
+/**
+ * Represents a state in a safe behavioral model.
+ */
 export class State {
     name: string;
     controlAction: string;
     transitions: Transition[];
 }
 
+/**
+ * The name for the empty state in the safe behavioral model.
+ */
 export const EMPTY_STATE_NAME = "EmptyState";
 
+/**
+ * Represents a transition in a safe behavioral model.
+ */
 export class Transition {
     target: string;
     trigger?: string;
     effect?: string;
 }
 
+/**
+ * Represents a variable in a safe behavioral model.
+ */
 export class Variable {
     name: string;
     type: string;
