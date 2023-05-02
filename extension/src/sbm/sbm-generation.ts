@@ -225,3 +225,27 @@ function addTransitions(states: State[], controlAction: string, ltlFormulas: LTL
     });
 }
 
+/**
+ * Removes transitions that are unnecessary because their triggers are the same to transitions with higher priorities.
+ * @param states The states of the model which transitions should be updated.
+ */
+function removeDublicateTransitions(states: State[]): void {
+    states.forEach(state => {
+        const triggers = new Set<string>;
+        const deleteTransitions = new Set<number>;
+        state.transitions.forEach((transition, index) => {
+            if (transition.trigger && triggers.has(transition.trigger)) {
+                if (transition.target === EMPTY_STATE_NAME) {
+                    deleteTransitions.add(index);
+                } else {
+                    // TODO: inform the user that priorities cannot be inferred
+                }
+            }
+            if (transition.trigger) {
+                triggers.add(transition.trigger);
+            }
+        });
+        state.transitions = state.transitions.filter((_, index) => !deleteTransitions.has(index));
+    });
+}
+
