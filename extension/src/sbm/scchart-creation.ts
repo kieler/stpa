@@ -76,6 +76,11 @@ function createEnum(enumName: string, values: string[]): string {
 function createVariables(variables: Variable[]): string {
     let variableDecl = "";
     variables.forEach(variable => {
+        if (variable.input) {
+            variableDecl += "input ";
+        } else if (variable.output) {
+            variableDecl += "output ";
+        }
         variableDecl += `${variable.type} ${variable.name}\n`;
     });
     return variableDecl + "\n";

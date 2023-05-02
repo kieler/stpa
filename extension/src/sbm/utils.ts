@@ -73,4 +73,6 @@ export class Transition {
 export class Variable {
     name: string;
     type: string;
+    input?: boolean;
+    output?: boolean;
 }
