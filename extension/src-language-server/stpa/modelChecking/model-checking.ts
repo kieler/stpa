@@ -149,7 +149,7 @@ async function createLTLContextVariable(variable: Reference<Variable>, value: st
  * @returns the LTL string for the given variable.
  */
 const twoRanges = (variable: string, value1: string, value2: string, equal: boolean): string => {
-    return "(" + variable + (equal ? ">=" : "<") + value1 + " && " + (equal ? "<=" : ">") + value2;
+    return variable + (equal ? ">=" : "<") + value1 + " && " + variable + (equal ? "<=" : ">") + value2;
 };
 /**
  * A LTL string for a variable which value should be in or outside of a given range in which a MAX value is used as second value of the range.

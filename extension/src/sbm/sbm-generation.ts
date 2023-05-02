@@ -62,8 +62,11 @@ async function createControllerSBM(controllerName: string, controlActions: strin
             addTransitions(states, controlAction, formulas);
         }
     }
+    // the same triggers may be used for multiple transitions. Especially the transitions to the empty state can be deleted when the triggers are used by other transitions
+    removeDublicateTransitions(states);
+
     // determine the variables for the scchart includign a variable for the controlaction
-    const controlActionVariable = {name: "controlAction", type: `ref ${controllerName}`};
+    const controlActionVariable = { name: "controlAction", type: `ref ${controllerName}` };
     const variables = [controlActionVariable].concat(collectContextVariables(ltlFormulas));
     // create the scchart
     const scchartText = createSCChartText(controllerName, states, variables, ltlFormulas, controlActions.concat(["NULL"]));
@@ -87,10 +90,10 @@ function collectContextVariables(ltlFormulas: LTLFormula[]): Variable[] {
             if (operands.length === 1) {
                 // variable is a boolean
                 let varName = "";
-                if (operands[0].charAt(0) === '!') {
-                    varName = operands[0].substring(1);
+                if (operands[0].trim().charAt(0) === '!') {
+                    varName = operands[0].trim().substring(1);
                 } else {
-                    varName = operands[0];
+                    varName = operands[0].trim();
                 }
                 if (!variableNames.has(varName)) {
                     variableNames.add(varName);
@@ -98,13 +101,15 @@ function collectContextVariables(ltlFormulas: LTLFormula[]): Variable[] {
                 }
             } else {
                 // operands may be variables or numbers so we need to check that before collecting them
-                if (!variableNames.has(operands[0]) && !isNumber(operands[0])) {
-                    variableNames.add(operands[0]);
-                    variables.push({ name: operands[0], type: "int" });
+                const firstOperand = operands[0].trim();
+                const secondOperand = operands[1].trim();
+                if (!variableNames.has(firstOperand) && !isNumber(firstOperand)) {
+                    variableNames.add(firstOperand);
+                    variables.push({ name: firstOperand, type: "int" });
                 }
-                if (!variableNames.has(operands[1]) && !isNumber(operands[1])) {
-                    variableNames.add(operands[1]);
-                    variables.push({ name: operands[1], type: "int" });
+                if (!variableNames.has(secondOperand) && !isNumber(secondOperand)) {
+                    variableNames.add(secondOperand);
+                    variables.push({ name: secondOperand, type: "int", input: true });
                 }
             }
         });
@@ -159,7 +164,13 @@ function groupFormulasByAction(ltlFormulas: LTLFormula[]): Map<string, LTLFormul
  * @returns the states representing the {@code controlActions}.
  */
 function createStatesForActions(controlActions: string[]): State[] {
-    const states: State[] = [];
+    // one state representing that no control action is active
+    const states: State[] = [{
+        name: EMPTY_STATE_NAME,
+        controlAction: "NULL",
+        transitions: []
+    }];
+    // adds a state for each control action
     controlActions.forEach(controlAction => {
         const state: State = {
             name: controlAction,
@@ -167,12 +178,6 @@ function createStatesForActions(controlActions: string[]): State[] {
             transitions: []
         };
         states.push(state);
-    });
-    // one state representing that no control action is active
-    states.push({
-        name: EMPTY_STATE_NAME,
-        controlAction: "NULL",
-        transitions: []
     });
     return states;
 }
@@ -206,7 +211,7 @@ function addTransitions(states: State[], controlAction: string, ltlFormulas: LTL
                         };
                         // transition must have the highest priority
                         const newTransitions: Transition[] = [transition];
-                        newTransitions.push(... state.transitions);
+                        newTransitions.push(...state.transitions);
                         state.transitions = newTransitions;
                     }
                 });
