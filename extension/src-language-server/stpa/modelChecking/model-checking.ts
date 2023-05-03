@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Rule, Variable } from "../../generated/ast";
+import { DCARule, Model, Rule, Variable, isRule } from "../../generated/ast";
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Reference } from 'langium';
 import { URI } from 'vscode-uri';
@@ -58,49 +58,60 @@ class UCA_TYPE {
  * @returns LTL formulae for the UCAs in the given model.
  */
 export async function generateLTLFormulae(uri: string, shared: LangiumSprottySharedServices): Promise<Record<string, LTLFormula[]>> {
-    // ltl dormulas are saved per controller
-    const map: Record<string, LTLFormula[]> = {};
     // get the current model
     let model = getModel(uri, shared);
 
-    // no UCAs exist
-    if (model.rules.length === 0) {
-        return map;
-    }
-
     // references are not found if the stpa file has not been opened since then the linter has not been activated yet
-    if (model.rules[0]?.contexts[0]?.vars[0]?.ref === undefined) {
+    if (model.rules.length > 0 && model.rules[0]?.contexts[0]?.vars[0]?.ref === undefined) {
         // build document
         await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
         // update the model
         model = getModel(uri, shared);
     }
+    // ltl formulas are saved per controller
+    const map: Record<string, LTLFormula[]> = {};
+    await translateUCAsToLTLFormulas(model, map);
+    await translateDCAsToLTLFormulas(model, map);
+    return map;
+}
 
-    if (model.rules) {
-        for (const rule of model.rules) {
-            const controller = rule.system.$refText;
-            // control action string
-            const controlAction = controller + "." + rule.action.$refText;
-            for (const uca of rule.contexts) {
-                // calculate the contextVariable string
-                let contextVariables = await createLTLContextVariable(uca.vars[0], uca.values[0]);
-                for (let i = 1; i < uca.vars.length; i++) {
-                    contextVariables += "&&" + await createLTLContextVariable(uca.vars[i], uca.values[i]);
-                }
-                // translate uca based on the rule type
-                const ltlString = createLTLString(rule, contextVariables, controlAction);
-                const ltlFormula = { formula: ltlString.formula, description: ltlString.description, ucaId: uca.name, contextVariables, type: ltlString.type };
-                // add ltl to the map based on the controller reponsible for the UCA
-                const ltlList = map[controller];
-                if (ltlList !== undefined) {
-                    ltlList.push(ltlFormula);
-                } else {
-                    map[controller] = [ltlFormula];
-                }
-            }
+async function translateDCAsToLTLFormulas(model: Model, map: Record<string, LTLFormula[]>): Promise<void> {
+    if (model.allDCAs.length > 0 && model.allDCAs) {
+        for (const rule of model.allDCAs) {
+            translateRuleToLTLFormulas(rule, map);
         }
     }
-    return map;
+}
+
+async function translateUCAsToLTLFormulas(model: Model, map: Record<string, LTLFormula[]>): Promise<void> {
+    if (model.rules.length > 0 && model.rules) {
+        for (const rule of model.rules) {
+            translateRuleToLTLFormulas(rule, map);
+        }
+    }
+}
+
+async function translateRuleToLTLFormulas(rule: Rule | DCARule, map: Record<string, LTLFormula[]>): Promise<void> {
+    const controller = rule.system.$refText;
+    // control action string
+    const controlAction = controller + "." + rule.action.$refText;
+    for (const uca of rule.contexts) {
+        // calculate the contextVariable string
+        let contextVariables = await createLTLContextVariable(uca.vars[0], uca.values[0]);
+        for (let i = 1; i < uca.vars.length; i++) {
+            contextVariables += "&&" + await createLTLContextVariable(uca.vars[i], uca.values[i]);
+        }
+        // translate uca based on the rule type
+        const ltlString = createLTLString(rule, contextVariables, controlAction);
+        const ltlFormula = { formula: ltlString.formula, description: ltlString.description, ucaId: uca.name, contextVariables, type: ltlString.type };
+        // add ltl to the map based on the controller reponsible for the UCA
+        const ltlList = map[controller];
+        if (ltlList !== undefined) {
+            ltlList.push(ltlFormula);
+        } else {
+            map[controller] = [ltlFormula];
+        }
+    }
 }
 
 /**
@@ -198,23 +209,33 @@ const oneValue = (variable: string, value: string, equal: boolean): string => {
  * @param controlAction The controlaction for the rule.
  * @returns the LTL for the given arguments.
  */
-function createLTLString(rule: Rule, contextVariables: string, controlAction: string): { formula: string, description: string, type: string; } {
-    switch (rule.type) {
-        case UCA_TYPE.NOT_PROVIDED:
-            return notProvidedLTL(contextVariables, controlAction);
-        case UCA_TYPE.PROVIDED:
-            return providedLTL(contextVariables, controlAction);
-        case UCA_TYPE.TOO_EARLY:
-            return tooEarlyLTL(contextVariables, controlAction);
-        case UCA_TYPE.TOO_LATE:
-            return tooLateLTL(contextVariables, controlAction);
-        case UCA_TYPE.APPLIED_TOO_LONG:
-            return appliedTooLongLTL(contextVariables, controlAction);
-        case UCA_TYPE.STOPPED_TOO_SOON:
-            return stoppedTooSoonLTL(contextVariables, controlAction);
-        case UCA_TYPE.WRONG_TIME:
-            return wrongTimeLTL(contextVariables, controlAction);
-        default: return { formula: "", description: "", type: UCA_TYPE.UNDEFINED };
+function createLTLString(rule: Rule | DCARule, contextVariables: string, controlAction: string): { formula: string, description: string, type: string; } {
+    if (isRule(rule)) {
+        switch (rule.type) {
+            case UCA_TYPE.NOT_PROVIDED:
+                return notProvidedLTL(contextVariables, controlAction);
+            case UCA_TYPE.PROVIDED:
+                return providedLTL(contextVariables, controlAction);
+            case UCA_TYPE.TOO_EARLY:
+                return tooEarlyLTL(contextVariables, controlAction);
+            case UCA_TYPE.TOO_LATE:
+                return tooLateLTL(contextVariables, controlAction);
+            case UCA_TYPE.APPLIED_TOO_LONG:
+                return appliedTooLongLTL(contextVariables, controlAction);
+            case UCA_TYPE.STOPPED_TOO_SOON:
+                return stoppedTooSoonLTL(contextVariables, controlAction);
+            case UCA_TYPE.WRONG_TIME:
+                return wrongTimeLTL(contextVariables, controlAction);
+            default: return { formula: "", description: "", type: UCA_TYPE.UNDEFINED };
+        }
+    } else {
+        switch (rule.type) {
+            case UCA_TYPE.NOT_PROVIDED:
+                return providedLTL(contextVariables, controlAction);
+            case UCA_TYPE.PROVIDED:
+                return notProvidedLTL(contextVariables, controlAction);
+            default: return { formula: "", description: "", type: UCA_TYPE.UNDEFINED };
+        }
     }
 }
 

@@ -24,6 +24,7 @@ entry Model:
     ('ControlStructure' controlStructure=Graph)?
     ('Responsibilities' responsibilities+=Resps*)?
     (('UCAs' allUCAs+=ActionUCAs*) | ('Context-Table' rules+=Rule*))?
+    ('DCAs' allDCAs+=DCARule*)?
     ('ControllerConstraints' controllerConstraints+=ContConstraint*)?
     ('LossScenarios' scenarios+=LossScenario*)?
     ('SafetyRequirements' safetyCons+=SafetyConstraint*)?;
@@ -105,6 +106,18 @@ ActionUCAs:
 
 UCA:
     name=ID description=STRING list=HazardList;
+
+DCARule:
+    name=ID '{'
+        'controlAction:' system=[Node] '.' action=[Command]
+        'type:' type=('not-provided' | 'provided')
+        'contexts:' '{'
+            contexts+=DCAContext*
+        '}'
+    '}';
+
+DCAContext:
+    name=ID '['vars+=[Variable] '=' values+=QualifiedName (',' vars+=[Variable] '=' values+=QualifiedName)*']';
 
 ContConstraint:
     name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
