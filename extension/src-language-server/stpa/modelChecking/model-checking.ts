@@ -125,7 +125,7 @@ async function createLTLContextVariable(variable: Reference<Variable>, value: st
     const valueRange = variable.ref?.values?.find(variableRange => variableRange.name === value);
     if (valueRange === undefined || valueRange?.firstValue === undefined) {
         // no value range defined for the value
-        return oneValue(variable.$refText, value, true);
+        return enumValue(variable.$refText, value);
     } else {
         if (valueRange.secondValue === undefined) {
             // only one value is given
@@ -200,6 +200,15 @@ const booleanValue = (variable: string, equal: boolean): string => {
  */
 const oneValue = (variable: string, value: string, equal: boolean): string => {
     return variable + (equal ? "==" : "!=") + value;
+};
+/**
+ * A LTL string for a variable with a given enum value.
+ * @param variable The variable to create the LTL string for.
+ * @param value The enum value of the variable.
+ * @returns the LTL string for the given variable.
+ */
+const enumValue = (variable: string, value: string): string => {
+    return variable + "==" + variable + "_Enum." + value;
 };
 
 /**

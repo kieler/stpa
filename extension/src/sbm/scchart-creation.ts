@@ -16,18 +16,19 @@
  */
 
 import * as vscode from 'vscode';
-import { EMPTY_STATE_NAME, LTLFormula, State, Variable } from "./utils";
+import { EMPTY_STATE_NAME, Enum, LTLFormula, State, Variable } from "./utils";
 
 /**
  * Creates the text for an scchart based on the given arguments.
  * @param controllerName The name of the controller that is modelled.
  * @param states The states the scchart should contain.
  * @param variables The variables the scchart needs.
+ * @param enums The enums the scchart needs.
  * @param ltlFormulas The ltl formulas that should be contained.
  * @param controlActions The control actions which will be modelled as an enum.
  * @returns The text for an scchart.
  */
-export function createSCChartText(controllerName: string, states: State[], variables: Variable[], ltlFormulas: LTLFormula[], controlActions: string[]): string {
+export function createSCChartText(controllerName: string, states: State[], variables: Variable[], enums: Enum[], ltlFormulas: LTLFormula[], controlActions: string[]): string {
     let result = "";
     // ltl annotations at the top
     ltlFormulas.forEach(LTLFormula => result += createLTLAnnotation(LTLFormula));
@@ -35,6 +36,8 @@ export function createSCChartText(controllerName: string, states: State[], varia
     result += `scchart SBM_${controllerName} {\n\n`;
     // enum for the control action
     result += createEnum(controllerName, controlActions);
+    // other enums
+    enums.forEach(enumDecl => result += createEnum(enumDecl.name, enumDecl.values));
     // variables and states
     // TODO: AssumeRange annotation for variables?
     result += createVariables(variables);

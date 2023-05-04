@@ -16,7 +16,7 @@
  */
 
 import * as vscode from 'vscode';
-import { EMPTY_STATE_NAME, LTLFormula, State, Transition, UCA_TYPE, Variable } from "./utils";
+import { EMPTY_STATE_NAME, Enum, LTLFormula, State, Transition, UCA_TYPE, Variable } from "./utils";
 import { createSCChartText, createSCChartFile } from "./scchart-creation";
 
 /**
@@ -67,9 +67,10 @@ async function createControllerSBM(controllerName: string, controlActions: strin
 
     // determine the variables for the scchart includign a variable for the controlaction
     const controlActionVariable = { name: "controlAction", type: `ref ${controllerName}` };
-    const variables = [controlActionVariable].concat(collectContextVariables(ltlFormulas));
+    const contextVariables = collectContextVariables(ltlFormulas);
+    const variables = contextVariables.variables.concat([controlActionVariable]);
     // create the scchart
-    const scchartText = createSCChartText(controllerName, states, variables, ltlFormulas, controlActions.concat(["NULL"]));
+    const scchartText = createSCChartText(controllerName, states, variables, contextVariables.enums, ltlFormulas, controlActions.concat(["NULL"]));
     createSCChartFile(uri.path, scchartText);
 }
 
@@ -78,10 +79,11 @@ async function createControllerSBM(controllerName: string, controlActions: strin
  * @param ltlFormulas The formulas which context variables should be collected.
  * @returns the context variables that occur in the {@code ltlFormulas}.
  */
-function collectContextVariables(ltlFormulas: LTLFormula[]): Variable[] {
+function collectContextVariables(ltlFormulas: LTLFormula[]): { variables: Variable[], enums: Enum[]; } {
     // variables should not be collected more than once
     const variableNames = new Set<string>;
     const variables: Variable[] = [];
+    const enums: Enum[] = [];
     ltlFormulas.forEach(ltlFormula => {
         // the variables are connected by logical ands
         const expressions = ltlFormula.contextVariables.split("&&");
@@ -100,21 +102,63 @@ function collectContextVariables(ltlFormulas: LTLFormula[]): Variable[] {
                     variables.push({ name: varName, type: "bool" });
                 }
             } else {
-                // operands may be variables or numbers so we need to check that before collecting them
+                // two integer operands
                 const firstOperand = operands[0].trim();
                 const secondOperand = operands[1].trim();
-                if (!variableNames.has(firstOperand) && !isNumber(firstOperand)) {
-                    variableNames.add(firstOperand);
-                    variables.push({ name: firstOperand, type: "int" });
-                }
-                if (!variableNames.has(secondOperand) && !isNumber(secondOperand)) {
-                    variableNames.add(secondOperand);
-                    variables.push({ name: secondOperand, type: "int", input: true });
+                addVariable(variableNames, variables, firstOperand, false);
+                if (secondOperand.indexOf(".") !== -1) {
+                    // second operand is an enum
+                    addEnum(variableNames, enums, secondOperand, variables, firstOperand);
+                } else {
+                    addVariable(variableNames, variables, secondOperand, true);
                 }
             }
         });
     });
-    return variables;
+    return { variables, enums };
+}
+
+/**
+ * Adds an enum to the {@code enums} if it is not already contained.
+ * @param variableNames Contains the names of the variables that are already contained in the {@code enums}.
+ * @param enums The enums to which the enum should be added.
+ * @param operand Name of the enum to add.
+ * @param variables Contains the variables that are already collected.
+ * @param variableName Name of the variable that is assigned a value of the enum.
+ */
+function addEnum(variableNames: Set<string>, enums: Enum[], operand: string, variables: Variable[], variableName: string): void {
+    if (!variableNames.has(operand)) {
+        const enumName = operand.substring(0, operand.indexOf("."));
+        const enumValue = operand.substring(operand.indexOf(".") + 1);
+        const enumDecl = enums.find(enumElement => enumElement.name === enumName);
+        if (enumDecl === undefined) {
+            enums.push({ name: enumName, values: [enumValue] });
+        } else {
+            enumDecl.values.push(enumValue);
+        }
+        // update the type of the first operand to enum
+        const firstVariable = variables.find(variable => variable.name === variableName);
+        if (firstVariable !== undefined && !firstVariable.type.startsWith("ref")) {
+            firstVariable.type = "ref " + enumName;
+        }
+        // add the operand to the variables
+        variableNames.add(operand);
+    }
+}
+
+/**
+ * Adds a variable to the {@code variables} if it is not already contained.
+ * @param variableNames Contains the names of the variables that are already contained in the {@code variables}.
+ * @param variables The variables to which the {@code operand} should be added.
+ * @param operand Name of the variable that should be added.
+ * @param input Determines whether the variable is an input variable.
+ */
+function addVariable(variableNames: Set<string>, variables: Variable[], operand: string, input: boolean): void {
+    // operands may be variables or numbers so we need to check that before collecting them
+    if (!variableNames.has(operand) && !isNumber(operand)) {
+        variableNames.add(operand);
+        variables.push({ name: operand, type: "int", input: input });
+    }
 }
 
 /**

@@ -76,3 +76,11 @@ export class Variable {
     input?: boolean;
     output?: boolean;
 }
+
+/**
+ * Represents an enum in a safe behavioral model.
+ */
+export class Enum {
+    name: string;
+    values: string[];
+}
