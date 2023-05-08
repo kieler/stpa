@@ -27,7 +27,7 @@ import { createServices } from './module';
 const connection = createConnection(ProposedFeatures.all);
 
 // Inject the language services
-const { shared, stpa } = createServices({ connection, ...NodeFileSystem });
+const { shared, stpa, fta} = createServices({ connection, ...NodeFileSystem });
 
 // Start the language server with the language-specific services
 startLanguageServer(shared);

@@ -1,0 +1,14 @@
+Components
+M1 "Hello"
+M2 "Hello too"
+M3 "asd"
+
+Gates
+G1:OR [M1,M2]
+G2:AND [M1,M2,M3]
+G3:INHIBIT [M1,M3]
+G4:k/N 2 [M1,M2]
+G5:M1 AND M2
+
+TopEvent
+"System Failure": G1

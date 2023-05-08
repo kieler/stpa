@@ -17,8 +17,10 @@
 
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject } from 'langium';
 import { LangiumSprottySharedServices } from 'langium-sprotty';
-import { StpaGeneratedModule, StpaGeneratedSharedModule } from './generated/module';
+import { StpaGeneratedModule, StpaGeneratedSharedModule, FtaGeneratedModule} from './generated/module';
 import { StpaServices, StpaSprottySharedModule, STPAModule } from './stpa/stpa-module';
+import{FtaModule, FtaSprottySharedModule, FtaServices} from './fta/fta-module';
+
 
 /**
  * Create the full set of services required by Langium.
@@ -35,17 +37,33 @@ import { StpaServices, StpaSprottySharedModule, STPAModule } from './stpa/stpa-m
  * @param context Optional module context with the LSP connection
  * @returns An object wrapping the shared services and the language-specific services
  */
-export function createServices(context: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, stpa: StpaServices; } {
+export function createServices(context: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, stpa: StpaServices, fta:FtaServices; } {
     const shared = inject(
         createDefaultSharedModule(context),
         StpaGeneratedSharedModule,
-        StpaSprottySharedModule
+        StpaSprottySharedModule,
+        FtaSprottySharedModule
     );
     const stpa = inject(
         createDefaultModule({ shared }),
         StpaGeneratedModule,
-        STPAModule,
+        STPAModule
+    );
+    const fta = inject(
+        createDefaultModule({ shared }),
+        FtaGeneratedModule,
+        FtaModule
     );
     shared.ServiceRegistry.register(stpa);
-    return { shared, stpa };
+    shared.ServiceRegistry.register(fta);
+    return { shared,stpa, fta};
 }
+
+
+/**
+ * Syntax highlighting from Fta does not work ->
+ * I tried adding stpa to my example project and there the later added dsl ,stpa, is not highlighted
+ * Here fta is not highlighted
+ * Has nothing to do with Sprotty, etc.
+ * The highlighting probably gets automatically generated for the first language but not for a language thats get added later
+ */

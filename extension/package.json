@@ -29,6 +29,17 @@
                     ".stpa"
                 ],
                 "configuration": "./language-configuration.json"
+            },
+            {
+                "id": "fta",
+                "aliases": [
+                    "fta",
+                    "fta"
+                ],
+                "extensions": [
+                    ".fta"
+                ],
+                "configuration": "./language-configuration.json"
             }
         ],
         "grammars": [
@@ -36,6 +47,11 @@
                 "language": "stpa",
                 "scopeName": "source.stpa",
                 "path": "./syntaxes/stpa.tmLanguage.json"
+            },
+            {
+                "language": "fta",
+                "scopeName": "source.fta",
+                "path": "./syntaxes/fta.tmLanguage.json"
             }
         ],
         "configuration": {
@@ -304,6 +320,7 @@
     },
     "activationEvents": [
         "onLanguage:stpa",
+        "onLanguage:fta",
         "onCommand:pasta.getLTLFormula"
     ],
     "files": [

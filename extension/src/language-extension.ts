@@ -51,7 +51,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
 
         // add auto formatting provider
-        const sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
+        const sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' }; 
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
         // handling of notifications regarding the context table
@@ -80,6 +80,8 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
     }
+
+    
 
     /**
      * Notifies the language server that a textdocument has changed.
@@ -261,12 +263,15 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
         };
 
-        const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.stpa');
+        const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.(stpa|fta)');
         context.subscriptions.push(fileSystemWatcher);
 
         // Options to control the language client
         const clientOptions: LanguageClientOptions = {
-            documentSelector: [{ scheme: 'file', language: 'stpa' }],
+            documentSelector: [
+                { scheme: 'file', language: 'stpa' },
+                { scheme: 'file', language: 'fta' }
+            ],
             synchronize: {
                 // Notify the server about file changes to files contained in the workspace
                 fileEvents: fileSystemWatcher
@@ -280,9 +285,16 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             serverOptions,
             clientOptions
         );
+        const languageClientFta = new LanguageClient(
+            'fta',
+            'fta',
+            serverOptions,
+            clientOptions
+        );
 
         // Start the client. This will also launch the server
         languageClient.start();
+        languageClientFta.start();
         // diagram is updated when file changes
         fileSystemWatcher.onDidChange((uri) => this.updateViews(languageClient, uri.toString()));
         return languageClient;
