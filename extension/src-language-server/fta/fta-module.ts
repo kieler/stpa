@@ -1,22 +1,12 @@
 
-import ElkConstructor from 'elkjs/lib/elk.bundled';
-import {createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices} from 'langium';
-import {DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices} from 'langium-sprotty';
-import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-//Change starting here later
-import { StpaDiagramGenerator } from '../stpa/diagram-generator';
-import { StpaLayoutConfigurator } from '../stpa/layout-config';
+import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices } from 'langium';
+import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
 import { StpaDiagramServer } from '../stpa/stpa-diagramServer';
-import { StpaScopeProvider } from '../stpa/stpa-scopeProvider';
-//till here
-import { FtaValidator, FtaValidationRegistry } from './fta-validator';
-import { URI } from 'vscode-uri';
 import { DiagramOptions } from 'sprotty-protocol';
+import { URI } from 'vscode-uri';
 import { FtaGeneratedModule, StpaGeneratedSharedModule } from '../generated/module';
-//and these 3 again
+import { FtaValidationRegistry, FtaValidator } from './fta-validator';
 import { StpaSynthesisOptions } from '../stpa/synthesis-options';
-import { ContextTableProvider } from '../stpa/contextTable/context-dataProvider';
-import { IDEnforcer } from '../stpa/ID-enforcer';
 import { FtaDiagramGenerator } from './diagram-generatorFta';
 
 

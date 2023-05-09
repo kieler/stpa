@@ -285,16 +285,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             serverOptions,
             clientOptions
         );
-        const languageClientFta = new LanguageClient(
-            'fta',
-            'fta',
-            serverOptions,
-            clientOptions
-        );
 
         // Start the client. This will also launch the server
         languageClient.start();
-        languageClientFta.start();
         // diagram is updated when file changes
         fileSystemWatcher.onDidChange((uri) => this.updateViews(languageClient, uri.toString()));
         return languageClient;

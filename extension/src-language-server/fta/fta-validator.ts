@@ -1,6 +1,6 @@
 
-import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
-import { StpaAstType, Model, Component, Gate, TopEvent} from '../generated/ast';
+import { ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
+import { ModelFTA, StpaAstType } from '../generated/ast';
 import type { FtaServices } from './fta-module';
 
 
@@ -9,7 +9,7 @@ export class FtaValidationRegistry extends ValidationRegistry {
         super(services);
         const validator = services.validation.FtaValidator;
         const checks: ValidationChecks<StpaAstType> = {
-            Model: validator.checkModel,
+            ModelFTA: validator.checkModel,
         };
         this.register(checks, validator);
     }
@@ -19,11 +19,11 @@ export class FtaValidationRegistry extends ValidationRegistry {
 export class FtaValidator {
 
 
-    checkModel(model: Model, accept: ValidationAcceptor): void{
+    checkModel(model: ModelFTA, accept: ValidationAcceptor): void{
         this.checkUniqueComponents(model, accept);
     }
 
-    checkUniqueComponents(model: Model, accept: ValidationAcceptor): void{
+    checkUniqueComponents(model: ModelFTA, accept: ValidationAcceptor): void{
         const componentNames = new Set();
         model.components.forEach(c => {
             if (componentNames.has(c.name)) {
