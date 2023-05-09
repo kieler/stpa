@@ -1,14 +1,25 @@
 Components
-M1 "Hello"
-M2 "Hello too"
-M3 "asd"
+M1 "Redundant memory unit 1"
+M2 "Redundant memory unit 2"
+M3 "Redundant memory unit 3"
+C1 "CPU1"
+C2 "CPU2"
+PS "Power supply"
+B "System bus"
+
+Conditions
+U "In Use"
 
 Gates
-G1:OR [M1,M2]
-G2:AND [M1,M2,M3]
-G3:INHIBIT [M1,M3]
-G4:k/N 2 [M1,M2]
-G5:M1 AND M2
+G6:k/N 2 [M1,M2,M3]
+G5:OR [C2,PS,G6]
+G4:OR [C1,PS,G6]
+G3:AND [G4,G5] 
+//G3: G4 AND G5             //Alternatively
+G2:OR [G3,B]
+//G2: G3 OR B
+G1:INHIBIT [G2,U]
+//G1:G2 INHIBIT U
 
 TopEvent
 "System Failure": G1

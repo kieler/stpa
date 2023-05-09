@@ -1,25 +1,29 @@
 grammar Fta
 
 entry ModelFTA:
-    ('Components' components+=Component*)?      
+    ('Components' components+=Component*)? 
+    ('Conditions' condition+=Condition)?     
     ('Gates' gates+=Gate*)?      
     ('TopEvent' topEvent=TopEvent);
 
 Component:
     name=ID description=STRING;
 
+Condition:
+    name=ID description=STRING;
 Gate:
     name=ID ":" 
-    (type=AndOrGate '[' componentOrGate+=ComponentOrGate (',' componentOrGate+=ComponentOrGate)+ ']' |
-    type=KNGate number=INT '[' componentOrGate+=ComponentOrGate (',' componentOrGate+=ComponentOrGate)+ ']' |
-    type=InhibitGate '[' componentOrGate+=ComponentOrGate ',' componentOrGate+=ComponentOrGate ']' |
-    componentOrGate+=ComponentOrGate type=(InhibitGate|AndOrGate) componentOrGate+=ComponentOrGate);
+    (type=AndOrGate '[' componentOrGate+=[ComponentOrGate:ID] (',' componentOrGate+=[ComponentOrGate:ID])+ ']' |
+    type=KNGate number=INT '[' componentOrGate+=[ComponentOrGate:ID] (',' componentOrGate+=[ComponentOrGate:ID])+ ']' |
+    type=InhibitGate '[' componentOrGate+=[ComponentOrGate:ID] ',' condition+=[Condition:ID] ']' |
+    componentOrGate+=[ComponentOrGate:ID] type=AndOrGate componentOrGate+=[ComponentOrGate:ID] | 
+    componentOrGate+=[ComponentOrGate:ID] type=InhibitGate condition+=[Condition:ID]);
 
 TopEvent:
     name=STRING ":" gate=[Gate:ID];
 
 ComponentOrGate:
-    (component+=[Component:ID] | gate+=[Gate:ID]);
+    Gate | Component;
 
 AndOrGate returns string:
     'AND' | 'OR';
