@@ -11,15 +11,15 @@ Conditions
 U "In Use"
 
 Gates
-G6:k/N 2 [M1,M2,M3]
-G5:OR [C2,PS,G6]
-G4:OR [C1,PS,G6]
-G3:AND [G4,G5] 
-//G3: G4 AND G5             //Alternatively
-G2:OR [G3,B]
-//G2: G3 OR B
 G1:INHIBIT [G2,U]
 //G1:G2 INHIBIT U
+G2:OR [G3,B]
+//G2: G3 OR B
+G3:AND [G4,G5] 
+//G3: G4 AND G5             //Alternatively
+G4:OR [C1,PS,G6]
+G5:OR [C2,PS,G6]
+G6:k/N 2 [M1,M2,M3]
 
 TopEvent
 "System Failure": G1
