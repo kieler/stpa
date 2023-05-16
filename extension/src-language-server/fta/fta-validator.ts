@@ -3,7 +3,9 @@ import { ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langiu
 import { ModelFTA, StpaAstType } from '../generated/ast';
 import type { FtaServices } from './fta-module';
 
-
+/**
+ * Registry for validation checks.
+ */
 export class FtaValidationRegistry extends ValidationRegistry {
     constructor(services: FtaServices) {
         super(services);
@@ -15,15 +17,21 @@ export class FtaValidationRegistry extends ValidationRegistry {
     }
 }
 
-
+/**
+ * Implementation of custom validations.
+ */
 export class FtaValidator {
 
-
+    /**
+     * Executes validation checks for the whole model.
+     * @param model The model to validate.
+     * @param accept 
+     */
     checkModel(model: ModelFTA, accept: ValidationAcceptor): void{
         this.checkUniqueComponents(model, accept);
         this.checkUniqueGates(model, accept);
     }
-
+    //prevent multiple components from having the same identifier.
     checkUniqueComponents(model: ModelFTA, accept: ValidationAcceptor): void{
         const componentNames = new Set();
         model.components.forEach(c => {
@@ -33,6 +41,7 @@ export class FtaValidator {
             componentNames.add(c.name);
         })
     }
+    //prevent multiple gates from having the same identifier.
     checkUniqueGates(model:ModelFTA, accept:ValidationAcceptor): void{
         const gateNames = new Set();
         model.gates.forEach(g => {

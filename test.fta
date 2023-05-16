@@ -8,7 +8,7 @@ PS "Power supply"
 B "System bus"
 
 Conditions
-U "In Use"
+U "In Use" 
 
 Gates
 G1:INHIBIT [G2,U]

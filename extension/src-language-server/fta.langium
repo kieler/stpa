@@ -2,7 +2,7 @@ grammar Fta
 
 entry ModelFTA:
     ('Components' components+=Component*)? 
-    ('Conditions' condition+=Condition)?     
+    ('Conditions' conditions+=Condition)?     
     ('Gates' gates+=Gate*)?      
     ('TopEvent' topEvent=TopEvent);
 
@@ -11,28 +11,30 @@ Component:
 
 Condition:
     name=ID description=STRING;
+
 Gate:
-    name=ID ":" 
-    (type=AndOrGate '[' componentOrGate+=[ComponentOrGate:ID] (',' componentOrGate+=[ComponentOrGate:ID])+ ']' |
-    type=KNGate number=INT '[' componentOrGate+=[ComponentOrGate:ID] (',' componentOrGate+=[ComponentOrGate:ID])+ ']' |
-    type=InhibitGate '[' componentOrGate+=[ComponentOrGate:ID] ',' condition+=[Condition:ID] ']' |
-    componentOrGate+=[ComponentOrGate:ID] type=AndOrGate componentOrGate+=[ComponentOrGate:ID] | 
-    componentOrGate+=[ComponentOrGate:ID] type=InhibitGate condition+=[Condition:ID]);
+    name=ID ":" type=(AND|OR|KNGate|InhibitGate);
 
 TopEvent:
-    name=STRING ":" gate=[Gate:ID];
+    name=STRING ":" child+=[Child:ID];
 
-ComponentOrGate:
+Child:
     Gate | Component;
 
-AndOrGate returns string:
-    'AND' | 'OR';
+AND:
+    (string='AND' '[' child+=[Child:ID] (',' child+=[Child:ID])+ ']' |
+    child+=[Child:ID] string='AND' child+=[Child:ID]);
 
-KNGate returns string:
-    'k/N';
+OR:
+    (string='OR' '[' child+=[Child:ID] (',' child+=[Child:ID])+ ']' |
+    child+=[Child:ID] string='OR' child+=[Child:ID]);
 
-InhibitGate returns string:
-    'INHIBIT';
+KNGate:
+    string='k/N' k=INT '[' child+=[Child:ID] (',' child+=[Child:ID])+ ']';
+
+InhibitGate:
+    (string='INHIBIT' '[' child+=[Child:ID] ',' condition+=[Condition:ID] ']'|
+    child+=[Child:ID] string='INHIBIT' condition+=[Condition:ID]);
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;

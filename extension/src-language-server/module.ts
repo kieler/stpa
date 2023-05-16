@@ -58,12 +58,3 @@ export function createServices(context: DefaultSharedModuleContext): { shared: L
     shared.ServiceRegistry.register(fta);
     return { shared,stpa, fta};
 }
-
-
-/**
- * Syntax highlighting from Fta does not work ->
- * I tried adding stpa to my example project and there the later added dsl ,stpa, is not highlighted
- * Here fta is not highlighted
- * Has nothing to do with Sprotty, etc.
- * The highlighting probably gets automatically generated for the first language but not for a language thats get added later
- */
