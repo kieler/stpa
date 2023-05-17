@@ -19,7 +19,7 @@ export function getTargets(node: AstNode): AstNode[] {
             for (const ref of node.child) {
                 if (ref?.ref) { targets.push(ref.ref); }
             }
-        }else if(isGate(node)){
+        }else{
             if(isAND(node.$type) || isOR(node.$type) || isKNGate(node.$type) || isInhibitGate(node.$type) ){
                 for(const ref of node.$type.child){
                     if(ref?.ref){targets.push(ref.ref);}
@@ -73,9 +73,9 @@ function determineLayerForFTANode(node: FTANode): number {
 }
 
 export function getAndGates(everyGate: Gate[]): AstNode[]{
-    let result = [];
+    let result: AstNode[] = [];
     for(const gate of everyGate){
-        if(isAND(gate)){
+        if(isAND(gate)){  // isAnd of an And Gate not working
             result.push(gate);
         }
     }
@@ -83,9 +83,9 @@ export function getAndGates(everyGate: Gate[]): AstNode[]{
     return result;
 }
 export function getOrGates(everyGate: Gate[]): AstNode[]{
-    let result = [];
+    let result: AstNode[] = [];
     for(const gate of everyGate){
-        if(isOR(gate)){
+        if(isOR(gate.$type)){
             result.push(gate);
         }
     }
@@ -93,9 +93,9 @@ export function getOrGates(everyGate: Gate[]): AstNode[]{
     return result;
 }
 export function getkNGates(everyGate: Gate[]): AstNode[]{
-    let result = [];
+    let result: AstNode[] = [];
     for(const gate of everyGate){
-        if(isKNGate(gate)){
+        if(isKNGate(gate.$type)){
             result.push(gate);
         }
     }
@@ -103,9 +103,9 @@ export function getkNGates(everyGate: Gate[]): AstNode[]{
     return result;
 }
 export function getInhibitGates(everyGate: Gate[]): AstNode[]{
-    let result = [];
+    let result: AstNode[] = [];
     for(const gate of everyGate){
-        if(isInhibitGate(gate)){
+        if(isInhibitGate(gate.$type)){
             result.push(gate);
         }
     }

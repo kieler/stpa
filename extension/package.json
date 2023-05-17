@@ -131,6 +131,31 @@
                 "command": "stpa.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "STPA Diagram"
+            },{
+                "command": "fta.diagram.open",
+                "title": "Open in Diagram",
+                "icon": "$(symbol-structure)",
+                "category": "FTA Diagram"
+            },
+            {
+                "command": "fta.diagram.fit",
+                "title": "Fit to Screen",
+                "category": "FTA Diagram"
+            },
+            {
+                "command": "fta.diagram.center",
+                "title": "Center selection",
+                "category": "FTA Diagram"
+            },
+            {
+                "command": "fta.diagram.delete",
+                "title": "Delete selected element",
+                "category": "FTA Diagram"
+            },
+            {
+                "command": "fta.diagram.export",
+                "title": "Export diagram to SVG",
+                "category": "FTA Diagram"
             },
             {
                 "command": "stpa.checks.setCheckResponsibilitiesForConstraints",
@@ -192,6 +217,25 @@
                 {
                     "command": "stpa.diagram.export",
                     "when": "stpa-diagram-focused"
+                },{
+                    "command": "fta.diagram.open",
+                    "when": "editorLangId == 'fta'"
+                },
+                {
+                    "command": "fta.diagram.fit",
+                    "when": "fta-diagram-focused"
+                },
+                {
+                    "command": "fta.diagram.center",
+                    "when": "fta-diagram-focused"
+                },
+                {
+                    "command": "fta.diagram.delete",
+                    "when": "fta-diagram-focused"
+                },
+                {
+                    "command": "fta.diagram.export",
+                    "when": "fta-diagram-focused"
                 },
                 {
                     "command": "stpa.checks.setCheckResponsibilitiesForConstraints",
@@ -224,6 +268,11 @@
                 {
                     "submenu": "stpa.checks",
                     "group": "checks"
+                },
+                {
+                    "command": "fta.diagram.open",
+                    "when": "editorLangId == 'fta'",
+                    "group": "navigation"
                 }
             ],
             "stpa.checks": [
@@ -258,6 +307,10 @@
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
+                },{
+                    "command": "fta.diagram.open",
+                    "when": "editorLangId == 'fta'",
+                    "group": "navigation"
                 }
             ],
             "explorer/context": [
@@ -269,6 +322,10 @@
                 {
                     "command": "stpa.contextTable.open",
                     "when": "resourceExtname == '.stpa'",
+                    "group": "navigation"
+                },{
+                    "command": "fta.diagram.open",
+                    "when": "resourceExtname == '.fta'",
                     "group": "navigation"
                 }
             ]
