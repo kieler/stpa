@@ -11,18 +11,13 @@ Conditions
 U "In Use"
 
 TopEvent
-"System Failure": G1 // "" = G1 //Top event über gates
+"System Failure" = G1 
 
 Gates
-//G1:INHIBIT [G2,U]
-G1:G2 INHIBIT U         // nur infix,  G1 = U inhibits G2 
-G2:OR [G3,B]        
-//G2: G3 OR B
-G3:AND [G4,G5] 
-//G3: G4 AND G5             //Alternatively
-G4:OR [C1,PS,G6]  // G4 = C1 or PS or G6
-G5:OR [C2,PS,G6]
-G6:k/N 2 [M1,M2,M3]  // G6 = 2 of M1, M2, M3
+G1 = U inhibits G2 
+G2 = G3 or B        
+G3 = G4 and G5
+G4 = C1 or PS or G6
+G5 = C2 or PS or G6
+G6 = 2 of M1 M2 M3
 
-//bis zur nächsten präsentation erklären wie man stpa einbindet
-//qualiative analyse tauschen mit stpa einbindung 
