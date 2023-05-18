@@ -2,7 +2,7 @@ grammar Fta
 
 entry ModelFTA:
     ('Components' components+=Component*)? 
-    ('Conditions' conditions+=Condition)?     
+    ('Conditions' conditions+=Condition*)?     
     ('TopEvent' topEvent=TopEvent)
     ('Gates' gates+=Gate*)?;      
 

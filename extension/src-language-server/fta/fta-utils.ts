@@ -1,5 +1,5 @@
 import { AstNode } from 'langium';
-import { AND, InhibitGate, KNGate, OR, TopEvent, isAND, isComponent, isGate, isInhibitGate, isKNGate, isOR, isTopEvent, Child, isCondition, Gate } from '../generated/ast';
+import { AND, InhibitGate, KNGate, OR, TopEvent, isAND, isComponent, isGate, isInhibitGate, isKNGate, isOR, isTopEvent, Child, isCondition, Gate, Condition } from '../generated/ast';
 import { FTANode } from './fta-interfaces';
 import { FTAAspect } from './fta-model';
 
@@ -15,18 +15,16 @@ import { FTAAspect } from './fta-model';
 export function getTargets(node: AstNode): AstNode[] {
     if (node) {
         const targets: AstNode[] = [];
-        if(isTopEvent(node)){                                               //probably wrong
+        if(isTopEvent(node)){                                              
             for (const ref of node.child) {
                 if (ref?.ref) { targets.push(ref.ref); }
             }
-        }else{
-            if(isAND(node.$type) || isOR(node.$type) || isKNGate(node.$type) || isInhibitGate(node.$type) ){
-                for(const ref of node.$type.child){
-                    if(ref?.ref){targets.push(ref.ref);}
-                }
+        }else if(isGate(node)){
+            for(const ref of node.type.child){
+                if(ref?.ref){targets.push(ref.ref);}        //G3 = G4 AND G5 Referencen von G3: ref?.ref  gelten wahrscheinlich als undefined
             }
-            if(isInhibitGate(node.$type)){
-                for(const ref of node.$type.condition){
+            if(node.type.$type == 'InhibitGate'){
+                for(const ref of node.type.condition){
                     if(ref?.ref){targets.push(ref.ref);}
                 }
             }
@@ -72,66 +70,30 @@ function determineLayerForFTANode(node: FTANode): number {
     }
 }
 
-export function getAndGates(everyGate: Gate[]): AstNode[]{
-    let result: AstNode[] = [];
+/** Sorts every gate with its type and puts them into a two dimensional array
+ * @param everyGate Every gate within the FTAModel
+ * @returns A two dimensional array with every gate sorted into the respective category of And, Or, KN, Inhibit-Gate
+ */
+export function getAllGateTypes(everyGate: Gate[]): AstNode[][]{
+    let andGates: AstNode[] = [];
+    let orGates: AstNode[] = [];
+    let kNGates: AstNode[] = [];
+    let inhibGates: AstNode[] = [];
+
     for(const gate of everyGate){
-        if(isAND(gate)){  // isAnd of an And Gate not working
-            result.push(gate);
+        if(gate.type.$type == 'AND'){ 
+            andGates.push(gate);
+        }else if(gate.type.$type == 'OR'){
+            orGates.push(gate);
+        }else if(gate.type.$type == 'KNGate'){
+            kNGates.push(gate);
+        }else if(gate.type.$type == 'InhibitGate'){
+            inhibGates.push(gate);
         }
     }
-
+    let result: AstNode[][] = [andGates, orGates, kNGates, inhibGates];
     return result;
 }
-export function getOrGates(everyGate: Gate[]): AstNode[]{
-    let result: AstNode[] = [];
-    for(const gate of everyGate){
-        if(isOR(gate.$type)){
-            result.push(gate);
-        }
-    }
-
-    return result;
-}
-export function getkNGates(everyGate: Gate[]): AstNode[]{
-    let result: AstNode[] = [];
-    for(const gate of everyGate){
-        if(isKNGate(gate.$type)){
-            result.push(gate);
-        }
-    }
-
-    return result;
-}
-export function getInhibitGates(everyGate: Gate[]): AstNode[]{
-    let result: AstNode[] = [];
-    for(const gate of everyGate){
-        if(isInhibitGate(gate.$type)){
-            result.push(gate);
-        }
-    }
-
-    return result;
-}
-
-/*
-function setLevels(current: FTANode[], lvl: number, allNodes: FTANode[]): void{
-    var next:FTANode[] = [];
-    for(const currentNode of current){
-        currentNode.level = lvl;
-        if(isAND(currentNode) || isOR(currentNode) || isKNGate(currentNode) || isInhibitGate(currentNode) || isTopEvent(currentNode)){
-            for(const child of currentNode.child){
-                if(isAND(child) || isOR(child) || isKNGate(child) || isInhibitGate(child) || isComponent(child)){
-                    if(allNodes.includes(child)){       //Finde 
-                        next.push(child);
-                    }
-                }    
-            }
-        }
-    }
-
-    setLevels(next, lvl++, allNodes);
-}
-*/
 
 
 /**

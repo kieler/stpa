@@ -1,12 +1,11 @@
 import { AstNode } from 'langium';
 import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty';
-import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
-import { ModelFTA, isAND, isCommand, isComponent, isCondition, isGate, isInhibitGate, isKNGate, isOR, isTopEvent, AND } from '../generated/ast';
-import { FtaServices } from './fta-module';
-import { filterModel } from '../stpa/filtering';
+import { SLabel, SModelElement, SModelRoot } from 'sprotty-protocol';
+import { ModelFTA, isComponent, isCondition, isGate, isTopEvent } from '../generated/ast';
 import { FTAEdge, FTANode } from './fta-interfaces';
-import { getAndGates, getAspect, getInhibitGates, getOrGates, getTargets, getkNGates, setLevelsForFTANodes } from './fta-utils';
 import { FTA_EDGE_TYPE, FTA_NODE_TYPE, PARENT_TYPE } from './fta-model';
+import { FtaServices } from './fta-module';
+import { getAllGateTypes, getAspect, getTargets, setLevelsForFTANodes } from './fta-utils';
 
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator{
@@ -26,20 +25,27 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         //set filter for later maybe
         const filteredModelFTA = model;
 
-        //   let ftaChildren: SModelElement[] = this.generateAspectWithEdges(filteredModelFTA.topEvent, args);
-        // Components first -> Gates -> Conditions -> Top Event
+
         let ftaChildren: SModelElement[] = filteredModelFTA.components?.map(l => this.generateFTANode(l, args));
-        const andGates = getAndGates(filteredModelFTA.gates);           //all gates not listed in debug
-        const orGates = getOrGates(filteredModelFTA.gates);             //aswell as edges missing
-        const kNGates = getkNGates(filteredModelFTA.gates);
-        const inhibitGates = getInhibitGates(filteredModelFTA.gates);
+
+        //returns an array of arrays with with every and,or,kn,inhibit-gate at position 1 to 4.
+        const allGates = getAllGateTypes(filteredModelFTA.gates);
+
         ftaChildren = ftaChildren.concat([
-            ...filteredModelFTA.conditions?.map(c => this.generateAspectWithEdges(c,args)).flat(1),
-          //...filteredModelFTA.gates?.map(g => this.generateAspectWithEdges(g, args)).flat(1),
-            ...andGates?.map(a => this.generateAspectWithEdges(a, args)).flat(1),
-            ...orGates?.map(o => this.generateAspectWithEdges(o, args)).flat(1),
-            ...kNGates?.map(k => this.generateAspectWithEdges(k, args)).flat(1),
-            ...inhibitGates?.map(i => this.generateAspectWithEdges(i, args)).flat(1),
+            //first create the ftaNode for the topevent, conditions and all gates
+            this.generateFTANode(filteredModelFTA.topEvent, args),
+            ...filteredModelFTA.conditions?.map(c => this.generateFTANode(c,args)).flat(1),
+
+            ...allGates[0]?.map(a => this.generateFTANode(a, args)).flat(1),    //and
+            ...allGates[1]?.map(o => this.generateFTANode(o, args)).flat(1),    //or
+            ...allGates[2]?.map(k => this.generateFTANode(k, args)).flat(1),    //kn
+            ...allGates[3]?.map(i => this.generateFTANode(i, args)).flat(1),    //inhib
+
+            //after that create the edges of the gates and the top event
+            ...allGates[0]?.map(a => this.generateAspectWithEdges(a, args)).flat(1),
+            ...allGates[1]?.map(o => this.generateAspectWithEdges(o, args)).flat(1),
+            ...allGates[2]?.map(k => this.generateAspectWithEdges(k, args)).flat(1),
+            ...allGates[3]?.map(i => this.generateAspectWithEdges(i, args)).flat(1),
             ...this.generateAspectWithEdges(filteredModelFTA.topEvent, args),
 
         ]);
@@ -77,10 +83,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
      * @returns A node representing {@code node} and edges representing the references {@code node} contains.
      */
     private generateAspectWithEdges(node: AstNode, args: GeneratorContext<ModelFTA>): SModelElement[] {
-        // node must be created first in order to access the id when creating the edges
-        const ftaNode = this.generateFTANode(node, args);
         const elements: SModelElement[] = this.generateEdgesForFTANode(node, args);
-        elements.push(ftaNode);
         return elements;
     }
 
@@ -97,7 +100,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         // for every reference an edge is created
         const targets = getTargets(node);
         for (const target of targets) {
-            const targetId = idCache.getId(target);
+            const targetId = idCache.getId(target);             // g3: - undefined 
             const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
             if (sourceId && targetId) {
                 const e = this.generateFTAEdge(edgeId, sourceId, targetId, '', args);
