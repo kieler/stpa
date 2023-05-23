@@ -32,7 +32,7 @@ entry Model:
 Rule:
     name=ID '{'
         'controlAction:' system=[Node] '.' action=[Command]
-        'type:' type=('not-provided' | 'provided' | 'too-late' | 'too-early' | 'wrong-time' | 'applied-too-long' | 'stopped-too-soon')
+        'type:' type=(NotProvided | Provided | 'too-late' | 'too-early' | 'wrong-time' | 'applied-too-long' | 'stopped-too-soon')
         'contexts:' '{'
             contexts+=Context*
         '}'
@@ -79,7 +79,9 @@ Variable:
     name=ID':' '['values+=VariableValue (',' values+=VariableValue)*']';
 
 VariableValue:
-    name=QualifiedName (operator=('!='|'=') '[' firstValue=(QualifiedName | INT | 'MIN' | 'true' | 'false') (',' secondValue=(QualifiedName | INT | 'MAX'))? ']')?;
+    name=QualifiedName (operator=('!='|'=') firstParenthesis=('['|'(') 
+        firstValue=(QualifiedName | INT | 'MIN' | 'true' | 'false') (',' secondValue=(QualifiedName | INT | 'MAX'))? 
+    secondParenthesis=(']'|')'))?;
 
 VE:
     '[' comms+=Command (',' comms+=Command)* ']' '->' target=[Node];
@@ -110,7 +112,7 @@ UCA:
 DCARule:
     name=ID '{'
         'controlAction:' system=[Node] '.' action=[Command]
-        'type:' type=('not-provided' | 'provided')
+        'type:' type=(NotProvided | Provided)
         'contexts:' '{'
             contexts+=DCAContext*
         '}'
@@ -131,6 +133,12 @@ HazardList:
 
 SafetyConstraint:
     name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
+
+NotProvided returns string:
+    'not-provided';
+
+Provided returns string:
+    'provided';
 
 SubID returns string:
     ID('.'INT)*;

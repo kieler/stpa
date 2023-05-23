@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { DCARule, Model, Rule, Variable, isRule } from "../../generated/ast";
+import { DCARule, Model, Rule, Variable, VariableValue, isRule } from "../../generated/ast";
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Reference } from 'langium';
 import { URI } from 'vscode-uri';
@@ -127,40 +127,44 @@ async function createLTLContextVariable(variable: Reference<Variable>, value: st
         // no value range defined for the value
         return enumValue(variable.$refText, value);
     } else {
+        const equal = valueRange?.operator === "=";
         if (valueRange.secondValue === undefined) {
             // only one value is given
             if (valueRange.firstValue === "false" || valueRange.firstValue === "true") {
                 // given value is a boolean
-                return booleanValue(variable.$refText, (valueRange?.operator === "=" && valueRange.firstValue === "true") || (valueRange?.operator === "!=" && valueRange.firstValue === "false"));
+                return booleanValue(variable.$refText, (equal && valueRange.firstValue === "true") || (valueRange?.operator === "!=" && valueRange.firstValue === "false"));
             } else {
                 // given value is string or number
-                return oneValue(variable.$refText, "" + valueRange.firstValue, valueRange?.operator === "=");
+                return oneValue(variable.$refText, "" + valueRange.firstValue, equal);
             }
         } else {
             if (valueRange.firstValue === "MIN") {
                 // MIN value is used 
-                return minAsRangeValue(variable.$refText, "" + valueRange.secondValue, valueRange?.operator === "=");
+                return minAsRangeValue(variable.$refText, "" + valueRange.secondValue, equal, isParenthesisInclusive(valueRange.secondParenthesis));
             } else if (valueRange.secondValue === "MAX") {
                 // MAX value is used
-                return maxAsRangeValue(variable.$refText, "" + valueRange.firstValue, valueRange?.operator === "=");
+                return maxAsRangeValue(variable.$refText, "" + valueRange.firstValue, equal, isParenthesisInclusive(valueRange.firstParenthesis));
             } else {
                 // two range values are given without use of MIN or MAX
-                return twoRanges(variable.$refText, "" + valueRange.firstValue, "" + valueRange.secondValue, valueRange?.operator === "=");
+                return twoRanges(variable.$refText, valueRange, equal);
             }
         }
     }
 }
 
+function isParenthesisInclusive(value: string | undefined): boolean {
+    return value === "]" || value === "[";
+}
+
 /**
  * A LTL string for a variable which value should be in a given range or outside of it.
  * @param variable The variable to create the LTL string for.
- * @param value1 The first value of the range.
- * @param value2 The second value of the range.
+ * @param valueRange The value range of the variable.
  * @param equal Determines whether the variable should be in the given range or outside of it.
  * @returns the LTL string for the given variable.
  */
-const twoRanges = (variable: string, value1: string, value2: string, equal: boolean): string => {
-    return variable + (equal ? ">=" : "<") + value1 + " && " + variable + (equal ? "<=" : ">") + value2;
+const twoRanges = (variable: string, valueRange: VariableValue, equal: boolean): string => {
+    return variable + determineOperator(equal, isParenthesisInclusive(valueRange.firstParenthesis), true) + valueRange.firstValue + " && " + variable + determineOperator(equal, isParenthesisInclusive(valueRange.secondParenthesis), false) + valueRange.secondValue;
 };
 /**
  * A LTL string for a variable which value should be in or outside of a given range in which a MAX value is used as second value of the range.
@@ -169,8 +173,8 @@ const twoRanges = (variable: string, value1: string, value2: string, equal: bool
  * @param equal Determines whether the variable should be in the given range or outside of it.
  * @returns the LTL string for the given variable.
  */
-const maxAsRangeValue = (variable: string, value: string, equal: boolean): string => {
-    return variable + (equal ? ">=" : "<") + value;
+const maxAsRangeValue = (variable: string, value: string, equal: boolean, inclusive: boolean): string => {
+    return variable + determineOperator(equal, inclusive, true) + value;
 };
 /**
  * A LTL string for a variable which value should be in or outside of a given range in which a MIN value is used as first value of the range.
@@ -179,8 +183,8 @@ const maxAsRangeValue = (variable: string, value: string, equal: boolean): strin
  * @param equal Determines whether the variable should be in the given range or outside of it.
  * @returns the LTL string for the given variable.
  */
-const minAsRangeValue = (variable: string, value: string, equal: boolean): string => {
-    return variable + (equal ? "<=" : ">") + value;
+const minAsRangeValue = (variable: string, value: string, equal: boolean, inclusive: boolean): string => {
+    return variable + determineOperator(equal, inclusive, false) + value;
 };
 /**
  * A LTL string for a variable which value is a boolean.
@@ -199,7 +203,7 @@ const booleanValue = (variable: string, equal: boolean): string => {
  * @returns the LTL string for the given variable.
  */
 const oneValue = (variable: string, value: string, equal: boolean): string => {
-    return variable + (equal ? "==" : "!=") + value;
+    return variable + (equal ? EQ : NEQ) + value;
 };
 /**
  * A LTL string for a variable with a given enum value.
@@ -208,8 +212,27 @@ const oneValue = (variable: string, value: string, equal: boolean): string => {
  * @returns the LTL string for the given variable.
  */
 const enumValue = (variable: string, value: string): string => {
-    return variable + "==" + variable + "_Enum." + value;
+    return variable + EQ + variable + "_Enum." + value;
 };
+
+function determineOperator(equal: boolean, inclusive: boolean, first: boolean): string {
+    if (equal && first) {
+        return inclusive ? GTE : GT;
+    } else if (equal && !first){
+        return inclusive ? LTE : LT;
+    } else if (!equal && first) {
+        return inclusive ? LT : LTE;
+    } else {
+        return inclusive ? GT : GTE;
+    }
+}
+
+const GT = ">";
+const LT = "<";
+const GTE = ">=";
+const LTE = "<=";
+const EQ = "==";
+const NEQ = "!=";
 
 /**
  * Creates the LTL string for the given arguments.
@@ -343,3 +366,4 @@ const wrongTimeLTL = (contextVariables: string, controlAction: string): { formul
         type: UCA_TYPE.WRONG_TIME
     };
 };
+
