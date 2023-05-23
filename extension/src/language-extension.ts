@@ -42,7 +42,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     protected ignoreNextTextChange: boolean = false;
 
     constructor(context: vscode.ExtensionContext) {
-        super('stpa', context);
+        super('pasta', context);
         // user changed configuration settings
         vscode.workspace.onDidChangeConfiguration(() => {
             this.updateViews(this.languageClient, this.lastUri);

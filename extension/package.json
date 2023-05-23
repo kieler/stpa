@@ -101,10 +101,10 @@
         },
         "commands": [
             {
-                "command": "stpa.diagram.open",
+                "command": "pasta.diagram.open",
                 "title": "Open in Diagram",
                 "icon": "$(symbol-structure)",
-                "category": "STPA Diagram"
+                "category": "PASTA Diagram"
             },
             {
                 "command": "stpa.contextTable.open",
@@ -131,11 +131,6 @@
                 "command": "stpa.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "STPA Diagram"
-            },{
-                "command": "fta.diagram.open",
-                "title": "Open in Diagram",
-                "icon": "$(symbol-structure)",
-                "category": "FTA Diagram"
             },
             {
                 "command": "fta.diagram.fit",
@@ -191,8 +186,8 @@
         "menus": {
             "commandPalette": [
                 {
-                    "command": "stpa.diagram.open",
-                    "when": "editorLangId == 'stpa'"
+                    "command": "pasta.diagram.open",
+                    "when": "editorLangId == 'stpa' || editorLangId == 'fta'"
                 },
                 {
                     "command": "stpa.contextTable.open",
@@ -217,9 +212,6 @@
                 {
                     "command": "stpa.diagram.export",
                     "when": "stpa-diagram-focused"
-                },{
-                    "command": "fta.diagram.open",
-                    "when": "editorLangId == 'fta'"
                 },
                 {
                     "command": "fta.diagram.fit",
@@ -256,8 +248,8 @@
             ],
             "editor/context": [
                 {
-                    "command": "stpa.diagram.open",
-                    "when": "editorLangId == 'stpa'",
+                    "command": "pasta.diagram.open",
+                    "when": "editorLangId == 'stpa' || editorLangId == 'fta'",
                     "group": "navigation"
                 },
                 {
@@ -268,11 +260,6 @@
                 {
                     "submenu": "stpa.checks",
                     "group": "checks"
-                },
-                {
-                    "command": "fta.diagram.open",
-                    "when": "editorLangId == 'fta'",
-                    "group": "navigation"
                 }
             ],
             "stpa.checks": [
@@ -299,33 +286,25 @@
             ],
             "editor/title": [
                 {
-                    "command": "stpa.diagram.open",
-                    "when": "editorLangId == 'stpa'",
+                    "command": "pasta.diagram.open",
+                    "when": "editorLangId == 'stpa' || editorLangId == 'fta'",
                     "group": "navigation"
                 },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "editorLangId == 'stpa'",
-                    "group": "navigation"
-                },{
-                    "command": "fta.diagram.open",
-                    "when": "editorLangId == 'fta'",
                     "group": "navigation"
                 }
             ],
             "explorer/context": [
                 {
-                    "command": "stpa.diagram.open",
-                    "when": "resourceExtname == '.stpa'",
+                    "command": "pasta.diagram.open",
+                    "when": "resourceExtname == '.stpa' || resourceExtname == '.fta'",
                     "group": "navigation"
                 },
                 {
                     "command": "stpa.contextTable.open",
                     "when": "resourceExtname == '.stpa'",
-                    "group": "navigation"
-                },{
-                    "command": "fta.diagram.open",
-                    "when": "resourceExtname == '.fta'",
                     "group": "navigation"
                 }
             ]
