@@ -10,6 +10,10 @@ import { StpaSynthesisOptions } from '../stpa/synthesis-options';
 import { FtaDiagramGenerator } from './fta-diagram-generator';
 import { FtaSynthesisOptions } from './fta-synthesis-options';
 import { FtaDiagramServer } from './fta-diagramServer';
+import { DefaultElementFilter, DefaultLayoutConfigurator, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
+import ElkConstructor from 'elkjs/lib/elk.bundled';
+import { StpaLayoutConfigurator } from '../stpa/layout-config';
+import { FtaLayoutConfigurator } from './fta-layout-config';
 
 
 
@@ -24,9 +28,15 @@ export type FtaAddedServices = {
     validation: {
         FtaValidator: FtaValidator;
     }
-    //options: {
-    //    FtaSynthesisOptions: FtaSynthesisOptions
-   // }
+    layout: {
+        ElkFactory: ElkFactory,
+        ElementFilter: IElementFilter,
+        LayoutConfigurator: ILayoutConfigurator;
+    },
+    options: {
+        FtaSynthesisOptions: FtaSynthesisOptions
+    }
+   
 }
 
 /**
@@ -43,14 +53,20 @@ export type FtaServices = LangiumSprottyServices & FtaAddedServices
 export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiagramServices &FtaAddedServices> = {
     diagram: {
         DiagramGenerator: services => new FtaDiagramGenerator(services), 
+        ModelLayoutEngine: services => new ElkLayoutEngine(services.layout.ElkFactory, services.layout.ElementFilter, services.layout.LayoutConfigurator) as any
     },
     validation: {
         ValidationRegistry: services => new FtaValidationRegistry(services),
         FtaValidator: () => new FtaValidator()
     },
-   // options: {
-   //     FtaSynthesisOptions: () => new FtaSynthesisOptions()
-   // },
+    layout: {
+        ElkFactory: () => () => new ElkConstructor({ algorithms: ['tree'] }),
+        ElementFilter: () => new DefaultElementFilter,
+        LayoutConfigurator: () => new FtaLayoutConfigurator //Klappt nicht in dem Moment wo ich FtaLayoutConfig auswähle
+    },
+    options: {
+        FtaSynthesisOptions: () => new FtaSynthesisOptions()
+    },
 };
 
 export const ftaDiagramServerFactory =
@@ -110,7 +126,6 @@ export function createFtaServices(context: DefaultSharedModuleContext): {
         FtaModule
     );
     shared.ServiceRegistry.register(fta);
-   // FtaValidationRegistry;
     return { shared, fta };
 }
 

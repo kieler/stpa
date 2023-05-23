@@ -5,10 +5,11 @@ export class FtaSynthesisOptions {
     private options: ValuedSynthesisOption[];
 
     constructor() {
+        this.options = [];
     }
 
     getSynthesisOptions(): ValuedSynthesisOption[] {
-        return [];
+        return this.options;
     }
 
 }

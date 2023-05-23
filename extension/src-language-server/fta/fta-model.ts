@@ -10,9 +10,12 @@ export const FTA_EDGE_TYPE = 'edge:fta';
  * The different aspects of FTA.
  */
 export enum FTAAspect {
+    TOPEVENT,
     COMPONENT,
     CONDITION,
-    GATE,
-    TOPEVENT,
+    AND,
+    OR,
+    KN,
+    INHIBIT,
     UNDEFINED
 }

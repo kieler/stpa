@@ -1,7 +1,7 @@
 import { AstNode } from 'langium';
 import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty';
 import { SLabel, SModelElement, SModelRoot } from 'sprotty-protocol';
-import { ModelFTA, isComponent, isCondition, isGate, isTopEvent } from '../generated/ast';
+import { ModelFTA, isComponent, isCondition, isGate, isKNGate, isTopEvent } from '../generated/ast';
 import { FTAEdge, FTANode } from './fta-interfaces';
 import { FTA_EDGE_TYPE, FTA_NODE_TYPE, PARENT_TYPE } from './fta-model';
 import { FtaServices } from './fta-module';
@@ -158,13 +158,22 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
                     text: node.name
                 }
             ];
+
+            let desc = "";
             if(isComponent(node) || isCondition(node)){
+                desc = node.description;
+            }
+
+
+            if(isGate(node) && isKNGate(node.type)){
                 return {
                     type: FTA_NODE_TYPE,
                     id: nodeId,
                     aspect: getAspect(node),
-                    description: node.description,
+                    description: desc,
                     children: children,
+                    k: node.type.k,
+                    n: node.type.child.length,
                     layout: 'stack',
                     layoutOptions: {
                         paddingTop: 10.0,
@@ -178,7 +187,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
                     type: FTA_NODE_TYPE,
                     id: nodeId,
                     aspect: getAspect(node),
-                    description: "",
+                    description: desc,
                     children: children,
                     layout: 'stack',
                     layoutOptions: {

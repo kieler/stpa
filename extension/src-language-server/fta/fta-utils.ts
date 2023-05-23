@@ -42,12 +42,20 @@ export function getTargets(node: AstNode): AstNode[] {
  * @returns the aspect of {@code node}.
  */
 export function getAspect(node: AstNode): FTAAspect {
-    if (isComponent(node)) {
+    if (isTopEvent(node)) {
+        return FTAAspect.TOPEVENT;    
+    }else if (isComponent(node)) {
         return FTAAspect.COMPONENT;
-    } else if (isGate(node)) {
-        return FTAAspect.GATE;
-    } else if (isTopEvent(node)) {
-        return FTAAspect.TOPEVENT;
+    }else if (isCondition(node)) {
+        return FTAAspect.CONDITION;
+    }else if(isGate(node) && isAND(node.type)){
+        return FTAAspect.AND;
+    }else if (isGate(node) && isOR(node.type)) {
+        return FTAAspect.OR;
+    }else if (isGate(node) && isKNGate(node.type)) {
+        return FTAAspect.KN;
+    }else if (isGate(node) && isInhibitGate(node.type)) {
+        return FTAAspect.INHIBIT;
     }
     return FTAAspect.UNDEFINED;
 }

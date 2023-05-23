@@ -11,6 +11,8 @@ export interface FTANode extends SNode{
     description: string
     highlight?: boolean
     level?: number
+    k?: number
+    n?: number
 
 }
 

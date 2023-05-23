@@ -16,8 +16,9 @@
  */
 
 /** @jsx svg */
-import { VNode } from 'snabbdom';
+import { h, VNode } from 'snabbdom';
 import { SNode, svg } from 'sprotty';
+import * as path from 'path';
 
 /**
  * Creates a circle for {@code node}.
@@ -170,3 +171,74 @@ export function renderHexagon(node: SNode): VNode {
     />;
 }
 
+
+export function renderAndGate(node:SNode): VNode{
+    const leftX = 0;
+    const rightX = Math.max(node.size.width, 0);
+    const midX = Math.max(node.size.width, 0) / 2.0;
+    const botY = Math.max(node.size.height, 0);
+    const midY = Math.max(node.size.height, 0) / 2.0;
+    const topY = 0;
+    const d = 'M' + leftX + " " + botY + " L " + leftX + " " + midY + " C " + leftX + " " + topY + " " +  rightX + " " + topY + " " + rightX + " " + midY + 
+     " L " + rightX + " " + botY + 'Z';
+
+    return <path 
+        d = {d} 
+    />;
+}
+
+
+export function renderOrGate(node:SNode): VNode{
+    const leftX = 0;
+    const rightX = Math.max(node.size.width - 5.0, 0);
+    const midX = rightX / 2.0;
+    const botY = Math.max(node.size.height, 0);
+    const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0); 
+    const midY = Math.max(node.size.height, 0) / 2;
+    const topY = 0;
+    const d = 'M' + leftX + " " + botY + " L " + leftX + " " + midY + " C " +  midX + " " + topY + " "+ midX + " " + topY + " " + rightX + " " + midY + 
+    " L " + rightX + " " + botY + " L " + midX + " " + nearBotY + " Z ";
+
+    return <path
+        d= {d}
+    />
+}
+
+export function renderKnGate(node:SNode, k:number, n:number): VNode{
+    const leftX = 0;
+    const rightX = Math.max(node.size.width - 5.0, 0);
+    const midX = rightX / 2.0;
+    const botY = Math.max(node.size.height, 0);
+    const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0); 
+    const midY = Math.max(node.size.height, 0) / 2;
+    const topY = 0;
+    const d = 'M' + leftX + " " + botY + " L " + leftX + " " + midY + " C " +  midX + " " + topY + " "+ midX + " " + topY + " " + rightX + " " + midY + 
+    " L " + rightX + " " + botY + " L " + midX + " " + nearBotY + " Z ";
+
+    return (
+        <g>
+          <path d={d} />
+          <text x={midX -10.0} y={botY + 10} text-anchor="middle">
+            {`${k}/${n}`}
+          </text>
+        </g>
+      );
+}
+
+
+export function renderInhibitGate(node:SNode): VNode{
+    const leftX = 0;
+    const midX = Math.max(node.size.width, 0) / 2.0 ;
+    const rightX = Math.max(node.size.width, 0);
+    const lowestY = Math.max(node.size.height, 0);
+    const lowY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 4.0);
+    const highY = Math.max(node.size.height, 0) / 4.0;
+    const highestY = 0;
+
+    const d = 'M' + leftX + " " + lowY + " L " + leftX + " " + highY + " L " + midX + " " + highestY + " L " + rightX + " " + highY +
+    " L " + rightX + " " + lowY + " L " + midX + " " + lowestY;
+
+    return <path
+        d= {d}
+    />
+}

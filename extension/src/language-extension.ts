@@ -66,6 +66,14 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
             }
         });
+        //Active text editor changed
+       // vscode.window.onDidChangeActiveTextEditor(activeEditor => {
+       //     if(activeEditor){
+                // Change extension Prefix based on command arg
+                //Change diagram type based on command arg
+             //   this.getDiagramType();
+       //     }
+       // });
 
         // textdocument has changed
         vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
@@ -200,11 +208,11 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         if (commandArgs.length === 0
             || commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
             return 'stpa-diagram';
-        }else if(commandArgs.length === 0
-            || commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.fta')){
+        }
+        if(commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.fta')){
             return 'fta-diagram'
         }
-        return undefined;
+            return undefined;
     }
 
     createContextTable(): void {

@@ -18,10 +18,10 @@
 import 'reflect-metadata';
 import 'sprotty-vscode-webview/css/sprotty-vscode.css';
 
-import { SprottyDiagramIdentifier, VscodeDiagramServer } from 'sprotty-vscode-webview';
-import { createSTPADiagramContainer } from './di.config';
-import { SprottyLspEditStarter } from 'sprotty-vscode-webview/lib/lsp/editing';
 import { Container } from 'inversify';
+import { SprottyDiagramIdentifier, VscodeDiagramServer } from 'sprotty-vscode-webview';
+import { SprottyLspEditStarter } from 'sprotty-vscode-webview/lib/lsp/editing';
+import { createSTPADiagramContainer } from './di.config';
 import { StpaDiagramServer } from './diagram-server';
 
 export class StpaSprottyStarter extends SprottyLspEditStarter {
@@ -37,3 +37,4 @@ export class StpaSprottyStarter extends SprottyLspEditStarter {
 }
 
 new StpaSprottyStarter();
+
