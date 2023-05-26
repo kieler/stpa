@@ -61,7 +61,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         const ftaEdges: FTAEdge[] = [];
         for(const edge of ftaChildren){
             if(edge.type === FTA_EDGE_TYPE){
-                ftaEdges.push(edge as FTAEdge)
+                ftaEdges.push(edge as FTAEdge);
             }
         }
         
@@ -157,7 +157,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         if(isTopEvent(node) || isGate(node) || isComponent(node) || isCondition(node)){
             const nodeId = idCache.uniqueId(node.name, node);
 
-            let children: SModelElement[] = [
+            const children: SModelElement[] = [
                 <SLabel>{
                     type: 'label',
                     id: idCache.uniqueId(nodeId + '.label'),

@@ -31,7 +31,7 @@ import { sidebarModule } from './sidebar';
 import { optionsModule } from './options/options-module';
 import { StpaModelViewer} from './model-viewer';
 import { StpaMouseListener } from './stpa-mouselistener';
-import {  FTANodeView } from './fta-views';
+import {  FTANodeView, PolylineArrowEdgeViewFTA } from './fta-views';
 import { FTANode, FTA_EDGE_TYPE, FTA_NODE_TYPE } from './fta-model';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
@@ -60,7 +60,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     
     //FTA
     configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
-    configureModelElement(context, FTA_EDGE_TYPE, SEdge, PolylineArrowEdgeView);
+    configureModelElement(context, FTA_EDGE_TYPE, SEdge, PolylineArrowEdgeViewFTA);
 });
 
 export function createSTPADiagramContainer(widgetId: string): Container {

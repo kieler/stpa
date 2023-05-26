@@ -15,10 +15,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServices, DiagramServer, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
+import { Action, DiagramServer, DiagramServices, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
 import { UpdateViewAction } from '../actions';
-import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
-import { DropDownOption } from '../options/option-models';
+import { UpdateOptionsAction } from '../options/actions';
 import { FtaSynthesisOptions } from './fta-synthesis-options';
 
 export class FtaDiagramServer extends DiagramServer {

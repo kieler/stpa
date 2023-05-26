@@ -1,19 +1,16 @@
 
+import ElkConstructor from 'elkjs/lib/elk.bundled';
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices } from 'langium';
 import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
-import { StpaDiagramServer } from '../stpa/stpa-diagramServer';
+import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { DiagramOptions } from 'sprotty-protocol';
 import { URI } from 'vscode-uri';
 import { FtaGeneratedModule, StpaGeneratedSharedModule } from '../generated/module';
-import { FtaValidationRegistry, FtaValidator } from './fta-validator';
-import { StpaSynthesisOptions } from '../stpa/synthesis-options';
 import { FtaDiagramGenerator } from './fta-diagram-generator';
-import { FtaSynthesisOptions } from './fta-synthesis-options';
 import { FtaDiagramServer } from './fta-diagramServer';
-import { DefaultElementFilter, DefaultLayoutConfigurator, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import ElkConstructor from 'elkjs/lib/elk.bundled';
-import { StpaLayoutConfigurator } from '../stpa/layout-config';
 import { FtaLayoutConfigurator } from './fta-layout-config';
+import { FtaSynthesisOptions } from './fta-synthesis-options';
+import { FtaValidationRegistry, FtaValidator } from './fta-validator';
 
 
 
@@ -37,13 +34,13 @@ export type FtaAddedServices = {
         FtaSynthesisOptions: FtaSynthesisOptions
     }
    
-}
+};
 
 /**
  * Union of Langium default services and your custom services - use this as constructor parameter
  * of custom service classes.
  */
-export type FtaServices = LangiumSprottyServices & FtaAddedServices
+export type FtaServices = LangiumSprottyServices & FtaAddedServices;
 
 /**
  * Dependency injection module that overrides Langium default services and contributes the

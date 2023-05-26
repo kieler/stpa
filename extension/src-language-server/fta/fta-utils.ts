@@ -1,8 +1,7 @@
 import { AstNode } from 'langium';
-import { AND, InhibitGate, KNGate, OR, TopEvent, isAND, isComponent, isGate, isInhibitGate, isKNGate, isOR, isTopEvent, Child, isCondition, Gate, Condition } from '../generated/ast';
+import { Gate, isAND, isComponent, isCondition, isGate, isInhibitGate, isKNGate, isOR, isTopEvent } from '../generated/ast';
 import { FTAEdge, FTANode } from './fta-interfaces';
 import { FTAAspect } from './fta-model';
-import { FTA_NODE_TYPE } from '../../src-webview/fta-model';
 
 
 
@@ -24,7 +23,7 @@ export function getTargets(node: AstNode): AstNode[] {
             for(const ref of node.type.child){
                 if(ref?.ref){targets.push(ref.ref);}        //G3 = G4 AND G5 Referencen von G3: ref?.ref  gelten wahrscheinlich als undefined
             }
-            if(node.type.$type == 'InhibitGate'){
+            if(node.type.$type === 'InhibitGate'){
                 for(const ref of node.type.condition){
                     if(ref?.ref){targets.push(ref.ref);}
                 }
@@ -67,23 +66,23 @@ export function getAspect(node: AstNode): FTAAspect {
  * @returns A two dimensional array with every gate sorted into the respective category of And, Or, KN, Inhibit-Gate
  */
 export function getAllGateTypes(everyGate: Gate[]): AstNode[][]{
-    let andGates: AstNode[] = [];
-    let orGates: AstNode[] = [];
-    let kNGates: AstNode[] = [];
-    let inhibGates: AstNode[] = [];
+    const andGates: AstNode[] = [];
+    const orGates: AstNode[] = [];
+    const kNGates: AstNode[] = [];
+    const inhibGates: AstNode[] = [];
 
     for(const gate of everyGate){
-        if(gate.type.$type == 'AND'){ 
+        if(gate.type.$type === 'AND'){ 
             andGates.push(gate);
-        }else if(gate.type.$type == 'OR'){
+        }else if(gate.type.$type === 'OR'){
             orGates.push(gate);
-        }else if(gate.type.$type == 'KNGate'){
+        }else if(gate.type.$type === 'KNGate'){
             kNGates.push(gate);
-        }else if(gate.type.$type == 'InhibitGate'){
+        }else if(gate.type.$type === 'InhibitGate'){
             inhibGates.push(gate);
         }
     }
-    let result: AstNode[][] = [andGates, orGates, kNGates, inhibGates];
+    const result: AstNode[][] = [andGates, orGates, kNGates, inhibGates];
     return result;
 }
 
@@ -94,7 +93,7 @@ export function getAllGateTypes(everyGate: Gate[]): AstNode[][]{
  */
 export function setLevelsForFTANodes(nodes: FTANode[], edges: FTAEdge[]): void{
     //start with the top event 
-    let topevent: FTANode[] = [getTopEvent(nodes)];
+    const topevent: FTANode[] = [getTopEvent(nodes)];
     determineLevelForChildren(topevent, 0, edges, nodes);
 }
 
@@ -109,7 +108,7 @@ function getTopEvent(nodes: FTANode[]): FTANode{
             return node;
         }
     }
-    let empty = {} as FTANode;
+    const empty = {} as FTANode;
     return empty;
 }
 
@@ -121,7 +120,7 @@ function getTopEvent(nodes: FTANode[]): FTANode{
  * @param allNodes All nodes in the graph.
  */
 function determineLevelForChildren(nodes: FTANode[], level: number, edges: FTAEdge[], allNodes: FTANode[]): void{
-    let children: FTANode[] = []; 
+    const children: FTANode[] = []; 
 
     for(const node of nodes){
         //for every node on current layer assign the level.
@@ -140,7 +139,7 @@ function determineLevelForChildren(nodes: FTANode[], level: number, edges: FTAEd
     //If there is an inhibit gate in the next iteration/layer, then also
     //add Condition to children, so that they can be on the same layer as the inhibit gates.
     for(const node of children){
-        if(node.aspect == FTAAspect.INHIBIT){
+        if(node.aspect === FTAAspect.INHIBIT){
             for(const edge of edges){
                 if(edge.sourceId === node.id){
                     node.level = level;
@@ -155,7 +154,7 @@ function determineLevelForChildren(nodes: FTANode[], level: number, edges: FTAEd
 
     level++;
     //Only repeat until there is no layer below
-    if(children.length != 0){
+    if(children.length !== 0){
         determineLevelForChildren(children, level, edges, allNodes);
     }
 
@@ -170,7 +169,7 @@ function determineLevelForChildren(nodes: FTANode[], level: number, edges: FTAEd
  */
 function getChildWithID(nodes: FTANode[], id: String): FTANode{
     for(const node of nodes){
-        if(node.id == id){
+        if(node.id === id){
             return node;
         }
     }

@@ -17,10 +17,10 @@ export class FTANode extends SNode{
 
     aspect: FTAAspect = FTAAspect.UNDEFINED;
     description: string = "";
-    highlight?: boolean
+    highlight?: boolean;
     level?: number;
-    k?: number
-    n?: number
+    k?: number;
+    n?: number;
 
 }
 

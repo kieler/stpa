@@ -39,7 +39,7 @@ export class FtaValidator {
                 accept('error',  `Component has non-unique name '${c.name}'.`,  {node: c, property: 'name'});
             }
             componentNames.add(c.name);
-        })
+        });
     }
     //prevent multiple gates from having the same identifier.
     checkUniqueGates(model:ModelFTA, accept:ValidationAcceptor): void{
@@ -49,6 +49,6 @@ export class FtaValidator {
                 accept('error',  `Gate has non-unique name '${g.name}'.`,  {node: g, property: 'name'});
             }
             gateNames.add(g.name);
-        })
+        });
     }
 }

@@ -1,6 +1,5 @@
-import { SNode, SEdge } from "sprotty-protocol";
-import{FTAAspect} from "./fta-model";
-import { Condition } from "../generated/ast";
+import { SEdge, SNode } from "sprotty-protocol";
+import { FTAAspect } from "./fta-model";
 
 
 /**

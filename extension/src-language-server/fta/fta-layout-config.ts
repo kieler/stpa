@@ -1,8 +1,7 @@
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import { SEdge, SGraph, SModelElement, SModelIndex, SNode } from 'sprotty-protocol';
+import { SGraph, SModelIndex, SNode } from 'sprotty-protocol';
 import { FTANode } from './fta-interfaces';
-import { FTAAspect, FTA_NODE_TYPE } from './fta-model';
 
 export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
     
@@ -33,6 +32,6 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.algorithm': 'layered',
             'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]'
-        }  
+        };  
     }    
 }

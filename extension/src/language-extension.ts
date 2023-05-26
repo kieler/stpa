@@ -210,7 +210,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             return 'stpa-diagram';
         }
         if(commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.fta')){
-            return 'fta-diagram'
+            return 'fta-diagram';
         }
             return undefined;
     }

@@ -15,10 +15,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { LangiumSprottySharedServices } from "langium-sprotty";
-import { Model, ModelFTA } from "./generated/ast";
-import { URI } from 'vscode-uri';
 import { LangiumDocument } from "langium";
+import { LangiumSprottySharedServices } from "langium-sprotty";
+import { URI } from 'vscode-uri';
+import { Model } from "./generated/ast";
 
 /**
  * Determines the model for {@code uri}.
