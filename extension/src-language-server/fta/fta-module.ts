@@ -60,9 +60,9 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
         FtaValidator: () => new FtaValidator()
     },
     layout: {
-        ElkFactory: () => () => new ElkConstructor({ algorithms: ['tree'] }),
+        ElkFactory: () => () => new ElkConstructor({ algorithms: ['layered'] }),
         ElementFilter: () => new DefaultElementFilter,
-        LayoutConfigurator: () => new FtaLayoutConfigurator //Klappt nicht in dem Moment wo ich FtaLayoutConfig auswähle
+        LayoutConfigurator: () => new FtaLayoutConfigurator
     },
     options: {
         FtaSynthesisOptions: () => new FtaSynthesisOptions()

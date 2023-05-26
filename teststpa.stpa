@@ -6,3 +6,9 @@ L3 "asd"
 Hazards
 H1 "" [L1]
 H2 "" [L2]
+
+
+SystemConstraints
+SC2 "" [H2] {
+    
+}

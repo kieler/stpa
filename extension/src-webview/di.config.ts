@@ -29,7 +29,7 @@ import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView } from '
 import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE } from './stpa-model';
 import { sidebarModule } from './sidebar';
 import { optionsModule } from './options/options-module';
-import { StpaModelViewer, FtaModelViewer } from './model-viewer';
+import { StpaModelViewer} from './model-viewer';
 import { StpaMouseListener } from './stpa-mouselistener';
 import {  FTANodeView } from './fta-views';
 import { FTANode, FTA_EDGE_TYPE, FTA_NODE_TYPE } from './fta-model';
@@ -57,7 +57,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
     configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
-
+    
     //FTA
     configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
     configureModelElement(context, FTA_EDGE_TYPE, SEdge, PolylineArrowEdgeView);

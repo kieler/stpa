@@ -30,11 +30,3 @@ export class StpaModelViewer extends ModelViewer {
     }
 
 }
-
-export class FtaModelViewer extends ModelViewer{
-
-    @postConstruct()
-    init(): void {
-
-    }
-}

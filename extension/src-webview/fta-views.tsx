@@ -4,8 +4,8 @@ import { VNode } from "snabbdom";
 import { RectangularNodeView, RenderingContext, SPort, svg } from 'sprotty';
 import { DISymbol } from "./di.symbols";
 import { FTAAspect, FTANode } from './fta-model';
-import { ColorStyleOption, RenderOptionsRegistry } from "./options/render-options-registry";
-import { renderAndGate, renderCircle, renderHexagon, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
+import { RenderOptionsRegistry } from "./options/render-options-registry";
+import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
 
 
 /** Determines if path/aspect highlighting is currently on. */
@@ -19,15 +19,8 @@ export class FTANodeView extends RectangularNodeView {
 
     render(node: FTANode, context: RenderingContext): VNode {
 
-        // determines the color of the node
-        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printNode = colorStyle == "black & white";
-        const coloredNode = colorStyle == "colorful";
-        const sprottyNode = colorStyle == "standard";
-        const lessColoredNode = colorStyle == "fewer colors";
-        const aspect = node.aspect % 2 == 0 || !lessColoredNode ? node.aspect : node.aspect - 1;
 
-        // create the element based on the option and the aspect of the node
+        // create the element based on the aspect of the node
         let element: VNode;
         switch (node.aspect) {
             case FTAAspect.TOPEVENT:
@@ -40,16 +33,16 @@ export class FTANodeView extends RectangularNodeView {
                 element = renderCircle(node);
                 break;
             case FTAAspect.AND:
-                element = renderAndGate(node);     //not correct yet
+                element = renderAndGate(node);
                 break;
             case FTAAspect.OR:
-                element = renderOrGate(node);      //not correct yet
+                element = renderOrGate(node);
                 break;
             case FTAAspect.KN:
-                element = renderKnGate(node, node.k as number, node.n as number);     //not correct yet
+                element = renderKnGate(node, node.k as number, node.n as number);
                 break;
             case FTAAspect.INHIBIT:
-                element = renderInhibitGate(node);     //wrong
+                element = renderInhibitGate(node);
                 break;
             default:
                 element = renderRectangle(node);

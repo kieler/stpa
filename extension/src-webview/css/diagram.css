@@ -1,6 +1,7 @@
 @import "./options.css";
 @import "./sidebar.css";
 @import "./theme.css";
+@import "./fta-diagram.css";
 
 .vscode-high-contrast .stpa-node[aspect="0"],
 .vscode-high-contrast .stpa-edge-arrow[aspect="0"] {

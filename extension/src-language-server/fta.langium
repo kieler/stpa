@@ -22,13 +22,13 @@ Child:
     Gate | Component;
 
 AND:
-    child+=[Child:ID] (string='and' child+=[Child:ID])*;
+    child+=[Child:ID] (string='and' child+=[Child:ID])+;
 
 OR:
-    child+=[Child:ID] (string='or' child+=[Child:ID])*;
+    child+=[Child:ID] (string='or' child+=[Child:ID])+;
 
 KNGate:
-    k=INT string='of' (child+=[Child:ID])*;
+    k=INT string='of' child+=[Child:ID] (',' child+=[Child:ID])+;
 
 InhibitGate:
     condition+=[Condition:ID] string='inhibits' child+=[Child:ID];

@@ -7,6 +7,7 @@ C2 "CPU2"
 PS "Power supply"
 B "System bus"
 
+
 Conditions
 U "In Use"
 
@@ -19,5 +20,6 @@ G2 = G3 or B
 G3 = G4 and G5
 G4 = C1 or PS or G6
 G5 = C2 or PS or G6
-G6 = 2 of M1 M2 M3
+G6 = 2 of M1, M2, M3
+
 

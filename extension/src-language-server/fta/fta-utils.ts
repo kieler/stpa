@@ -1,7 +1,8 @@
 import { AstNode } from 'langium';
 import { AND, InhibitGate, KNGate, OR, TopEvent, isAND, isComponent, isGate, isInhibitGate, isKNGate, isOR, isTopEvent, Child, isCondition, Gate, Condition } from '../generated/ast';
-import { FTANode } from './fta-interfaces';
+import { FTAEdge, FTANode } from './fta-interfaces';
 import { FTAAspect } from './fta-model';
+import { FTA_NODE_TYPE } from '../../src-webview/fta-model';
 
 
 
@@ -61,23 +62,6 @@ export function getAspect(node: AstNode): FTAAspect {
 }
 
 
-
-/**
- * Determines the layer {@code node} should be in depending on the FTA aspect it represents.
- * @param node FTANode for which the layer should be determined.
- * @param hazardDepth Maximal depth of the hazard hierarchy.
- * @param sysConsDepth Maximal depth of the system-level constraint hierarchy.
- * @returns The number of the layer {@code node} should be in.
- */
-function determineLayerForFTANode(node: FTANode): number {
-    switch (node.aspect) {
-        case FTAAspect.TOPEVENT:
-            return 0;
-        default:
-            return -1;
-    }
-}
-
 /** Sorts every gate with its type and puts them into a two dimensional array
  * @param everyGate Every gate within the FTAModel
  * @returns A two dimensional array with every gate sorted into the respective category of And, Or, KN, Inhibit-Gate
@@ -108,12 +92,89 @@ export function getAllGateTypes(everyGate: Gate[]): AstNode[][]{
  * Sets the level property for {@code nodes} depending on the layer they should be in.
  * @param nodes The nodes representing the stpa components.
  */
-export function setLevelsForFTANodes(nodes: FTANode[]): void{
+export function setLevelsForFTANodes(nodes: FTANode[], edges: FTAEdge[]): void{
+    //start with the top event 
+    let topevent: FTANode[] = [getTopEvent(nodes)];
+    determineLevelForChildren(topevent, 0, edges, nodes);
+}
 
-   for(const node of nodes){
-    const level = determineLayerForFTANode(node);
-    node.level = level;
-   }
+/**
+ * Returns the top event.
+ * @param nodes All nodes. 
+ * @returns the top event from all nodes.
+ */
+function getTopEvent(nodes: FTANode[]): FTANode{
+    for(const node of nodes){
+        if(node.aspect === FTAAspect.TOPEVENT){
+            return node;
+        }
+    }
+    let empty = {} as FTANode;
+    return empty;
+}
 
+/**
+ * Recursively determine the level of all nodes, starting with the top event.
+ * @param nodes All the nodes on the current layer we want to look at. At the start, this is just the top event.
+ * @param layer The current layer we want to assign.
+ * @param edges All edges in the graph.
+ * @param allNodes All nodes in the graph.
+ */
+function determineLevelForChildren(nodes: FTANode[], level: number, edges: FTAEdge[], allNodes: FTANode[]): void{
+    let children: FTANode[] = []; 
+
+    for(const node of nodes){
+        //for every node on current layer assign the level.
+        node.level = level;
+        for(const edge of edges){
+            //Look at every edge that starts from our current node.
+            if(edge.sourceId === node.id){
+                //Get child that is connected to the second part of the edge
+                const child = getChildWithID(allNodes, edge.targetId); //Edge from G1 to G3 (G1:-:G3) with G3 being the targetId. 
+                if(!children.some((c) => c.id === child.id) && child.aspect !== FTAAspect.CONDITION){ //Don't add conditions yet.
+                    children.push(getChildWithID(allNodes, edge.targetId));
+                }
+            }
+        }
+    }
+    //If there is an inhibit gate in the next iteration/layer, then also
+    //add Condition to children, so that they can be on the same layer as the inhibit gates.
+    for(const node of children){
+        if(node.aspect == FTAAspect.INHIBIT){
+            for(const edge of edges){
+                if(edge.sourceId === node.id){
+                    node.level = level;
+                    const child = getChildWithID(allNodes, edge.targetId);
+                    if(child.aspect === FTAAspect.CONDITION){
+                        children.push(child);
+                    }
+                }    
+            }
+        }
+    }
+
+    level++;
+    //Only repeat until there is no layer below
+    if(children.length != 0){
+        determineLevelForChildren(children, level, edges, allNodes);
+    }
+
+}
+
+
+/**
+ * Gets a child object with its id from all nodes.
+ * @param nodes All FtaNodes we want to assign levels to.
+ * @param id The id of Node.
+ * @returns an FTANode with the given id.
+ */
+function getChildWithID(nodes: FTANode[], id: String): FTANode{
+    for(const node of nodes){
+        if(node.id == id){
+            return node;
+        }
+    }
+    const empty = {} as FTANode;
+    return empty;
 }
 

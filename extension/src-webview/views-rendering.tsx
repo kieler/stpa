@@ -171,7 +171,11 @@ export function renderHexagon(node: SNode): VNode {
     />;
 }
 
-
+/**
+ * Creates an And-Gate for {@code node}.
+ * @param node The node whch should be represented by an And-Gate.
+ * @returns An And-Gate for {@code node}.
+ */
 export function renderAndGate(node:SNode): VNode{
     const leftX = 0;
     const rightX = Math.max(node.size.width, 0);
@@ -187,10 +191,14 @@ export function renderAndGate(node:SNode): VNode{
     />;
 }
 
-
+/**
+ * Creates an Or-Gate for {@code node}.
+ * @param node The node whch should be represented by an Or-Gate.
+ * @returns An Or-Gate for {@code node}.
+ */
 export function renderOrGate(node:SNode): VNode{
     const leftX = 0;
-    const rightX = Math.max(node.size.width - 5.0, 0);
+    const rightX = Math.max(node.size.width, 0);
     const midX = rightX / 2.0;
     const botY = Math.max(node.size.height, 0);
     const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0); 
@@ -204,9 +212,14 @@ export function renderOrGate(node:SNode): VNode{
     />
 }
 
+/**
+ * Creates an Kn-Gate for {@code node}.
+ * @param node The node whch should be represented by an Kn-Gate.
+ * @returns An Kn-Gate for {@code node}.
+ */
 export function renderKnGate(node:SNode, k:number, n:number): VNode{
     const leftX = 0;
-    const rightX = Math.max(node.size.width - 5.0, 0);
+    const rightX = Math.max(node.size.width, 0);
     const midX = rightX / 2.0;
     const botY = Math.max(node.size.height, 0);
     const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0); 
@@ -225,7 +238,11 @@ export function renderKnGate(node:SNode, k:number, n:number): VNode{
       );
 }
 
-
+/**
+ * Creates an Inhibit-Gate for {@code node}.
+ * @param node The node whch should be represented by an Inhibit-Gate.
+ * @returns An Inhibit-Gate for {@code node}.
+ */
 export function renderInhibitGate(node:SNode): VNode{
     const leftX = 0;
     const midX = Math.max(node.size.width, 0) / 2.0 ;

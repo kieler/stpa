@@ -58,9 +58,15 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
                 ftaNodes.push(node as FTANode);
             }
         }
+        const ftaEdges: FTAEdge[] = [];
+        for(const edge of ftaChildren){
+            if(edge.type === FTA_EDGE_TYPE){
+                ftaEdges.push(edge as FTAEdge)
+            }
+        }
         
        // give the top event the level 0
-       setLevelsForFTANodes(ftaNodes);
+       setLevelsForFTANodes(ftaNodes, ftaEdges);
         
         return {
             type: 'graph',
