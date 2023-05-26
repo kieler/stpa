@@ -189,7 +189,7 @@
 
 .vscode-dark .fta-edge[aspect="5"],
 .vscode-dark .fta-edge-arrow[aspect="5"] {
-    stroke: var(--fta-kn-dark);
+    stroke: var(--fta-or-dark);
 }
 
 .vscode-dark .fta-edge[aspect="6"],

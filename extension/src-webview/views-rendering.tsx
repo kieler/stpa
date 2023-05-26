@@ -231,7 +231,7 @@ export function renderKnGate(node:SNode, k:number, n:number): VNode{
     return (
         <g>
           <path d={d} />
-          <text x={midX -10.0} y={botY + 10} text-anchor="middle">
+          <text x={midX -10.0} y={botY-5} text-anchor="middle">
             {`${k}/${n}`}
           </text>
         </g>
@@ -253,7 +253,7 @@ export function renderInhibitGate(node:SNode): VNode{
     const highestY = 0;
 
     const d = 'M' + leftX + " " + lowY + " L " + leftX + " " + highY + " L " + midX + " " + highestY + " L " + rightX + " " + highY +
-    " L " + rightX + " " + lowY + " L " + midX + " " + lowestY;
+    " L " + rightX + " " + lowY + " L " + midX + " " + lowestY + "Z";
 
     return <path
         d= {d}

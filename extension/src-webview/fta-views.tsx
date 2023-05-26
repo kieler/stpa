@@ -28,7 +28,7 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption); 
         return <path class-fta-edge={true} aspect={(edge.source as FTANode).aspect} d={path} />;
     }
-
+    /*
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
@@ -38,6 +38,7 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
             <path class-fta-edge-arrow={true} aspect={(edge.source as FTANode).aspect} />
         ];
     }
+    */
 }
 
 

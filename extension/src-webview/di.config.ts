@@ -59,8 +59,8 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
     
     //FTA
-    configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
     configureModelElement(context, FTA_EDGE_TYPE, SEdge, PolylineArrowEdgeViewFTA);
+    configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
 });
 
 export function createSTPADiagramContainer(widgetId: string): Container {
