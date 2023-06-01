@@ -23,7 +23,7 @@ import {
     isSystemConstraint, isUCA, Model, Node
 } from '../generated/ast';
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
-import { PARENT_TYPE, EdgeDirection, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE } from './stpa-model';
+import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType } from './stpa-model';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './synthesis-options';
@@ -155,7 +155,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     label.push(com.label);
                 }
                 const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
-                    label, EdgeDirection.DOWN, args);
+                    label, EdgeType.CONTROL_ACTION, args);
                 edges.push(e);
             }
             // create edges representing feedback
@@ -170,7 +170,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     label.push(com.label);
                 }
                 const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
-                    label, EdgeDirection.UP, args);
+                    label, EdgeType.FEEDBACK, args);
                 edges.push(e);
             }
         }
@@ -197,11 +197,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param sourceId The ID of the source of the edge.
      * @param targetId The ID of the target of the edge.
      * @param label The labels of the edge.
-     * @param direction The direction of the edge.
+     * @param edgeType The type of the edge (control action or feedback edge).
      * @param param5 GeneratorContext of the STPA model.
      * @returns A control structure edge.
      */
-    private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string[], direction: EdgeDirection, { idCache }: GeneratorContext<Model>): CSEdge {
+    private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string[], edgeType: EdgeType, { idCache }: GeneratorContext<Model>): CSEdge {
         // needed for correct layout
         const children: SModelElement[] = [];
         if (label.find(l => l !== '')) {
@@ -225,7 +225,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             id: edgeId,
             sourceId: sourceId!,
             targetId: targetId!,
-            direction: direction,
+            edgeType: edgeType,
             children: children
         };
     }

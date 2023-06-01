@@ -61,7 +61,7 @@ export class CSNode extends SNode {
  * Edge representing control actions and feedback in the control structure.
  */
 export class CSEdge extends SEdge {
-    direction: EdgeDirection = EdgeDirection.UNDEFINED;
+    edgeType: EdgeType = EdgeType.UNDEFINED;
 }
 
 /**
@@ -80,12 +80,10 @@ export enum STPAAspect {
 }
 
 /**
- * Possible edge directions.
+ * Possible edge types.
  */
-export enum EdgeDirection {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
+export enum EdgeType {
+    CONTROL_ACTION,
+    FEEDBACK,
     UNDEFINED
 }

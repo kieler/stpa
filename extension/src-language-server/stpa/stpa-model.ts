@@ -38,13 +38,12 @@ export enum STPAAspect {
     UNDEFINED
 }
 
+
 /**
- * Possible edge directions.
+ * Possible edge types.
  */
-export enum EdgeDirection {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
+export enum EdgeType {
+    CONTROL_ACTION,
+    FEEDBACK,
     UNDEFINED
 }

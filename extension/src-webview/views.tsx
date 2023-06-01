@@ -19,7 +19,7 @@
 import { VNode } from 'snabbdom';
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph } from 'sprotty';
 import { inject, injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE } from './stpa-model';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE, CSEdge, EdgeType } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { DISymbol } from './di.symbols';
@@ -43,13 +43,16 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
         // if an STPANode is selected, the components not connected to it should fade out
         const hidden = edge.type === STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
+        // feedback edges in the control structure should be dashed
+        const feedbackEdge = edge.type === CS_EDGE_TYPE && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const printEdge = colorStyle === "black & white";
         const coloredEdge = colorStyle === "colorful";
         const lessColoredEdge = colorStyle === "fewer colors";
         const aspect = (edge.source as STPANode).aspect % 2 == 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
-        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect} d={path} />;
+        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge} 
+            class-feedback-edge={feedbackEdge} class-hidden={hidden} aspect={aspect} d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
