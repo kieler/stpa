@@ -19,6 +19,7 @@
 export const STPA_NODE_TYPE = 'node:stpa';
 export const PARENT_TYPE= 'node:parent';
 export const CS_NODE_TYPE = 'node:cs';
+export const DUMMY_NODE_TYPE = 'node:dummy';
 export const EDGE_TYPE = 'edge';
 export const CS_EDGE_TYPE = 'edge:controlStructure';
 export const STPA_EDGE_TYPE = 'edge:stpa';
@@ -45,5 +46,7 @@ export enum STPAAspect {
 export enum EdgeType {
     CONTROL_ACTION,
     FEEDBACK,
+    INPUT,
+    OUTPUT,
     UNDEFINED
 }

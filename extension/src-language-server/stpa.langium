@@ -64,6 +64,8 @@ Node:
         'hierarchyLevel' level=INT
         ('label' label=STRING)?
         ('processModel' '{'variables+=Variable*'}')?
+        ('input' '[' inputs+=Command (',' inputs+=Command)* ']')?
+        ('output' '[' outputs+=Command (',' outputs+=Command)* ']')?
         ('controlActions' '{'actions+=VE*'}')?
         ('feedback' '{'feedbacks+=VE*'}')?
     '}';

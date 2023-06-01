@@ -16,14 +16,15 @@
  */
 
 import { AstNode } from 'langium';
-import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty';
+import { GeneratorContext, IdCache, LangiumDiagramGenerator } from 'langium-sprotty';
 import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
 import {
+    Command,
     isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
     isSystemConstraint, isUCA, Model, Node, VE
 } from '../generated/ast';
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
-import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType } from './stpa-model';
+import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType, DUMMY_NODE_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './synthesis-options';
@@ -106,7 +107,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 id: 'controlStructure',
                 children: CSChildren
             });
-        } 
+        }
         // add relationship graph to roots children
         rootChildren.push(
             {
@@ -129,14 +130,18 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param args GeneratorContext of the STPA model
      * @returns A list of edges for the control structure.
      */
-    private generateVerticalCSEdges(nodes: Node[], args: GeneratorContext<Model>): CSEdge[] {
-        const edges: CSEdge[] = [];
+    protected generateVerticalCSEdges(nodes: Node[], args: GeneratorContext<Model>): (CSNode | CSEdge)[] {
+        const edges: (CSNode | CSEdge)[] = [];
         // for every control action and feedback of every a node, a edge should be created
         for (const node of nodes) {
             // create edges representing the control actions
             edges.push(...this.translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, args));
             // create edges representing feedback
             edges.push(...this.translateCommandsToEdges(node.feedbacks, EdgeType.FEEDBACK, args));
+            // create edges representing the other inputs
+            edges.push(...this.translateIOToEdges(node.inputs, node, EdgeType.INPUT, args));
+            // create edges representing the other outputs
+            edges.push(...this.translateIOToEdges(node.outputs, node, EdgeType.OUTPUT, args));
         }
         return edges;
     }
@@ -155,7 +160,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             const sourceId = idCache.getId(edge.$container);
             const targetId = idCache.getId(edge.target.ref);
             const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
-            // multiple feedback to same target is represented by on edge
+            // multiple feedback to same target is represented by one edge
             const label: string[] = [];
             for (let i = 0; i < edge.comms.length; i++) {
                 const com = edge.comms[i];
@@ -166,6 +171,42 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             edges.push(e);
         }
         return edges;
+    }
+
+    protected translateIOToEdges(io: Command[], node: Node, edgetype: EdgeType, args: GeneratorContext<Model>): (CSNode | CSEdge)[] {
+        if (io.length !== 0) {
+            const idCache = args.idCache;
+            const nodeId = idCache.getId(node);
+
+            const label: string[] = [];
+            for (let i = 0; i < io.length; i++) {
+                const command = io[i];
+                label.push(command.label);
+            }
+
+            const edges: (CSNode | CSEdge)[] = [];
+            if (edgetype === EdgeType.INPUT) {
+                const level = node.level - 1;
+                const dummyNode = this.generateDummyNode(level, "input" + node.name, idCache);
+
+                const edgeId = idCache.uniqueId(`${dummyNode.id}:input:${nodeId}`);
+                const edge = this.generateCSEdge(edgeId, dummyNode.id ? dummyNode.id : '', nodeId ? nodeId : '',
+                    label, edgetype, args);
+                edges.push(edge);
+                edges.push(dummyNode);
+            } else if (edgetype === EdgeType.OUTPUT) {
+                const level = node.level + 1;
+                const dummyNode = this.generateDummyNode(level, "output" + node.name, idCache);
+
+                const edgeId = idCache.uniqueId(`${nodeId}:output:${dummyNode.id}`);
+                const edge = this.generateCSEdge(edgeId, nodeId ? nodeId : '', dummyNode.id ? dummyNode.id : '',
+                    label, edgetype, args);
+                edges.push(edge);
+                edges.push(dummyNode);
+            }
+            return edges;
+        }
+        return [];
     }
 
     /*     private generateHorizontalCSEdges(edges: Edge[], args: GeneratorContext<Model>): SEdge[]{
@@ -192,25 +233,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param param5 GeneratorContext of the STPA model.
      * @returns A control structure edge.
      */
-    private generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string[], edgeType: EdgeType, { idCache }: GeneratorContext<Model>): CSEdge {
-        // needed for correct layout
-        const children: SModelElement[] = [];
-        if (label.find(l => l !== '')) {
-            label.forEach(l => {
-                children.push({
-                    type: 'label:xref',
-                    id: idCache.uniqueId(edgeId + '.label'),
-                    text: l
-                } as SLabel);
-            });
-        } else {
-            children.push({
-                type: 'label:xref',
-                id: idCache.uniqueId(edgeId + '.label'),
-                text: ' '
-            } as SLabel);
-
-        }
+    protected generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string[], edgeType: EdgeType, args: GeneratorContext<Model>): CSEdge {
+        const children: SModelElement[] = this.generateLabel(label, edgeId, args);
         return {
             type: CS_EDGE_TYPE,
             id: edgeId,
@@ -219,6 +243,33 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             edgeType: edgeType,
             children: children
         };
+    }
+
+    /**
+     * Generates SLabel elements for the given {@code label}.
+     * @param label Labels to translate to SLabel elements.
+     * @returns SLabel elements representing {@code label}.
+     */
+    protected generateLabel(label: string[], id: string, { idCache }: GeneratorContext<Model>): SLabel[] {
+        const children: SLabel[] = [];
+        if (label.find(l => l !== '')) {
+            label.forEach(l => {
+                children.push({
+                    type: 'label:xref',
+                    id: idCache.uniqueId(id + '.label'),
+                    text: l
+                } as SLabel);
+            });
+        } else {
+            // needed for correct layout
+            children.push({
+                type: 'label:xref',
+                id: idCache.uniqueId(id + '.label'),
+                text: ' '
+            } as SLabel);
+
+        }
+        return children;
     }
 
     /**
@@ -239,6 +290,35 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     type: 'label',
                     id: idCache.uniqueId(nodeId + '.label'),
                     text: label
+                }
+            ],
+            layout: 'stack',
+            layoutOptions: {
+                paddingTop: 10.0,
+                paddingBottom: 10.0,
+                paddngLeft: 10.0,
+                paddingRight: 10.0
+            }
+        };
+    }
+
+    /**
+     * Generates a dummy node for the given {@code level}.
+     * @param level The level of the dummy node.
+     * @param idCache The ID cache of the STPA model.
+     * @returns a dummy node.
+     */
+    protected generateDummyNode(level: number, name: string, idCache: IdCache<AstNode>): CSNode {
+        const id = idCache.uniqueId('dummy' + name);
+        return {
+            type: DUMMY_NODE_TYPE,
+            id: id,
+            level: level,
+            children: [
+                <SLabel>{
+                    type: 'label',
+                    id: idCache.uniqueId(id + '.label'),
+                    text: ' '
                 }
             ],
             layout: 'stack',
