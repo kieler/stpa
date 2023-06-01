@@ -117,7 +117,7 @@ HazardList:
     '[' refs+=[Hazard:SubID] (',' refs+=[Hazard:SubID])*']';
 
 SafetyConstraint:
-    name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
+    name=ID description=STRING '['refs+=[LossScenario] (',' refs+=[LossScenario])*']';
 
 SubID returns string:
     ID('.'INT)*;

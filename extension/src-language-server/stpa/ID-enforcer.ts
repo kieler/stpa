@@ -24,6 +24,20 @@ import { elementWithName, elementWithRefs } from "./stpa-validator";
 import { collectElementsWithSubComps } from "./utils";
 
 /**
+ * Default prefixes for the different STPA aspects.
+ */
+class IDPrefix {
+    static Loss = "L";
+    static Hazard = "H";
+    static SystemConstraint = "SC";
+    static Responsibility = "R";
+    static UCA = "UCA";
+    static ControllerConstraint = "C";
+    static LossScenario = "Scenario";
+    static SafetyRequirement = "SR";
+}
+
+/**
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
@@ -312,32 +326,35 @@ export class IDEnforcer {
             return undefined;
         } else if (offset < hazardOffset) {
             elements = model.losses;
-            prefix = "L";
+            prefix = IDPrefix.Loss;
         } else if (offset < constraintOffset && offset > hazardOffset) {
             // sub-components must be considered when determining the affected elements
-            const modified = this.findAffectedSubComponents(model.hazards, "H", offset);
+            const modified = this.findAffectedSubComponents(model.hazards, IDPrefix.Hazard, offset);
             elements = modified.elements;
             prefix = modified.prefix;
         } else if (offset < responsibilitiesOffset && offset > constraintOffset) {
             // sub-components must be considered when determining the affected elements
-            const modified = this.findAffectedSubComponents(model.systemLevelConstraints, "SC", offset);
+            const modified = this.findAffectedSubComponents(model.systemLevelConstraints, IDPrefix.SystemConstraint, offset);
             elements = modified.elements;
             prefix = modified.prefix;
         } else if (offset < ucaOffset && offset > responsibilitiesOffset) {
             elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
-            prefix = "R";
+            prefix = IDPrefix.Responsibility;
         } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
             elements = model.allUCAs.flatMap(uca => uca.ucas);
             elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
-            prefix = "UCA";
+            prefix = IDPrefix.UCA;
             // rules must be handled separately since they are mixed with the UCAs
             ruleElements = model.rules;
         } else if (offset < scenarioOffset && offset > ucaConstraintOffset) {
             elements = model.controllerConstraints;
-            prefix = "C";
+            prefix = IDPrefix.ControllerConstraint;
         } else if (offset < safetyConsOffset && offset > scenarioOffset) {
             elements = model.scenarios;
-            prefix = "Scenario";
+            prefix = IDPrefix.LossScenario;
+        } else {
+            elements = model.safetyCons;
+            prefix = IDPrefix.SafetyRequirement;
         }
 
         return { elements, prefix, ruleElements };
