@@ -20,7 +20,7 @@ import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty';
 import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
 import {
     isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
-    isSystemConstraint, isUCA, Model, Node
+    isSystemConstraint, isUCA, Model, Node, VE
 } from '../generated/ast';
 import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
 import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType } from './stpa-model';
@@ -90,6 +90,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // each node should be placed in a specific layer based on the aspect. therefore positions must be set
         setLevelsForSTPANodes(stpaNodes, this.options.getGroupingUCAs());
 
+        const rootChildren: SModelElement[] = [];
         if (filteredModel.controlStructure) {
             // determine the nodes of the control structure graph
             const csNodes = filteredModel.controlStructure?.nodes.map(n => this.generateCSNode(n, args));
@@ -99,80 +100,70 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 ...this.generateVerticalCSEdges(filteredModel.controlStructure.nodes, args),
                 //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, args)
             ];
-            // SGraph containing the STPA graph and the control structure
-            return {
-                type: 'graph',
-                id: 'root',
-                children: [
-                    {
-                        type: PARENT_TYPE,
-                        id: 'controlStructure',
-                        children: CSChildren
-                    },
-                    {
-                        type: PARENT_TYPE,
-                        id: 'relationships',
-                        children: stpaChildren
-                    }
-                ]
-            };
-        } else {
-            // SGrpah containing the STPA graph
-            return {
-                type: 'graph',
-                id: 'root',
-                children: [
-                    {
-                        type: PARENT_TYPE,
-                        id: 'relationships',
-                        children: stpaChildren
-                    }
-                ]
-            };
-        }
+            // add control structure to roots children
+            rootChildren.push({
+                type: PARENT_TYPE,
+                id: 'controlStructure',
+                children: CSChildren
+            });
+        } 
+        // add relationship graph to roots children
+        rootChildren.push(
+            {
+                type: PARENT_TYPE,
+                id: 'relationships',
+                children: stpaChildren
+            }
+        );
+        // return root
+        return {
+            type: 'graph',
+            id: 'root',
+            children: rootChildren
+        };
     }
 
     /**
      * Creates the edges for the control structure.
      * @param nodes The nodes of the control structure.
-     * @param args GeneratorCOntext of the STPA model
+     * @param args GeneratorContext of the STPA model
      * @returns A list of edges for the control structure.
      */
     private generateVerticalCSEdges(nodes: Node[], args: GeneratorContext<Model>): CSEdge[] {
-        const idCache = args.idCache;
         const edges: CSEdge[] = [];
         // for every control action and feedback of every a node, a edge should be created
         for (const node of nodes) {
             // create edges representing the control actions
-            for (const edge of node.actions) {
-                const sourceId = idCache.getId(edge.$container);
-                const targetId = idCache.getId(edge.target.ref);
-                const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
-                // multiple control actions to same target are represented by on edge
-                const label: string[] = [];
-                for (let i = 0; i < edge.comms.length; i++) {
-                    const com = edge.comms[i];
-                    label.push(com.label);
-                }
-                const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
-                    label, EdgeType.CONTROL_ACTION, args);
-                edges.push(e);
-            }
+            edges.push(...this.translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, args));
             // create edges representing feedback
-            for (const edge of node.feedbacks) {
-                const sourceId = idCache.getId(edge.$container);
-                const targetId = idCache.getId(edge.target.ref);
-                const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
-                // multiple feedback to same target is represented by on edge
-                const label: string[] = [];
-                for (let i = 0; i < edge.comms.length; i++) {
-                    const com = edge.comms[i];
-                    label.push(com.label);
-                }
-                const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
-                    label, EdgeType.FEEDBACK, args);
-                edges.push(e);
+            edges.push(...this.translateCommandsToEdges(node.feedbacks, EdgeType.FEEDBACK, args));
+        }
+        return edges;
+    }
+
+    /**
+     * Translates the commands (control action or feedback) of a node to edges.
+     * @param commands The control actions or feedback of a node.
+     * @param edgetype The type of the edge (control action or feedback).
+     * @param args GeneratorContext of the STPA model
+     * @returns A list of edges representing the commands.
+     */
+    protected translateCommandsToEdges(commands: VE[], edgetype: EdgeType, args: GeneratorContext<Model>): CSEdge[] {
+        const idCache = args.idCache;
+        const edges: CSEdge[] = [];
+        for (const edge of commands) {
+            const sourceId = idCache.getId(edge.$container);
+            const targetId = idCache.getId(edge.target.ref);
+            const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
+            // multiple feedback to same target is represented by on edge
+            const label: string[] = [];
+            for (let i = 0; i < edge.comms.length; i++) {
+                const com = edge.comms[i];
+                label.push(com.label);
             }
+            const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
+                label, edgetype, args);
+            edges.push(e);
         }
         return edges;
     }
