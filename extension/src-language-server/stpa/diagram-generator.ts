@@ -314,13 +314,6 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             type: DUMMY_NODE_TYPE,
             id: id,
             level: level,
-            children: [
-                <SLabel>{
-                    type: 'label',
-                    id: idCache.uniqueId(id + '.label'),
-                    text: ' '
-                }
-            ],
             layout: 'stack',
             layoutOptions: {
                 paddingTop: 10.0,
