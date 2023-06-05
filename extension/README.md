@@ -1,12 +1,12 @@
 # PASTA: Pragmatic Automated System-Theoretic Process Analysis
 
-> This extension offers a DSL for System-Theoretic Process Analysis (STPA) including an automatic visualization and validity checks.
+> This extension offers a Domain-Specific-Language (DSL) for System-Theoretic Process Analysis (STPA) including an automatic visualization and validity checks.
 
 ## Features
 
-Several validity checks are provided such as 
-* for each control action at least one Unsafe Control Action (UCA) must be defined
-* for each UCA a constraint must be defined
+Several validity checks are provided, for example
+* for each control action at least one Unsafe Control Action (UCA) must be defined,
+* for each UCA a constraint must be defined.
   
 These checks can be turned off in the context menu of the editor.
 
@@ -16,9 +16,9 @@ Instead of informal UCA definitions a context table may be used. This is done by
 
 ## DSL
 
-To use the extension for an analysis, the file in which the analysis is done must have `.stpa` as its file ending. Each STPA aspect has its own section in the DSL. Components for each aspect are defined with an ID, a description, and a reference list. In order to define a new component, the prefix of the corresponding aspect must be stated, for example "L", and afterwards a string with the description. The numeration of the IDs is adjusted automatically.
+To use the extension for an analysis, the file in which the analysis is done must have `.stpa` as its file ending. Each STPA aspect has its own section in the DSL. Components for each aspect are defined with an ID, a description, and a reference list. In order to define a new component, the prefix of the corresponding aspect must be stated, for example "L", and afterwards a string with the description. The numbering of the IDs is adjusted automatically.
 
-In the control structure, system components can be stated, which can contain a process model, input, output, control actions, and feedback. The visualization of input and output edges is at the moment in an experimental state and will be improved in the future.
+In the control structure, system components can be stated, which can contain a process model, input, output, control actions, and feedback. The visualization of input and output edges is in an experimental state at the moment and will be improved in the future.
 
 ### Minimal example of an analysis for a ferry:
 ```
