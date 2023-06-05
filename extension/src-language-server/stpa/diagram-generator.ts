@@ -139,9 +139,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             // create edges representing feedback
             edges.push(...this.translateCommandsToEdges(node.feedbacks, EdgeType.FEEDBACK, args));
             // create edges representing the other inputs
-            edges.push(...this.translateIOToEdges(node.inputs, node, EdgeType.INPUT, args));
+            edges.push(...this.translateIOToEdgeAndNode(node.inputs, node, EdgeType.INPUT, args));
             // create edges representing the other outputs
-            edges.push(...this.translateIOToEdges(node.outputs, node, EdgeType.OUTPUT, args));
+            edges.push(...this.translateIOToEdgeAndNode(node.outputs, node, EdgeType.OUTPUT, args));
         }
         return edges;
     }
@@ -150,7 +150,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * Translates the commands (control action or feedback) of a node to edges.
      * @param commands The control actions or feedback of a node.
      * @param edgetype The type of the edge (control action or feedback).
-     * @param args GeneratorContext of the STPA model
+     * @param args GeneratorContext of the STPA model.
      * @returns A list of edges representing the commands.
      */
     protected translateCommandsToEdges(commands: VE[], edgetype: EdgeType, args: GeneratorContext<Model>): CSEdge[] {
@@ -160,7 +160,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             const sourceId = idCache.getId(edge.$container);
             const targetId = idCache.getId(edge.target.ref);
             const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
-            // multiple feedback to same target is represented by one edge
+            // multiple commands to same target is represented by one edge
             const label: string[] = [];
             for (let i = 0; i < edge.comms.length; i++) {
                 const com = edge.comms[i];
@@ -173,38 +173,47 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return edges;
     }
 
-    protected translateIOToEdges(io: Command[], node: Node, edgetype: EdgeType, args: GeneratorContext<Model>): (CSNode | CSEdge)[] {
+    /**
+     * Translates the inputs or outputs of a node to edges.
+     * @param io The inputs or outputs of a node.
+     * @param node The node of the inputs or outputs.
+     * @param edgetype The type of the edge (input or output).
+     * @param args GeneratorContext of the STPA model.
+     * @returns a list of edges representing the inputs or outputs.
+     */
+    protected translateIOToEdgeAndNode(io: Command[], node: Node, edgetype: EdgeType, args: GeneratorContext<Model>): (CSNode | CSEdge)[] {
         if (io.length !== 0) {
             const idCache = args.idCache;
             const nodeId = idCache.getId(node);
 
+            // create the label of the edge
             const label: string[] = [];
             for (let i = 0; i < io.length; i++) {
                 const command = io[i];
                 label.push(command.label);
             }
 
-            const edges: (CSNode | CSEdge)[] = [];
+            let graphComponents: (CSNode | CSEdge)[] = [];
             if (edgetype === EdgeType.INPUT) {
+                // create dummy node for the input
                 const level = node.level - 1;
                 const dummyNode = this.generateDummyNode(level, "input" + node.name, idCache);
-
+                // create edge for the input
                 const edgeId = idCache.uniqueId(`${dummyNode.id}:input:${nodeId}`);
                 const edge = this.generateCSEdge(edgeId, dummyNode.id ? dummyNode.id : '', nodeId ? nodeId : '',
                     label, edgetype, args);
-                edges.push(edge);
-                edges.push(dummyNode);
+                graphComponents = [edge, dummyNode];
             } else if (edgetype === EdgeType.OUTPUT) {
+                // create dummy node for the output
                 const level = node.level + 1;
                 const dummyNode = this.generateDummyNode(level, "output" + node.name, idCache);
-
+                // create edge for the output
                 const edgeId = idCache.uniqueId(`${nodeId}:output:${dummyNode.id}`);
                 const edge = this.generateCSEdge(edgeId, nodeId ? nodeId : '', dummyNode.id ? dummyNode.id : '',
                     label, edgetype, args);
-                edges.push(edge);
-                edges.push(dummyNode);
+                graphComponents = [edge, dummyNode];
             }
-            return edges;
+            return graphComponents;
         }
         return [];
     }
@@ -248,6 +257,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     /**
      * Generates SLabel elements for the given {@code label}.
      * @param label Labels to translate to SLabel elements.
+     * @param id The ID of the element for which the label should be generated.
      * @returns SLabel elements representing {@code label}.
      */
     protected generateLabel(label: string[], id: string, { idCache }: GeneratorContext<Model>): SLabel[] {
