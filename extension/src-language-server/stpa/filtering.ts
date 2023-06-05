@@ -47,6 +47,7 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
     // aspects for which no filter exists are just copied
     newModel.losses = model.losses;
     newModel.hazards = model.hazards;
+    newModel.controlStructure = model.controlStructure;
 
     newModel.systemLevelConstraints = options.getHideSysCons() ? [] : model.systemLevelConstraints;
     newModel.responsibilities = options.getHideSysCons() || options.getHideRespsCons() ? [] : model.responsibilities;
@@ -63,14 +64,24 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
             (cons.refs[0].ref?.$container.system.ref?.name + "."
                 + cons.refs[0].ref?.$container.action.ref?.name) === options.getFilteringUCAs()
             || options.getFilteringUCAs() === "all UCAs");
+
+    // remaining scenarios must be saved to filter safety constraints
+    const remainingScenarios = new Set<string>();
     newModel.scenarios = options.getHideScenarios() ? [] :
-        model.scenarios?.filter(scenario =>
-            (!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "."
+        model.scenarios?.filter(scenario => {
+            if ((!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "."
                 + scenario.uca?.ref?.$container.action.ref?.name) === options.getFilteringUCAs()
+                || options.getFilteringUCAs() === "all UCAs") {
+                remainingScenarios.add(scenario.name);
+                return true;
+            };
+        });
+    // filter safety constraints by the remaining scenarios
+    newModel.safetyCons = options.getHideScenarios() ? [] :
+        model.safetyCons?.filter(safetyCons =>
+            (safetyCons.refs.filter(ref => remainingScenarios.has(ref.$refText)).length !== 0)
             || options.getFilteringUCAs() === "all UCAs");
 
-    newModel.safetyCons = options.getHideScenarios() ? [] : model.safetyCons;
-    newModel.controlStructure = model.controlStructure;
     return newModel;
 }
 

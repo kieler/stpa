@@ -367,6 +367,10 @@
 }
 
 
+.feedback-edge {
+    stroke-dasharray: 5, 5;
+}
+
 .print-edge {
     stroke: var(--vscode-editor-foreground);
 }

@@ -16,7 +16,7 @@
  */
 
 import { SNode, SEdge } from "sprotty-protocol";
-import { EdgeDirection, STPAAspect } from "./stpa-model";
+import { EdgeType, STPAAspect } from "./stpa-model";
 
 /**
  * Node representing a STPA component.
@@ -49,5 +49,5 @@ export interface CSNode extends SNode {
  * Edge representing control actions and feedback in the control structure.
  */
 export interface CSEdge extends SEdge {
-    direction: EdgeDirection
+    edgeType: EdgeType
 }
