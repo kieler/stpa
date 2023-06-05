@@ -166,7 +166,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 const com = edge.comms[i];
                 label.push(com.label);
             }
-            const e = this.generateCSEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
+            const e = this.generateControlStructureEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
                 label, edgetype, args);
             edges.push(e);
         }
@@ -194,24 +194,26 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             }
 
             let graphComponents: (CSNode | CSEdge)[] = [];
-            if (edgetype === EdgeType.INPUT) {
-                // create dummy node for the input
-                const level = node.level - 1;
-                const dummyNode = this.generateDummyNode(level, "input" + node.name, idCache);
-                // create edge for the input
-                const edgeId = idCache.uniqueId(`${dummyNode.id}:input:${nodeId}`);
-                const edge = this.generateCSEdge(edgeId, dummyNode.id ? dummyNode.id : '', nodeId ? nodeId : '',
-                    label, edgetype, args);
-                graphComponents = [edge, dummyNode];
-            } else if (edgetype === EdgeType.OUTPUT) {
-                // create dummy node for the output
-                const level = node.level + 1;
-                const dummyNode = this.generateDummyNode(level, "output" + node.name, idCache);
-                // create edge for the output
-                const edgeId = idCache.uniqueId(`${nodeId}:output:${dummyNode.id}`);
-                const edge = this.generateCSEdge(edgeId, nodeId ? nodeId : '', dummyNode.id ? dummyNode.id : '',
-                    label, edgetype, args);
-                graphComponents = [edge, dummyNode];
+            switch (edgetype) {
+                case EdgeType.INPUT:
+                    // create dummy node for the input
+                    const inputDummyNode = this.generateDummyNode(node.level - 1, "input" + node.name, idCache);
+                    // create edge for the input
+                    const inputEdge = this.generateControlStructureEdge(idCache.uniqueId(`${inputDummyNode.id}:input:${nodeId}`), inputDummyNode.id ? inputDummyNode.id : '', nodeId ? nodeId : '',
+                        label, edgetype, args);
+                    graphComponents = [inputEdge, inputDummyNode];
+                    break;
+                case EdgeType.OUTPUT:
+                    // create dummy node for the output
+                    const outputDummyNode = this.generateDummyNode(node.level + 1, "output" + node.name, idCache);
+                    // create edge for the output
+                    const outputEdge = this.generateControlStructureEdge(idCache.uniqueId(`${nodeId}:output:${outputDummyNode.id}`), nodeId ? nodeId : '', outputDummyNode.id ? outputDummyNode.id : '',
+                        label, edgetype, args);
+                    graphComponents = [outputEdge, outputDummyNode];
+                    break;
+                default:
+                    console.error("EdgeType is not INPUT or OUTPUT");
+                    break;
             }
             return graphComponents;
         }
@@ -242,7 +244,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param param5 GeneratorContext of the STPA model.
      * @returns A control structure edge.
      */
-    protected generateCSEdge(edgeId: string, sourceId: string, targetId: string, label: string[], edgeType: EdgeType, args: GeneratorContext<Model>): CSEdge {
+    protected generateControlStructureEdge(edgeId: string, sourceId: string, targetId: string, label: string[], edgeType: EdgeType, args: GeneratorContext<Model>): CSEdge {
         const children: SModelElement[] = this.generateLabel(label, edgeId, args);
         return {
             type: CS_EDGE_TYPE,
