@@ -26,6 +26,7 @@ import { UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
+import { applyTextEdits, collectOptions, createQuickPickForWorkspaceOptions } from './utils';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -47,7 +48,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         vscode.workspace.onDidChangeConfiguration(() => {
             this.updateViews(this.languageClient, this.lastUri);
             // sends configuration of stpa to the language server
-            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
+            this.languageClient.sendNotification('configuration', collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
 
         // add auto formatting provider
@@ -70,14 +71,14 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // textdocument has changed
         vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
         // language client sent workspace edits
-        this.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
+        this.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => applyTextEdits(edits, uri));
         // laguage server is ready
         this.languageClient.onNotification("ready", () => {
             this.resolveLSReady();
             // open diagram
             vscode.commands.executeCommand(this.extensionPrefix + '.diagram.open', vscode.window.activeTextEditor?.document.uri);
             // sends configuration of stpa to the language server
-            this.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
+            this.languageClient.sendNotification('configuration', collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
     }
 
@@ -97,37 +98,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.languageClient.sendNotification('editor/textChange', { changes: changes, uri: uri });
     }
 
-    /**
-     * Applies text edits to the document.
-     * @param edits The edits to apply.
-     * @param uri The uri of the document that should be edited.
-     */
-    protected async applyTextEdits(edits: vscode.TextEdit[], uri: string): Promise<void> {
-        // create a workspace edit
-        const workSpaceEdit = new vscode.WorkspaceEdit();
-        workSpaceEdit.set(vscode.Uri.parse(uri), edits);
-        // Apply the edit. Report possible failures.
-        const edited = await vscode.workspace.applyEdit(workSpaceEdit);
-        if (!edited) {
-            console.error("Workspace edit could not be applied!");
-            return;
-        }
-    }
-
-    /**
-     * Collects the STPA options of the configuration settings and returns them as a list of their ids and values.
-     * @param configuration The workspace configuration options.
-     * @returns A list of the workspace options, whereby a option is represented with an id and its value.
-     */
-    protected collectOptions(configuration: vscode.WorkspaceConfiguration): { id: string, value: any; }[] {
-        const values: { id: string, value: any; }[] = [];
-        values.push({ id: "checkResponsibilitiesForConstraints", value: configuration.get("checkResponsibilitiesForConstraints") });
-        values.push({ id: "checkConstraintsForUCAs", value: configuration.get("checkConstraintsForUCAs") });
-        values.push({ id: "checkScenariosForUCAs", value: configuration.get("checkScenariosForUCAs") });
-        values.push({ id: "checkSafetyRequirementsForUCAs", value: configuration.get("checkSafetyRequirementsForUCAs") });
-        return values;
-    }
-
     protected registerCommands(): void {
         super.registerCommands();
         this.context.subscriptions.push(
@@ -141,22 +111,22 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // commands for toggling the provided validation checks
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async () => {
-                this.createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints");
+                createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkConstraintsForUCAs', async () => {
-                this.createQuickPickForWorkspaceOptions("checkConstraintsForUCAs");
+                createQuickPickForWorkspaceOptions("checkConstraintsForUCAs");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkScenariosForUCAs', async () => {
-                this.createQuickPickForWorkspaceOptions("checkScenariosForUCAs");
+                createQuickPickForWorkspaceOptions("checkScenariosForUCAs");
             })
         );
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async () => {
-                this.createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
+                createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
             })
         );
         this.context.subscriptions.push(
@@ -171,27 +141,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 vscode.commands.executeCommand("redo");
             })
         );
-    }
-
-    /**
-     * Creates a quickpick containing the values "true" and "false". The selected value is set for the 
-     * configuration option determined by {@code id}.
-     * @param id The id of the configuration option that should be set.
-     */
-    protected createQuickPickForWorkspaceOptions(id: string): void {
-        const quickPick = vscode.window.createQuickPick();
-        quickPick.items = [{ label: "true" }, { label: "false" }];
-        quickPick.onDidChangeSelection((selection) => {
-            if (selection[0]?.label === "true") {
-                vscode.workspace.getConfiguration('pasta').update(id, true);
-            } else {
-                vscode.workspace.getConfiguration('pasta').update(id, false);
-            }
-            quickPick.hide();
-        });
-        quickPick.onDidHide(() => quickPick.dispose());
-        quickPick.show();
-
     }
 
     protected getDiagramType(commandArgs: any[]): string | undefined {
