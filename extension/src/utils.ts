@@ -67,3 +67,40 @@ export function createQuickPickForWorkspaceOptions(id: string): void {
     quickPick.onDidHide(() => quickPick.dispose());
     quickPick.show();
 }
+
+/**
+ * Creates a file with the given {@code uri} containing the {@code text}.
+ * @param uri The uri of the file to create.
+ * @param text The content of the file.
+ */
+export async function createFile(uri: string, text: string): Promise<void> {
+    // TODO: checking for existing file is not working. Document is always undefined
+    let doc = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === vscode.Uri.parse(uri).toString());
+    const edit = new vscode.WorkspaceEdit();
+    // if (doc !== undefined) {
+    //     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(doc.lineCount, 0));
+    //     edit.replace(vscode.Uri.parse(uri), range, text);
+    // } else {
+
+    // create the file
+    edit.createFile(vscode.Uri.parse(uri));
+    // insert the content
+    const pos = new vscode.Position(0, 0);
+    edit.insert(vscode.Uri.parse(uri), pos, text);
+    // }
+    // Apply the edit. Report possible failures.
+    const edited = await vscode.workspace.applyEdit(edit);
+    if (!edited) {
+        console.error("Workspace edit could not be applied!");
+        return;
+    }
+    // save the edit
+    if (doc === undefined) {
+        doc = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === vscode.Uri.parse(uri).toString());
+    }
+    const saved = await doc?.save();
+    if (!saved) {
+        console.error(`TextDocument ${doc?.uri} could not be saved!`);
+        return;
+    }
+}

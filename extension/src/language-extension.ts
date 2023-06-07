@@ -115,7 +115,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             vscode.commands.registerCommand(this.extensionPrefix + '.pdf.creation', async (uri: vscode.Uri) => {
                 const test = uri.toString();
                 const data: { id: string, description: string, references: string; }[][] = await this.languageClient.sendRequest('result/getData', test);
-                createPdf(data, uri);
+                await createPdf(data);
             })
         );
         // commands for toggling the provided validation checks
