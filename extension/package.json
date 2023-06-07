@@ -145,6 +145,11 @@
                 "command": "stpa.IDs.redo",
                 "title": "Executes the redo action",
                 "category": "STPA ID Enforcement"
+            },
+            {
+                "command": "stpa.pdf.creation",
+                "title": "Creates a PDF file",
+                "category": "STPA PDF Creation"
             }
         ],
         "menus": {
@@ -192,6 +197,10 @@
                 {
                     "command": "stpa.checks.checkSafetyRequirementsForUCAs",
                     "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "stpa.pdf.creation",
+                    "when": "editorLangId == 'stpa'"
                 }
             ],
             "editor/context": [
@@ -208,6 +217,11 @@
                 {
                     "submenu": "stpa.checks",
                     "group": "checks"
+                },
+                {
+                    "command": "stpa.pdf.creation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
                 }
             ],
             "stpa.checks": [

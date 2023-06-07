@@ -43,7 +43,7 @@ class LTLFormula {
 export async function generateLTLFormulae(uri: string, shared: LangiumSprottySharedServices): Promise<LTLFormula[]> {
     const result: LTLFormula[] = [];
     // get the current model
-    let model = getModel(uri, shared);
+    let model = await getModel(uri, shared);
 
     // no UCAs exist
     if(model.rules.length === 0) {
@@ -51,12 +51,12 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
     }
 
     // references are not found if the stpa file has not been opened since then the linter has not been activated yet
-    if (model.rules[0]?.contexts[0]?.vars[0]?.ref === undefined) {
-        // build document
-        await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
-        // update the model
-        model = getModel(uri, shared);
-    }
+    // if (model.rules[0]?.contexts[0]?.vars[0]?.ref === undefined) {
+    //     // build document
+    //     await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
+    //     // update the model
+    //     model = getModel(uri, shared);
+    // }
 
     if (model.rules) {
         for (const rule of model.rules) {

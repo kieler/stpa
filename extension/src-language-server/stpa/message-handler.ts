@@ -21,6 +21,7 @@ import { TextDocumentContentChangeEvent } from 'vscode';
 import { Connection, URI } from "vscode-languageserver";
 import { generateLTLFormulae } from './modelChecking/model-checking';
 import { StpaServices } from "./stpa-module";
+import { createResultData } from './result-generator';
 
 let lastUri: URI;
 
@@ -38,6 +39,7 @@ export function addSTPANotificationHandler(connection: Connection, stpaServices:
     addContextTableHandler(connection, stpaServices);
     addTextChangeHandler(connection, stpaServices, sharedServices);
     addModelCheckingHandler(connection, sharedServices);
+    addResultHandler(connection, sharedServices);
 }
 
 /**
@@ -108,5 +110,17 @@ function addModelCheckingHandler(connection: Connection, sharedServices: Langium
         // generate and send back the LTL formula based on the STPA UCAs
         const formulas = await generateLTLFormulae(uri, sharedServices);
         return formulas;
+    });
+}
+
+/**
+ * Adds handlers for notifications regarding the STPA result.
+ * @param connection 
+ * @param sharedServices 
+ */
+function addResultHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    connection.onRequest('result/getData', async (uri: string) => {
+        const data = await createResultData(uri, sharedServices);
+        return data;
     });
 }

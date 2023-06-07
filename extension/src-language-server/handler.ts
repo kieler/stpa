@@ -28,9 +28,9 @@ import { getModel } from "./utils";
  */
 export function addNotificationHandler(connection: Connection, shared: LangiumSprottySharedServices): void {
     // diagram
-    connection.onNotification('diagram/selected', (msg: {label: string, uri: string}) => {
+    connection.onNotification('diagram/selected', async (msg: {label: string, uri: string}) => {
         // get the current model
-        const model = getModel(msg.uri, shared);
+        const model = await getModel(msg.uri, shared);
 
         // determine the range in the editor of the component identified by "label"
         const range = getRangeOfNode(model, msg.label);
