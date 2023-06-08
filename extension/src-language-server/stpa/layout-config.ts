@@ -39,11 +39,14 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         // in the STPA graph this is necessary for hierarchy-crossing edges to be better layouted
         let hierarchyHandling = 'INCLUDE_CHILDREN';
         let direction = 'UP';
+        // the control structure is placed above the STPA graph
+        let priority = '0';
 
         if (snode.children && snode.children[0] && snode.children[0].type === CS_NODE_TYPE) {
             // options for the control structure
             hierarchyHandling = 'SEPARATE_CHILDREN';
             direction = 'DOWN';
+            priority = '1';
         }
         return {
             'org.eclipse.elk.layered.thoroughness': '70',
@@ -57,7 +60,8 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
             'org.eclipse.elk.spacing.edgeNode': '4',
             'org.eclipse.elk.spacing.portPort': '10',
-            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]'
+            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
+            'org.eclipse.elk.priority': priority,
         };
     }
 
