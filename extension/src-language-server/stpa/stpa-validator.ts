@@ -73,7 +73,7 @@ export class StpaValidator {
         const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
         const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
         const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
-        const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1);
+        const ucas = model.allUCAs?.map(sysUCA => sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)).flat(1);
         const contexts = model.rules?.map(rule => rule.contexts).flat(1);
 
         // collect all elements that have a reference list

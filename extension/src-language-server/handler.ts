@@ -53,7 +53,7 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
 function getRangeOfNode(model: Model, label: string): Range | undefined {
     let range: Range | undefined = undefined;
     const elements: elementWithName[] = [...model.losses, ...model.hazards, ...model.hazards.flatMap(hazard => hazard.subComps), ...model.systemLevelConstraints, ...model.systemLevelConstraints.flatMap(constraint => constraint.subComps), ...model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem),
-    ...model.allUCAs.flatMap(ucas => ucas.ucas), ...model.rules.flatMap(rule => rule.contexts), ...model.controllerConstraints, ...model.scenarios, ...model.safetyCons];
+    ...model.allUCAs.flatMap(ucas => ucas.providingUcas.concat(ucas.notProvidingUcas, ucas.wrongTimingUcas, ucas.continousUcas)), ...model.rules.flatMap(rule => rule.contexts), ...model.controllerConstraints, ...model.scenarios, ...model.safetyCons];
     if (model.controlStructure) {
         elements.push(...model.controlStructure.nodes);
     }

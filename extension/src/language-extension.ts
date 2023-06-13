@@ -24,10 +24,10 @@ import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
+import { createMarkdownFile } from './md-export';
 import { StpaFormattingEditProvider } from './stpa-formatter';
+import { StpaResult, applyTextEdits, collectOptions, createQuickPickForWorkspaceOptions } from './utils';
 import { StpaLspWebview } from './wview';
-import { applyTextEdits, collectOptions, createQuickPickForWorkspaceOptions } from './utils';
-import { StpaResult, createMarkdownFile } from './md-export';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 

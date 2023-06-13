@@ -30,7 +30,7 @@ export async function getModel(uri: string, shared: LangiumSprottySharedServices
     const textDocuments = shared.workspace.LangiumDocuments;
     const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<Model>;
     let currentModel = currentDoc.parseResult.value;
-    if (currentModel.rules[0]?.contexts[0]?.vars[0]?.ref === undefined) {
+    if (currentModel.rules.length !== 0 && currentModel.rules[0]?.contexts[0]?.vars[0]?.ref === undefined) {
         // build document
         await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
         // update the model

@@ -232,5 +232,6 @@ export class UCA_TYPE {
     static APPLIED_TOO_LONG = "applied-too-long";
     static STOPPED_TOO_SOON = "stopped-too-soon";
     static WRONG_TIME = "wrong-time";
+    static CONTINUOUS = "continuous-problem";
     static UNDEFINED = "undefined";
 }

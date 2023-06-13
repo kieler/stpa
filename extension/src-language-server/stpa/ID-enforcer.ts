@@ -215,7 +215,7 @@ export class IDEnforcer {
         const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
         const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
         const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
-        const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1);
+        const ucas = model.allUCAs?.map(sysUCA => sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)).flat(1);
         const contexts = model.rules?.map(rule => rule.contexts).flat(1);
         const scenarioHazards = model.scenarios.map(scenario => scenario.list);
         const scenarioUCAs = model.scenarios;
@@ -341,7 +341,7 @@ export class IDEnforcer {
             elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
             prefix = IDPrefix.Responsibility;
         } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
-            elements = model.allUCAs.flatMap(uca => uca.ucas);
+            elements = model.allUCAs.flatMap(sysUCA => sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas));
             elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
             prefix = IDPrefix.UCA;
             // rules must be handled separately since they are mixed with the UCAs

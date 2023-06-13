@@ -73,7 +73,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         }
         stpaChildren = stpaChildren.concat([
             ...filteredModel.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
-            ...filteredModel.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
+            ...filteredModel.allUCAs?.map(sysUCA => sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas).map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
             ...filteredModel.rules?.map(rule => rule.contexts.map(context => this.generateAspectWithEdges(context, args))).flat(2),
             ...filteredModel.controllerConstraints?.map(c => this.generateAspectWithEdges(c, args)).flat(1),
             ...filteredModel.scenarios?.map(s => this.generateAspectWithEdges(s, args)).flat(1),

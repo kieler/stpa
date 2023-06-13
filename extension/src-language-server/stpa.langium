@@ -99,10 +99,10 @@ Responsibility:
 ActionUCAs:
     system=[Node]'.'
     action=[Command] '{'
-        'notProviding' '{'ucas+=UCA*'}'
-        'providing' '{'ucas+=UCA*'}'
-        'tooEarly/Late' '{'ucas+=UCA*'}'
-        'stoppedTooSoon' '{'ucas+=UCA*'}'
+        'notProviding' '{'notProvidingUcas+=UCA*'}'
+        'providing' '{'providingUcas+=UCA*'}'
+        'tooEarly/Late' '{'wrongTimingUcas+=UCA*'}'
+        'stoppedTooSoon' '{'continousUcas+=UCA*'}'
     '}';
 
 UCA:
