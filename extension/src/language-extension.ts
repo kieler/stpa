@@ -27,7 +27,7 @@ import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
 import { applyTextEdits, collectOptions, createQuickPickForWorkspaceOptions } from './utils';
-import { createPdf } from './pdf-export';
+import { StpaResult, createMarkdownFile } from './md-export';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -112,10 +112,10 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         
         // command for creating a pdf
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.pdf.creation', async (uri: vscode.Uri) => {
+            vscode.commands.registerCommand(this.extensionPrefix + '.md.creation', async (uri: vscode.Uri) => {
                 const test = uri.toString();
-                const data: { id: string, description: string, references: string; }[][] = await this.languageClient.sendRequest('result/getData', test);
-                await createPdf(data);
+                const data: StpaResult = await this.languageClient.sendRequest('result/getData', test);
+                await createMarkdownFile(data);
             })
         );
         // commands for toggling the provided validation checks

@@ -147,8 +147,8 @@
                 "category": "STPA ID Enforcement"
             },
             {
-                "command": "stpa.pdf.creation",
-                "title": "Creates a PDF file",
+                "command": "stpa.md.creation",
+                "title": "Create a Markdown file",
                 "category": "STPA PDF Creation"
             }
         ],
@@ -199,7 +199,7 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "stpa.pdf.creation",
+                    "command": "stpa.md.creation",
                     "when": "editorLangId == 'stpa'"
                 }
             ],
@@ -219,7 +219,7 @@
                     "group": "checks"
                 },
                 {
-                    "command": "stpa.pdf.creation",
+                    "command": "stpa.md.creation",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }

@@ -199,3 +199,38 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
         node.level = -layer;
     }
 }
+
+export class StpaResult {
+    losses: StpaComponent[] = [];
+    hazards: StpaComponent[] = [];
+    systemLevelConstraints: StpaComponent[] = [];
+    // sorted by system components
+    responsibilities: Record<string, StpaComponent[]> = {};
+    // sorted first by control action, then by uca type
+    ucas: {controlAction: string, ucas: Record<string, StpaComponent[]>}[]= [];
+    controllerConstraints: StpaComponent[] = [];
+    // sorted by ucas
+    ucaScenarios: Record<string, StpaComponent[]> = {};
+    scenarios: StpaComponent[] = [];
+    safetyCons: StpaComponent[] = [];
+}
+
+export class StpaComponent {
+    id: string;
+    description: string;
+    references?: string;
+}
+
+/**
+ * Provides the different UCA types.
+ */
+export class UCA_TYPE {
+    static NOT_PROVIDED = "not-provided";
+    static PROVIDED = "provided";
+    static TOO_EARLY = "too-early";
+    static TOO_LATE = "too-late";
+    static APPLIED_TOO_LONG = "applied-too-long";
+    static STOPPED_TOO_SOON = "stopped-too-soon";
+    static WRONG_TIME = "wrong-time";
+    static UNDEFINED = "undefined";
+}

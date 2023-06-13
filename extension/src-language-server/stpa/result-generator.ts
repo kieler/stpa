@@ -17,45 +17,65 @@
 
 import { AstNode, Reference } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
+import { ContConstraint, Hazard, Responsibility, SafetyConstraint, SystemConstraint } from "../generated/ast";
 import { getModel } from "../utils";
-import { ContConstraint, Hazard, SafetyConstraint, SystemConstraint } from "../generated/ast";
+import { StpaResult, StpaComponent, UCA_TYPE } from "./utils";
 
-export async function createResultData(uri: string, shared: LangiumSprottySharedServices): Promise<{ id: string, description: string, references: string; }[][]> {
-    const result: { id: string, description: string, references: string; }[][] = [];
+
+
+export async function createResultData(uri: string, shared: LangiumSprottySharedServices): Promise<StpaResult> {
+    const result: StpaResult = new StpaResult();
     // get the current model
     const model = await getModel(uri, shared);
 
     // add losses
-    const resultLosses: { id: string, description: string, references: string; }[] = [];
+    const resultLosses: { id: string, description: string; }[] = [];
     model.losses.forEach(component => {
-        resultLosses.push({ id: component.name, description: component.description, references: "" });
+        resultLosses.push({ id: component.name, description: component.description });
     });
-    result.push(resultLosses);
+    result.losses = resultLosses;
 
     // TODO: consider subhazards (also their headers) and subconstraints
-    createResultComponent(model.hazards, result);
-    createResultComponent(model.systemLevelConstraints, result);
-    // TODO: consider responsibilities
+    result.hazards = createResultComponent(model.hazards);
+    result.systemLevelConstraints = createResultComponent(model.systemLevelConstraints);
+    result.controllerConstraints = createResultComponent(model.controllerConstraints);
+    result.safetyCons = createResultComponent(model.safetyCons);
 
-    createResultComponent(model.controllerConstraints, result);
+    model.responsibilities.forEach(component => {
+        const responsibilities = createResultComponent(component.responsiblitiesForOneSystem);
+        result.responsibilities[component.system.$refText] = responsibilities;
+    });
 
-    // TODO: add scenarios
-    const resultScenarios: { id: string, description: string, references: string; }[] = [];
-    // model.scenarios.forEach(component => {
-    //     resultScenarios.push({ id: component.name, description: component.description, references: component.list.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", ") });
-    // });
-    result.push(resultScenarios);
+    model.scenarios.forEach(component => {
+        if (component.uca) {
+            const scenario = { id: component.name, description: component.description, references: component.list?.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", ") };
 
-    createResultComponent(model.safetyCons, result);
+            const scenarioList = result.ucaScenarios[component.uca.$refText];
+            if (scenarioList !== undefined) {
+                scenarioList.push(scenario);
+            } else {
+                result.ucaScenarios[component.uca.$refText] = [scenario];
+            }
+        } else {
+            const resultComp = { id: component.name, description: component.description, references: component.list.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", ") };
+            result.scenarios.push(resultComp);
+        }
+    });
+
     //TODO: consider UCAs
+    /* model.allUCAs.forEach(component => {
+        const controlAction = component.system.$refText + "." + component.action.$refText;
+        let ucas: Record<string, StpaComponent[]> = {};
+        //uca[UCA_TYPE.PROVIDED] = createResultComponent(component.ucas);
+    }); */
 
     return result;
 }
 
-function createResultComponent(components: Hazard[] | SystemConstraint[] | ContConstraint[] | SafetyConstraint[], result: { id: string, description: string, references: string; }[][]): void {
-    const resultList: { id: string, description: string, references: string; }[] = [];
+function createResultComponent(components: Hazard[] | SystemConstraint[] | ContConstraint[] | SafetyConstraint[] | Responsibility[]): StpaComponent[] {
+    const resultList: StpaComponent[] = [];
     components.forEach(component => {
         resultList.push({ id: component.name, description: component.description, references: component.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", ") });
     });
-    result.push(resultList);
+    return resultList;
 }
