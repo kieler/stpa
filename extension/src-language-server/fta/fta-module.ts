@@ -69,7 +69,7 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
         FtaSynthesisOptions: () => new FtaSynthesisOptions()
     },
     bdd:{
-        Bdd: services => new BDDGenerator()
+        Bdd: () => new BDDGenerator()
     }
 };
 
