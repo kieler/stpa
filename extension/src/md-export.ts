@@ -19,8 +19,7 @@ import * as vscode from 'vscode';
 import { StpaComponent, StpaResult, UCA_TYPE, createFile } from './utils';
 
 export async function createMarkdownFile(data: StpaResult): Promise<void> {
-    // create a markdown file
-    const markdown = createMarkdownText(data);
+
 
     // Ask the user where to save the sbm
     const currentFolder = vscode.workspace.workspaceFolders
@@ -36,6 +35,9 @@ export async function createMarkdownFile(data: StpaResult): Promise<void> {
         // The user did not pick any file to save to.
         return;
     }
+    // create a markdown file
+    // TODO: adjust path
+    const markdown = createMarkdownText(data, currentFolder!);
 
     createFile(uri.path, markdown);
 
@@ -51,7 +53,7 @@ class Headers {
     static LossScenario = "Loss Scenarios";
     static SafetyRequirement = "Safety Requirements";
 }
-function createMarkdownText(data: StpaResult): string {
+function createMarkdownText(data: StpaResult, uri:string): string {
     // TODO: add control structure, context table, diagrams
     let markdown = "";
     markdown += `# STPA Report\n\n`;
@@ -61,6 +63,8 @@ function createMarkdownText(data: StpaResult): string {
     markdown += stpaAspectToMarkdown(Headers.Hazard, data.hazards);
     // system-level constraints
     markdown += stpaAspectToMarkdown(Headers.SystemLevelConstraint, data.systemLevelConstraints);
+    // control structure
+    markdown += addControlStructure(uri);
     // responsibilities
     markdown += recordToMarkdown(Headers.Responsibility, data.responsibilities);
     // UCAs TODO
@@ -151,5 +155,11 @@ function addSummary(data: StpaResult): string {
         markdown += stpaComponentToMarkdown(component);
         markdown += `  \n`;
     }
+    return markdown;
+}
+
+function addControlStructure(uri: string): string {
+    let markdown = `## Control Structure\n\n`;
+    vscode.commands.executeCommand('stpa.md.diagram.export', uri);
     return markdown;
 }

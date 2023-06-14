@@ -20,6 +20,7 @@ import { UpdateViewAction } from '../actions';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
 import { StpaSynthesisOptions } from './synthesis-options';
 import { DropDownOption } from '../options/option-models';
+import { SvgAction, GenerateControlStructureAction, RequestSvgAction } from './actions';
 
 export class StpaDiagramServer extends DiagramServer {
 
@@ -49,8 +50,17 @@ export class StpaDiagramServer extends DiagramServer {
                 return this.handleSetSynthesisOption(action as SetSynthesisOptionsAction);
             case UpdateViewAction.KIND:
                 return this.handleUpdateView(action as UpdateViewAction);
+            case GenerateControlStructureAction.KIND:
+                return this.handleGenerateControlStructure(action as GenerateControlStructureAction);
         }
         return super.handleAction(action);
+    }
+
+    async handleGenerateControlStructure(action: GenerateControlStructureAction): Promise<void> {
+        const request = RequestSvgAction.create();
+        const response = await this.request<SvgAction>(request);
+        console.log("handleGenerateControlStructure" + response);
+        return Promise.resolve();
     }
 
     protected handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {

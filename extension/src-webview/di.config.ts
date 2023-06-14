@@ -31,6 +31,7 @@ import { sidebarModule } from './sidebar';
 import { optionsModule } from './options/options-module';
 import { StpaModelViewer } from './model-viewer';
 import { StpaMouseListener } from './stpa-mouselistener';
+import { CustomSvgExporter } from './exporter';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
@@ -42,6 +43,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     });
     bind(TYPES.MouseListener).to(StpaMouseListener).inSingletonScope();
     rebind(ModelViewer).to(StpaModelViewer).inSingletonScope();
+    rebind(TYPES.SvgExporter).to(CustomSvgExporter).inSingletonScope();
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };

@@ -58,3 +58,25 @@ export namespace SendConfigAction {
         return action.kind === SendConfigAction.KIND;
     }
 }
+
+export interface GenerateControlStructureAction extends Action {
+    kind: typeof GenerateControlStructureAction.KIND
+    uri: string
+}
+
+export namespace GenerateControlStructureAction {
+    export const KIND = "generateControlStructure";
+
+    export function create(
+        uri: string
+    ): GenerateControlStructureAction {
+        return {
+            kind: KIND,
+            uri
+        };
+    }
+
+    export function isThisAction(action: Action): action is GenerateControlStructureAction {
+        return action.kind === GenerateControlStructureAction.KIND;
+    }
+}

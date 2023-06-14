@@ -123,4 +123,8 @@ function addResultHandler(connection: Connection, sharedServices: LangiumSprotty
         const data = await createResultData(uri, sharedServices);
         return data;
     });
+    connection.onNotification('result/controlStructure', async msg => {
+        const diagramServerManager = sharedServices.diagram.DiagramServerManager;
+        diagramServerManager.acceptAction(msg);
+    });
 }

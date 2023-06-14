@@ -16,13 +16,13 @@
  */
 
 import * as path from 'path';
-import { ActionMessage, JsonMap, SelectAction } from 'sprotty-protocol';
+import { Action, ActionMessage, JsonMap, SelectAction } from 'sprotty-protocol';
 import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { LspLabelEditActionHandler, SprottyLspEditVscodeExtension, WorkspaceEditActionHandler } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
-import { UpdateViewAction } from './actions';
+import { GenerateControlStructureAction, UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { createMarkdownFile } from './md-export';
 import { StpaFormattingEditProvider } from './stpa-formatter';
@@ -109,7 +109,22 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 this.languageClient.sendNotification('contextTable/getData', this.lastUri);
             })
         );
-        
+
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.md.diagram.export', (uri: string) => {
+                const activeWebview = this.singleton;
+                if (activeWebview) {
+                    const mes: ActionMessage = {
+                        clientId: activeWebview.diagramIdentifier.clientId,
+                        action: {
+                            kind: GenerateControlStructureAction.KIND,
+                            uri: uri
+                        } as GenerateControlStructureAction
+                    };
+                    this.languageClient.sendNotification('result/controlStructure', mes);
+                }
+            }));
+
         // command for creating a pdf
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.md.creation', async (uri: vscode.Uri) => {
