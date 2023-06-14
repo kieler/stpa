@@ -22,6 +22,7 @@ import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
 import { addSTPANotificationHandler } from './stpa/message-handler';
 import { addNotificationHandler } from './handler';
 import { createServices } from './module';
+import { addFTANotificationHandler } from './fta/fta-message-handler';
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
@@ -34,6 +35,7 @@ startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
 addSTPANotificationHandler(connection, stpa, shared);
+addFTANotificationHandler(connection, fta, shared);
 addNotificationHandler(connection, shared);
 
 // handle configuration changes for the validation checks

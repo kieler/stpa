@@ -19,6 +19,7 @@
 
 
     /* Colors for fta aspects */
+    
     --fta-topevent-dark: #AD0000;
     --fta-component-dark: #A85400;
     --fta-condition-dark: #006600;
@@ -37,5 +38,5 @@
     --fta-or-light: #66b3ff;
     --fta-kn-light: #00cccc;
     --fta-inhibit-light: #cccc00;
-
+    
 }

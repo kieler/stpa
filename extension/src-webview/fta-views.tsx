@@ -4,7 +4,7 @@ import { VNode } from "snabbdom";
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SPort, svg } from 'sprotty';
 import { DISymbol } from "./di.symbols";
 import { FTAAspect, FTANode } from './fta-model';
-import { ColorStyleOption, RenderOptionsRegistry } from "./options/render-options-registry";
+import { ColorStyleOption, RenderOptionsRegistry } from './options/render-options-registry';
 import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
 
 
@@ -26,7 +26,7 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
 
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption); 
-        return <path class-fta-edge={true} aspect={(edge.source as FTANode).aspect} d={path} />;
+        return <path class-print-node={true} class-fta-edge={false} aspect={(edge.source as FTANode).aspect} d={path} />;
     }
     /*
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
@@ -45,8 +45,12 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
 @injectable()
 export class FTANodeView extends RectangularNodeView {
 
+    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
+    
     render(node: FTANode, context: RenderingContext): VNode {
-
+        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
+        const printNode = colorStyle == "black & white";
+        const coloredNode = colorStyle == "colorful";
 
         // create the element based on the aspect of the node
         let element: VNode;
@@ -77,8 +81,9 @@ export class FTANodeView extends RectangularNodeView {
                 break;   
         }
         return <g
+            class-print-node={true}
             class-sprotty-port={node instanceof SPort}
-            class-fta-node={true} aspect={node.aspect}
+            class-fta-node={false} aspect={node.aspect}
             class-mouseover={node.hoverFeedback}>
             <g class-node-selected={node.selected}>{element}</g>
             {context.renderChildren(node)}

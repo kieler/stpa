@@ -11,6 +11,8 @@ import { FtaDiagramServer } from './fta-diagramServer';
 import { FtaLayoutConfigurator } from './fta-layout-config';
 import { FtaSynthesisOptions } from './fta-synthesis-options';
 import { FtaValidationRegistry, FtaValidator } from './fta-validator';
+import { BDDGenerator } from './bdd-generator';
+
 
 
 
@@ -24,7 +26,7 @@ import { FtaValidationRegistry, FtaValidator } from './fta-validator';
 export type FtaAddedServices = {
     validation: {
         FtaValidator: FtaValidator;
-    }
+    },
     layout: {
         ElkFactory: ElkFactory,
         ElementFilter: IElementFilter,
@@ -32,8 +34,10 @@ export type FtaAddedServices = {
     },
     options: {
         FtaSynthesisOptions: FtaSynthesisOptions
+    },
+    bdd: {
+        Bdd: BDDGenerator
     }
-   
 };
 
 /**
@@ -64,6 +68,9 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
     options: {
         FtaSynthesisOptions: () => new FtaSynthesisOptions()
     },
+    bdd:{
+        Bdd: services => new BDDGenerator()
+    }
 };
 
 export const ftaDiagramServerFactory =

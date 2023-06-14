@@ -16,9 +16,8 @@
  */
 
 /** @jsx svg */
-import { h, VNode } from 'snabbdom';
+import { VNode } from 'snabbdom';
 import { SNode, svg } from 'sprotty';
-import * as path from 'path';
 
 /**
  * Creates a circle for {@code node}.
@@ -231,7 +230,7 @@ export function renderKnGate(node:SNode, k:number, n:number): VNode{
     return (
         <g>
           <path d={d} />
-          <text x={midX -10.0} y={botY-5} text-anchor="middle">
+          <text x={midX -7.0} y={botY-5} text-anchor="middle" class-fta-text={true}>
             {`${k}/${n}`}
           </text>
         </g>

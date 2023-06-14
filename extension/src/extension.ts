@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext): void {
         async (uri: string) => {
             // generate and send back the LTLs based on the STPA UCAs
             await extension.lsReady;
-            const formulas: {formula: string, text: string, ucaId: string}[] = await extension.languageClient.sendRequest('modelChecking/generateLTL', uri);
+            const formulas: {formula:  string, text: string, ucaId: string}[] = await extension.languageClient.sendRequest('modelChecking/generateLTL', uri);
             return formulas;
         }
     ));

@@ -47,13 +47,19 @@ export enum FTAAspect {
     UNDEFINED
 }
 
+
 /**
- * Possible edge directions.
+ * Node representing a system component in the BDD.
  */
-export enum EdgeDirection {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-    UNDEFINED
+export class BDDNode extends SNode {
+    level?: number;
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
+        layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
+}
+
+/**
+ * Edge representing component failure in the BDD.
+ */
+export class BDDEdge extends SEdge {
+    fail?: boolean;
 }

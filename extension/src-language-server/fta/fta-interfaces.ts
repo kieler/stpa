@@ -21,3 +21,17 @@ export interface FTANode extends SNode{
 export interface FTAEdge extends SEdge {
     highlight?: boolean
 }
+
+/**
+ * Node representing a system component in the BDD.
+ */
+export interface BDDNode extends SNode {
+    level?: number
+}
+
+/**
+ * Edge representing component failure in the BDD.
+ */
+export interface BDDEdge extends SEdge {
+    fail?: boolean
+}

@@ -26,6 +26,7 @@ import { UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
+import { FTANode } from '../src-language-server/fta/fta-interfaces';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -66,14 +67,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
             }
         });
-        //Active text editor changed
-       // vscode.window.onDidChangeActiveTextEditor(activeEditor => {
-       //     if(activeEditor){
-                // Change extension Prefix based on command arg
-                //Change diagram type based on command arg
-             //   this.getDiagramType();
-       //     }
-       // });
 
         // textdocument has changed
         vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
@@ -180,7 +173,50 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 this.ignoreNextTextChange = true;
                 vscode.commands.executeCommand("redo");
             })
+        ); 
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.generate.cutSets', async (...commandArgs: any[]) =>{ 
+                this.lastUri = (commandArgs[0] as vscode.Uri).toString();
+                const cutSets:FTANode[][] = await this.languageClient.sendRequest('generate/getCutSets', this.lastUri);
+                     
+                const outputCutSets = vscode.window.createOutputChannel("All cut sets");
+                outputCutSets.append("Cut sets: " + "\n" + this.toString(cutSets));
+                outputCutSets.show();
+
+            })
         );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.generate.minimalCutSets', async (...commandArgs: any[]) =>{
+                this.lastUri = (commandArgs[0] as vscode.Uri).toString();
+                const minimalCutSets:FTANode[][] = await this.languageClient.sendRequest('generate/getMinimalCutSets', this.lastUri);
+
+                const outputMinimalCutSets = vscode.window.createOutputChannel("All minimal cut sets");
+                outputMinimalCutSets.append("Minimal cut sets: " + "\n" + this.toString(minimalCutSets));
+                outputMinimalCutSets.show();
+            })
+        );
+
+        
+    }
+
+    protected toString(cutSets:FTANode[][]):string{
+        let result = "[" ;
+        for(const set of cutSets){
+            result = result + "[";
+            for(const element of set){
+                result = result + element.id;
+                if(set.indexOf(element) === set.length - 1){
+                    break;
+                }
+                result = result + ",";
+            }
+            result = result + "]";
+            if(cutSets.indexOf(set) !== cutSets.length -1){
+                result = result + ",";
+            }            
+        }
+        result = result + "]";
+        return result;
     }
 
     /**

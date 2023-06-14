@@ -4,12 +4,15 @@ import { SLabel, SModelElement, SModelRoot } from 'sprotty-protocol';
 import { ModelFTA, isComponent, isCondition, isGate, isKNGate, isTopEvent } from '../generated/ast';
 import { FTAEdge, FTANode } from './fta-interfaces';
 import { FTA_EDGE_TYPE, FTA_NODE_TYPE, PARENT_TYPE } from './fta-model';
-import { FtaServices } from './fta-module';
 import { getAllGateTypes, getAspect, getTargets, setLevelsForFTANodes } from './fta-utils';
+import { FtaServices } from './fta-module';
+//import { determineMinimalCutSet, generateCutSets } from './bdd-generator';
 
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator{
 
+    allNodes:FTANode[];
+    allEdges:FTAEdge[];
     constructor(services: FtaServices){
         super(services);
     }
@@ -65,9 +68,12 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
             }
         }
         
-       // give the top event the level 0
-       setLevelsForFTANodes(ftaNodes, ftaEdges);
+        this.allNodes = ftaNodes;
+        this.allEdges = ftaEdges;
+        // give the top event the level 0
         
+        setLevelsForFTANodes(ftaNodes, ftaEdges);
+             
         return {
             type: 'graph',
             id: 'root',
@@ -81,12 +87,19 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         };
         
     }
+    
+    public getNodes():FTANode[]{
+        return this.allNodes;
+    }
+    public getEdges():FTAEdge[]{
+        return this.allEdges;
+    }
 
     /**
-     * Generates a node and the edges for the given {@code node}.
-     * @param node FTA component for which a node and edges should be generated.
+     * Generates the edges for the given {@code node}.
+     * @param node FTA component for which edges should be generated.
      * @param args GeneratorContext of the FTA model.
-     * @returns A node representing {@code node} and edges representing the references {@code node} contains.
+     * @returns Edges representing the references {@code node} contains.
      */
     private generateAspectWithEdges(node: AstNode, args: GeneratorContext<ModelFTA>): SModelElement[] {
         const elements: SModelElement[] = this.generateEdgesForFTANode(node, args);
@@ -106,7 +119,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         // for every reference an edge is created
         const targets = getTargets(node);
         for (const target of targets) {
-            const targetId = idCache.getId(target);             // g3: - undefined 
+            const targetId = idCache.getId(target);
             const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
             if (sourceId && targetId) {
                 const e = this.generateFTAEdge(edgeId, sourceId, targetId, '', args);

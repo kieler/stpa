@@ -199,7 +199,8 @@
 
 .vscode-dark .print-node {
     fill: var(--fta-dark-node);
-    stroke: var(--vscode-editor-foreground);
+    stroke: var(--fta-light-node);
+    stroke-width: 2;
 }
 
 .vscode-dark .sprotty-node {
@@ -325,9 +326,8 @@
     stroke: black;
 }
 
-
-
-
-.fta-node {
-    stroke: black;
+.fta-text{
+    fill: var(--fta-kn-dark);
+    stroke-width: 0.5;
+    font-size: 10px;
 }

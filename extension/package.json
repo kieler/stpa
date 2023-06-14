@@ -107,7 +107,7 @@
                 "category": "PASTA Diagram"
             },
             {
-                "command": "stpa.contextTable.open",
+                "command": "pasta.contextTable.open",
                 "title": "Show Context Tables",
                 "icon": "$(table)",
                 "category": "Context Table"
@@ -181,6 +181,18 @@
                 "command": "stpa.IDs.redo",
                 "title": "Executes the redo action",
                 "category": "STPA ID Enforcement"
+            },
+            {
+                "command": "pasta.generate.cutSets",
+                "title": "Generates the cut sets",
+                "icon": "$(symbol-structure)",
+                "category": "FTA Diagram"
+            },
+            {
+                "command": "pasta.generate.minimalCutSets",
+                "title": "Generates the minimal cut sets",
+                "icon": "$(symbol-structure)",
+                "category": "FTA Diagram"
             }
         ],
         "menus": {
@@ -190,11 +202,11 @@
                     "when": "editorLangId == 'stpa' || editorLangId == 'fta'"
                 },
                 {
-                    "command": "stpa.contextTable.open",
+                    "command": "pasta.contextTable.open",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "stpa.contextTable.open",
+                    "command": "pasta.contextTable.open",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
@@ -244,6 +256,14 @@
                 {
                     "command": "stpa.checks.checkSafetyRequirementsForUCAs",
                     "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "pasta.generate.cutSets",
+                    "when": "editorLangId == 'fta'"
+                },
+                {
+                    "command": "pasta.generate.minimalCutSets",
+                    "when": "editorLangId == 'fta'"
                 }
             ],
             "editor/context": [
@@ -253,13 +273,23 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "stpa.contextTable.open",
+                    "command": "pasta.contextTable.open",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
                 },
                 {
                     "submenu": "stpa.checks",
                     "group": "checks"
+                },
+                {
+                    "command": "pasta.generate.cutSets",
+                    "when": "editorLangId == 'fta'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "pasta.generate.minimalCutSets",
+                    "when": "editorLangId == 'fta'",
+                    "group": "navigation"
                 }
             ],
             "stpa.checks": [
@@ -291,8 +321,18 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "stpa.contextTable.open",
+                    "command": "pasta.contextTable.open",
                     "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "pasta.generate.cutSets",
+                    "when": "editorLangId == 'fta'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "pasta.generate.minimalCutSets",
+                    "when": "editorLangId == 'fta'",
                     "group": "navigation"
                 }
             ],
@@ -303,8 +343,18 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "stpa.contextTable.open",
+                    "command": "pasta.contextTable.open",
                     "when": "resourceExtname == '.stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "pasta.generate.cutSets",
+                    "when": "resourceExtname == '.fta'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "pasta.generate.minimalCutSets",
+                    "when": "resourceExtname == '.fta'",
                     "group": "navigation"
                 }
             ]
