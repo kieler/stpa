@@ -28,7 +28,7 @@ import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './synthesis-options';
-import { filterModel } from './filtering';
+import { CustomModel, filterModel } from './filtering';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
@@ -49,8 +49,46 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const model: Model = document.parseResult.value;
         // filter model based on the options set by the user
         const filteredModel = filterModel(model, this.options);
-
         // determine the children for the STPA graph
+        const stpaChildren = this.generateSTPAChildren(filteredModel, args);
+        // determine children of the control structure
+        const CSChildren = this.generateCSNodes(filteredModel.controlStructure?.nodes, args);
+        // create root children
+        const rootChildren: SModelElement[] = [
+            {
+                type: PARENT_TYPE,
+                id: 'controlStructure',
+                children: CSChildren
+            },
+            {
+                type: PARENT_TYPE,
+                id: 'relationships',
+                children: stpaChildren
+            }
+        ];
+        // return root
+        return {
+            type: 'graph',
+            id: 'root',
+            children: rootChildren
+        };
+    }
+
+    generateCSNodes(nodes: Node[] | undefined, args: GeneratorContext<Model>): (CSNode | CSEdge)[] {
+        if (nodes) {
+            const csNodes = nodes.map(n => this.generateCSNode(n, args));
+            // children (nodes and edges) of the control structure
+            const CSChildren = [
+                ...csNodes,
+                ...this.generateVerticalCSEdges(nodes, args),
+                //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, args)
+            ];
+            return CSChildren;
+        }
+        return [];
+    }
+
+    generateSTPAChildren(filteredModel: CustomModel, args: GeneratorContext<Model>): SModelElement[] {
         // for each component a node is generated with edges representing the references of the component
         // in order to be able to set the target IDs of the edges, the nodes must be created in the correct order
         let stpaChildren: SModelElement[] = filteredModel.losses?.map(l => this.generateSTPANode(l, args));
@@ -80,7 +118,6 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             ...filteredModel.safetyCons?.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
         ]);
 
-
         // filtering the nodes of the STPA graph
         const stpaNodes: STPANode[] = [];
         for (const node of stpaChildren) {
@@ -90,38 +127,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         }
         // each node should be placed in a specific layer based on the aspect. therefore positions must be set
         setLevelsForSTPANodes(stpaNodes, this.options.getGroupingUCAs());
-
-        const rootChildren: SModelElement[] = [];
-        if (filteredModel.controlStructure) {
-            // determine the nodes of the control structure graph
-            const csNodes = filteredModel.controlStructure?.nodes.map(n => this.generateCSNode(n, args));
-            // children (nodes and edges) of the control structure
-            const CSChildren = [
-                ...csNodes,
-                ...this.generateVerticalCSEdges(filteredModel.controlStructure.nodes, args),
-                //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, args)
-            ];
-            // add control structure to roots children
-            rootChildren.push({
-                type: PARENT_TYPE,
-                id: 'controlStructure',
-                children: CSChildren
-            });
-        }
-        // add relationship graph to roots children
-        rootChildren.push(
-            {
-                type: PARENT_TYPE,
-                id: 'relationships',
-                children: stpaChildren
-            }
-        );
-        // return root
-        return {
-            type: 'graph',
-            id: 'root',
-            children: rootChildren
-        };
+        return stpaChildren;
     }
 
     /**

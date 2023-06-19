@@ -19,9 +19,9 @@ import { Action, DiagramServer, DiagramServices, RequestAction, RequestModelActi
 import { Connection } from 'vscode-languageserver';
 import { UpdateViewAction } from '../actions';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
-import { DropDownOption } from '../options/option-models';
+import { DropDownOption, SynthesisOption } from '../options/option-models';
 import { GenerateControlStructureAction, RequestSvgAction, SvgAction } from './actions';
-import { StpaSynthesisOptions } from './synthesis-options';
+import { StpaSynthesisOptions, showControlStructureID, showRelationshipGraphID } from './synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {
 
@@ -60,13 +60,24 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     async handleGenerateControlStructure(action: GenerateControlStructureAction): Promise<void> {
+        const relationshipGraphOption = this.stpaOptions.getSynthesisOptions().find(option => option.synthesisOption.id === showRelationshipGraphID);
+        if (relationshipGraphOption) {
+            relationshipGraphOption.currentValue = false;
+            relationshipGraphOption.synthesisOption.currentValue = false;
+            const setSynthesisOption = {
+                kind: SetSynthesisOptionsAction.KIND,
+                options: [relationshipGraphOption.synthesisOption]
+            } as SetSynthesisOptionsAction;
+            await this.handleSetSynthesisOption(setSynthesisOption);
+        }
+
         const request = RequestSvgAction.create();
         const response = await this.request<SvgAction>(request);
         this.connection?.sendNotification("svg", { uri: action.uri, svg: response.svg });
         return Promise.resolve();
     }
 
-    protected handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
+    protected async handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
         for (const option of action.options) {
             const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
@@ -82,7 +93,7 @@ export class StpaDiagramServer extends DiagramServer {
             kind: UpdateViewAction.KIND,
             options: this.state.options
         } as UpdateViewAction;
-        this.handleUpdateView(updateAction);
+        await this.handleUpdateView(updateAction);
         return Promise.resolve();
     }
 

@@ -24,6 +24,38 @@ const hideSysConsID = "hideSysCons";
 const hideRespsID = "hideResps";
 const hideContConsID = "hideContCons";
 const hideScenariosID = "hideScenarios";
+export const showControlStructureID = "showControlStructure";
+export const showRelationshipGraphID = "showRelationshipGraph";
+
+/**
+ * Boolean option to toggle the visualization of the control structure.
+ */
+const showControlStructureOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showControlStructureID,
+        name: "Show Control Structure",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false]
+    },
+    currentValue: true
+};
+
+/**
+ * Boolean option to toggle the visualization of the relationship graph.
+ */
+const showRelationshipGraphOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showRelationshipGraphID,
+        name: "Show Relationship Graph",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false]
+    },
+    currentValue: true
+};
 
 /**
  * Boolean option to toggle the hierarchy representation in the relationship graph.
@@ -146,12 +178,22 @@ export class StpaSynthesisOptions {
     constructor() {
         this.options = [
             hierarchicalGraphOption, groupingOfUCAs, filteringOfUCAs,
-            hideSysConsOption, hideRespsOption, hideContConsOption, hideScenariosOption
+            hideSysConsOption, hideRespsOption, hideContConsOption, hideScenariosOption, showControlStructureOption, showRelationshipGraphOption
         ];
     }
 
     getSynthesisOptions(): ValuedSynthesisOption[] {
         return this.options;
+    }
+
+    getShowRelationshipGraph(): boolean {
+        const option = this.options.find(option => option.synthesisOption.id === showRelationshipGraphID);
+        return option?.currentValue;
+    }
+
+    getShowControlStructure(): boolean {
+        const option = this.options.find(option => option.synthesisOption.id === showControlStructureID);
+        return option?.currentValue;
     }
 
     getHierarchy(): boolean {
