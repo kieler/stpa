@@ -62,7 +62,6 @@ export class StpaDiagramServer extends DiagramServer {
     async handleGenerateControlStructure(action: GenerateControlStructureAction): Promise<void> {
         const request = RequestSvgAction.create();
         const response = await this.request<SvgAction>(request);
-        console.log("handleGenerateControlStructure:\n" + response.svg);
         this.connection?.sendNotification("svg", { uri: action.uri, svg: response.svg });
         return Promise.resolve();
     }

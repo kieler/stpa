@@ -19,8 +19,6 @@ import * as vscode from 'vscode';
 import { StpaComponent, StpaResult, UCA_TYPE, createFile } from './utils';
 
 export async function createMarkdownFile(data: StpaResult): Promise<void> {
-
-
     // Ask the user where to save the sbm
     const currentFolder = vscode.workspace.workspaceFolders
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
@@ -37,7 +35,7 @@ export async function createMarkdownFile(data: StpaResult): Promise<void> {
     }
     // create a markdown file
     // TODO: adjust path
-    const markdown = createMarkdownText(data, currentFolder!);
+    const markdown = createMarkdownText(data, uri.path.substring(0, uri.path.lastIndexOf('/')));
 
     createFile(uri.path, markdown);
 
@@ -53,7 +51,8 @@ class Headers {
     static LossScenario = "Loss Scenarios";
     static SafetyRequirement = "Safety Requirements";
 }
-function createMarkdownText(data: StpaResult, uri:string): string {
+
+function createMarkdownText(data: StpaResult, uri: string): string {
     // TODO: add control structure, context table, diagrams
     let markdown = "";
     markdown += `# STPA Report\n\n`;
@@ -121,7 +120,7 @@ function scenariosToMarkdown(ucaScenarios: Record<string, StpaComponent[]>, scen
     return markdown;
 }
 
-function ucasToMarkdown(actionUcas: {controlAction: string, ucas: Record<string, StpaComponent[]>}[]): string {
+function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string, StpaComponent[]>; }[]): string {
     let markdown = `## ${Headers.UCA}\n\n`;
     markdown += `| Control Action | not provided | provided | too late or too early | applied too long or stopped too soon |\n`;
     // TODO: alignment? (:---:)
@@ -160,6 +159,7 @@ function addSummary(data: StpaResult): string {
 
 function addControlStructure(uri: string): string {
     let markdown = `## Control Structure\n\n`;
-    vscode.commands.executeCommand('stpa.md.diagram.export', uri);
+    vscode.commands.executeCommand('stpa.md.diagram.export', uri + "/images/control-structure.svg");
+    markdown += `![Control Structure](./images/control-structure.svg)\n\n`;
     return markdown;
 }

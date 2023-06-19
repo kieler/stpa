@@ -83,8 +83,8 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
 
         this.languageClient.onNotification('svg', ({uri, svg}) => {
-            // createFile(uri + "\\test.svg", svg);
-            createFile('/C:/Users/jet/stuff/git-projects/models-private/stpa/test.svg', svg);
+            createFile(uri, svg);
+            // createFile('/C:/Users/jet/stuff/git-projects/models-private/stpa/test.svg', svg);
         });
     }
 
@@ -139,8 +139,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // command for creating a pdf
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.md.creation', async (uri: vscode.Uri) => {
-                const test = uri.toString();
-                const data: StpaResult = await this.languageClient.sendRequest('result/getData', test);
+                const data: StpaResult = await this.languageClient.sendRequest('result/getData', uri.toString());
                 await createMarkdownFile(data);
             })
         );
