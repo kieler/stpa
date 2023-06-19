@@ -17,17 +17,19 @@
 
 import { injectable } from "inversify";
 import { SModelRoot, SvgExporter } from "sprotty";
+import { RequestAction } from "sprotty-protocol";
+import { SvgAction } from "./actions";
 
 @injectable()
 export class CustomSvgExporter extends SvgExporter {
 
-    internalExport(root: SModelRoot): string | undefined {
+    internalExport(root: SModelRoot, request?: RequestAction<SvgAction>): void {
         if (typeof document !== 'undefined') {
             const div = document.getElementById(this.options.hiddenDiv);
             if (div !== null && div.firstElementChild && div.firstElementChild.tagName === 'svg') {
                 const svgElement = div.firstElementChild as SVGSVGElement;
                 const svg = this.createSvg(svgElement, root);
-                return svg;
+                this.actionDispatcher.dispatch(SvgAction.create(svg, request ? request.requestId : ''));
             }
         }
     }

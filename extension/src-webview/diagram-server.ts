@@ -15,19 +15,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { inject, injectable } from "inversify";
-import { ActionHandlerRegistry, CommandStack, SModelFactory, TYPES } from "sprotty";
+import { injectable } from "inversify";
+import { ActionHandlerRegistry } from "sprotty";
 import { Action, ActionMessage } from "sprotty-protocol";
 import { VscodeLspEditDiagramServer } from "sprotty-vscode-webview/lib/lsp/editing";
-import { RequestSvgAction, SvgAction } from "./actions";
-import { CustomSvgExporter } from "./exporter";
+import { SvgAction } from "./actions";
 
 @injectable()
 export class StpaDiagramServer extends VscodeLspEditDiagramServer {
-
-    @inject(TYPES.SvgExporter) protected svgExporter: CustomSvgExporter;
-    @inject(TYPES.IModelFactory) protected modelFactory: SModelFactory;
-    @inject(TYPES.ICommandStack) protected commandStack: CommandStack;
 
     protected sendMessage(message: ActionMessage): void {
         console.log("send to server: " + message.action.kind);
@@ -36,24 +31,19 @@ export class StpaDiagramServer extends VscodeLspEditDiagramServer {
 
     initialize(registry: ActionHandlerRegistry): void {
         super.initialize(registry);
-        registry.register(RequestSvgAction.KIND, this);
+        registry.register(SvgAction.KIND, this);
     }
 
     handleLocally(action: Action): boolean {
         switch (action.kind) {
-            case RequestSvgAction.KIND:
-                this.handleRequestSvgAction(action as RequestSvgAction);
+            case SvgAction.KIND:
+                this.handleSvgAction(action as SvgAction);
         }
         return super.handleLocally(action);
     }
-    handleRequestSvgAction(action: RequestSvgAction): boolean {
-        const root = this.modelFactory.createRoot(this.currentRoot);
-        // this.commandStack.update(root, action);
-        root.canvasBounds = { x: 0, y: 0, height: 1200, width: 600 };
-        const svg = this.svgExporter.internalExport(root);
-        if (svg) {
-            this.forwardToServer(SvgAction.create(svg, action.requestId));
-        }
+
+    handleSvgAction(action: SvgAction): boolean {
+        this.forwardToServer(action);
         return false;
     }
 

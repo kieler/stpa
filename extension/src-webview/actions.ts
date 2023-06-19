@@ -15,7 +15,27 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { inject } from "inversify";
+import { CommandExecutionContext, CommandResult, HiddenCommand, TYPES, isExportable, isHoverable, isSelectable, isViewport } from "sprotty";
 import { RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
+
+
+export interface SvgAction extends ResponseAction {
+    kind: typeof SvgAction.KIND;
+    svg: string
+    responseId: string
+}
+export namespace SvgAction {
+    export const KIND = 'svg';
+
+    export function create(svg: string, requestId: string): SvgAction {
+        return {
+            kind: KIND,
+            svg,
+            responseId: requestId
+        };
+    }
+}
 
 export interface RequestSvgAction extends RequestAction<SvgAction> {
     kind: typeof RequestSvgAction.KIND
@@ -31,19 +51,37 @@ export namespace RequestSvgAction {
     }
 }
 
-export interface SvgAction extends ResponseAction {
-    kind: typeof SvgAction.KIND;
-    svg: string
-    responseId: string
-}
-export namespace SvgAction {
-    export const KIND = 'svg';
+export class SvgCommand extends HiddenCommand {
+    static readonly KIND = RequestSvgAction.KIND;
 
-    export function create(svg: string, requestId: string): SvgAction {
+    constructor(@inject(TYPES.Action) protected action: RequestSvgAction) {
+        super();
+    }
+
+    execute(context: CommandExecutionContext): CommandResult {
+        if (isExportable(context.root)) {
+            const root = context.modelFactory.createRoot(context.root);
+            if (isExportable(root)) {
+                if (isViewport(root)) {
+                    root.zoom = 1;
+                    root.scroll = { x: 0, y: 0 };
+                }
+                root.index.all().forEach(element => {
+                    if (isSelectable(element) && element.selected)
+                        {element.selected = false;}
+                    if (isHoverable(element) && element.hoverFeedback)
+                        {element.hoverFeedback = false;}
+                });
+                return {
+                    model: root,
+                    modelChanged: true,
+                    cause: this.action
+                };
+            }
+        }
         return {
-            kind: KIND,
-            svg,
-            responseId: requestId
+            model: context.root,
+            modelChanged: false
         };
     }
 }

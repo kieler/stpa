@@ -23,7 +23,7 @@ import {
     configureModelElement, ConsoleLogger, HtmlRoot,
     HtmlRootView, LogLevel, overrideViewerOptions, PreRenderedElement,
     PreRenderedView, SLabelView,
-    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge, ModelViewer
+    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge, ModelViewer, configureCommand
 } from 'sprotty';
 import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView } from './views';
 import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE, DUMMY_NODE_TYPE } from './stpa-model';
@@ -32,6 +32,8 @@ import { optionsModule } from './options/options-module';
 import { StpaModelViewer } from './model-viewer';
 import { StpaMouseListener } from './stpa-mouselistener';
 import { CustomSvgExporter } from './exporter';
+import { SvgPostprocessor } from './exportPostProcessor';
+import { SvgCommand } from './actions';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
@@ -44,6 +46,10 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     bind(TYPES.MouseListener).to(StpaMouseListener).inSingletonScope();
     rebind(ModelViewer).to(StpaModelViewer).inSingletonScope();
     rebind(TYPES.SvgExporter).to(CustomSvgExporter).inSingletonScope();
+    bind(SvgPostprocessor).toSelf().inSingletonScope();
+    bind(TYPES.HiddenVNodePostprocessor).toService(SvgPostprocessor);
+    configureCommand({ bind, isBound }, SvgCommand);
+
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
