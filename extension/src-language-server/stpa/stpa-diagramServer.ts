@@ -15,23 +15,26 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServices, DiagramServer, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
+import { Action, DiagramServer, DiagramServices, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
+import { Connection } from 'vscode-languageserver';
 import { UpdateViewAction } from '../actions';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
-import { StpaSynthesisOptions } from './synthesis-options';
 import { DropDownOption } from '../options/option-models';
-import { SvgAction, GenerateControlStructureAction, RequestSvgAction } from './actions';
+import { GenerateControlStructureAction, RequestSvgAction, SvgAction } from './actions';
+import { StpaSynthesisOptions } from './synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {
 
     protected stpaOptions: StpaSynthesisOptions;
     clientId: string;
+    protected connection: Connection | undefined;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string) {
+        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, connection: Connection | undefined) {
         super(dispatch, services);
         this.stpaOptions = synthesisOptions;
         this.clientId = clientId;
+        this.connection = connection;
     }
 
     accept(action: Action): Promise<void> {
@@ -59,7 +62,8 @@ export class StpaDiagramServer extends DiagramServer {
     async handleGenerateControlStructure(action: GenerateControlStructureAction): Promise<void> {
         const request = RequestSvgAction.create();
         const response = await this.request<SvgAction>(request);
-        console.log("handleGenerateControlStructure" + response);
+        console.log("handleGenerateControlStructure:\n" + response.svg);
+        this.connection?.sendNotification("svg", { uri: action.uri, svg: response.svg });
         return Promise.resolve();
     }
 
@@ -71,7 +75,7 @@ export class StpaDiagramServer extends DiagramServer {
                 // for dropdown menu options more must be done
                 if ((opt.synthesisOption as DropDownOption).currentId) {
                     (opt.synthesisOption as DropDownOption).currentId = option.currentValue;
-                    this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });        
+                    this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
                 }
             }
         }

@@ -62,17 +62,21 @@ export namespace SendConfigAction {
 export interface GenerateControlStructureAction extends Action {
     kind: typeof GenerateControlStructureAction.KIND
     uri: string
+    options?: JsonMap;
 }
 
 export namespace GenerateControlStructureAction {
     export const KIND = "generateControlStructure";
+    
 
     export function create(
-        uri: string
+        uri: string,
+        options?: JsonMap
     ): GenerateControlStructureAction {
         return {
             kind: KIND,
-            uri
+            uri,
+            options
         };
     }
 

@@ -15,22 +15,26 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, RequestAction, generateRequestId, ResponseAction } from "sprotty-protocol";
+import { Action, JsonMap, RequestAction, generateRequestId, ResponseAction } from "sprotty-protocol";
 
 export interface GenerateControlStructureAction extends Action {
     kind: typeof GenerateControlStructureAction.KIND
     uri: string
+    options?: JsonMap;
 }
 
 export namespace GenerateControlStructureAction {
     export const KIND = "generateControlStructure";
+    
 
     export function create(
-        uri: string
+        uri: string,
+        options?: JsonMap
     ): GenerateControlStructureAction {
         return {
             kind: KIND,
-            uri
+            uri,
+            options
         };
     }
 

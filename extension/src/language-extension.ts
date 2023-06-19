@@ -26,7 +26,7 @@ import { GenerateControlStructureAction, UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { createMarkdownFile } from './md-export';
 import { StpaFormattingEditProvider } from './stpa-formatter';
-import { StpaResult, applyTextEdits, collectOptions, createQuickPickForWorkspaceOptions } from './utils';
+import { StpaResult, applyTextEdits, collectOptions, createFile, createQuickPickForWorkspaceOptions } from './utils';
 import { StpaLspWebview } from './wview';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
@@ -81,6 +81,11 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             // sends configuration of stpa to the language server
             this.languageClient.sendNotification('configuration', collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
+
+        this.languageClient.onNotification('svg', ({uri, svg}) => {
+            // createFile(uri + "\\test.svg", svg);
+            createFile('/C:/Users/jet/stuff/git-projects/models-private/stpa/test.svg', svg);
+        });
     }
 
     /**
@@ -118,9 +123,15 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                         clientId: activeWebview.diagramIdentifier.clientId,
                         action: {
                             kind: GenerateControlStructureAction.KIND,
-                            uri: uri
+                            options: {
+                                diagramType: activeWebview.diagramIdentifier.diagramType,
+                                needsClientLayout: true,
+                                needsServerLayout: true,
+                                sourceUri: activeWebview.diagramIdentifier.uri
+                            } as JsonMap, uri: uri
                         } as GenerateControlStructureAction
                     };
+
                     this.languageClient.sendNotification('result/controlStructure', mes);
                 }
             }));

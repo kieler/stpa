@@ -16,10 +16,10 @@
  */
 
 import { inject, injectable } from "inversify";
-import { TYPES, SModelFactory, ActionHandlerRegistry } from "sprotty";
+import { ActionHandlerRegistry, CommandStack, SModelFactory, TYPES } from "sprotty";
 import { Action, ActionMessage } from "sprotty-protocol";
 import { VscodeLspEditDiagramServer } from "sprotty-vscode-webview/lib/lsp/editing";
-import { RequestSvgAction } from "./actions";
+import { RequestSvgAction, SvgAction } from "./actions";
 import { CustomSvgExporter } from "./exporter";
 
 @injectable()
@@ -27,6 +27,7 @@ export class StpaDiagramServer extends VscodeLspEditDiagramServer {
 
     @inject(TYPES.SvgExporter) protected svgExporter: CustomSvgExporter;
     @inject(TYPES.IModelFactory) protected modelFactory: SModelFactory;
+    @inject(TYPES.ICommandStack) protected commandStack: CommandStack;
 
     protected sendMessage(message: ActionMessage): void {
         console.log("send to server: " + message.action.kind);
@@ -41,12 +42,19 @@ export class StpaDiagramServer extends VscodeLspEditDiagramServer {
     handleLocally(action: Action): boolean {
         switch (action.kind) {
             case RequestSvgAction.KIND:
-                const root = this.modelFactory.createRoot(this.currentRoot);
-                const svg = this.svgExporter.internalExport(root);
-                console.log("generated svg");
-            // this.sendMessage();
+                this.handleRequestSvgAction(action as RequestSvgAction);
         }
         return super.handleLocally(action);
+    }
+    handleRequestSvgAction(action: RequestSvgAction): boolean {
+        const root = this.modelFactory.createRoot(this.currentRoot);
+        // this.commandStack.update(root, action);
+        root.canvasBounds = { x: 0, y: 0, height: 1200, width: 600 };
+        const svg = this.svgExporter.internalExport(root);
+        if (svg) {
+            this.forwardToServer(SvgAction.create(svg, action.requestId));
+        }
+        return false;
     }
 
 }
