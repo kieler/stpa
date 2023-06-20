@@ -17,20 +17,20 @@
 
 import { Action, JsonMap, RequestAction, generateRequestId, ResponseAction } from "sprotty-protocol";
 
-export interface GenerateControlStructureAction extends Action {
-    kind: typeof GenerateControlStructureAction.KIND
+export interface GenerateSVGsAction extends Action {
+    kind: typeof GenerateSVGsAction.KIND
     uri: string
     options?: JsonMap;
 }
 
-export namespace GenerateControlStructureAction {
+export namespace GenerateSVGsAction {
     export const KIND = "generateControlStructure";
     
 
     export function create(
         uri: string,
         options?: JsonMap
-    ): GenerateControlStructureAction {
+    ): GenerateSVGsAction {
         return {
             kind: KIND,
             uri,
@@ -38,8 +38,8 @@ export namespace GenerateControlStructureAction {
         };
     }
 
-    export function isThisAction(action: Action): action is GenerateControlStructureAction {
-        return action.kind === GenerateControlStructureAction.KIND;
+    export function isThisAction(action: Action): action is GenerateSVGsAction {
+        return action.kind === GenerateSVGsAction.KIND;
     }
 }
 

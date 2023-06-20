@@ -22,7 +22,7 @@ import { LspLabelEditActionHandler, SprottyLspEditVscodeExtension, WorkspaceEdit
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
-import { GenerateControlStructureAction, UpdateViewAction } from './actions';
+import { GenerateSVGsAction, UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { createMarkdownFile } from './md-export';
 import { StpaFormattingEditProvider } from './stpa-formatter';
@@ -84,7 +84,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
         this.languageClient.onNotification('svg', ({uri, svg}) => {
             createFile(uri, svg);
-            // createFile('/C:/Users/jet/stuff/git-projects/models-private/stpa/test.svg', svg);
         });
     }
 
@@ -122,14 +121,14 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                     const mes: ActionMessage = {
                         clientId: activeWebview.diagramIdentifier.clientId,
                         action: {
-                            kind: GenerateControlStructureAction.KIND,
+                            kind: GenerateSVGsAction.KIND,
                             options: {
                                 diagramType: activeWebview.diagramIdentifier.diagramType,
                                 needsClientLayout: true,
                                 needsServerLayout: true,
                                 sourceUri: activeWebview.diagramIdentifier.uri
                             } as JsonMap, uri: uri
-                        } as GenerateControlStructureAction
+                        } as GenerateSVGsAction
                     };
 
                     this.languageClient.sendNotification('result/controlStructure', mes);

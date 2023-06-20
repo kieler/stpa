@@ -17,9 +17,9 @@
 
 import { AstNode, Reference } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { ActionUCAs, ContConstraint, Hazard, LossScenario, Responsibility, SafetyConstraint, SystemConstraint, UCA } from "../generated/ast";
-import { getModel } from "../utils";
-import { StpaResult, StpaComponent, UCA_TYPE } from "./utils";
+import { ActionUCAs, ContConstraint, Hazard, LossScenario, Responsibility, SafetyConstraint, SystemConstraint, UCA } from "../../generated/ast";
+import { getModel } from "../../utils";
+import { StpaResult, StpaComponent, UCA_TYPE } from "../utils";
 
 
 

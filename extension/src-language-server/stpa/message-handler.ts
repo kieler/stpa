@@ -20,7 +20,7 @@ import { LangiumSprottySharedServices } from "langium-sprotty";
 import { TextDocumentContentChangeEvent } from 'vscode';
 import { Connection, URI } from "vscode-languageserver";
 import { generateLTLFormulae } from './modelChecking/model-checking';
-import { createResultData } from './result-generator';
+import { createResultData } from './result-report/result-generator';
 import { StpaServices } from "./stpa-module";
 
 let lastUri: URI;

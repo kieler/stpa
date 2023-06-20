@@ -22,10 +22,12 @@ const groupingUCAsID = "groupingUCAs";
 const filteringUCAsID = "filteringUCAs";
 const hideSysConsID = "hideSysCons";
 const hideRespsID = "hideResps";
+const hideUCAsID = "hideUCAs";
 const hideContConsID = "hideContCons";
 const hideScenariosID = "hideScenarios";
-export const showControlStructureID = "showControlStructure";
-export const showRelationshipGraphID = "showRelationshipGraph";
+const hideSafetyConstraintsID = "hideSafetyConstraints";
+const showControlStructureID = "showControlStructure";
+const showRelationshipGraphID = "showRelationshipGraph";
 
 /**
  * Boolean option to toggle the visualization of the control structure.
@@ -142,6 +144,21 @@ const hideRespsOption: ValuedSynthesisOption = {
 };
 
 /**
+ * Boolean option to toggle the visualization of UCAs.
+ */
+const hideUCAsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: hideUCAsID,
+        name: "Hide UCAs",
+        type: TransformationOptionType.CHECK,
+        initialValue: false,
+        currentValue: false,
+        values: [true, false]
+    },
+    currentValue: false
+};
+
+/**
  * Boolean option to toggle the visualization of controller constraints.
  */
 const hideContConsOption: ValuedSynthesisOption = {
@@ -171,6 +188,21 @@ const hideScenariosOption: ValuedSynthesisOption = {
     currentValue: false
 };
 
+/**
+ * Boolean option to toggle the visualization of safety constraints.
+ */
+const hideSafetyConstraintsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: hideSafetyConstraintsID,
+        name: "Hide safety constraints",
+        type: TransformationOptionType.CHECK,
+        initialValue: false,
+        currentValue: false,
+        values: [true, false]
+    },
+    currentValue: false
+};
+
 export class StpaSynthesisOptions {
 
     private options: ValuedSynthesisOption[];
@@ -178,7 +210,8 @@ export class StpaSynthesisOptions {
     constructor() {
         this.options = [
             hierarchicalGraphOption, groupingOfUCAs, filteringOfUCAs,
-            hideSysConsOption, hideRespsOption, hideContConsOption, hideScenariosOption, showControlStructureOption, showRelationshipGraphOption
+            hideSysConsOption, hideRespsOption, hideUCAsOption, hideContConsOption, 
+            hideScenariosOption, hideSafetyConstraintsOption, showControlStructureOption, showRelationshipGraphOption
         ];
     }
 
@@ -186,9 +219,17 @@ export class StpaSynthesisOptions {
         return this.options;
     }
 
+    setShowRelationshipGraph(value: boolean): void {
+        this.setOption(showRelationshipGraphID, value);
+    }
+
     getShowRelationshipGraph(): boolean {
         const option = this.options.find(option => option.synthesisOption.id === showRelationshipGraphID);
         return option?.currentValue;
+    }
+
+    setShowControlStructure(value: boolean): void {
+        this.setOption(showControlStructureID, value);
     }
 
     getShowControlStructure(): boolean {
@@ -196,9 +237,25 @@ export class StpaSynthesisOptions {
         return option?.currentValue;
     }
 
+    setHierarchy(value: boolean): void {
+        this.setOption(hierarchyID, value);
+    }
+
     getHierarchy(): boolean {
         const option = this.options.find(option => option.synthesisOption.id === hierarchyID);
         return option?.currentValue;
+    }
+
+    setGroupingUCAs(value: groupValue): void {
+        const option = this.options.find(option => option.synthesisOption.id === groupingUCAsID);
+        if (option) {
+            switch (value) {
+                case groupValue.NO_GROUPING: option.currentValue = "no grouping"; break;
+                case groupValue.CONTROL_ACTION: option.currentValue = "Group by Control Action"; break;
+                case groupValue.SYSTEM_COMPONENT: option.currentValue = "Group by System Component"; break;
+            }
+            option.synthesisOption.currentValue = option.currentValue;
+        }
     }
 
     getGroupingUCAs(): groupValue {
@@ -211,9 +268,17 @@ export class StpaSynthesisOptions {
         return option?.currentValue;
     }
 
+    setFilteringUCAs(value: string): void {
+        this.setOption(filteringUCAsID, value);
+    }
+
     getFilteringUCAs(): string {
         const option = this.options.find(option => option.synthesisOption.id === filteringUCAsID);
         return option?.currentValue;
+    }
+
+    setHideSysCons(value: boolean): void {
+        this.setOption(hideSysConsID, value);
     }
 
     getHideSysCons(): boolean {
@@ -221,9 +286,26 @@ export class StpaSynthesisOptions {
         return option?.currentValue;
     }
 
+    setHideResps(value: boolean): void {
+        this.setOption(hideRespsID, value);
+    }
+
     getHideRespsCons(): boolean {
         const option = this.options.find(option => option.synthesisOption.id === hideRespsID);
         return option?.currentValue;
+    }
+
+    setHideUCAs(value: boolean): void {
+        this.setOption(hideUCAsID, value);
+    }
+
+    getHideUCAs(): boolean {
+        const option = this.options.find(option => option.synthesisOption.id === hideUCAsID);
+        return option?.currentValue;
+    }
+
+    setHideContCons(value: boolean): void {
+        this.setOption(hideContConsID, value);
     }
 
     getHideContCons(): boolean {
@@ -231,9 +313,30 @@ export class StpaSynthesisOptions {
         return option?.currentValue;
     }
 
+    setHideScenarios(value: boolean): void {
+        this.setOption(hideScenariosID, value);
+    }
+
     getHideScenarios(): boolean {
         const option = this.options.find(option => option.synthesisOption.id === hideScenariosID);
         return option?.currentValue;
+    }
+
+    setHideSafetyConstraints(value: boolean): void {
+        this.setOption(hideSafetyConstraintsID, value);
+    }
+
+    getHideSafetyConstraints(): boolean {
+        const option = this.options.find(option => option.synthesisOption.id === hideSafetyConstraintsID);
+        return option?.currentValue;
+    }
+
+    protected setOption(id: string, value: any): void {
+        const option = this.options.find(option => option.synthesisOption.id === id);
+        if (option) {
+            option.currentValue = value;
+            option.synthesisOption.currentValue = value;
+        }
     }
 
     /**

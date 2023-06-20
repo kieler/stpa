@@ -56,13 +56,13 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
         newModel.responsibilities = options.getHideSysCons() || options.getHideRespsCons() ? [] : model.responsibilities;
 
         // filter UCAs by the filteringUCA option
-        newModel.allUCAs = model.allUCAs?.filter(allUCA =>
+        newModel.allUCAs = options.getHideUCAs() ? [] : model.allUCAs?.filter(allUCA =>
             (allUCA.system.ref?.name + "." + allUCA.action.ref?.name) === options.getFilteringUCAs()
             || options.getFilteringUCAs() === "all UCAs");
-        newModel.rules = model.rules?.filter(rule =>
+        newModel.rules = options.getHideUCAs() ? [] : model.rules?.filter(rule =>
             (rule.system.ref?.name + "." + rule.action.ref?.name) === options.getFilteringUCAs()
             || options.getFilteringUCAs() === "all UCAs");
-        newModel.controllerConstraints = options.getHideContCons() ? [] :
+        newModel.controllerConstraints = options.getHideUCAs() || options.getHideContCons() ? [] :
             model.controllerConstraints?.filter(cons =>
                 (cons.refs[0].ref?.$container.system.ref?.name + "."
                     + cons.refs[0].ref?.$container.action.ref?.name) === options.getFilteringUCAs()
@@ -72,15 +72,15 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
         const remainingScenarios = new Set<string>();
         newModel.scenarios = options.getHideScenarios() ? [] :
             model.scenarios?.filter(scenario => {
-                if ((!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "."
-                    + scenario.uca?.ref?.$container.action.ref?.name) === options.getFilteringUCAs()
-                    || options.getFilteringUCAs() === "all UCAs") {
+                if (!scenario.uca || (options.getHideUCAs() && (scenario.uca?.ref?.$container.system.ref?.name + "."
+                    + scenario.uca?.ref?.$container.action.ref?.name === options.getFilteringUCAs()
+                    || options.getFilteringUCAs() === "all UCAs"))) {
                     remainingScenarios.add(scenario.name);
                     return true;
                 };
             });
         // filter safety constraints by the remaining scenarios
-        newModel.safetyCons = options.getHideScenarios() ? [] :
+        newModel.safetyCons = options.getHideSafetyConstraints() || options.getHideScenarios() ? [] :
             model.safetyCons?.filter(safetyCons =>
                 (safetyCons.refs.filter(ref => remainingScenarios.has(ref.$refText)).length !== 0)
                 || options.getFilteringUCAs() === "all UCAs");
