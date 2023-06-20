@@ -98,6 +98,13 @@ function stpaAspectToMarkdown(aspect: string, components: StpaComponent[], svgNa
     return markdown;
 }
 
+function ucaComponentToMarkdown(component: StpaComponent): string {
+    let markdown = `<b>${component.id}</b>: ${component.description}`;
+    if (component.references !== undefined && component.references !== "") {
+        markdown += ` [${component.references}]`;
+    }
+    return markdown;
+}
 function stpaComponentToMarkdown(component: StpaComponent): string {
     let markdown = `**${component.id}**: ${component.description}`;
     if (component.references !== undefined && component.references !== "") {
@@ -134,7 +141,7 @@ function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string
     let markdown = `## ${Headers.UCA}\n\n`;
     for (const actionUCA of actionUcas) {
         markdown += `### _${actionUCA.controlAction}_\n\n`;
-        markdown += `| not provided | provided | too late or too early | applied too long or stopped too soon |\n`;
+        /* markdown += `| not provided | provided | too late or too early | applied too long or stopped too soon |\n`;
         markdown += `| --- | --- | --- | --- |\n`;
         markdown += actionUCA.ucas[UCA_TYPE.NOT_PROVIDED].map(uca => stpaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "|";
@@ -143,8 +150,18 @@ function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string
         markdown += actionUCA.ucas[UCA_TYPE.WRONG_TIME].map(uca => stpaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "|";
         markdown += actionUCA.ucas[UCA_TYPE.CONTINUOUS].map(uca => stpaComponentToMarkdown(uca)).join("<br><br>");
-        markdown += "|\n";
-        markdown += `\n\n<img src=".${SVG_PATH + "/" + actionUCA.controlAction.replace(".", "-") + ".svg"}" width="${diagramSizes["/" + actionUCA.controlAction.replace(".", "-") + ".svg"]*SIZE_MULTIPLIER}">\n\n<br><br>\n\n`;
+        markdown += "|\n"; */
+        markdown += `<table border="1px"  border-collapse="collapse">\n<tr>\n<th>not provided</th>\n<th>provided</th>\n<th>too late or too early</th>\n<th>applied too long or stopped too soon</th>\n</tr>\n`;
+        markdown += "<tr><td>\n";
+        markdown += actionUCA.ucas[UCA_TYPE.NOT_PROVIDED].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += "</td>\n<td>\n";
+        markdown += actionUCA.ucas[UCA_TYPE.PROVIDED].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += "</td>\n<td>\n";
+        markdown += actionUCA.ucas[UCA_TYPE.WRONG_TIME].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += "</td>\n<td>\n";
+        markdown += actionUCA.ucas[UCA_TYPE.CONTINUOUS].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += "</td>\n</tr>\n</table>\n\n<br>\n\n";
+        markdown += `<img src=".${SVG_PATH + "/" + actionUCA.controlAction.replace(".", "-") + ".svg"}" width="${diagramSizes["/" + actionUCA.controlAction.replace(".", "-") + ".svg"]*SIZE_MULTIPLIER}">\n\n<br><br>\n\n`;
     }
     markdown += `\n\n<img src=".${SVG_PATH + UCA_PATH}" width="${diagramSizes[UCA_PATH]*SIZE_MULTIPLIER}">\n\n`;
     return markdown;
