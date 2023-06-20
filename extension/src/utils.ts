@@ -115,6 +115,7 @@ export class StpaComponent {
     id: string;
     description: string;
     references?: string;
+    subComponents?: StpaComponent[];
 }
 
 /**

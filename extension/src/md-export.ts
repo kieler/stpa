@@ -37,7 +37,7 @@ export async function createMarkdownFile(data: StpaResult, extension: StpaLspVsc
 
     // create svg diagrams
     const folderUri = uri.path.lastIndexOf('/');
-    const diagramSizes: Record<string, number>  = await extension.createSVGDiagrams(uri.path.substring(0, folderUri) + SVG_PATH);
+    const diagramSizes: Record<string, number> = await extension.createSVGDiagrams(uri.path.substring(0, folderUri) + SVG_PATH);
 
     // create a markdown text
     const markdown = createMarkdownText(data, diagramSizes);
@@ -71,7 +71,7 @@ function createMarkdownText(data: StpaResult, diagramSizes: Record<string, numbe
     markdown += addControlStructure(diagramSizes);
     // responsibilities
     markdown += recordToMarkdown(Headers.Responsibility, data.responsibilities);
-    markdown += `<img src=".${SVG_PATH + RESPONSIBILITY_PATH}" width="${diagramSizes[RESPONSIBILITY_PATH]*SIZE_MULTIPLIER}">\n\n`;
+    markdown += `<img src=".${SVG_PATH + RESPONSIBILITY_PATH}" width="${diagramSizes[RESPONSIBILITY_PATH] * SIZE_MULTIPLIER}">\n\n`;
     // UCAs
     markdown += ucasToMarkdown(data.ucas, diagramSizes);
     // controller constraints
@@ -88,12 +88,25 @@ function createMarkdownText(data: StpaResult, diagramSizes: Record<string, numbe
 function stpaAspectToMarkdown(aspect: string, components: StpaComponent[], svgName?: string, diagramSizes?: Record<string, number>): string {
     let markdown = `## ${aspect}\n\n`;
     for (const component of components) {
-        markdown += stpaComponentToMarkdown(component);
-        markdown += `  \n`;
+        markdown += stpaComponentToMarkdown(component) + `  \n`;
+        if (component.subComponents) {
+            markdown += subComponentsToMarkdown(component.subComponents, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        }
     }
     markdown += `\n`;
     if (svgName && diagramSizes) {
-        markdown += `<img src=".${SVG_PATH + svgName}" width="${diagramSizes[svgName]*SIZE_MULTIPLIER}">\n\n`;
+        markdown += `\n<img src=".${SVG_PATH + svgName}" width="${diagramSizes[svgName] * SIZE_MULTIPLIER}">\n\n`;
+    }
+    return markdown;
+}
+
+function subComponentsToMarkdown(components: StpaComponent[], tabs: string): string {
+    let markdown = "";
+    for (const component of components) {
+        markdown += `${tabs} **${component.id}**: ${component.description}   \n`;
+        if (component.subComponents) {
+            markdown += subComponentsToMarkdown(component.subComponents, tabs + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        }
     }
     return markdown;
 }
@@ -133,7 +146,7 @@ function scenariosToMarkdown(ucaScenarios: Record<string, StpaComponent[]>, scen
         markdown += scenarios.map(scenario => stpaComponentToMarkdown(scenario)).join("  \n");
         markdown += `\n`;
     }
-    markdown += `\n<img src=".${SVG_PATH + SCENARIO_PATH}" width="${diagramSizes[SCENARIO_PATH]*SIZE_MULTIPLIER}">\n\n`;
+    markdown += `\n<img src=".${SVG_PATH + SCENARIO_PATH}" width="${diagramSizes[SCENARIO_PATH] * SIZE_MULTIPLIER}">\n\n`;
     return markdown;
 }
 
@@ -161,9 +174,9 @@ function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string
         markdown += "</td>\n<td>\n";
         markdown += actionUCA.ucas[UCA_TYPE.CONTINUOUS].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n</tr>\n</table>\n\n<br>\n\n";
-        markdown += `<img src=".${SVG_PATH + "/" + actionUCA.controlAction.replace(".", "-") + ".svg"}" width="${diagramSizes["/" + actionUCA.controlAction.replace(".", "-") + ".svg"]*SIZE_MULTIPLIER}">\n\n<br><br>\n\n`;
+        markdown += `<img src=".${SVG_PATH + "/" + actionUCA.controlAction.replace(".", "-") + ".svg"}" width="${diagramSizes["/" + actionUCA.controlAction.replace(".", "-") + ".svg"] * SIZE_MULTIPLIER}">\n\n<br><br>\n\n`;
     }
-    markdown += `\n\n<img src=".${SVG_PATH + UCA_PATH}" width="${diagramSizes[UCA_PATH]*SIZE_MULTIPLIER}">\n\n`;
+    markdown += `\n\n<img src=".${SVG_PATH + UCA_PATH}" width="${diagramSizes[UCA_PATH] * SIZE_MULTIPLIER}">\n\n`;
     return markdown;
 }
 
@@ -181,13 +194,13 @@ function addSummary(data: StpaResult, diagramSizes: Record<string, number>): str
         markdown += stpaComponentToMarkdown(component);
         markdown += `  \n`;
     }
-    markdown += `\n\n<img src=".${SVG_PATH + COMPLETE_GRAPH_PATH}" width="${diagramSizes[COMPLETE_GRAPH_PATH]*SIZE_MULTIPLIER}">\n\n`;
+    markdown += `\n\n<img src=".${SVG_PATH + COMPLETE_GRAPH_PATH}" width="${diagramSizes[COMPLETE_GRAPH_PATH] * SIZE_MULTIPLIER}">\n\n`;
     return markdown;
 }
 
 function addControlStructure(diagramSizes: Record<string, number>): string {
     let markdown = `## ${Headers.ControlStructure}\n\n`;
-    markdown += `<img src=".${SVG_PATH + CONTROL_STRUCTURE_PATH}" width="${diagramSizes[CONTROL_STRUCTURE_PATH]*SIZE_MULTIPLIER}">\n\n`;
+    markdown += `<img src=".${SVG_PATH + CONTROL_STRUCTURE_PATH}" width="${diagramSizes[CONTROL_STRUCTURE_PATH] * SIZE_MULTIPLIER}">\n\n`;
     return markdown;
 }
 

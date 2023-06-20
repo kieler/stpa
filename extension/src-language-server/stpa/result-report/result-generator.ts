@@ -17,7 +17,7 @@
 
 import { AstNode, Reference } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { ActionUCAs, ContConstraint, Hazard, LossScenario, Responsibility, SafetyConstraint, SystemConstraint, UCA } from "../../generated/ast";
+import { ActionUCAs, ContConstraint, Hazard, LossScenario, Responsibility, SafetyConstraint, SystemConstraint, UCA, isHazard } from "../../generated/ast";
 import { getModel } from "../../utils";
 import { StpaResult, StpaComponent, UCA_TYPE } from "../utils";
 
@@ -35,9 +35,9 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
     });
     result.losses = resultLosses;
 
-    // TODO: consider subhazards (also their headers) and subconstraints
-    result.hazards = createResultComponents(model.hazards);
-    result.systemLevelConstraints = createResultComponents(model.systemLevelConstraints);
+    // TODO: consider subhazard headers
+    result.hazards = createHazardOrSystemConstraintComponents(model.hazards);
+    result.systemLevelConstraints = createHazardOrSystemConstraintComponents(model.systemLevelConstraints);
     result.controllerConstraints = createResultComponents(model.controllerConstraints);
     result.safetyCons = createResultComponents(model.safetyCons);
 
@@ -70,7 +70,7 @@ function createResultListComponents(components: LossScenario[] | UCA[]): StpaCom
 function createSingleListComponent(component: LossScenario | UCA): StpaComponent {
     const id = component.name;
     const description = component.description;
-    const references = component.list ? component.list.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", "): undefined;
+    const references = component.list ? component.list.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", ") : undefined;
     return { id, description, references };
 }
 
@@ -78,6 +78,16 @@ function createResultComponents(components: Hazard[] | SystemConstraint[] | Cont
     const resultList: StpaComponent[] = [];
     components.forEach(component => {
         resultList.push(createSingleComponent(component));
+    });
+    return resultList;
+}
+
+function createHazardOrSystemConstraintComponents(components: Hazard[] | SystemConstraint[]): StpaComponent[] {
+    const resultList: StpaComponent[] = [];
+    components.forEach(component => {
+        const resultComponent = createSingleComponent(component);
+        resultComponent.subComponents = createHazardOrSystemConstraintComponents(component.subComps);
+        resultList.push(resultComponent);
     });
     return resultList;
 }
