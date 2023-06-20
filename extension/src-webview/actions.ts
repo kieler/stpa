@@ -23,15 +23,17 @@ import { RequestAction, ResponseAction, generateRequestId } from "sprotty-protoc
 export interface SvgAction extends ResponseAction {
     kind: typeof SvgAction.KIND;
     svg: string
+    width: number
     responseId: string
 }
 export namespace SvgAction {
     export const KIND = 'svg';
 
-    export function create(svg: string, requestId: string): SvgAction {
+    export function create(svg: string, width: number, requestId: string): SvgAction {
         return {
             kind: KIND,
             svg,
+            width,
             responseId: requestId
         };
     }

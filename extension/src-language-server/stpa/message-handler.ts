@@ -22,6 +22,7 @@ import { Connection, URI } from "vscode-languageserver";
 import { generateLTLFormulae } from './modelChecking/model-checking';
 import { createResultData } from './result-report/result-generator';
 import { StpaServices } from "./stpa-module";
+import { diagramSizes } from './stpa-diagramServer';
 
 let lastUri: URI;
 
@@ -123,8 +124,9 @@ function addResultHandler(connection: Connection, sharedServices: LangiumSprotty
         const data = await createResultData(uri, sharedServices);
         return data;
     });
-    connection.onNotification('result/controlStructure', async msg => {
+    connection.onRequest('result/createDiagrams', async msg => {
         const diagramServerManager = sharedServices.diagram.DiagramServerManager;
-        diagramServerManager.acceptAction(msg);
+        await diagramServerManager.acceptAction(msg);
+        return diagramSizes;
     });
 }

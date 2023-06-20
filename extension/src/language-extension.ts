@@ -16,7 +16,7 @@
  */
 
 import * as path from 'path';
-import { Action, ActionMessage, JsonMap, SelectAction } from 'sprotty-protocol';
+import { ActionMessage, JsonMap, SelectAction } from 'sprotty-protocol';
 import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
 import { LspLabelEditActionHandler, SprottyLspEditVscodeExtension, WorkspaceEditActionHandler } from "sprotty-vscode/lib/lsp/editing";
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
@@ -82,7 +82,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             this.languageClient.sendNotification('configuration', collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
 
-        this.languageClient.onNotification('svg', ({uri, svg}) => {
+        this.languageClient.onNotification('svg', ({ uri, svg }) => {
             createFile(uri, svg);
         });
     }
@@ -114,32 +114,12 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             })
         );
 
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.md.diagram.export', (uri: string) => {
-                const activeWebview = this.singleton;
-                if (activeWebview) {
-                    const mes: ActionMessage = {
-                        clientId: activeWebview.diagramIdentifier.clientId,
-                        action: {
-                            kind: GenerateSVGsAction.KIND,
-                            options: {
-                                diagramType: activeWebview.diagramIdentifier.diagramType,
-                                needsClientLayout: true,
-                                needsServerLayout: true,
-                                sourceUri: activeWebview.diagramIdentifier.uri
-                            } as JsonMap, uri: uri
-                        } as GenerateSVGsAction
-                    };
-
-                    this.languageClient.sendNotification('result/controlStructure', mes);
-                }
-            }));
 
         // command for creating a pdf
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.md.creation', async (uri: vscode.Uri) => {
                 const data: StpaResult = await this.languageClient.sendRequest('result/getData', uri.toString());
-                await createMarkdownFile(data);
+                await createMarkdownFile(data, this);
             })
         );
         // commands for toggling the provided validation checks
@@ -269,6 +249,28 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         // diagram is updated when file changes
         fileSystemWatcher.onDidChange((uri) => this.updateViews(languageClient, uri.toString()));
         return languageClient;
+    }
+
+    async createSVGDiagrams(uri: string): Promise<Record<string, number>> {
+        const activeWebview = this.singleton;
+        if (activeWebview) {
+            const mes: ActionMessage = {
+                clientId: activeWebview.diagramIdentifier.clientId,
+                action: {
+                    kind: GenerateSVGsAction.KIND,
+                    options: {
+                        diagramType: activeWebview.diagramIdentifier.diagramType,
+                        needsClientLayout: true,
+                        needsServerLayout: true,
+                        sourceUri: activeWebview.diagramIdentifier.uri
+                    } as JsonMap, uri: uri
+                } as GenerateSVGsAction
+            };
+
+            const diagramSize: Record<string, number>  = await this.languageClient.sendRequest('result/createDiagrams', mes);
+            return diagramSize;
+        }
+        return {};
     }
 
     protected updateViews(languageClient: LanguageClient, uri: string): void {

@@ -19,7 +19,7 @@ import { DropDownOption, TransformationOptionType, ValuedSynthesisOption } from 
 
 const hierarchyID = "hierarchy";
 const groupingUCAsID = "groupingUCAs";
-const filteringUCAsID = "filteringUCAs";
+export const filteringUCAsID = "filteringUCAs";
 const hideSysConsID = "hideSysCons";
 const hideRespsID = "hideResps";
 const hideUCAsID = "hideUCAs";
@@ -269,7 +269,12 @@ export class StpaSynthesisOptions {
     }
 
     setFilteringUCAs(value: string): void {
-        this.setOption(filteringUCAsID, value);
+        const option = this.options.find(option => option.synthesisOption.id === filteringUCAsID);
+        if (option) {
+            option.currentValue = value;
+            option.synthesisOption.currentValue = value;
+            (option.synthesisOption as DropDownOption).currentId = value;
+        }
     }
 
     getFilteringUCAs(): string {

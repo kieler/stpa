@@ -23,7 +23,6 @@ export const CONTROL_STRUCTURE_PATH = "/control-structure.svg";
 export const HAZARD_PATH = "/hazard.svg";
 export const SYSTEM_CONSTRAINT_PATH = "/system-constraint.svg";
 export const RESPONSIBILITY_PATH = "/responsibility.svg";
-export const UCA_PATH = "/uca.svg";
 export const CONTROLLER_CONSTRAINT_PATH = "/controller-constraint.svg";
 export const SCENARIO_PATH = "/scenario.svg";
 export const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
@@ -88,6 +87,18 @@ export function setResponsibilityGraphOptions(options: StpaSynthesisOptions): vo
     options.setHideSysCons(false);
     options.setHideResps(false);
     options.setHideUCAs(true);
+    options.setHideContCons(true);
+    options.setHideScenarios(true);
+    options.setHideSafetyConstraints(true);
+}
+
+export function setFilteredUcaGraphOptions(options: StpaSynthesisOptions, value: string): void {
+    options.setShowRelationshipGraph(true);
+    options.setShowControlStructure(false);
+    options.setFilteringUCAs(value);
+    options.setHideSysCons(true);
+    options.setHideResps(false);
+    options.setHideUCAs(false);
     options.setHideContCons(true);
     options.setHideScenarios(true);
     options.setHideSafetyConstraints(true);

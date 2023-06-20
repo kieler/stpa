@@ -17,8 +17,9 @@
 
 import * as vscode from 'vscode';
 import { StpaComponent, StpaResult, UCA_TYPE, createFile } from './utils';
+import { StpaLspVscodeExtension } from './language-extension';
 
-export async function createMarkdownFile(data: StpaResult): Promise<void> {
+export async function createMarkdownFile(data: StpaResult, extension: StpaLspVscodeExtension): Promise<void> {
     // Ask the user where to save the sbm
     const currentFolder = vscode.workspace.workspaceFolders
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
@@ -33,11 +34,13 @@ export async function createMarkdownFile(data: StpaResult): Promise<void> {
         // The user did not pick any file to save to.
         return;
     }
-    // create a markdown text
-    const markdown = createMarkdownText(data);
+
     // create svg diagrams
     const folderUri = uri.path.lastIndexOf('/');
-    createDiagrams(uri.path.substring(0, folderUri));
+    const diagramSizes: Record<string, number>  = await extension.createSVGDiagrams(uri.path.substring(0, folderUri) + SVG_PATH);
+
+    // create a markdown text
+    const markdown = createMarkdownText(data, diagramSizes);
 
     createFile(uri.path, markdown);
 }
@@ -54,43 +57,43 @@ class Headers {
     static SafetyRequirement = "Safety Requirements";
 }
 
-function createMarkdownText(data: StpaResult): string {
-    // TODO: add control structure, context table, diagrams
+function createMarkdownText(data: StpaResult, diagramSizes: Record<string, number>): string {
+    // TODO: add context table
     let markdown = "";
     markdown += `# STPA Report\n\n`;
     // losses
     markdown += stpaAspectToMarkdown(Headers.Loss, data.losses);
     // hazards
-    markdown += stpaAspectToMarkdown(Headers.Hazard, data.hazards, HAZARD_PATH);
+    markdown += stpaAspectToMarkdown(Headers.Hazard, data.hazards, HAZARD_PATH, diagramSizes);
     // system-level constraints
-    markdown += stpaAspectToMarkdown(Headers.SystemLevelConstraint, data.systemLevelConstraints, SYSTEM_CONSTRAINT_PATH);
+    markdown += stpaAspectToMarkdown(Headers.SystemLevelConstraint, data.systemLevelConstraints, SYSTEM_CONSTRAINT_PATH, diagramSizes);
     // control structure
-    markdown += addControlStructure();
+    markdown += addControlStructure(diagramSizes);
     // responsibilities
     markdown += recordToMarkdown(Headers.Responsibility, data.responsibilities);
-    markdown += `![Responsibilities](.${SVG_PATH + RESPONSIBILITY_PATH})\n\n`;
-    // UCAs TODO
-    markdown += ucasToMarkdown(data.ucas);
+    markdown += `<img src=".${SVG_PATH + RESPONSIBILITY_PATH}" width="${diagramSizes[RESPONSIBILITY_PATH]*SIZE_MULTIPLIER}">\n\n`;
+    // UCAs
+    markdown += ucasToMarkdown(data.ucas, diagramSizes);
     // controller constraints
-    markdown += stpaAspectToMarkdown(Headers.ControllerConstraint, data.controllerConstraints, CONTROLLER_CONSTRAINT_PATH);
+    markdown += stpaAspectToMarkdown(Headers.ControllerConstraint, data.controllerConstraints, CONTROLLER_CONSTRAINT_PATH, diagramSizes);
     // loss scenarios
-    markdown += scenariosToMarkdown(data.ucaScenarios, data.scenarios);
+    markdown += scenariosToMarkdown(data.ucaScenarios, data.scenarios, diagramSizes);
     // safety requirements
     markdown += stpaAspectToMarkdown(Headers.SafetyRequirement, data.safetyCons, SAFETY_REQUIREMENT_PATH);
     // summarize safety constraints
-    markdown += addSummary(data);
+    markdown += addSummary(data, diagramSizes);
     return markdown;
 }
 
-function stpaAspectToMarkdown(aspect: string, components: StpaComponent[], diagram?: string): string {
+function stpaAspectToMarkdown(aspect: string, components: StpaComponent[], svgName?: string, diagramSizes?: Record<string, number>): string {
     let markdown = `## ${aspect}\n\n`;
     for (const component of components) {
         markdown += stpaComponentToMarkdown(component);
         markdown += `  \n`;
     }
     markdown += `\n`;
-    if (diagram) {
-        markdown += `![${aspect}](.${SVG_PATH + diagram})\n\n`;
+    if (svgName && diagramSizes) {
+        markdown += `<img src=".${SVG_PATH + svgName}" width="${diagramSizes[svgName]*SIZE_MULTIPLIER}">\n\n`;
     }
     return markdown;
 }
@@ -116,24 +119,23 @@ function recordToMarkdown(aspect: string, data: Record<string, StpaComponent[]>)
     return markdown;
 }
 
-function scenariosToMarkdown(ucaScenarios: Record<string, StpaComponent[]>, scenarios: StpaComponent[]): string {
+function scenariosToMarkdown(ucaScenarios: Record<string, StpaComponent[]>, scenarios: StpaComponent[], diagramSizes: Record<string, number>): string {
     let markdown = recordToMarkdown(Headers.LossScenario, ucaScenarios);
     if (scenarios.length !== 0) {
         markdown += `**Scenarios without associated UCA**\n\n`;
         markdown += scenarios.map(scenario => stpaComponentToMarkdown(scenario)).join("  \n");
         markdown += `\n`;
     }
-    markdown += `\n![Scenarios](.${SVG_PATH + SCENARIO_PATH})\n\n`;
+    markdown += `\n<img src=".${SVG_PATH + SCENARIO_PATH}" width="${diagramSizes[SCENARIO_PATH]*SIZE_MULTIPLIER}">\n\n`;
     return markdown;
 }
 
-function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string, StpaComponent[]>; }[]): string {
+function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string, StpaComponent[]>; }[], diagramSizes: Record<string, number>): string {
     let markdown = `## ${Headers.UCA}\n\n`;
-    markdown += `| Control Action | not provided | provided | too late or too early | applied too long or stopped too soon |\n`;
-    // TODO: alignment? (:---:)
-    markdown += `| --- | --- | --- | --- | --- |\n`;
     for (const actionUCA of actionUcas) {
-        markdown += `| ${actionUCA.controlAction} |`;
+        markdown += `### _${actionUCA.controlAction}_\n\n`;
+        markdown += `| not provided | provided | too late or too early | applied too long or stopped too soon |\n`;
+        markdown += `| --- | --- | --- | --- |\n`;
         markdown += actionUCA.ucas[UCA_TYPE.NOT_PROVIDED].map(uca => stpaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "|";
         markdown += actionUCA.ucas[UCA_TYPE.PROVIDED].map(uca => stpaComponentToMarkdown(uca)).join("<br><br>");
@@ -142,13 +144,13 @@ function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string
         markdown += "|";
         markdown += actionUCA.ucas[UCA_TYPE.CONTINUOUS].map(uca => stpaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "|\n";
+        markdown += `\n\n<img src=".${SVG_PATH + "/" + actionUCA.controlAction.replace(".", "-") + ".svg"}" width="${diagramSizes["/" + actionUCA.controlAction.replace(".", "-") + ".svg"]*SIZE_MULTIPLIER}">\n\n<br><br>\n\n`;
     }
-    markdown += `\n\n![UCAs](.${SVG_PATH + UCA_PATH})\n\n`;
-    markdown += `\n`;
+    markdown += `\n\n<img src=".${SVG_PATH + UCA_PATH}" width="${diagramSizes[UCA_PATH]*SIZE_MULTIPLIER}">\n\n`;
     return markdown;
 }
 
-function addSummary(data: StpaResult): string {
+function addSummary(data: StpaResult, diagramSizes: Record<string, number>): string {
     let markdown = "## Summarized Safety Constraints\n\n";
     for (const component of data.systemLevelConstraints) {
         markdown += stpaComponentToMarkdown(component);
@@ -162,13 +164,13 @@ function addSummary(data: StpaResult): string {
         markdown += stpaComponentToMarkdown(component);
         markdown += `  \n`;
     }
-    markdown += `\n\n![Complete-Graph](.${SVG_PATH + COMPLETE_GRAPH_PATH})\n\n`;
+    markdown += `\n\n<img src=".${SVG_PATH + COMPLETE_GRAPH_PATH}" width="${diagramSizes[COMPLETE_GRAPH_PATH]*SIZE_MULTIPLIER}">\n\n`;
     return markdown;
 }
 
-function addControlStructure(): string {
+function addControlStructure(diagramSizes: Record<string, number>): string {
     let markdown = `## ${Headers.ControlStructure}\n\n`;
-    markdown += `![Control Structure](.${SVG_PATH + CONTROL_STRUCTURE_PATH})\n\n`;
+    markdown += `<img src=".${SVG_PATH + CONTROL_STRUCTURE_PATH}" width="${diagramSizes[CONTROL_STRUCTURE_PATH]*SIZE_MULTIPLIER}">\n\n`;
     return markdown;
 }
 
@@ -177,12 +179,10 @@ const CONTROL_STRUCTURE_PATH = "/control-structure.svg";
 const HAZARD_PATH = "/hazard.svg";
 const SYSTEM_CONSTRAINT_PATH = "/system-constraint.svg";
 const RESPONSIBILITY_PATH = "/responsibility.svg";
-const UCA_PATH = "/uca.svg";
+const UCA_PATH = "/all-UCAs.svg";
 const CONTROLLER_CONSTRAINT_PATH = "/controller-constraint.svg";
 const SCENARIO_PATH = "/scenario.svg";
 const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
 const COMPLETE_GRAPH_PATH = "/complete-graph.svg";
 
-function createDiagrams(folderUri: string): void {
-    vscode.commands.executeCommand('stpa.md.diagram.export', folderUri + SVG_PATH);
-}
+const SIZE_MULTIPLIER = 0.85;

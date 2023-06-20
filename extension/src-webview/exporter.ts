@@ -16,7 +16,7 @@
  */
 
 import { injectable } from "inversify";
-import { SModelRoot, SvgExporter } from "sprotty";
+import { SModelRoot, SNode, SvgExporter } from "sprotty";
 import { RequestAction } from "sprotty-protocol";
 import { SvgAction } from "./actions";
 
@@ -29,7 +29,8 @@ export class CustomSvgExporter extends SvgExporter {
             if (div !== null && div.firstElementChild && div.firstElementChild.tagName === 'svg') {
                 const svgElement = div.firstElementChild as SVGSVGElement;
                 const svg = this.createSvg(svgElement, root);
-                this.actionDispatcher.dispatch(SvgAction.create(svg, request ? request.requestId : ''));
+                const width = Math.max((root.children[0] as SNode).bounds.width, (root.children[1] as SNode).bounds.width);
+                this.actionDispatcher.dispatch(SvgAction.create(svg, width, request ? request.requestId : ''));
             }
         }
     }

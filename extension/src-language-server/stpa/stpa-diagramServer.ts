@@ -21,8 +21,8 @@ import { UpdateViewAction } from '../actions';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
 import { DropDownOption } from '../options/option-models';
 import { GenerateSVGsAction, RequestSvgAction, SvgAction } from './actions';
-import { StpaSynthesisOptions } from './synthesis-options';
-import { COMPLETE_GRAPH_PATH, CONTROLLER_CONSTRAINT_PATH, CONTROL_STRUCTURE_PATH, HAZARD_PATH, RESPONSIBILITY_PATH, SAFETY_REQUIREMENT_PATH, SCENARIO_PATH, SYSTEM_CONSTRAINT_PATH, UCA_PATH, setRelationshipGraphOptions, setControlStructureOptions, setControllerConstraintGraphOptions, setHazardGraphOptions, setResponsibilityGraphOptions, setSafetyRequirementGraphOptions, setScenarioGraphOptions, setSystemConstraintGraphOptions, setUcaGraphOptions, saveOptions, resetOptions } from './result-report/svg-generator';
+import { COMPLETE_GRAPH_PATH, CONTROLLER_CONSTRAINT_PATH, CONTROL_STRUCTURE_PATH, HAZARD_PATH, RESPONSIBILITY_PATH, SAFETY_REQUIREMENT_PATH, SCENARIO_PATH, SYSTEM_CONSTRAINT_PATH, resetOptions, saveOptions, setControlStructureOptions, setControllerConstraintGraphOptions, setFilteredUcaGraphOptions, setHazardGraphOptions, setRelationshipGraphOptions, setResponsibilityGraphOptions, setSafetyRequirementGraphOptions, setScenarioGraphOptions, setSystemConstraintGraphOptions } from './result-report/svg-generator';
+import { StpaSynthesisOptions, filteringUCAsID } from './synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {
 
@@ -55,12 +55,15 @@ export class StpaDiagramServer extends DiagramServer {
             case UpdateViewAction.KIND:
                 return this.handleUpdateView(action as UpdateViewAction);
             case GenerateSVGsAction.KIND:
-                return this.handleGenerateControlStructure(action as GenerateSVGsAction);
+                return this.handleGenerateSVGDiagrams(action as GenerateSVGsAction);
         }
         return super.handleAction(action);
     }
 
-    async handleGenerateControlStructure(action: GenerateSVGsAction): Promise<void> {
+
+
+    async handleGenerateSVGDiagrams(action: GenerateSVGsAction): Promise<void> {
+        diagramSizes = {};
         const setSynthesisOption = {
             kind: SetSynthesisOptionsAction.KIND,
             options: this.stpaOptions.getSynthesisOptions().map(option => option.synthesisOption)
@@ -68,43 +71,49 @@ export class StpaDiagramServer extends DiagramServer {
         saveOptions(this.stpaOptions);
         // control structure svg
         setControlStructureOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + CONTROL_STRUCTURE_PATH);
+        await this.createSVG(setSynthesisOption, action.uri, CONTROL_STRUCTURE_PATH);
         // hazard graph svg
         setHazardGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + HAZARD_PATH);
+        await this.createSVG(setSynthesisOption, action.uri, HAZARD_PATH);
         // system constraint graph svg
         setSystemConstraintGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + SYSTEM_CONSTRAINT_PATH);
+        await this.createSVG(setSynthesisOption, action.uri, SYSTEM_CONSTRAINT_PATH);
         // responsibility graph svg
         setResponsibilityGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + RESPONSIBILITY_PATH);
-        // uca grpah svg
-        setUcaGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + UCA_PATH);
+        await this.createSVG(setSynthesisOption, action.uri, RESPONSIBILITY_PATH);
+
+        // filtered uca graph svg
+        const filteringUcaOption = this.stpaOptions.getSynthesisOptions().find(option => option.synthesisOption.id === filteringUCAsID);
+        for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
+            setFilteredUcaGraphOptions(this.stpaOptions, value.id);
+            await this.createSVG(setSynthesisOption, action.uri, "/" + value.id.replace(".", "-").replace(" ", "-") + ".svg");
+        }
+
         // controller constraint graph svg
         setControllerConstraintGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + CONTROLLER_CONSTRAINT_PATH);
+        await this.createSVG(setSynthesisOption, action.uri, CONTROLLER_CONSTRAINT_PATH);
         // scenario svg graph
         setScenarioGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + SCENARIO_PATH);
+        await this.createSVG(setSynthesisOption, action.uri, SCENARIO_PATH);
         // safety requirement svg graph
         setSafetyRequirementGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + SAFETY_REQUIREMENT_PATH);
+        await this.createSVG(setSynthesisOption, action.uri, SAFETY_REQUIREMENT_PATH);
         // complete graph svg
         setRelationshipGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri + COMPLETE_GRAPH_PATH);
+        await this.createSVG(setSynthesisOption, action.uri, COMPLETE_GRAPH_PATH);
         // reset options
         resetOptions(this.stpaOptions);
         await this.handleSetSynthesisOption(setSynthesisOption);
         return Promise.resolve();
     }
 
-    protected async createSVG(action: SetSynthesisOptionsAction | undefined, uri: string): Promise<void> {
+    protected async createSVG(action: SetSynthesisOptionsAction | undefined, uri: string, id: string): Promise<void> {
         if (action) {
             await this.handleSetSynthesisOption(action);
             const request = RequestSvgAction.create();
             const response = await this.request<SvgAction>(request);
-            this.connection?.sendNotification("svg", { uri: uri, svg: response.svg });
+            diagramSizes[id] = response.width;
+            this.connection?.sendNotification("svg", { uri: uri + id, svg: response.svg });
         }
     }
 
@@ -152,3 +161,5 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
 }
+
+export let diagramSizes: Record<string, number> = {};
