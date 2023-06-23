@@ -97,6 +97,7 @@ export async function createFile(uri: string, text: string): Promise<void> {
 }
 
 export class StpaResult {
+    title: string;
     losses: StpaComponent[] = [];
     hazards: StpaComponent[] = [];
     systemLevelConstraints: StpaComponent[] = [];

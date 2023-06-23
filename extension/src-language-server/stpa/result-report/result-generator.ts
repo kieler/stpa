@@ -17,9 +17,9 @@
 
 import { AstNode, Reference } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { ActionUCAs, ContConstraint, Hazard, LossScenario, Responsibility, SafetyConstraint, SystemConstraint, UCA, isHazard } from "../../generated/ast";
+import { ActionUCAs, ContConstraint, Hazard, LossScenario, Responsibility, SafetyConstraint, SystemConstraint, UCA } from "../../generated/ast";
 import { getModel } from "../../utils";
-import { StpaResult, StpaComponent, UCA_TYPE } from "../utils";
+import { StpaComponent, StpaResult, UCA_TYPE } from "../utils";
 
 
 
@@ -55,6 +55,8 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
     model.allUCAs.forEach(component => {
         result.ucas.push(createUCAResult(component));
     });
+
+    result.title = model.controlStructure?.name ?? "...";
 
     return result;
 }

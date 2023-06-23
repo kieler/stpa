@@ -201,6 +201,7 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
 }
 
 export class StpaResult {
+    title: string;
     losses: StpaComponent[] = [];
     hazards: StpaComponent[] = [];
     systemLevelConstraints: StpaComponent[] = [];

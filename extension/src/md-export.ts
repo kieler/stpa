@@ -59,11 +59,11 @@ class Headers {
 }
 
 function createMarkdownText(data: StpaResult, diagramSizes: Record<string, number>): string {
-    // TODO: add context table
+    // TODO: consider context table
     let markdown = "";
-    markdown += `# STPA Report\n\n`;
+    markdown += `# STPA Report for ${data.title}\n\n`;
     // losses
-    markdown += stpaAspectToMarkdown(Headers.Loss, data.losses);
+    markdown += stpaAspectToMarkdown(Headers.Loss, data.losses) + "\n";
     // hazards
     markdown += stpaAspectToMarkdown(Headers.Hazard, data.hazards, HAZARD_PATH, diagramSizes);
     // system-level constraints
