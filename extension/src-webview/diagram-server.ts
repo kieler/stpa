@@ -42,6 +42,11 @@ export class StpaDiagramServer extends VscodeLspEditDiagramServer {
         return super.handleLocally(action);
     }
 
+    /**
+     * Forwards the {@code action} to the server.
+     * @param action The SVGAction.
+     * @returns 
+     */
     handleSvgAction(action: SvgAction): boolean {
         this.forwardToServer(action);
         return false;

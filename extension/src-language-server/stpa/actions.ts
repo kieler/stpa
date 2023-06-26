@@ -17,6 +17,7 @@
 
 import { Action, JsonMap, RequestAction, generateRequestId, ResponseAction } from "sprotty-protocol";
 
+/** Send to server to generate SVGs for the STPA result report */
 export interface GenerateSVGsAction extends Action {
     kind: typeof GenerateSVGsAction.KIND
     uri: string
@@ -24,7 +25,7 @@ export interface GenerateSVGsAction extends Action {
 }
 
 export namespace GenerateSVGsAction {
-    export const KIND = "generateControlStructure";
+    export const KIND = "generateSVGs";
     
 
     export function create(
@@ -43,9 +44,11 @@ export namespace GenerateSVGsAction {
     }
 }
 
+/** Requests the current SVG from the client. */
 export interface RequestSvgAction extends RequestAction<SvgAction> {
     kind: typeof RequestSvgAction.KIND
 }
+
 export namespace RequestSvgAction {
     export const KIND = 'requestSvg';
 
@@ -57,6 +60,7 @@ export namespace RequestSvgAction {
     }
 }
 
+/** Send from client to server containing the requested SVG and its width. */
 export interface SvgAction extends ResponseAction {
     kind: typeof SvgAction.KIND;
     svg: string

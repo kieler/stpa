@@ -120,10 +120,12 @@ function addModelCheckingHandler(connection: Connection, sharedServices: Langium
  * @param sharedServices 
  */
 function addResultHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    // creates and send back the STPA result data
     connection.onRequest('result/getData', async (uri: string) => {
         const data = await createResultData(uri, sharedServices);
         return data;
     });
+    // create the diagrams needed for the STPA result report and send back the widths of them.
     connection.onRequest('result/createDiagrams', async msg => {
         const diagramServerManager = sharedServices.diagram.DiagramServerManager;
         await diagramServerManager.acceptAction(msg);

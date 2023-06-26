@@ -24,7 +24,7 @@ import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { GenerateSVGsAction, UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
-import { createMarkdownFile } from './md-export';
+import { createSTPAResultMarkdownFile } from './md-export';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaResult, applyTextEdits, collectOptions, createFile, createQuickPickForWorkspaceOptions } from './utils';
 import { StpaLspWebview } from './wview';
@@ -82,6 +82,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             this.languageClient.sendNotification('configuration', collectOptions(vscode.workspace.getConfiguration('pasta')));
         });
 
+        // server sent svg that should be saved
         this.languageClient.onNotification('svg', ({ uri, svg }) => {
             createFile(uri, svg);
         });
@@ -119,7 +120,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.md.creation', async (uri: vscode.Uri) => {
                 const data: StpaResult = await this.languageClient.sendRequest('result/getData', uri.toString());
-                await createMarkdownFile(data, this);
+                await createSTPAResultMarkdownFile(data, this);
             })
         );
         // commands for toggling the provided validation checks
@@ -251,9 +252,15 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         return languageClient;
     }
 
+    /**
+     * Triggers the creation of SVGs for the current model.
+     * @param uri The folder uri where to save the SVGs.
+     * @returns the widths of the resulting SVGs with the SVG name as the key.
+     */
     async createSVGDiagrams(uri: string): Promise<Record<string, number>> {
         const activeWebview = this.singleton;
         if (activeWebview) {
+            // create GenerateSVGsAction
             const mes: ActionMessage = {
                 clientId: activeWebview.diagramIdentifier.clientId,
                 action: {
@@ -266,7 +273,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                     } as JsonMap, uri: uri
                 } as GenerateSVGsAction
             };
-
+            // send request
             const diagramSize: Record<string, number>  = await this.languageClient.sendRequest('result/createDiagrams', mes);
             return diagramSize;
         }

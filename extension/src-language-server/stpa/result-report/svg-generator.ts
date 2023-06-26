@@ -18,6 +18,7 @@
 import { SetSynthesisOptionsAction } from "../../options/actions";
 import { StpaSynthesisOptions } from "../synthesis-options";
 
+/* the paths for the several diagrams of the STPA aspects */
 export const SVG_PATH = "/images";
 export const CONTROL_STRUCTURE_PATH = "/control-structure.svg";
 export const HAZARD_PATH = "/hazard.svg";
@@ -28,15 +29,26 @@ export const SCENARIO_PATH = "/scenario.svg";
 export const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
 export const COMPLETE_GRAPH_PATH = "/complete-graph.svg";
 
+/* used to reset the options after diagrams were created */
 const savedOptions: Map<string, string> = new Map();
 
+/**
+ * Saves the current values of the {@code options}.
+ * @param options The synthesis options.
+ */
 export function saveOptions(options: StpaSynthesisOptions): void {
     options.getSynthesisOptions().forEach(option => {
         savedOptions.set(option.synthesisOption.id, option.currentValue);
     });
 }
 
+/**
+ * Sates the values of {@code options} to the ones saved in savedOptions.
+ * @param options The synthesis options.
+ * @returns an action to send the new values to the client.
+ */
 export function resetOptions(options: StpaSynthesisOptions): SetSynthesisOptionsAction {
+    // set the values to the saved ones
     options.getSynthesisOptions().forEach(option => {
         const savedValue = savedOptions.get(option.synthesisOption.id);
         if (savedValue) {
@@ -44,6 +56,7 @@ export function resetOptions(options: StpaSynthesisOptions): SetSynthesisOptions
         }
         option.synthesisOption.currentValue = option.currentValue;
     });
+    // create an action to set the options on the client
     const setSynthesisOption = {
         kind: SetSynthesisOptionsAction.KIND,
         options: options.getSynthesisOptions().map(option => option.synthesisOption)
@@ -51,11 +64,19 @@ export function resetOptions(options: StpaSynthesisOptions): SetSynthesisOptions
     return setSynthesisOption;
 }
 
+/**
+ * Sets the values of {@code options} such that only the control structure is shown.
+ * @param options The synthesis options.
+ */
 export function setControlStructureOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(false);
     options.setShowControlStructure(true);
 }
 
+/**
+ * Sets the values of {@code options} such that the relationship graph is reduced to the hazards.
+ * @param options The synthesis options.
+ */
 export function setHazardGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -68,6 +89,10 @@ export function setHazardGraphOptions(options: StpaSynthesisOptions): void {
     options.setHideSafetyConstraints(true);
 }
 
+/**
+ * Sets the values of {@code options} such that the relationship graph is reduced to the system-level constraints.
+ * @param options The synthesis options.
+ */
 export function setSystemConstraintGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -80,6 +105,10 @@ export function setSystemConstraintGraphOptions(options: StpaSynthesisOptions): 
     options.setHideSafetyConstraints(true);
 }
 
+/**
+ * Sets the values of {@code options} such that the relationship graph is reduced to the responsibilities.
+ * @param options The synthesis options.
+ */
 export function setResponsibilityGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -92,6 +121,11 @@ export function setResponsibilityGraphOptions(options: StpaSynthesisOptions): vo
     options.setHideSafetyConstraints(true);
 }
 
+/**
+ * Sets the values of {@code options} such that the relationship graph is filtered based on {@code value}.
+ * @param options The synthesis options.
+ * @param value The value the "filter UCA" option should be set to.
+ */
 export function setFilteredUcaGraphOptions(options: StpaSynthesisOptions, value: string): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -116,6 +150,10 @@ export function setUcaGraphOptions(options: StpaSynthesisOptions): void {
     options.setHideSafetyConstraints(true);
 }
 
+/**
+ * Sets the values of {@code options} such that the relationship graph is reduced to the controller constraints without system-level constraints.
+ * @param options The synthesis options.
+ */
 export function setControllerConstraintGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -128,6 +166,10 @@ export function setControllerConstraintGraphOptions(options: StpaSynthesisOption
     options.setHideSafetyConstraints(true);
 }
 
+/**
+ * Sets the values of {@code options} such that the relationship graph is reduced to the loss scenarios without system-level constraints.
+ * @param options The synthesis options.
+ */
 export function setScenarioGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -140,6 +182,10 @@ export function setScenarioGraphOptions(options: StpaSynthesisOptions): void {
     options.setHideSafetyConstraints(true);
 }
 
+/**
+ * Sets the values of {@code options} such that the relationship graph is reduced to the safety constraints without system-level constraints.
+ * @param options The synthesis options.
+ */
 export function setSafetyRequirementGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -152,6 +198,10 @@ export function setSafetyRequirementGraphOptions(options: StpaSynthesisOptions):
     options.setHideSafetyConstraints(false);
 }
 
+/**
+ * Sets the values of {@code options} such that the whole relationship graph is shown and the control structure is hidden.
+ * @param options The synthesis options.
+ */
 export function setRelationshipGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);

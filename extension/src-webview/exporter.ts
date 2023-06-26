@@ -23,6 +23,11 @@ import { SvgAction } from "./actions";
 @injectable()
 export class CustomSvgExporter extends SvgExporter {
 
+    /**
+     * Generates an SVG and dispatches an SVGAction.
+     * @param root The root of the model.
+     * @param request The request action that triggered this method.
+     */
     internalExport(root: SModelRoot, request?: RequestAction<SvgAction>): void {
         if (typeof document !== 'undefined') {
             const div = document.getElementById(this.options.hiddenDiv);

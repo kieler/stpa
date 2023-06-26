@@ -20,6 +20,23 @@ import { CommandExecutionContext, CommandResult, HiddenCommand, TYPES, isExporta
 import { RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
 
 
+/** Requests the current SVG from the client. */
+export interface RequestSvgAction extends RequestAction<SvgAction> {
+    kind: typeof RequestSvgAction.KIND
+}
+
+export namespace RequestSvgAction {
+    export const KIND = 'requestSvg';
+
+    export function create(): RequestSvgAction {
+        return {
+            kind: KIND,
+            requestId: generateRequestId()
+        };
+    }
+}
+
+/** Send from client to server containing the requested SVG and its width. */
 export interface SvgAction extends ResponseAction {
     kind: typeof SvgAction.KIND;
     svg: string
@@ -39,20 +56,7 @@ export namespace SvgAction {
     }
 }
 
-export interface RequestSvgAction extends RequestAction<SvgAction> {
-    kind: typeof RequestSvgAction.KIND
-}
-export namespace RequestSvgAction {
-    export const KIND = 'requestSvg';
-
-    export function create(): RequestSvgAction {
-        return {
-            kind: KIND,
-            requestId: generateRequestId()
-        };
-    }
-}
-
+/** Command that is executed when SVG is requested by the server. */
 export class SvgCommand extends HiddenCommand {
     static readonly KIND = RequestSvgAction.KIND;
 

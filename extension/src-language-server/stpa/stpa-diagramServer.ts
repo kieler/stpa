@@ -60,14 +60,20 @@ export class StpaDiagramServer extends DiagramServer {
         return super.handleAction(action);
     }
 
-
-
+    /**
+     * Generates the diagrams for the STPA results by setting the synthesis options 
+     * accordingly and requesting the SVG from the client.
+     * 
+     * @param action The action that triggered this method.
+     * @returns 
+     */
     async handleGenerateSVGDiagrams(action: GenerateSVGsAction): Promise<void> {
         diagramSizes = {};
         const setSynthesisOption = {
             kind: SetSynthesisOptionsAction.KIND,
             options: this.stpaOptions.getSynthesisOptions().map(option => option.synthesisOption)
         } as SetSynthesisOptionsAction;
+        // save current option values
         saveOptions(this.stpaOptions);
         // control structure svg
         setControlStructureOptions(this.stpaOptions);
@@ -104,15 +110,26 @@ export class StpaDiagramServer extends DiagramServer {
         // reset options
         resetOptions(this.stpaOptions);
         await this.handleSetSynthesisOption(setSynthesisOption);
+
         return Promise.resolve();
     }
 
+    /**
+     * Creates an SVG by sending the {@code action} to the client and then requesting the SVG. The SVG is then send to the extension with the uri where to save it.
+     * @param action The action to set the synthesis options for the wanted diagram.
+     * @param uri The uri of the folder where the SVG should be saved.
+     * @param id The name of the SVG.
+     */
     protected async createSVG(action: SetSynthesisOptionsAction | undefined, uri: string, id: string): Promise<void> {
         if (action) {
+            // wait for client to apply the new synthesis option values
             await this.handleSetSynthesisOption(action);
+            // request SVG
             const request = RequestSvgAction.create();
             const response = await this.request<SvgAction>(request);
+            // save the width of the SVG
             diagramSizes[id] = response.width;
+            // send SVG to the extension
             this.connection?.sendNotification("svg", { uri: uri + id, svg: response.svg });
         }
     }

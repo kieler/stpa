@@ -59,6 +59,7 @@ export namespace SendConfigAction {
     }
 }
 
+/** Send to server to generate SVGs for the STPA result report */
 export interface GenerateSVGsAction extends Action {
     kind: typeof GenerateSVGsAction.KIND
     uri: string
@@ -66,7 +67,7 @@ export interface GenerateSVGsAction extends Action {
 }
 
 export namespace GenerateSVGsAction {
-    export const KIND = "generateControlStructure";
+    export const KIND = "generateSVGs";
     
 
     export function create(

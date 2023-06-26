@@ -35,6 +35,7 @@ export class SvgPostprocessor implements IVNodePostprocessor {
     }
 
     postUpdate(cause?: Action): void {
+        // triggers an internal export
         if (this.root && cause !== undefined && cause.kind === RequestSvgAction.KIND) {
             this.svgExporter.internalExport(this.root, cause as RequestSvgAction);
         }
