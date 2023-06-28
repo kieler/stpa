@@ -16,8 +16,9 @@
  */
 
 import * as vscode from 'vscode';
-import { EMPTY_STATE_NAME, Enum, LTLFormula, State, Transition, UCA_TYPE, Variable } from "./utils";
-import { createSCChartText, createSCChartFile } from "./scchart-creation";
+import { EMPTY_STATE_NAME, Enum, LTLFormula, State, UCA_TYPE, Variable } from "./utils";
+import { createSCChartText } from "./scchart-creation";
+import { createFile } from '../utils';
 
 /**
  * Creates a safe behavioral model for each controller.
@@ -52,26 +53,18 @@ async function createControllerSBM(controllerName: string, controlActions: strin
     }
 
     // group formulas and create states for control actions
-    const formulaMap = groupFormulasByAction(ltlFormulas);
+    const formulaMap = groupFormulasByActionAndType(ltlFormulas);
     const states = createStatesForActions(controlActions);
     // add transitions to the states
-    for (const controlAction of formulaMap.keys()) {
-        // if formulas is undefined, no formulas exist for the control action
-        const formulas = formulaMap.get(controlAction);
-        if (formulas !== undefined) {
-            addTransitions(states, controlAction, formulas);
-        }
-    }
-    // the same triggers may be used for multiple transitions. Especially the transitions to the empty state can be deleted when the triggers are used by other transitions
-    removeDublicateTransitions(states);
+    addTransitions(formulaMap, states);
 
-    // determine the variables for the scchart includign a variable for the controlaction
+    // determine the variables for the scchart including a variable for the control action
     const controlActionVariable = { name: "controlAction", type: `ref ${controllerName}` };
     const contextVariables = collectContextVariables(ltlFormulas);
     const variables = contextVariables.variables.concat([controlActionVariable]);
     // create the scchart
     const scchartText = createSCChartText(controllerName, states, variables, contextVariables.enums, ltlFormulas, controlActions.concat(["NULL"]));
-    createSCChartFile(uri.path, scchartText);
+    createFile(uri.path, scchartText);
 }
 
 /**
@@ -184,22 +177,34 @@ function getControlActionFromLTL(ltlFormula: LTLFormula): string {
 }
 
 /**
- * Groups the {@code ltlFormulas} by their control action.
+ * Groups the {@code ltlFormulas} by their control action and UCA type.
  * @param ltlFormulas The ltl formulas to group.
- * @returns the {@code ltlFormulas} grouped by their control action.
+ * @returns the {@code ltlFormulas} grouped by their control action and UCA type.
  */
-function groupFormulasByAction(ltlFormulas: LTLFormula[]): Map<string, LTLFormula[]> {
-    const map: Map<string, LTLFormula[]> = new Map<string, LTLFormula[]>();
+function groupFormulasByActionAndType(ltlFormulas: LTLFormula[]): { notProvidedMap: Map<string, LTLFormula[]>, providedMap: Map<string, LTLFormula[]>, continousMap: Map<string, LTLFormula[]>; } {
+    const notProvidedMap = new Map<string, LTLFormula[]>();
+    const providedMap = new Map<string, LTLFormula[]>();
+    const continousMap = new Map<string, LTLFormula[]>();
     ltlFormulas.forEach(formula => {
         const action = getControlActionFromLTL(formula);
-        const formulaList = map.get(action);
-        if (formulaList === undefined) {
-            map.set(action, [formula]);
-        } else {
-            formulaList.push(formula);
+        switch (formula.type) {
+            case UCA_TYPE.NOT_PROVIDED:
+            case UCA_TYPE.TOO_LATE:
+                notProvidedMap.has(action) ? notProvidedMap.get(action)?.push(formula) : notProvidedMap.set(action, [formula]);
+                break;
+            case UCA_TYPE.PROVIDED:
+                providedMap.has(action) ? providedMap.get(action)?.push(formula) : providedMap.set(action, [formula]);
+                break;
+            case UCA_TYPE.APPLIED_TOO_LONG:
+            case UCA_TYPE.STOPPED_TOO_SOON:
+                continousMap.has(action) ? continousMap.get(action)?.push(formula) : continousMap.set(action, [formula]);
+                break;
+            case UCA_TYPE.TOO_EARLY:
+                // too early is not handled since it cannot be translated to transitions
+                break;
         }
     });
-    return map;
+    return { notProvidedMap, providedMap, continousMap };
 }
 
 /**
@@ -227,69 +232,76 @@ function createStatesForActions(controlActions: string[]): State[] {
 }
 
 /**
- * Adds transitions to the {@code states} such that the {@code ltlFormulas} for the {@code controlAction} are respected.
+ * Adds transitions to the {@code states} such that the ltl Formulas in {@code maps} are respected.
+ * @param maps The maps for each UCA type containing the LTL formulas for each control action.
  * @param states The states of the SBM.
- * @param controlAction The control action which ltl formulas are translated.
- * @param ltlFormulas The ltl formulas for the {@code controlAction}.
  */
-function addTransitions(states: State[], controlAction: string, ltlFormulas: LTLFormula[]): void {
-    const controlActionStateIndex = states.findIndex(state => state.name === controlAction);
-    const controlActionState = states[controlActionStateIndex];
-    ltlFormulas.forEach(ltlFormula => {
-        switch (ltlFormula.type) {
-            case UCA_TYPE.PROVIDED:
-                // transition from controlaction state to the empty state
-                const transition = {
-                    target: EMPTY_STATE_NAME,
-                    trigger: ltlFormula.contextVariables
-                };
-                controlActionState.transitions.push(transition);
-                break;
-            case UCA_TYPE.NOT_PROVIDED:
-                states.forEach((state, index) => {
-                    if (index !== controlActionStateIndex) {
-                        // transition from all other states to the controlaction state
+function addTransitions(maps: { notProvidedMap: Map<string, LTLFormula[]>, providedMap: Map<string, LTLFormula[]>, continousMap: Map<string, LTLFormula[]>; }, states: State[]): void {
+    addNotProvidedTransitions(maps.notProvidedMap, states);
+    addProvidedTransitions(maps.providedMap, states);
+    addContinousTransitions(maps.continousMap, states);
+}
+
+/**
+ * Adds transitions to the {@code states} such that the ltl Formulas in {@code notProvidedMap} are respected.
+ * @param notProvidedMap The LTL formulas with UCA type not-provided/too-late for each control action.
+ * @param states The states of the SBM.
+ */
+function addNotProvidedTransitions(notProvidedMap: Map<string, LTLFormula[]>, states: State[]): void {
+    for (const controlAction of notProvidedMap.keys()) {
+        const controlActionStateIndex = states.findIndex(state => state.name === controlAction);
+        const controlActionState = states[controlActionStateIndex];
+        states.forEach((state, index) => {
+            if (index !== controlActionStateIndex) {
+                // transition from all other states to the controlaction state
+                notProvidedMap.get(controlAction)?.forEach(ltlFormula => {
+                    // prevent dublicates
+                    const sameTransition = state.transitions.find(transition => transition.target === controlActionState.name && transition.trigger === ltlFormula.contextVariables);
+                    if (sameTransition === undefined) {
+                        // add transition
                         const transition = {
                             target: controlActionState.name,
                             trigger: ltlFormula.contextVariables
                         };
-                        // transition must have the highest priority
-                        const newTransitions: Transition[] = [transition];
-                        newTransitions.push(...state.transitions);
-                        state.transitions = newTransitions;
+                        state.transitions.push(transition);
                     }
                 });
-                break;
-            // TODO: implement
-            case UCA_TYPE.TOO_LATE:
-            case UCA_TYPE.APPLIED_TOO_LONG:
-            case UCA_TYPE.STOPPED_TOO_SOON:
-            default: break;
-        }
-    });
+            }
+        });
+    }
 }
 
 /**
- * Removes transitions that are unnecessary because their triggers are the same to transitions with higher priorities.
- * @param states The states of the model which transitions should be updated.
+ * Adds transitions to the {@code states} such that the ltl Formulas in {@code providedMap} are respected.
+ * @param providedMap The LTL formulas with UCA type provided for each control action.
+ * @param states The states of the SBM.
  */
-function removeDublicateTransitions(states: State[]): void {
-    states.forEach(state => {
-        const triggers = new Set<string>;
-        const deleteTransitions = new Set<number>;
-        state.transitions.forEach((transition, index) => {
-            if (transition.trigger && triggers.has(transition.trigger)) {
-                if (transition.target === EMPTY_STATE_NAME) {
-                    deleteTransitions.add(index);
-                } else {
-                    // TODO: inform the user that priorities cannot be inferred
+function addProvidedTransitions(providedMap: Map<string, LTLFormula[]>, states: State[]): void {
+    for (const controlAction of providedMap.keys()) {
+        const controlActionState = states.find(state => state.name === controlAction);
+        if (controlActionState) {
+            providedMap.get(controlAction)?.forEach(ltlFormula => {
+                // only add a transition if there not already exists one with the same trigger
+                const sameTrigger = controlActionState.transitions.find(transition => transition.trigger === ltlFormula.contextVariables);
+                if (sameTrigger === undefined) {
+                    // transition from controlaction state to the empty state
+                    const transition = {
+                        target: EMPTY_STATE_NAME,
+                        trigger: ltlFormula.contextVariables
+                    };
+                    controlActionState.transitions.push(transition);
                 }
-            }
-            if (transition.trigger) {
-                triggers.add(transition.trigger);
-            }
-        });
-        state.transitions = state.transitions.filter((_, index) => !deleteTransitions.has(index));
-    });
+            });
+        }
+    }
 }
 
+/**
+ * Adds transitions to the {@code states} such that the ltl Formulas in {@code continousMap} are respected.
+ * @param continousMap The LTL formulas with UCA type applied-too-long/stopped-too-soon for each control action.
+ * @param states The states of the SBM.
+ */
+function addContinousTransitions(continousMap: Map<string, LTLFormula[]>, states: State[]): void {
+    // TODO: implement
+    throw new Error('Function not implemented.');
+}
