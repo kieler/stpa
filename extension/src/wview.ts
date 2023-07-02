@@ -18,9 +18,11 @@
 import { hasOwnProperty, isActionMessage, SelectAction } from 'sprotty-protocol';
 import { SprottyLspWebview } from "sprotty-vscode/lib/lsp";
 import * as vscode from 'vscode';
-import { SendConfigAction } from './actions';
+import { SelectCutSetAction, SendConfigAction } from './actions';
+
 
 export class StpaLspWebview extends SprottyLspWebview {
+
 
     protected receiveFromWebview(message: any): Promise<boolean> {
         // TODO: for multiple language support here the current language muste be determined
@@ -34,8 +36,10 @@ export class StpaLspWebview extends SprottyLspWebview {
                 case SelectAction.KIND:
                     this.handleSelectAction(message.action as SelectAction);
                     break;
+                case SelectCutSetAction.KIND:
+                    this.selectCutSet(message.action as SelectCutSetAction);
+                    break;
             }
-
         }
         return super.receiveFromWebview(message);
     }
@@ -71,6 +75,11 @@ export class StpaLspWebview extends SprottyLspWebview {
         const configOptions = vscode.workspace.getConfiguration('pasta');
         action.options.forEach(element => configOptions.update(element.id, element.value));
     }
+
+    protected selectCutSet(action: SelectCutSetAction):void{
+        this.dispatch(action);
+    }
+
 }
 
 interface RenderOptionsRegistryReadyMessage {
@@ -80,3 +89,5 @@ interface RenderOptionsRegistryReadyMessage {
 function isRenderOptionsRegistryReadyMessage(object: unknown): object is RenderOptionsRegistryReadyMessage {
     return hasOwnProperty(object, 'optionRegistryReadyMessage');
 }
+
+

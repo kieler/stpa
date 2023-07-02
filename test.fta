@@ -12,7 +12,7 @@ Conditions
 U "In Use"
 
 TopEvent
-"System Failure" = G1 
+"System Failure" = G1
 
 Gates
 G1 = U inhibits G2 
@@ -21,3 +21,19 @@ G3 = G4 and G5
 G4 = C1 or PS or G6
 G5 = C2 or PS or G6
 G6 = 2 of M1, M2, M3
+
+
+/* Gates
+G1 = 3 of M1, G2, G3, C2
+G2 = U inhibits M2
+G3 = M3 and G4
+G4 = B or PS or C1 */
+
+
+/* Gates
+G1 = G2 or B
+G2 = G3 and G4
+G3 = C1 or G5
+G4 = C2 or G6
+G5 = 2 of M1, M2, M3
+G6 = 2 of S, T, K  */

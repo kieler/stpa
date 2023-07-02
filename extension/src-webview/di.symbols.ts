@@ -24,4 +24,5 @@ export const DISymbol = {
     OptionsRenderer: Symbol("OptionsRenderer"),
     OptionsRegistry: Symbol("OptionsRegistry"),
     RenderOptionsRegistry: Symbol("RenderOptionsRegistry"),
+    CutSetsRegistry: Symbol("CutSetsRegistry"),
 };

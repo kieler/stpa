@@ -8,6 +8,7 @@ export const EDGE_TYPE = 'edge';
 export const FTA_EDGE_TYPE = 'edge:fta';
 
 
+
 /**
  * Node representing a FTA component.
  */
@@ -23,7 +24,6 @@ export class FTANode extends SNode{
     n?: number;
 
 }
-
 
 /**
  * Edge representing an edge in the relationship graph.

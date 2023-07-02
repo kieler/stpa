@@ -2,7 +2,7 @@ import { FTAEdge, FTANode } from './fta-interfaces';
 import { FTAAspect } from "./fta-model";
 
 
-export class BDDGenerator{
+export class CutSetGenerator{
 
 
     determineMinimalCutSet(allNodes:FTANode[], allEdges:FTAEdge[]):FTANode[][]{
@@ -44,19 +44,25 @@ export class BDDGenerator{
 
 
 
-        //Algorithm idea:
+        //Idea:
         //Start from the top event.
-        //Get the only child of top event (will always be only one).
-        //Calculate all children of the node.
-        //Evaluate every single child and their childs recursively.
+        //Get the only child of top event (will always be only one) as our starting node.
+        //Calculate all children of the node and evaluate them.
+        //In the evaluation we check if the child has children too and do the same recursively until the children are components.
         //Depending on the type of the node process the results of the children differently.
 
         //Order components by level from top to bottom for a smaller BDD.
         allNodes.sort(this.sortByLevel);
 
+        //When there is no gate, return the component
+        const startingNode = this.getChildOfTopEvent(allNodes, allEdges);
+        if(startingNode.aspect === FTAAspect.COMPONENT){
+            return [[startingNode]];
+        }
         //Evaluate the child of the top event and recursively the entire Fault Tree.
-        const unprocressedCutSets = this.evaluate(this.getChildOfTopEvent(allNodes, allEdges), allNodes, allEdges);
+        const unprocressedCutSets = this.evaluate(startingNode, allNodes, allEdges);
 
+        //Final duplication checks:
         //In the case that two gates share the same child, remove duplicates from all innerLists. [[C,U,U]] -> [[C,U]]
         const tempCutSets:FTANode[][] = [];
         for(const innerList of unprocressedCutSets){
@@ -83,6 +89,7 @@ export class BDDGenerator{
 
         // we start with the top-most gate(child of topevent) and get all its children.
         const children = this.getAllChildrenOfNode(node, allNodes, allEdges);
+        if(children.length === 0){return result;};
 
         //if the node is an and/inhibit-gate we want to evaluate all children and concatenate all inner lists of one child with another.
         if(node.aspect === FTAAspect.AND || node.aspect === FTAAspect.INHIBIT){
@@ -105,12 +112,24 @@ export class BDDGenerator{
                     }
                 }
             }
+            //Above we say an or-gate fails when exactly one child fails but multiple children can fail too.
+            result = this.generatePowerSet(result);
+            result.splice(0,1); // Remove empty set
+
+
         //if the node is a kN-gate we want to get every combinations of the children with length k and after that evaluate the gates in the list.
         }else if(node.aspect === FTAAspect.KN){
             const k = node.k as number;
+            const n = node.n as number;
             
-            //Example: With Children:[M1,M2,G1] -> [[M1,M2],[M1,G1],[M2,G1]] .
-            const combinations = this.getAllCombinations(children, k);
+            //Example: With Children:[M1,M2,G1] and k=2 -> [[M1,M2],[M1,G1],[M2,G1]] .
+            const combinations:FTANode[][]=[];
+            for(let i = k; i<=n; i++){
+                for(const comb of this.getAllCombinations(children, i)){
+                    combinations.push(comb);
+                }
+            }
+
             //Now we want to evaluate G1 (e.g evaluation(G1) = [[C]]).
             //Our result list should look like this -> [[M1,M2], [M1,C], [M2,C]].
             for(const comb of combinations){
@@ -124,7 +143,7 @@ export class BDDGenerator{
                 }
             }
         }
-        
+
         return result;
 
     }
@@ -141,14 +160,17 @@ export class BDDGenerator{
         let result:FTANode[][] = [];
         const restList:FTANode[] = innerList;
 
-        for(const element of restList){
+        for(let i = 0; i<restList.length; i++){ 
+            const element = restList[i];
             //when the element is a gate.
             if(element.aspect === FTAAspect.AND || element.aspect === FTAAspect.INHIBIT || element.aspect === FTAAspect.OR || element.aspect === FTAAspect.KN){
                 //cut out the gate from the rest list.
                 const index = restList.indexOf(element);
                 restList.splice(index, 1);
+                i-=1;
                 //and push the evaluation of the gate into the result list.
-                const tempLists = this.f(this.evaluate(element, allNodes, allEdges), result);   
+                const tempLists = this.f(this.evaluate(element, allNodes, allEdges), result);
+                result = [];
                 for(const list of tempLists){
                     result.push(list);
                 }
@@ -201,6 +223,35 @@ export class BDDGenerator{
     }
 
     /**
+     * Computes the power set of a set of sets to get all possible combinations for an or-gate.
+     * @param sets Contains the children of the or-gate
+     * @returns All possible combinations of the children.
+     */
+    generatePowerSet(sets:FTANode[][]):FTANode[][]{    
+        const getPowerSet = (theArray: FTANode[][]): FTANode[][] => {
+            return theArray.reduce((subsets: FTANode[][], values: FTANode[]) => {
+              const newSubsets: FTANode[][] = [];
+          
+              
+            for (const subset of subsets) {
+                let newSet = values.concat(...subset);
+                newSet = newSet.filter((e,i) => newSet.indexOf(e) === i);
+                if(this.indexOfArray(newSet, subsets) === -1 && this.indexOfArray(newSet, newSubsets) === -1){
+                    newSubsets.push(newSet);
+                }
+                
+            }
+              
+          
+              return subsets.concat(newSubsets);
+            }, [[]]);
+        };
+
+        return getPowerSet(sets);
+    }
+
+
+    /**
      * Gets a node with its id from all nodes.
      * @param nodes All FtaNodes in the graph.
      * @param id The id of Node.
@@ -250,6 +301,7 @@ export class BDDGenerator{
                 return 1;
             }
             return 0;
+            
         }
         return 0;
     }
@@ -289,7 +341,13 @@ export class BDDGenerator{
         
         for (const innerA of a) {
             for (const innerB of b) {
-                result.push(innerA.concat(innerB));
+                //Add only unique sets
+                let newSet = innerA.concat(innerB);
+                newSet = newSet.filter((e,i) => newSet.indexOf(e) === i);
+                if(this.indexOfArray(newSet, result) === -1){
+                    result.push(newSet);
+                }
+
             }
         }
         
@@ -309,7 +367,7 @@ export class BDDGenerator{
     }
 
     /**
-     * Gets the index of a list in a two-dimensional list of FTANodes.
+     * Gets the index of a list in a two-dimensional list of FTANodes, -1 otherwise.
      * @param a The list we want the index of.
      * @param b The two-dimensional list of FTANodes we want to search in.
      * @returns the index of the list.
@@ -321,6 +379,9 @@ export class BDDGenerator{
                 break;
             }
             i++;
+        }
+        if(i >= b.length){
+            return -1;
         }
         return i;
     }

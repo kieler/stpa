@@ -17,6 +17,11 @@
 
 import { SNode, SEdge, SModelElement } from "sprotty";
 import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./stpa-model";
+import { FTAAspect, FTAEdge, FTANode } from "./fta-model";
+
+
+export const allFTANodes:FTANode[] = [];
+export const allFTAEdges:FTAEdge[] = [];
 
 /**
  * Collects all children of the nodes in {@code nodes}.
@@ -178,4 +183,76 @@ export function flagSameAspect(selected: STPANode): STPANode[] {
         (selected.parent as STPANode).highlight = true;
     }
     return elements;
+}
+
+export function setFTANodesAndEdges(allNodes:SNode[], allEdges:SEdge[]):void{
+    allNodes.forEach(node => {
+        if(node instanceof FTANode){
+            allFTANodes.push(node);
+        }
+    });
+    allEdges.forEach(edge => {
+        if(edge instanceof FTAEdge){
+            allFTAEdges.push(edge);
+        }
+    });
+}
+
+export function flagHighlightedFta(highlightedCutSet: string[]):void{
+    highlightCutSet(highlightedCutSet);
+
+    let topEvent = {} as FTANode;
+    for(const node of allFTANodes){
+        if(node.level === 0){
+            topEvent = node;   
+        }
+    }
+
+    highlightPath(topEvent);
+   // highlightEdgesInPath(topEvent);
+
+    
+}
+function highlightCutSet(highlightCutSet: string[]):void{
+    for(const node of allFTANodes){
+        if(highlightCutSet.includes(node.id)){
+            node.highlight = true;
+            
+        }else{
+            node.highlight = false;
+            /* for(const edge of node.outgoingEdges){
+                (edge as FTAEdge).highlight = false;
+            } */
+        }
+    }
+}
+
+
+function highlightPath(start:FTANode):boolean{
+
+    if(start.aspect === (FTAAspect.CONDITION || FTAAspect.COMPONENT)){
+        if(start.highlight === true){
+            return true;
+        }else{
+            return false;
+        }
+    }else{
+        //get all children of current node.
+        for(const edge of start.outgoingEdges){
+            const child = edge.target as SNode;
+            const ftaNode = child as FTANode;
+            if(highlightPath(ftaNode) === true){
+                start.highlight = true;
+                (edge as FTAEdge).highlight = true;
+            }else{
+                (edge as FTAEdge).highlight = false;
+            }
+        }
+
+        if(start.highlight === true){
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -16,18 +16,18 @@
  */
 
 /** @jsx svg */
+import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph } from 'sprotty';
-import { injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE } from './stpa-model';
-import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
-import { inject } from 'inversify';
-import { collectAllChildren } from './helper-methods';
+import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SNode, SPort, svg, toDegrees } from 'sprotty';
 import { DISymbol } from './di.symbols';
+import { collectAllChildren, setFTANodesAndEdges } from './helper-methods';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
+import { CS_EDGE_TYPE, CS_NODE_TYPE, PARENT_TYPE, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_NODE_TYPE } from './stpa-model';
+import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
+
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {
@@ -199,8 +199,11 @@ export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
         highlighting = allNodes.find(node => {
             return node instanceof STPANode && node.highlight
         }) !== undefined;
+        
+        setFTANodesAndEdges(allNodes, model.children as SEdge[]);
 
         return super.render(model, context, args);
     }
 
 }
+

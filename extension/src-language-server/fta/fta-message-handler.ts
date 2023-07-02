@@ -4,6 +4,7 @@ import { LangiumSprottySharedServices } from "langium-sprotty";
 import { FtaDiagramGenerator } from "./fta-diagram-generator";
 
 
+
 let lastUri: URI;
 
 export function addFTANotificationHandler(connection: Connection, ftaServices: FtaServices, sharedServices: LangiumSprottySharedServices): void {
@@ -17,13 +18,14 @@ function addGenerateCutSetsHandler(connection: Connection, ftaServices: FtaServi
         const diagramGenerator = (ftaServices.diagram.DiagramGenerator) as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
         const edges = diagramGenerator.getEdges();
+
         const cutSets = ftaServices.bdd.Bdd.generateCutSets(nodes, edges);
         return cutSets;
     }); 
    
 }
 
-function addGenerateMinimalCutSetsHandler(connection:Connection, ftaServices: FtaServices):void{
+function addGenerateMinimalCutSetsHandler(connection: Connection, ftaServices: FtaServices):void{
     connection.onRequest('generate/getMinimalCutSets', uri =>{
         lastUri = uri;
         const diagramGenerator = (ftaServices.diagram.DiagramGenerator) as FtaDiagramGenerator;
@@ -32,5 +34,5 @@ function addGenerateMinimalCutSetsHandler(connection:Connection, ftaServices: Ft
         const minimalCutSets = ftaServices.bdd.Bdd.determineMinimalCutSet(nodes, edges);
         return minimalCutSets;
     });
-
 }
+

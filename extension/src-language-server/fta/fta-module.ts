@@ -6,12 +6,12 @@ import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILay
 import { DiagramOptions } from 'sprotty-protocol';
 import { URI } from 'vscode-uri';
 import { FtaGeneratedModule, StpaGeneratedSharedModule } from '../generated/module';
+import { CutSetGenerator } from './fta-cutSet-generator';
 import { FtaDiagramGenerator } from './fta-diagram-generator';
 import { FtaDiagramServer } from './fta-diagramServer';
 import { FtaLayoutConfigurator } from './fta-layout-config';
 import { FtaSynthesisOptions } from './fta-synthesis-options';
 import { FtaValidationRegistry, FtaValidator } from './fta-validator';
-import { BDDGenerator } from './bdd-generator';
 
 
 
@@ -36,7 +36,7 @@ export type FtaAddedServices = {
         FtaSynthesisOptions: FtaSynthesisOptions
     },
     bdd: {
-        Bdd: BDDGenerator
+        Bdd: CutSetGenerator
     }
 };
 
@@ -69,7 +69,7 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
         FtaSynthesisOptions: () => new FtaSynthesisOptions()
     },
     bdd:{
-        Bdd: () => new BDDGenerator()
+        Bdd: () => new CutSetGenerator()
     }
 };
 

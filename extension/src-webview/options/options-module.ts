@@ -18,12 +18,14 @@
 import { ContainerModule } from "inversify";
 import { configureActionHandler, TYPES } from "sprotty";
 import { DISymbol } from "../di.symbols";
-import { SetRenderOptionAction, ResetRenderOptionsAction, SendConfigAction } from "./actions";
+import { SetRenderOptionAction, ResetRenderOptionsAction, SendConfigAction, SendCutSetAction, SelectCutSetAction } from "./actions";
 import { OptionsRenderer } from "./options-renderer";
 import { GeneralPanel } from "./general-panel";
 import { RenderOptionsRegistry } from "./render-options-registry";
 import { OptionsRegistry } from "./options-registry";
 import { OptionsPanel } from "./options-panel";
+import { CutSetPanel } from "./cut-set-panel";
+import { CutSetsRegistry } from "./cut-set-registry";
 // import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
 
 /** Module that configures option related panels and registries. */
@@ -34,6 +36,9 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     bind(OptionsPanel).toSelf().inSingletonScope();
     bind(DISymbol.SidebarPanel).toService(OptionsPanel);
 
+    bind(CutSetPanel).toSelf().inSingletonScope();
+    bind(DISymbol.SidebarPanel).toService(CutSetPanel);
+
     // bind(VsCodeApi);
 
     bind(DISymbol.OptionsRenderer).to(OptionsRenderer);
@@ -41,9 +46,13 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     bind(TYPES.IActionHandlerInitializer).toService(DISymbol.OptionsRegistry);
 
     bind(DISymbol.RenderOptionsRegistry).to(RenderOptionsRegistry).inSingletonScope();
+    
+    bind(DISymbol.CutSetsRegistry).to(CutSetsRegistry).inSingletonScope();
 
     const ctx = { bind, isBound };
     configureActionHandler(ctx, SetRenderOptionAction.KIND, DISymbol.RenderOptionsRegistry);
     configureActionHandler(ctx, ResetRenderOptionsAction.KIND, DISymbol.RenderOptionsRegistry);
     configureActionHandler(ctx, SendConfigAction.KIND, DISymbol.RenderOptionsRegistry);
+    configureActionHandler(ctx, SendCutSetAction.KIND, DISymbol.CutSetsRegistry);
+    configureActionHandler(ctx, SelectCutSetAction.KIND, DISymbol.CutSetsRegistry);
 });

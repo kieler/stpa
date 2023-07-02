@@ -193,7 +193,20 @@ export class OptionsRenderer {
                             onChange={this.handleRenderOptionChange.bind(this, option)}
                             availableValues = {(option as ChoiceRenderOption).availableValues}
                         />
-                    )
+                    );
+                case TransformationOptionType.DROPDOWN:
+                    return (
+                        <DropDownMenuOption
+                            key={option.id}
+                            id={option.id}
+                            currentId = {(option as DropDownOption).currentId}
+                            name={option.name}
+                            value={option.currentValue}
+                            availableValues={(option as DropDownOption).availableValues}
+                            description={option.description}
+                            onChange={this.handleRenderOptionChange.bind(this, option)}
+                        />
+                    );
                 default:
                     console.error("Unsupported option type for option:", option.name);
                     return "";

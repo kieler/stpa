@@ -22,11 +22,11 @@ import { LspLabelEditActionHandler, SprottyLspEditVscodeExtension, WorkspaceEdit
 import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
-import { UpdateViewAction } from './actions';
+import { FTANode } from '../src-language-server/fta/fta-interfaces';
+import { SendCutSetAction, UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
-import { FTANode } from '../src-language-server/fta/fta-interfaces';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -41,6 +41,8 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
     /** needed for undo/redo actions when ID enforcement is active*/
     protected ignoreNextTextChange: boolean = false;
+
+    protected panel: vscode.WebviewPanel | null = null;
 
     constructor(context: vscode.ExtensionContext) {
         super('pasta', context);
@@ -177,12 +179,13 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.context.subscriptions.push(
             vscode.commands.registerCommand(this.extensionPrefix + '.generate.cutSets', async (...commandArgs: any[]) =>{ 
                 this.lastUri = (commandArgs[0] as vscode.Uri).toString();
-                const cutSets:FTANode[][] = await this.languageClient.sendRequest('generate/getCutSets', this.lastUri);
-                     
-                const outputCutSets = vscode.window.createOutputChannel("All cut sets");
-                outputCutSets.append("Cut sets: " + "\n" + this.toString(cutSets));
-                outputCutSets.show();
+                const cutSets:FTANode[][] = await this.languageClient.sendRequest('generate/getCutSets', this.lastUri);      
+                
+                this.dispatchCutSetsToWebview(cutSets);        
 
+                const outputCutSets = vscode.window.createOutputChannel("All cut sets");
+                outputCutSets.append("The resulting " + cutSets.length + " cut sets are: \n" + this.CutSetToString(cutSets));
+                outputCutSets.show();   
             })
         );
         this.context.subscriptions.push(
@@ -190,32 +193,51 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 this.lastUri = (commandArgs[0] as vscode.Uri).toString();
                 const minimalCutSets:FTANode[][] = await this.languageClient.sendRequest('generate/getMinimalCutSets', this.lastUri);
 
-                const outputMinimalCutSets = vscode.window.createOutputChannel("All minimal cut sets");
-                outputMinimalCutSets.append("Minimal cut sets: " + "\n" + this.toString(minimalCutSets));
-                outputMinimalCutSets.show();
-            })
-        );
+                this.dispatchCutSetsToWebview(minimalCutSets);
 
-        
+                const outputMinimalCutSets = vscode.window.createOutputChannel("All minimal cut sets");
+                outputMinimalCutSets.append("The resulting " + minimalCutSets.length + " minimal cut sets are: \n" + this.CutSetToString(minimalCutSets));
+                outputMinimalCutSets.show();           
+            })
+        );     
+    }
+    protected dispatchCutSetsToWebview(cutSets:FTANode[][]):void{
+        const cutSetDropDownList: { id: string, value: any; }[] = [];
+            for(const set of cutSets){
+                let id = "[";
+                for(const element of set){
+                    if(set.indexOf(element) === set.length -1){
+                        id += element.id;
+                    }else{
+                        id = id + element.id + ",";
+                    }
+                }
+                id += "]";
+                cutSetDropDownList.push({id: id, value: set});
+            }
+        this.singleton?.dispatch({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
     }
 
-    protected toString(cutSets:FTANode[][]):string{
-        let result = "[" ;
+    protected CutSetToString(cutSets:FTANode[][]):string{
+        let result =  "[";
+
         for(const set of cutSets){
-            result = result + "[";
+            result += "[";
             for(const element of set){
-                result = result + element.id;
-                if(set.indexOf(element) === set.length - 1){
-                    break;
+                if(set.indexOf(element) === set.length -1){
+                    result += element.id;
+                }else{
+                    result = result + element.id + ",";
                 }
-                result = result + ",";
             }
-            result = result + "]";
-            if(cutSets.indexOf(set) !== cutSets.length -1){
-                result = result + ",";
-            }            
+            result += "]";
+            if(cutSets.indexOf(set) === cutSets.length -1){
+                result += "] \n";
+            }else{
+                result += ", \n";
+            }
         }
-        result = result + "]";
+
         return result;
     }
 
@@ -291,8 +313,9 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         });
         webview.addActionHandler(WorkspaceEditActionHandler);
         webview.addActionHandler(LspLabelEditActionHandler);
-
         this.singleton = webview;
+
+        
         return webview;
     }
 

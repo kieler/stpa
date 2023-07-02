@@ -19,7 +19,7 @@ import { inject, injectable, postConstruct } from "inversify";
 import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
-import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
+import { ResetRenderOptionsAction, SelectCutSetAction, SendConfigAction, SendCutSetAction, SetRenderOptionAction } from "./actions";
 import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
 import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
 
@@ -117,8 +117,14 @@ export class RenderOptionsRegistry extends Registry {
         if (SetRenderOptionAction.isThisAction(action)) {
             const option = this._renderOptions.get(action.id);
 
+            if(action.id === 'cut-sets'){
+                const selectCutSetAction = {kind: SelectCutSetAction.KIND, id: action.value};
+                this.vscodeApi.postMessage({action: selectCutSetAction});
+                this.notifyListeners();
+                return;
+            }
+            
             if (!option) {return;}
-
             option.currentValue = action.value;
             const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
             this.vscodeApi.postMessage({ action: sendAction });
@@ -137,7 +143,7 @@ export class RenderOptionsRegistry extends Registry {
                 option.currentValue = element.value;
             });
             this.notifyListeners();
-        }
+        } 
         return UpdateModelAction.create([], { animate: false, cause: action });
     }
 

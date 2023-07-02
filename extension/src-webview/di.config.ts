@@ -31,8 +31,9 @@ import { sidebarModule } from './sidebar';
 import { optionsModule } from './options/options-module';
 import { StpaModelViewer} from './model-viewer';
 import { StpaMouseListener } from './stpa-mouselistener';
-import {  FTANodeView, PolylineArrowEdgeViewFTA } from './fta-views';
-import { FTANode, FTA_EDGE_TYPE, FTA_NODE_TYPE } from './fta-model';
+//import { FTANodeView, PolylineArrowEdgeViewFTA } from './fta-views';
+import { FTANode, FTA_EDGE_TYPE, FTA_NODE_TYPE} from './fta-model';
+import { FTANodeView, PolylineArrowEdgeViewFTA } from './fta-views';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();

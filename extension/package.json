@@ -184,15 +184,13 @@
             },
             {
                 "command": "pasta.generate.cutSets",
-                "title": "Generates the cut sets",
-                "icon": "$(symbol-structure)",
-                "category": "FTA Diagram"
+                "title": "Generate the cut sets",
+                "category": "Cut Sets"
             },
             {
                 "command": "pasta.generate.minimalCutSets",
-                "title": "Generates the minimal cut sets",
-                "icon": "$(symbol-structure)",
-                "category": "FTA Diagram"
+                "title": "Generate the minimal cut sets",
+                "category": "Cut Sets"
             }
         ],
         "menus": {
@@ -323,16 +321,6 @@
                 {
                     "command": "pasta.contextTable.open",
                     "when": "editorLangId == 'stpa'",
-                    "group": "navigation"
-                },
-                {
-                    "command": "pasta.generate.cutSets",
-                    "when": "editorLangId == 'fta'",
-                    "group": "navigation"
-                },
-                {
-                    "command": "pasta.generate.minimalCutSets",
-                    "when": "editorLangId == 'fta'",
                     "group": "navigation"
                 }
             ],

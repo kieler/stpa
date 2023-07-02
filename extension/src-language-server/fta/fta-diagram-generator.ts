@@ -4,9 +4,8 @@ import { SLabel, SModelElement, SModelRoot } from 'sprotty-protocol';
 import { ModelFTA, isComponent, isCondition, isGate, isKNGate, isTopEvent } from '../generated/ast';
 import { FTAEdge, FTANode } from './fta-interfaces';
 import { FTA_EDGE_TYPE, FTA_NODE_TYPE, PARENT_TYPE } from './fta-model';
-import { getAllGateTypes, getAspect, getTargets, setLevelsForFTANodes } from './fta-utils';
 import { FtaServices } from './fta-module';
-//import { determineMinimalCutSet, generateCutSets } from './bdd-generator';
+import { getAllGateTypes, getAspect, getTargets, setLevelsForFTANodes } from './fta-utils';
 
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator{
@@ -44,6 +43,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
             ...allGates[2]?.map(k => this.generateFTANode(k, args)).flat(1),    //kn
             ...allGates[3]?.map(i => this.generateFTANode(i, args)).flat(1),    //inhib
 
+
             //after that create the edges of the gates and the top event
             ...allGates[0]?.map(a => this.generateAspectWithEdges(a, args)).flat(1),
             ...allGates[1]?.map(o => this.generateAspectWithEdges(o, args)).flat(1),
@@ -61,6 +61,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
                 ftaNodes.push(node as FTANode);
             }
         }
+
         const ftaEdges: FTAEdge[] = [];
         for(const edge of ftaChildren){
             if(edge.type === FTA_EDGE_TYPE){
