@@ -4,7 +4,12 @@ import { FTAAspect } from "./fta-model";
 
 export class CutSetGenerator{
 
-
+    /**
+     * Takes the Fault Tree and returns a two-dimensional array of FTANodes where every inner list resembles a minimal cut set.
+     * @param allNodes All Nodes in the graph.
+     * @param allEdges All Edges in the graph.
+     * @returns A list of lists that that contains every minimal cut set of the given Fault Tree.
+     */
     determineMinimalCutSet(allNodes:FTANode[], allEdges:FTAEdge[]):FTANode[][]{
         const bdd = this.generateCutSets(allNodes, allEdges);
 
@@ -312,11 +317,15 @@ export class CutSetGenerator{
      * @returns the child of the topevent.
      */
     getChildOfTopEvent(allNodes:FTANode[], allEdges:FTAEdge[]): FTANode{
+        let topEvent:FTANode = {} as FTANode;
         for(const node of allNodes){
-            for(const edge of allEdges){
-                if(node.level === 0 && edge.sourceId === node.id){
-                    return this.getNodeWithID(allNodes, edge.targetId);
-                }
+            if(node.aspect === FTAAspect.TOPEVENT){
+                topEvent = node;
+            }
+        }
+        for(const edge of allEdges){
+            if(edge.sourceId === topEvent.id){
+                return this.getNodeWithID(allNodes, edge.targetId);
             }
         }
 

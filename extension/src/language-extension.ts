@@ -42,8 +42,6 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     /** needed for undo/redo actions when ID enforcement is active*/
     protected ignoreNextTextChange: boolean = false;
 
-    protected panel: vscode.WebviewPanel | null = null;
-
     constructor(context: vscode.ExtensionContext) {
         super('pasta', context);
         // user changed configuration settings
@@ -201,6 +199,10 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             })
         );     
     }
+    /**
+     * Sends the cut sets to webview as a SendCutSetAction so that they can be displayed in a dropdown menu.
+     * @param cutSets The (minimal) cut sets of the current Fault Tree.
+     */
     protected dispatchCutSetsToWebview(cutSets:FTANode[][]):void{
         const cutSetDropDownList: { id: string, value: any; }[] = [];
             for(const set of cutSets){
@@ -218,6 +220,11 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.singleton?.dispatch({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
     }
 
+    /**
+     * Takes all (minimal) cut sets and returns a string that resembles it, so it can be displayed in the console.
+     * @param cutSets The (minimal) cut sets of the current Fault Tree.
+     * @returns A string that resembles the cut sets.
+     */
     protected CutSetToString(cutSets:FTANode[][]):string{
         let result =  "[";
 

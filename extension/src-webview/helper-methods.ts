@@ -203,13 +203,12 @@ export function flagHighlightedFta(highlightedCutSet: string[]):void{
 
     let topEvent = {} as FTANode;
     for(const node of allFTANodes){
-        if(node.level === 0){
+        if(node.aspect === FTAAspect.TOPEVENT){
             topEvent = node;   
         }
     }
 
     highlightPath(topEvent);
-   // highlightEdgesInPath(topEvent);
 
     
 }
@@ -220,9 +219,6 @@ function highlightCutSet(highlightCutSet: string[]):void{
             
         }else{
             node.highlight = false;
-            /* for(const edge of node.outgoingEdges){
-                (edge as FTAEdge).highlight = false;
-            } */
         }
     }
 }

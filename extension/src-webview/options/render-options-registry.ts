@@ -19,7 +19,7 @@ import { inject, injectable, postConstruct } from "inversify";
 import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
-import { ResetRenderOptionsAction, SelectCutSetAction, SendConfigAction, SendCutSetAction, SetRenderOptionAction } from "./actions";
+import { ResetRenderOptionsAction, SelectCutSetAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
 import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
 

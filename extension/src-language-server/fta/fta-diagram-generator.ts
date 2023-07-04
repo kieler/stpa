@@ -89,9 +89,17 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         
     }
     
+    /**
+     * Getter method for every FTANode in the Fault Tree.
+     * @returns Every FTANode in the Fault Tree.
+     */
     public getNodes():FTANode[]{
         return this.allNodes;
     }
+    /**
+     * Getter method for every FTAEdge in the Fault Tree.
+     * @returns Every FTAEdge in the Fault Tree.
+     */
     public getEdges():FTAEdge[]{
         return this.allEdges;
     }

@@ -7,11 +7,21 @@ import { FtaDiagramGenerator } from "./fta-diagram-generator";
 
 let lastUri: URI;
 
+/**
+ * Adds handlers for notifications regarding fta.
+ * @param connection 
+ * @param stpaServices 
+ */
 export function addFTANotificationHandler(connection: Connection, ftaServices: FtaServices, sharedServices: LangiumSprottySharedServices): void {
     addGenerateCutSetsHandler(connection, ftaServices);
     addGenerateMinimalCutSetsHandler(connection, ftaServices);
 }
 
+/**
+ * Adds handlers for requests regarding the cut sets.
+ * @param connection 
+ * @param ftaServices 
+ */
 function addGenerateCutSetsHandler(connection: Connection, ftaServices: FtaServices):void{  
     connection.onRequest('generate/getCutSets', uri =>{
         lastUri = uri;
@@ -25,6 +35,11 @@ function addGenerateCutSetsHandler(connection: Connection, ftaServices: FtaServi
    
 }
 
+/**
+ * Adds handlers for requests regarding the minimal cut sets.
+ * @param connection 
+ * @param ftaServices 
+ */
 function addGenerateMinimalCutSetsHandler(connection: Connection, ftaServices: FtaServices):void{
     connection.onRequest('generate/getMinimalCutSets', uri =>{
         lastUri = uri;

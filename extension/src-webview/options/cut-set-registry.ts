@@ -1,4 +1,4 @@
-import { inject, injectable, postConstruct } from "inversify";
+import { inject, injectable } from "inversify";
 import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
@@ -46,7 +46,6 @@ export class CutSetsRegistry extends Registry{
 
     handle(action: Action): void | Action | ICommand{
         if(SendCutSetAction.isThisAction(action)){
-            //this.vscodeApi.postMessage(action.cutSets);
             const dropDownOption = new DropDownMenuOption();
             for(const entry of action.cutSets){
                 dropDownOption.availableValues.push({displayName: entry.id , id: entry.id});
@@ -67,7 +66,6 @@ export class CutSetsRegistry extends Registry{
         return Array.from(this._options.values());
     }
     
-
     highlightSelectedNodes(selectedCutSet:string):void{
         const selectedSet = selectedCutSet.slice(1,-1); // remove the brackets []
         if(selectedSet === '-'){
@@ -77,6 +75,7 @@ export class CutSetsRegistry extends Registry{
         const componentsToHighlight = selectedSet.split(",");
         flagHighlightedFta(componentsToHighlight);
     }
+
     getFtaHightlighting():boolean{
         return this.ftaHightlighting;
     }

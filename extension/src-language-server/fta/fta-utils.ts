@@ -115,7 +115,7 @@ function getTopEvent(nodes: FTANode[]): FTANode{
 /**
  * Recursively determine the level of all nodes, starting with the top event.
  * @param nodes All the nodes on the current layer we want to look at. At the start, this is just the top event.
- * @param layer The current layer we want to assign.
+ * @param level The current level we want to assign.
  * @param edges All edges in the graph.
  * @param allNodes All nodes in the graph.
  */
