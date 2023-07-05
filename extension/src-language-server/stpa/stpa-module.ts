@@ -18,7 +18,7 @@
 import ElkConstructor from 'elkjs/lib/elk.bundled';
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices } from 'langium';
 import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
-import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
+import { DefaultElementFilter, ElkFactory, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { StpaDiagramGenerator } from './diagram-generator';
 import { StpaLayoutConfigurator } from './layout-config';
 import { StpaDiagramServer } from './stpa-diagramServer';
@@ -30,6 +30,7 @@ import { StpaGeneratedSharedModule, StpaGeneratedModule } from '../generated/mod
 import { StpaSynthesisOptions } from './synthesis-options';
 import { ContextTableProvider } from './contextTable/context-dataProvider';
 import { IDEnforcer } from './ID-enforcer';
+import { StpaLayoutEngine } from './layout-engine';
 
 
 /**
@@ -72,7 +73,7 @@ export type StpaServices = LangiumSprottyServices & StpaAddedServices;
 export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDiagramServices & StpaAddedServices> = {
     diagram: {
         DiagramGenerator: services => new StpaDiagramGenerator(services),
-        ModelLayoutEngine: services => new ElkLayoutEngine(services.layout.ElkFactory, services.layout.ElementFilter, services.layout.LayoutConfigurator) as any
+        ModelLayoutEngine: services => new StpaLayoutEngine(services.layout.ElkFactory, services.layout.ElementFilter, services.layout.LayoutConfigurator) as any
     },
     references: {
         ScopeProvider: services => new StpaScopeProvider(services),
