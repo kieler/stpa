@@ -16,7 +16,7 @@
  */
 
 import * as vscode from 'vscode';
-import { EMPTY_STATE_NAME, Enum, LTLFormula, State, UCA_TYPE, Variable } from "./utils";
+import { EMPTY_STATE_NAME, Enum, LTLFormula, State, Transition, UCA_TYPE, Variable } from "./utils";
 import { createSCChartText } from "./scchart-creation";
 import { createFile } from '../utils';
 
@@ -54,9 +54,10 @@ async function createControllerSBM(controllerName: string, controlActions: strin
 
     // group formulas and create states for control actions
     const formulaMap = groupFormulasByActionAndType(ltlFormulas);
-    const states = createStatesForActions(controlActions);
+    let states = createStatesForActions(controlActions);
     // add transitions to the states
-    addTransitions(formulaMap, states);
+    // when adding transition for continous UCA types new states may be added
+    states = addTransitions(formulaMap, states);
 
     // determine the variables for the scchart including a variable for the control action
     const controlActionVariable = { name: "controlAction", type: `ref ${controllerName}` };
@@ -181,10 +182,11 @@ function getControlActionFromLTL(ltlFormula: LTLFormula): string {
  * @param ltlFormulas The ltl formulas to group.
  * @returns the {@code ltlFormulas} grouped by their control action and UCA type.
  */
-function groupFormulasByActionAndType(ltlFormulas: LTLFormula[]): { notProvidedMap: Map<string, LTLFormula[]>, providedMap: Map<string, LTLFormula[]>, continousMap: Map<string, LTLFormula[]>; } {
+function groupFormulasByActionAndType(ltlFormulas: LTLFormula[]): { notProvidedMap: Map<string, LTLFormula[]>, providedMap: Map<string, LTLFormula[]>, appliedTooLongMap: Map<string, LTLFormula[]>, stoppedTooSoonMap: Map<string, LTLFormula[]>; } {
     const notProvidedMap = new Map<string, LTLFormula[]>();
     const providedMap = new Map<string, LTLFormula[]>();
-    const continousMap = new Map<string, LTLFormula[]>();
+    const appliedTooLongMap = new Map<string, LTLFormula[]>();
+    const stoppedTooSoonMap = new Map<string, LTLFormula[]>();
     ltlFormulas.forEach(formula => {
         const action = getControlActionFromLTL(formula);
         switch (formula.type) {
@@ -196,15 +198,17 @@ function groupFormulasByActionAndType(ltlFormulas: LTLFormula[]): { notProvidedM
                 providedMap.has(action) ? providedMap.get(action)?.push(formula) : providedMap.set(action, [formula]);
                 break;
             case UCA_TYPE.APPLIED_TOO_LONG:
+                appliedTooLongMap.has(action) ? appliedTooLongMap.get(action)?.push(formula) : appliedTooLongMap.set(action, [formula]);
+                break;
             case UCA_TYPE.STOPPED_TOO_SOON:
-                continousMap.has(action) ? continousMap.get(action)?.push(formula) : continousMap.set(action, [formula]);
+                stoppedTooSoonMap.has(action) ? stoppedTooSoonMap.get(action)?.push(formula) : stoppedTooSoonMap.set(action, [formula]);
                 break;
             case UCA_TYPE.TOO_EARLY:
                 // too early is not handled since it cannot be translated to transitions
                 break;
         }
     });
-    return { notProvidedMap, providedMap, continousMap };
+    return { notProvidedMap, providedMap, appliedTooLongMap, stoppedTooSoonMap };
 }
 
 /**
@@ -236,10 +240,12 @@ function createStatesForActions(controlActions: string[]): State[] {
  * @param maps The maps for each UCA type containing the LTL formulas for each control action.
  * @param states The states of the SBM.
  */
-function addTransitions(maps: { notProvidedMap: Map<string, LTLFormula[]>, providedMap: Map<string, LTLFormula[]>, continousMap: Map<string, LTLFormula[]>; }, states: State[]): void {
+function addTransitions(maps: { notProvidedMap: Map<string, LTLFormula[]>, providedMap: Map<string, LTLFormula[]>, appliedTooLongMap: Map<string, LTLFormula[]>, stoppedTooSoonMap: Map<string, LTLFormula[]>; }, states: State[]): State[] {
     addNotProvidedTransitions(maps.notProvidedMap, states);
     addProvidedTransitions(maps.providedMap, states);
-    addContinousTransitions(maps.continousMap, states);
+    states = addAppliedTooLongTransitions(maps.appliedTooLongMap, states);
+    states = addStoppedTooSoonTransitions(maps.stoppedTooSoonMap, states);
+    return states;
 }
 
 /**
@@ -296,12 +302,94 @@ function addProvidedTransitions(providedMap: Map<string, LTLFormula[]>, states: 
     }
 }
 
+
 /**
- * Adds transitions to the {@code states} such that the ltl Formulas in {@code continousMap} are respected.
- * @param continousMap The LTL formulas with UCA type applied-too-long/stopped-too-soon for each control action.
+ * Adds transitions to the {@code states} such that the ltl Formulas in {@code appliedTooLongMap} are respected.
+ * @param appliedTooLongMap The LTL formulas with UCA type applied-too-long for each control action.
  * @param states The states of the SBM.
  */
-function addContinousTransitions(continousMap: Map<string, LTLFormula[]>, states: State[]): void {
-    // TODO: implement
-    throw new Error('Function not implemented.');
+function addAppliedTooLongTransitions(appliedTooLongMap: Map<string, LTLFormula[]>, states: State[]): State[] {
+    for (const controlAction of appliedTooLongMap.keys()) {
+        const controlActionState = states.find(state => state.name === controlAction);
+        if (controlActionState) {
+            appliedTooLongMap.get(controlAction)?.forEach(ltlFormula => {
+                const dublicateState = createDublicateState(states, controlActionState, ltlFormula);
+                states.push(dublicateState);
+                // transition to initial state
+                // TODO: check existing transitions to decide whether this transition is needed or already covered
+                dublicateState.transitions.push({ target: EMPTY_STATE_NAME, trigger: `!(${ltlFormula.contextVariables})` });
+            });
+        }
+    }
+    return states;
+}
+
+function copyOutgoingTransitions(originalState: State): Transition[] {
+    // copy outgoing transitions from original state
+    // transitions that are going to other dublicate states should not be copied!
+    const dubclicateTransitions: Transition[] = [];
+    originalState.transitions.forEach(transition => {
+        if (!transition.target.startsWith(originalState.name + "_")) {
+            dubclicateTransitions.push({ target: transition.target, trigger: transition.trigger, effect: transition.effect });
+        }
+    });
+    return dubclicateTransitions;
+}
+
+function copyAndAdjustIncomingTransitions(states: State[], controlActionState: State, dublicateState: State, ltlFormula: LTLFormula): void {
+    states.forEach(state => {
+        const transitionsToDublicate: Transition[] = [];
+        const transitionsToCA = state.transitions.filter(transition => transition.target === controlActionState.name);
+        transitionsToCA.forEach(transition => {
+            // transition to dublicate state
+            transitionsToDublicate.push({ target: dublicateState.name, trigger: transition.trigger + ` && (${ltlFormula.contextVariables})`, effect: transition.effect });
+            // adjust trigger of original transition
+            transition.trigger = transition.trigger + ` && !(${ltlFormula.contextVariables})`;
+        });
+        state.transitions = state.transitions.concat(transitionsToDublicate);
+    });
+}
+
+/**
+ * Adds transitions to the {@code states} such that the ltl Formulas in {@code stoppedTooSoonMap} are respected.
+ * @param stoppedTooSoonMap The LTL formulas with UCA type stopped-too-soon for each control action.
+ * @param states The states of the SBM.
+ */
+function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[]>, states: State[]): State[] {
+    for (const controlAction of stoppedTooSoonMap.keys()) {
+        const controlActionState = states.find(state => state.name === controlAction);
+        if (controlActionState) {
+            // TODO: add transitions from dublicate states, created because of stopped-too-soon, to all dublicate states
+            stoppedTooSoonMap.get(controlAction)?.forEach(ltlFormula => {
+                // there may be already a dublicate state created because of applied-too-long
+                let dublicateState = states.find(state => state.name === getStateName(controlAction, ltlFormula));
+                // create dublicate state if it does not exist
+                if (dublicateState === undefined) {
+                    dublicateState = createDublicateState(states, controlActionState, ltlFormula);
+                    states.push(dublicateState);
+                }
+                // adjust trigger of outgoing transitions
+                dublicateState.transitions.forEach(transition => {
+                    transition.trigger = transition.trigger + ` && !(${ltlFormula.contextVariables})`;
+                });
+            });
+        }
+    }
+    return states;
+}
+
+function createDublicateState(states: State[], controlActionState: State, ltlFormula: LTLFormula): State {
+    // create state
+    const dublicateState: State = { name: getStateName(controlActionState.name, ltlFormula), controlAction: controlActionState.controlAction, transitions: [] };
+    // create incoming transitions for the dublicate state
+    copyAndAdjustIncomingTransitions(states, controlActionState, dublicateState, ltlFormula);
+    // copy outgoing transitions from controlaction state
+    dublicateState.transitions = copyOutgoingTransitions(controlActionState);
+    // transition from controlaction state to the dublicate state
+    controlActionState?.transitions.push({ target: dublicateState.name, trigger: ltlFormula.contextVariables });
+    return dublicateState;
+}
+
+function getStateName(controlAction: string, ltlFormula: LTLFormula): string {
+    return controlAction + "_" + ltlFormula.contextVariables;
 }
