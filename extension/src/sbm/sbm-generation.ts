@@ -324,34 +324,8 @@ function addAppliedTooLongTransitions(appliedTooLongMap: Map<string, LTLFormula[
     return states;
 }
 
-function copyOutgoingTransitions(originalState: State): Transition[] {
-    // copy outgoing transitions from original state
-    // transitions that are going to other dublicate states should not be copied!
-    const dubclicateTransitions: Transition[] = [];
-    originalState.transitions.forEach(transition => {
-        if (!transition.target.startsWith(originalState.name + "_")) {
-            dubclicateTransitions.push({ target: transition.target, trigger: transition.trigger, effect: transition.effect });
-        }
-    });
-    return dubclicateTransitions;
-}
-
-function copyAndAdjustIncomingTransitions(states: State[], controlActionState: State, dublicateState: State, ltlFormula: LTLFormula): void {
-    states.forEach(state => {
-        const transitionsToDublicate: Transition[] = [];
-        const transitionsToCA = state.transitions.filter(transition => transition.target === controlActionState.name);
-        transitionsToCA.forEach(transition => {
-            // transition to dublicate state
-            transitionsToDublicate.push({ target: dublicateState.name, trigger: transition.trigger + ` && (${ltlFormula.contextVariables})`, effect: transition.effect });
-            // adjust trigger of original transition
-            transition.trigger = transition.trigger + ` && !(${ltlFormula.contextVariables})`;
-        });
-        state.transitions = state.transitions.concat(transitionsToDublicate);
-    });
-}
-
 /**
- * Adds transitions to the {@code states} such that the ltl Formulas in {@code stoppedTooSoonMap} are respected.
+ * Adds transitions to the {@code states} such that the ltl formulas in {@code stoppedTooSoonMap} are respected.
  * @param stoppedTooSoonMap The LTL formulas with UCA type stopped-too-soon for each control action.
  * @param states The states of the SBM.
  */
@@ -378,18 +352,69 @@ function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[
     return states;
 }
 
-function createDublicateState(states: State[], controlActionState: State, ltlFormula: LTLFormula): State {
+/**
+ * Creates a dublicate state for the {@code originalState} by adjusting the incoming edges, copying the outgoing edges and adding a transition from the {@code originalState} to the dublicate.
+ * @param states A list of all states of the SBM.
+ * @param originalState The state for which a dublicate state should be created.
+ * @param ltlFormula The LTL formula that triggered the creation of a dublicate state.
+ * @returns a dublicate state for the {@code originalState}.
+ */
+function createDublicateState(states: State[], originalState: State, ltlFormula: LTLFormula): State {
     // create state
-    const dublicateState: State = { name: getStateName(controlActionState.name, ltlFormula), controlAction: controlActionState.controlAction, transitions: [] };
+    const dublicateState: State = { name: getStateName(originalState.name, ltlFormula), controlAction: originalState.controlAction, transitions: [] };
     // create incoming transitions for the dublicate state
-    copyAndAdjustIncomingTransitions(states, controlActionState, dublicateState, ltlFormula);
+    copyAndAdjustIncomingTransitions(states, originalState, dublicateState, ltlFormula);
     // copy outgoing transitions from controlaction state
-    dublicateState.transitions = copyOutgoingTransitions(controlActionState);
+    dublicateState.transitions = copyOutgoingTransitions(originalState);
     // transition from controlaction state to the dublicate state
-    controlActionState?.transitions.push({ target: dublicateState.name, trigger: ltlFormula.contextVariables });
+    originalState?.transitions.push({ target: dublicateState.name, trigger: ltlFormula.contextVariables });
     return dublicateState;
 }
 
+/**
+ * Copies the outgoing transitions from the {@code originalState} and returns them.
+ * @param originalState The state from which the outgoing transitions should be copied.
+ * @returns a list containing dublicates of the outgoing transitions of the {@code originalState}.
+ */
+function copyOutgoingTransitions(originalState: State): Transition[] {
+    // copy outgoing transitions from original state
+    // transitions that are going to other dublicate states should not be copied!
+    const dubclicateTransitions: Transition[] = [];
+    originalState.transitions.forEach(transition => {
+        if (!transition.target.startsWith(originalState.name + "_")) {
+            dubclicateTransitions.push({ target: transition.target, trigger: transition.trigger, effect: transition.effect });
+        }
+    });
+    return dubclicateTransitions;
+}
+
+/**
+ * Copies and adjusts the incoming transitions of the {@code originalState}.
+ * @param states The list of all states of the SBM.
+ * @param originalState The state for which the incoming transitions should be copied and adjusted.
+ * @param dublicateState The dublicate state which should get the copied incoming transitions.
+ * @param ltlFormula The LTL formula that triggered the creation of a dublicate state.
+ */
+function copyAndAdjustIncomingTransitions(states: State[], originalState: State, dublicateState: State, ltlFormula: LTLFormula): void {
+    states.forEach(state => {
+        const transitionsToDublicate: Transition[] = [];
+        const transitionsToCA = state.transitions.filter(transition => transition.target === originalState.name);
+        transitionsToCA.forEach(transition => {
+            // transition to dublicate state
+            transitionsToDublicate.push({ target: dublicateState.name, trigger: transition.trigger + ` && (${ltlFormula.contextVariables})`, effect: transition.effect });
+            // adjust trigger of original transition
+            transition.trigger = transition.trigger + ` && !(${ltlFormula.contextVariables})`;
+        });
+        state.transitions = state.transitions.concat(transitionsToDublicate);
+    });
+}
+
+/**
+ * Creates a unique name for a state.
+ * @param controlAction The control action the state belongs to.
+ * @param ltlFormula The ltl formula for which the state is created.
+ * @returns a unique name for a state.
+ */
 function getStateName(controlAction: string, ltlFormula: LTLFormula): string {
     return controlAction + "_" + ltlFormula.contextVariables;
 }
