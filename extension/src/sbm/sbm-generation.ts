@@ -333,13 +333,14 @@ function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[
     for (const controlAction of stoppedTooSoonMap.keys()) {
         const controlActionState = states.find(state => state.name === controlAction);
         if (controlActionState) {
-            // TODO: add transitions from dublicate states, created because of stopped-too-soon, to all dublicate states
+            const newlyCreatedStates: Set<{state: State, formula: LTLFormula}> = new Set();
             stoppedTooSoonMap.get(controlAction)?.forEach(ltlFormula => {
                 // there may be already a dublicate state created because of applied-too-long
                 let dublicateState = states.find(state => state.name === getStateName(controlAction, ltlFormula));
                 // create dublicate state if it does not exist
                 if (dublicateState === undefined) {
                     dublicateState = createDublicateState(states, controlActionState, ltlFormula);
+                    newlyCreatedStates.add({state: dublicateState, formula: ltlFormula});
                     states.push(dublicateState);
                 }
                 // adjust trigger of outgoing transitions
@@ -347,9 +348,32 @@ function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[
                     transition.trigger = transition.trigger + ` && !(${ltlFormula.contextVariables})`;
                 });
             });
+            // add transitions from the newly created dublicate states to other dublicate states by copying and adjusting the transitions from the original control action state to the dublicate states
+            newlyCreatedStates.forEach(dublicateState => {
+                copyAndAdjustTransitionsToDublicates(controlActionState, dublicateState.state, dublicateState.formula);
+            });
         }
     }
     return states;
+}
+
+/**
+ * Copies the outgoing transitions of {@code originalState}, adjusts the triggers, and adds these transitions to {@code dublicateState}.
+ * @param originalState The state from which the transitions should be copied.
+ * @param dublicateState The state to which the copied transitions should be added.
+ * @param ltlFormula The LTL formula that triggered the creation of the dublicate state.
+ */
+function copyAndAdjustTransitionsToDublicates(originalState: State, dublicateState: State, ltlFormula: LTLFormula): void {
+    originalState.transitions.forEach(transition => {
+        if (transition.target !== dublicateState.name) {
+            const newTransition = {
+                target: transition.target,
+                trigger: transition.trigger + ` && !(${ltlFormula.contextVariables})`,
+                effect: transition.effect
+            };
+            dublicateState.transitions.push(newTransition);
+        }
+    });
 }
 
 /**
