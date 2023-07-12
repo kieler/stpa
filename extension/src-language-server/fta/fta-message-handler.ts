@@ -15,11 +15,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { IdCache, LangiumSprottySharedServices } from 'langium-sprotty';
 import { Connection } from "vscode-languageserver";
 import { FtaDiagramGenerator } from "./fta-diagram-generator";
 import { FtaServices } from './fta-module';
-import { AstNode } from 'langium';
+import { cutSetToString, minimalCutSetToString } from './fta-utils';
 
 
 /**
@@ -40,27 +39,25 @@ export function addFTANotificationHandler(connection: Connection, ftaServices: F
  */
 function addCutSetsHandler(connection: Connection, ftaServices: FtaServices):void{
     connection.onRequest('generate/getCutSets', () =>{
-        
-        
         const diagramGenerator = (ftaServices.diagram.DiagramGenerator) as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
-        //const edges = diagramGenerator.getEdges();
-        
+        const idCache = diagramGenerator.getCache();
 
-        const cutSets = ftaServices.bdd.Bdd.generateCutSetsAst(nodes);
+        const cutSets = ftaServices.bdd.Bdd.generateCutSets(nodes, idCache);
+        let cutSetsToString = cutSetToString(cutSets, idCache);
 
-
-        return cutSets;
+        return cutSetsToString;
     }); 
 
     connection.onRequest('generate/getMinimalCutSets', () =>{
         const diagramGenerator = (ftaServices.diagram.DiagramGenerator) as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
-        //const edges = diagramGenerator.getEdges();
+        const idCache = diagramGenerator.getCache();
         
-
-        /* const minimalCutSets = ftaServices.bdd.Bdd.determineMinimalCutSet(nodes, edges);
-        return minimalCutSets; */
+        const minimalCutSets = ftaServices.bdd.Bdd.determineMinimalCutSet(nodes, idCache);
+        let minCutSetToString = minimalCutSetToString(minimalCutSets, idCache);
+        
+        return minCutSetToString;
     });
 }
 

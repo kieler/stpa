@@ -52,17 +52,7 @@ export class CutSetsRegistry extends Registry{
         if(SendCutSetAction.isThisAction(action)){
             const dropDownOption = new DropDownMenuOption();
             for(const set of action.cutSets){
-                let id = "[";
-                for(const element of set.value){
-                    if(set.value.indexOf(element) === set.value.length -1){
-                        id += element.id;
-                    }else{
-                        id = id + element.id + ",";
-                    }
-                }
-                id += "]";
-
-                dropDownOption.availableValues.push({displayName: id , id: id});
+                dropDownOption.availableValues.push({displayName: set.value , id: set.value});
             }
 
             this._options.set('cut-sets', dropDownOption);

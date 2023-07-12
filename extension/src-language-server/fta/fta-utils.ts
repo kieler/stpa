@@ -16,8 +16,8 @@
  */
 
 import { AstNode } from 'langium';
+import { IdCache } from 'langium-sprotty';
 import { Gate, isAND, isComponent, isCondition, isGate, isInhibitGate, isKNGate, isOR, isTopEvent } from '../generated/ast';
-import { FTANode } from './fta-interfaces';
 import { FTNodeType } from './fta-model';
 
 
@@ -108,27 +108,50 @@ export function getAllGateTypes(gates: Gate[]): Map<string, AstNode[]>{
 }
 
 /**
-     * Takes all (minimal) cut sets and returns a string that resembles it, so it can be displayed in the console.
-     * @param cutSets The (minimal) cut sets of the current Fault Tree.
-     * @returns A string that resembles the cut sets.
-     */
-export function CutSetToString(cutSets:FTANode[][]):string{
-    let result =  "[";
+ * Takes all cut sets and returns a string that resembles it, so it can be displayed in the console.
+ * @param cutSets The cut sets of the current Fault Tree.
+ * @param idCache The idCache of the generator context from the current graph.
+ * @returns a string that contains every cut set.
+ */
+export function cutSetToString(cutSets:AstNode[][], idCache:IdCache<AstNode>):string{
+    let result = "The resulting " + cutSets.length + " cut sets are: \n";
+    return setToString(cutSets, idCache, result);
+}
+
+/**
+ * Takes all minimal cut sets and returns a string that resembles it, so it can be displayed in the console.
+ * @param minimalCutSets The minimal cut sets of the current Fault Tree.
+ * @param idCache The idCache of the generator context from the current graph.
+ * @returns a string that contains every minimal cut set.
+ */
+export function minimalCutSetToString(minimalCutSets:AstNode[][], idCache:IdCache<AstNode>):string{
+    let result = "The resulting " + minimalCutSets.length + " minimal cut sets are: \n";
+    return setToString(minimalCutSets, idCache, result);
+}
+
+
+/**
+ * Takes all (minimal) cut sets and returns a string that resembles it, so it can be displayed in the console.
+ * @param cutSets The (minimal) cut sets of the current Fault Tree.
+ * @returns A string that resembles the cut sets.
+*/
+export function setToString(cutSets:AstNode[][], idCache:IdCache<AstNode>, result:string):string{
+    result += "["
 
     for(const set of cutSets){
         result += "[";
         for(const element of set){
             if(set.indexOf(element) === set.length -1){
-                result += element.id;
+                result += idCache.getId(element);
             }else{
-                result = result + element.id + ",";
+                result = result + idCache.getId(element) + ",";
             }
         }
         result += "]";
         if(cutSets.indexOf(set) === cutSets.length -1){
-            result += "] \n";
+            result += "]\n";
         }else{
-            result += ", \n";
+            result += ",\n";
         }
     }
 

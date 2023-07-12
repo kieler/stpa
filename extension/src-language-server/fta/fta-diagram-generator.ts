@@ -16,7 +16,7 @@
  */
 
 import { AstNode } from 'langium';
-import { GeneratorContext, LangiumDiagramGenerator } from 'langium-sprotty';
+import { GeneratorContext, IdCache, LangiumDiagramGenerator } from 'langium-sprotty';
 import { SLabel, SModelElement, SModelRoot } from 'sprotty-protocol';
 import { Component, Condition, Gate, ModelFTA, TopEvent, isComponent, isCondition, isGate, isKNGate } from '../generated/ast';
 import { FTAEdge, FTANode } from './fta-interfaces';
@@ -28,7 +28,7 @@ import { getAllGateTypes, getFTNodeType, getTargets } from './fta-utils';
 export class FtaDiagramGenerator extends LangiumDiagramGenerator{
 
     allNodes:AstNode[];
-    //allEdges:FTAEdge[];
+    idCache: IdCache<AstNode>;
     constructor(services: FtaServices){
         super(services);
     }
@@ -72,27 +72,13 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
 
 
 
-         // filtering the nodes of the FTA graph
-        /* const ftaNodes: FTANode[] = [];
-        for (const node of ftaChildren) {
-            if (node.type === FTA_NODE_TYPE) {
-                ftaNodes.push(node as FTANode);
-            }
-        }
-        const ftaEdges:FTAEdge[] = [];
-        for(const edge of ftaChildren){
-            if(edge.type === FTA_EDGE_TYPE){
-                ftaEdges.push(edge as FTAEdge);
-            }
-        } 
-        this.allNodes = ftaNodes;
-        this.allEdges = ftaEdges; */
-
         this.allNodes = model.components;
         this.allNodes = this.allNodes.concat(model.topEvent, ...model.conditions);
         allGates.forEach((value:AstNode[]) => {
             this.allNodes = this.allNodes.concat(...value);
         });
+
+        this.idCache = args.idCache;
         
              
         return {
@@ -116,10 +102,14 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
     public getNodes():AstNode[]{
         return this.allNodes;
     }
-    /* public getEdges():FTAEdge[]{
-        return this.allEdges;
-    } */
     
+    /**
+     * Getter method for the idCache to get the ids for every node.
+     * @returns the idCache of generator context.
+     */
+    public getCache():IdCache<AstNode>{
+        return this.idCache;
+    }
 
     /**
      * Generates the edges for {@code node}.
