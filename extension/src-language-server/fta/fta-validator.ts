@@ -1,3 +1,19 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2023 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 
 import { ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
 import { ModelFTA, StpaAstType } from '../generated/ast';
@@ -28,11 +44,15 @@ export class FtaValidator {
      * @param accept 
      */
     checkModel(model: ModelFTA, accept: ValidationAcceptor): void{
-        this.checkUniqueComponents(model, accept);
-        this.checkUniqueGates(model, accept);
+        this.checkUniqueIdentifiers(model, accept);
     }
-    //prevent multiple components from having the same identifier.
-    checkUniqueComponents(model: ModelFTA, accept: ValidationAcceptor): void{
+
+    /**
+     * Prevent multiple components and gates from having the same identifier.
+     * @param model The model to validate.
+     * @param accept 
+     */
+    checkUniqueIdentifiers(model: ModelFTA, accept: ValidationAcceptor): void{
         const componentNames = new Set();
         model.components.forEach(c => {
             if (componentNames.has(c.name)) {
@@ -40,15 +60,15 @@ export class FtaValidator {
             }
             componentNames.add(c.name);
         });
-    }
-    //prevent multiple gates from having the same identifier.
-    checkUniqueGates(model:ModelFTA, accept:ValidationAcceptor): void{
+
         const gateNames = new Set();
         model.gates.forEach(g => {
-            if (gateNames.has(g.name)) {
+            if (gateNames.has(g.name) || componentNames.has(g.name)) {
                 accept('error',  `Gate has non-unique name '${g.name}'.`,  {node: g, property: 'name'});
             }
             gateNames.add(g.name);
         });
+
     }
+
 }

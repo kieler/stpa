@@ -113,82 +113,62 @@
                 "category": "Context Table"
             },
             {
-                "command": "stpa.diagram.fit",
+                "command": "pasta.diagram.fit",
                 "title": "Fit to Screen",
                 "category": "STPA Diagram"
             },
             {
-                "command": "stpa.diagram.center",
+                "command": "pasta.diagram.center",
                 "title": "Center selection",
                 "category": "STPA Diagram"
             },
             {
-                "command": "stpa.diagram.delete",
+                "command": "pasta.diagram.delete",
                 "title": "Delete selected element",
                 "category": "STPA Diagram"
             },
             {
-                "command": "stpa.diagram.export",
+                "command": "pasta.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "STPA Diagram"
             },
             {
-                "command": "fta.diagram.fit",
-                "title": "Fit to Screen",
-                "category": "FTA Diagram"
-            },
-            {
-                "command": "fta.diagram.center",
-                "title": "Center selection",
-                "category": "FTA Diagram"
-            },
-            {
-                "command": "fta.diagram.delete",
-                "title": "Delete selected element",
-                "category": "FTA Diagram"
-            },
-            {
-                "command": "fta.diagram.export",
-                "title": "Export diagram to SVG",
-                "category": "FTA Diagram"
-            },
-            {
-                "command": "stpa.checks.setCheckResponsibilitiesForConstraints",
+                "command": "pasta.checks.setCheckResponsibilitiesForConstraints",
                 "title": "Set the responsibilities for constraints check",
                 "category": "STPA Checks"
             },
             {
-                "command": "stpa.checks.checkConstraintsForUCAs",
+                "command": "pasta.checks.checkConstraintsForUCAs",
                 "title": "Set the constraints for UCA check",
                 "category": "STPA Checks"
             },
             {
-                "command": "stpa.checks.checkScenariosForUCAs",
+                "command": "pasta.checks.checkScenariosForUCAs",
                 "title": "Set the scenarios for UCA check",
                 "category": "STPA Checks"
             },
             {
-                "command": "stpa.checks.checkSafetyRequirementsForUCAs",
+                "command": "pasta.checks.checkSafetyRequirementsForUCAs",
                 "title": "Set the safety requirements for UCA check",
                 "category": "STPA Checks"
             },
             {
-                "command": "stpa.IDs.undo",
+                "command": "pasta.IDs.undo",
                 "title": "Executes the undo action",
                 "category": "STPA ID Enforcement"
             },
             {
-                "command": "stpa.IDs.redo",
+                "command": "pasta.IDs.redo",
                 "title": "Executes the redo action",
                 "category": "STPA ID Enforcement"
             },
             {
-                "command": "pasta.generate.cutSets",
+                "command": "pasta.generate.ftaCutSets",
                 "title": "Generate the cut sets",
                 "category": "Cut Sets"
             },
             {
-                "command": "pasta.generate.minimalCutSets",
+                "command": "pasta.generate.ftaMinimalCutSets",
                 "title": "Generate the minimal cut sets",
                 "category": "Cut Sets"
             }
@@ -208,59 +188,43 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "stpa.diagram.fit",
+                    "command": "pasta.diagram.fit",
                     "when": "stpa-diagram-focused"
                 },
                 {
-                    "command": "stpa.diagram.center",
+                    "command": "pasta.diagram.center",
                     "when": "stpa-diagram-focused"
                 },
                 {
-                    "command": "stpa.diagram.delete",
+                    "command": "pasta.diagram.delete",
                     "when": "stpa-diagram-focused"
                 },
                 {
-                    "command": "stpa.diagram.export",
+                    "command": "pasta.diagram.export",
                     "when": "stpa-diagram-focused"
                 },
                 {
-                    "command": "fta.diagram.fit",
-                    "when": "fta-diagram-focused"
-                },
-                {
-                    "command": "fta.diagram.center",
-                    "when": "fta-diagram-focused"
-                },
-                {
-                    "command": "fta.diagram.delete",
-                    "when": "fta-diagram-focused"
-                },
-                {
-                    "command": "fta.diagram.export",
-                    "when": "fta-diagram-focused"
-                },
-                {
-                    "command": "stpa.checks.setCheckResponsibilitiesForConstraints",
+                    "command": "pasta.checks.setCheckResponsibilitiesForConstraints",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "stpa.checks.checkConstraintsForUCAs",
+                    "command": "pasta.checks.checkConstraintsForUCAs",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "stpa.checks.checkScenariosForUCAs",
+                    "command": "pasta.checks.checkScenariosForUCAs",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "stpa.checks.checkSafetyRequirementsForUCAs",
+                    "command": "pasta.checks.checkSafetyRequirementsForUCAs",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.generate.cutSets",
+                    "command": "pasta.generate.ftaCutSets",
                     "when": "editorLangId == 'fta'"
                 },
                 {
-                    "command": "pasta.generate.minimalCutSets",
+                    "command": "pasta.generate.ftaMinimalCutSets",
                     "when": "editorLangId == 'fta'"
                 }
             ],
@@ -276,39 +240,45 @@
                     "group": "navigation"
                 },
                 {
-                    "submenu": "stpa.checks",
+                    "submenu": "pasta.checks",
                     "group": "checks"
                 },
                 {
-                    "command": "pasta.generate.cutSets",
-                    "when": "editorLangId == 'fta'",
+                    "submenu": "pasta.generate",
+                    "group": "generate"
+                }
+            ],
+            "pasta.checks": [
+                {
+                    "command": "pasta.checks.setCheckResponsibilitiesForConstraints",
+                    "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.generate.minimalCutSets",
-                    "when": "editorLangId == 'fta'",
+                    "command": "pasta.checks.checkConstraintsForUCAs",
+                    "title": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "pasta.checks.checkScenariosForUCAs",
+                    "title": "editorLangId == 'stpa'",
+                    "group": "navigation"
+                },
+                {
+                    "command": "pasta.checks.checkSafetyRequirementsForUCAs",
+                    "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }
             ],
-            "stpa.checks": [
+            "pasta.generate": [
                 {
-                    "command": "stpa.checks.setCheckResponsibilitiesForConstraints",
-                    "title": "editorLangId == 'stpa'",
+                    "command": "pasta.generate.ftaCutSets",
+                    "when": "editorLangId == 'fta'",
                     "group": "navigation"
                 },
                 {
-                    "command": "stpa.checks.checkConstraintsForUCAs",
-                    "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
-                },
-                {
-                    "command": "stpa.checks.checkScenariosForUCAs",
-                    "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
-                },
-                {
-                    "command": "stpa.checks.checkSafetyRequirementsForUCAs",
-                    "title": "editorLangId == 'stpa'",
+                    "command": "pasta.generate.ftaMinimalCutSets",
+                    "when": "editorLangId == 'fta'",
                     "group": "navigation"
                 }
             ],
@@ -336,12 +306,12 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.generate.cutSets",
+                    "command": "pasta.generate.ftaCutSets",
                     "when": "resourceExtname == '.fta'",
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.generate.minimalCutSets",
+                    "command": "pasta.generate.ftaMinimalCutSets",
                     "when": "resourceExtname == '.fta'",
                     "group": "navigation"
                 }
@@ -349,45 +319,49 @@
         },
         "submenus": [
             {
-                "id": "stpa.checks",
+                "id": "pasta.checks",
                 "label": "Validation Checks"
+            },
+            {
+                "id": "pasta.generate",
+                "label": "Generate cut sets"
             }
         ],
         "keybindings": [
             {
                 "key": "alt+f",
                 "mac": "alt+f",
-                "command": "stpa.diagram.fit",
+                "command": "pasta.diagram.fit",
                 "when": "stpa-diagram-focused"
             },
             {
                 "key": "alt+c",
                 "mac": "alt+c",
-                "command": "stpa.diagram.center",
+                "command": "pasta.diagram.center",
                 "when": "stpa-diagram-focused"
             },
             {
                 "key": "alt+e",
                 "mac": "alt+e",
-                "command": "stpa.diagram.export",
+                "command": "pasta.diagram.export",
                 "when": "stpa-diagram-focused"
             },
             {
                 "key": "delete",
                 "mac": "delete",
-                "command": "stpa.diagram.delete",
+                "command": "pasta.diagram.delete",
                 "when": "stpa-diagram-focused"
             },
             {
                 "key": "ctrl+z",
                 "mac": "cmd+z",
-                "command": "stpa.IDs.undo",
+                "command": "pasta.IDs.undo",
                 "when": "editorTextFocus"
             },
             {
                 "key": "ctrl+y",
                 "mac": "cmd+y",
-                "command": "stpa.IDs.redo",
+                "command": "pasta.IDs.redo",
                 "when": "editorTextFocus"
             }
         ]

@@ -1,22 +1,32 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2023 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 /** @jsx svg */
 import { inject, injectable } from 'inversify';
 import { VNode } from "snabbdom";
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SPort, svg } from 'sprotty';
+import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg } from 'sprotty';
 import { DISymbol } from "./di.symbols";
-import { FTAAspect, FTAEdge, FTANode, FTA_EDGE_TYPE } from './fta-model';
-import { ColorStyleOption, RenderOptionsRegistry } from './options/render-options-registry';
-import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
+import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTNodeType } from './fta-model';
 import { CutSetsRegistry } from './options/cut-set-registry';
+import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
 
-
-/** Determines if path/aspect highlighting is currently on. */
-let highlightingFTA: boolean;
 
 @injectable()
 export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
-
-    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
-    @inject(DISymbol.CutSetsRegistry) cutSetsRegistry: CutSetsRegistry;
 
     protected renderLine(edge: SEdge, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
@@ -26,12 +36,16 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
             path += ` L ${p.x},${p.y}`;
         }
 
-        highlightingFTA = this.cutSetsRegistry.getFtaHightlighting();
-        // if an FTANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == FTA_EDGE_TYPE && highlightingFTA && !(edge as FTAEdge).highlight;
+        if((edge.target as FTANode).highlight === true){
+            (edge as FTAEdge).highlight = true;
+        }else{
+            (edge as FTAEdge).highlight = false;
+        }
 
-        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption); 
-        return <path class-print-node={true} class-fta-edge={false} class-hidden={hidden} aspect={(edge.source as FTANode).aspect} d={path} />;
+        // if an FTANode is selected, the components not connected to it should fade out
+        const hidden = edge.type == FTA_EDGE_TYPE && !(edge as FTAEdge).highlight;
+ 
+        return <path class-fta-edge={true} class-hidden={hidden} d={path} />;
     }
     
 }
@@ -40,37 +54,33 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
 @injectable()
 export class FTANodeView extends RectangularNodeView {
 
-    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
     @inject(DISymbol.CutSetsRegistry) cutSetsRegistry: CutSetsRegistry;
     
     render(node: FTANode, context: RenderingContext): VNode {
-        const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printNode = colorStyle == "black & white";
-        const sprottyNode = colorStyle == "standard";
-        const coloredNode = colorStyle == "colorful";
 
-        // create the element based on the aspect of the node
+
+        // create the element based on the type of the node
         let element: VNode;
-        switch (node.aspect) {
-            case FTAAspect.TOPEVENT:
+        switch (node.nodeType) {
+            case FTNodeType.TOPEVENT:
                 element = renderRectangle(node);
                 break;
-            case FTAAspect.COMPONENT:
+            case (FTNodeType.COMPONENT || FTNodeType.CONDITION):
                 element = renderCircle(node);
                 break;
-            case FTAAspect.CONDITION:
+            case FTNodeType.CONDITION:
                 element = renderCircle(node);
                 break;
-            case FTAAspect.AND:
+            case FTNodeType.AND:
                 element = renderAndGate(node);
                 break;
-            case FTAAspect.OR:
+            case FTNodeType.OR:
                 element = renderOrGate(node);
                 break;
-            case FTAAspect.KN:
+            case FTNodeType.KN:
                 element = renderKnGate(node, node.k as number, node.n as number);
                 break;
-            case FTAAspect.INHIBIT:
+            case FTNodeType.INHIBIT:
                 element = renderInhibitGate(node);
                 break;
             default:
@@ -78,19 +88,70 @@ export class FTANodeView extends RectangularNodeView {
                 break;   
         }
 
-        highlightingFTA = this.cutSetsRegistry.getFtaHightlighting();
+        //highlight every node that is in the selected cut set.
+        let set = this.cutSetsRegistry.getCurrentValue();
+        if(set !== undefined){
+            if(set === '-' ){
+                node.highlight = true;
+            }else{
+                node.highlight = false;
+                if(node.nodeType === FTNodeType.COMPONENT || node.nodeType === FTNodeType.CONDITION){
+                    if(set.includes(node.id)){
+                        node.highlight = true;
+                    }else{
+                        node.highlight = false;   
+                    }
+                }else{
+                    if(this.checkIfHighlighted(node, set) === true){
+                        node.highlight = true;
+                    }else{
+                        node.highlight = false;
+                    }
+                }
+            }            
+        }
+
         //if an FTANode is selected, the components not connected to it should fade out
-        const hidden = highlightingFTA && !node.highlight;
+        const hidden = !node.highlight;
 
         return <g
-            //change this when different color options exist
-            class-print-node={true}
-            class-sprotty-node={sprottyNode}
-            class-sprotty-port={node instanceof SPort}
-            class-fta-node={false} aspect={node.aspect}
+            class-fta-node={true} aspect={node.nodeType}
             class-mouseover={node.hoverFeedback}
             class-hidden={hidden}>
             <g class-node-selected={node.selected}>{element}</g>
+            {context.renderChildren(node)}
+        </g>;
+    }
+
+    checkIfHighlighted(node: FTANode, set: any):boolean{
+        for(const edge of node.outgoingEdges){
+            let target = (edge.target as FTANode);
+            if((target.nodeType === FTNodeType.COMPONENT || target.nodeType === FTNodeType.CONDITION)){
+                if(set.includes(target.id)){
+                    return true;
+                }
+            }else{
+                if(this.checkIfHighlighted(target, set) === true){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+
+@injectable()
+export class FTAGraphView extends RectangularNodeView{
+
+
+    render(node: SNode, context: RenderingContext): VNode {
+
+        return <g>
+            <rect
+                class-print-node={true}
+                class-mouseover={node.hoverFeedback}
+                x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
+            > </rect>
             {context.renderChildren(node)}
         </g>;
     }

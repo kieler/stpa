@@ -31,7 +31,6 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
     connection.onNotification('diagram/selected', (msg: {label: string, uri: string}) => {
         // get the current model
         const model = getModel(msg.uri, shared);
-       // const modelFta = getModel(msg.uri, shared);
 
         // determine the range in the editor of the component identified by "label"
         const range = getRangeOfNode(model, msg.label);

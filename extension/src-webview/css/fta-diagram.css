@@ -1,329 +1,186 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2023 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+ 
 @import "./fta-theme.css";
 
-
-
-.vscode-high-contrast .fta-node[aspect="0"],
-.vscode-high-contrast .fta-edge-arrow[aspect="0"] {
-    fill: #AD0000;
-}
-
-.vscode-high-contrast .fta-node[aspect="1"],
-.vscode-high-contrast .fta-edge-arrow[aspect="1"] {
-    fill: #A85400;
-}
-
-.vscode-high-contrast .fta-node[aspect="2"],
-.vscode-high-contrast .fta-edge-arrow[aspect="2"] {
-    fill: #006600;
-}
-
-.vscode-high-contrast .fta-node[aspect="3"],
-.vscode-high-contrast .fta-edge-arrow[aspect="3"] {
-    fill: purple;
-}
-
-.vscode-high-contrast .fta-node[aspect="4"],
-.vscode-high-contrast .fta-edge-arrow[aspect="4"] {
-    fill: #0054A8;
-}
-
-.vscode-high-contrast .fta-node[aspect="5"],
-.vscode-high-contrast .fta-edge-arrow[aspect="5"] {
-    fill: #006161;
-}
-
-.vscode-high-contrast .fta-node[aspect="6"],
-.vscode-high-contrast .fta-edge-arrow[aspect="6"] {
-    fill: #616100;
-}
-
-
-
-.vscode-high-contrast .fta-edge[aspect="0"],
-.vscode-high-contrast .fta-edge-arrow[aspect="0"] {
-    stroke: #AD0000;
-}
-
-.vscode-high-contrast .fta-edge[aspect="1"],
-.vscode-high-contrast .fta-edge-arrow[aspect="1"] {
-    stroke: #A85400;
-}
-
-.vscode-high-contrast .fta-edge[aspect="2"],
-.vscode-high-contrast .fta-edge-arrow[aspect="2"] {
-    stroke: #006600;
-}
-
-.vscode-high-contrast .fta-edge[aspect="3"],
-.vscode-high-contrast .fta-edge-arrow[aspect="3"] {
-    stroke: purple;
-}
-
-.vscode-high-contrast .fta-edge[aspect="4"],
-.vscode-high-contrast .fta-edge-arrow[aspect="4"] {
-    stroke: #0054A8;
-}
-
-.vscode-high-contrast .fta-edge[aspect="5"],
-.vscode-high-contrast .fta-edge-arrow[aspect="5"] {
-    stroke: #006161;
-}
-
-.vscode-high-contrast .fta-edge[aspect="6"],
-.vscode-high-contrast .fta-edge-arrow[aspect="6"] {
-    stroke: #616100;
-}
-
-.vscode-high-contrast .fta-edge[aspect="7"],
-.vscode-high-contrast .fta-edge-arrow[aspect="7"] {
-    stroke: #2f4f4f;
-}
-
-
-.vscode-high-contrast .print-node {
-    fill: black;
-    stroke: white;
-}
-
-.vscode-high-contrast .sprotty-node {
-    fill: #0c598d;
-    stroke: black;
-}
-
-
 .vscode-dark .fta-node[aspect="0"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-topevent-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="1"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-component-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="2"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-condition-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="3"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-and-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="4"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-or-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="5"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-kn-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="6"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-inhibit-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-edge-arrow[aspect="0"] {
-    fill: var(--fta-topevent-dark);
-}
-
-.vscode-dark .fta-edge-arrow[aspect="1"] {
-    fill: var(--fta-component-dark);
-}
-
-.vscode-dark .fta-edge-arrow[aspect="2"] {
-    fill: var(--fta-condition-dark);
-}
-
-.vscode-dark .fta-edge-arrow[aspect="3"] {
-    fill: var(--fta-and-dark);
-}
-
-.vscode-dark .fta-edge-arrow[aspect="4"] {
-    fill: var(--fta-or-dark);
-}
-
-.vscode-dark .fta-edge-arrow[aspect="5"] {
-    fill: var(--fta-kn-dark);
-}
-
-.vscode-dark .fta-edge-arrow[aspect="6"] {
-    fill: var(--fta-inhibit-dark);
-}
-
-
-.vscode-dark .fta-edge[aspect="0"],
-.vscode-dark .fta-edge-arrow[aspect="0"] {
-    stroke: var(--fta-topevent-dark);
-}
-
-.vscode-dark .fta-edge[aspect="1"],
-.vscode-dark .fta-edge-arrow[aspect="1"] {
-    stroke: var(--fta-component-dark);
-}
-
-.vscode-dark .fta-edge[aspect="2"],
-.vscode-dark .fta-edge-arrow[aspect="2"] {
-    stroke: var(--fta-condition-dark);
-}
-
-.vscode-dark .fta-edge[aspect="3"],
-.vscode-dark .fta-edge-arrow[aspect="3"] {
-    stroke: var(--fta-and-dark);
-}
-
-.vscode-dark .fta-edge[aspect="4"],
-.vscode-dark .fta-edge-arrow[aspect="4"] {
-    stroke: var(--fta-or-dark);
-}
-
-.vscode-dark .fta-edge[aspect="5"],
-.vscode-dark .fta-edge-arrow[aspect="5"] {
-    stroke: var(--fta-or-dark);
-}
-
-.vscode-dark .fta-edge[aspect="6"],
-.vscode-dark .fta-edge-arrow[aspect="6"] {
-    stroke: var(--fta-inhibit-dark);
-}
-
-.vscode-dark .print-node {
     fill: var(--fta-dark-node);
     stroke: var(--fta-light-node);
     stroke-width: 2;
 }
 
-.vscode-dark .sprotty-node {
-    fill: #0c598d;
-    stroke: black;
+.vscode-dark .fta-node[aspect="1"] {
+    fill: var(--fta-dark-node);
+    stroke: var(--fta-light-node);
+    stroke-width: 2;
 }
+
+.vscode-dark .fta-node[aspect="2"] {
+    fill: var(--fta-dark-node);
+    stroke: var(--fta-light-node);
+    stroke-width: 2;
+}
+
+.vscode-dark .fta-node[aspect="3"] {
+    fill: var(--fta-dark-node);
+    stroke: var(--fta-light-node);
+    stroke-width: 2;
+}
+
+.vscode-dark .fta-node[aspect="4"] {
+    fill: var(--fta-dark-node);
+    stroke: var(--fta-light-node);
+    stroke-width: 2;
+}
+
+.vscode-dark .fta-node[aspect="5"] {
+    fill: var(--fta-dark-node);
+    stroke: var(--fta-light-node);
+    stroke-width: 2;
+}
+
+.vscode-dark .fta-node[aspect="6"] {
+    fill: var(--fta-dark-node);
+    stroke: var(--fta-light-node);
+    stroke-width: 2;
+}
+
+
+.vscode-dark .fta-edge[aspect="0"],
+.vscode-dark .fta-edge-arrow[aspect="0"] {
+    stroke: var(--fta-light-node);
+}
+
+.vscode-dark .fta-edge[aspect="1"],
+.vscode-dark .fta-edge-arrow[aspect="1"] {
+    stroke: var(--fta-light-node);
+}
+
+.vscode-dark .fta-edge[aspect="2"],
+.vscode-dark .fta-edge-arrow[aspect="2"] {
+    stroke: var(--fta-light-node);
+}
+
+.vscode-dark .fta-edge[aspect="3"],
+.vscode-dark .fta-edge-arrow[aspect="3"] {
+    stroke: var(--fta-light-node);
+}
+
+.vscode-dark .fta-edge[aspect="4"],
+.vscode-dark .fta-edge-arrow[aspect="4"] {
+    stroke: var(--fta-light-node);
+}
+
+.vscode-dark .fta-edge[aspect="5"],
+.vscode-dark .fta-edge-arrow[aspect="5"] {
+    stroke: var(--fta-light-node);
+}
+
+.vscode-dark .fta-edge[aspect="6"],
+.vscode-dark .fta-edge-arrow[aspect="6"] {
+    stroke: var(--fta-light-node);
+}
+
 
 
 
 .vscode-light .fta-node[aspect="0"] {
     fill: var(--fta-light-node);
-    stroke: var(--fta-topevent-light);
+    stroke: black;
     stroke-width: 2;
 }
 
 .vscode-light .fta-node[aspect="1"] {
     fill: var(--fta-light-node);
-    stroke: var(--fta-component-light);
+    stroke: black;
     stroke-width: 2;
 }
 
 .vscode-light .fta-node[aspect="2"] {
     fill: var(--fta-light-node);
-    stroke: var(--fta-condition-light);
+    stroke: black;
     stroke-width: 2;
 }
 
 .vscode-light .fta-node[aspect="3"] {
     fill: var(--fta-light-node);
-    stroke: var(--fta-and-light);
+    stroke: black;
     stroke-width: 2;
 }
 
 .vscode-light .fta-node[aspect="4"] {
     fill: var(--fta-light-node);
-    stroke: var(--fta-or-light);
+    stroke: black;
     stroke-width: 2;
 }
 
 .vscode-light .fta-node[aspect="5"] {
     fill: var(--fta-light-node);
-    stroke: var(--fta-kn-light);
+    stroke: black;
     stroke-width: 2;
 }
 
 .vscode-light .fta-node[aspect="6"] {
     fill: var(--fta-light-node);
-    stroke: var(--fta-inhibit-light);
+    stroke: black;
     stroke-width: 2;
-}
-
-.vscode-light .fta-edge-arrow[aspect="0"] {
-    fill: var(--fta-topevent-light);
-}
-
-.vscode-light .fta-edge-arrow[aspect="1"] {
-    fill: var(--fta-component-light);
-}
-
-.vscode-light .fta-edge-arrow[aspect="2"] {
-    fill: var(--fta-condition-light);
-}
-
-.vscode-light .fta-edge-arrow[aspect="3"] {
-    fill: var(--fta-and-light);
-}
-
-.vscode-light .fta-edge-arrow[aspect="4"] {
-    fill: var(--fta-or-light);
-}
-
-.vscode-light .fta-edge-arrow[aspect="5"] {
-    fill: var(--fta-kn-light);
-}
-
-.vscode-light .fta-edge-arrow[aspect="6"] {
-    fill: var(--fta-inhibit-light);
 }
 
 
 .vscode-light .fta-edge[aspect="0"],
 .vscode-light .fta-edge-arrow[aspect="0"] {
-    stroke: var(--fta-topevent-light);
+    stroke: var(--fta-dark-node);
+    stroke-width: 2;
 }
 
 .vscode-light .fta-edge[aspect="1"],
 .vscode-light .fta-edge-arrow[aspect="1"] {
-    stroke: var(--fta-component-light);
+    stroke: var(--fta-dark-node);
+    stroke-width: 2;
 }
 
 .vscode-light .fta-edge[aspect="2"],
 .vscode-light .fta-edge-arrow[aspect="2"] {
-    stroke: var(--fta-condition-light);
+    stroke: var(--fta-dark-node);
+    stroke-width: 2;
 }
 
 .vscode-light .fta-edge[aspect="3"],
 .vscode-light .fta-edge-arrow[aspect="3"] {
-    stroke: var(--fta-and-light);
+    stroke: var(--fta-dark-node);
+    stroke-width: 2;
 }
 
 .vscode-light .fta-edge[aspect="4"],
 .vscode-light .fta-edge-arrow[aspect="4"] {
-    stroke: var(--fta-or-light);
+    stroke: var(--fta-dark-node);
+    stroke-width: 2;
 }
 
 .vscode-light .fta-edge[aspect="5"],
 .vscode-light .fta-edge-arrow[aspect="5"] {
-    stroke: var(--fta-kn-light);
+    stroke: var(--fta-dark-node);
+    stroke-width: 2;
 }
 
 .vscode-light .fta-edge[aspect="6"],
 .vscode-light .fta-edge-arrow[aspect="6"] {
-    stroke: var(--fta-inhibit-light);
-}
-
-.vscode-light .print-node {
-    fill: var(--fta-light-node);
-    stroke: black;
-}
-
-.vscode-light .sprotty-node {
-    fill: #50b1f1;
-    stroke: black;
+    stroke: var(--fta-dark-node);
+    stroke-width: 2;
 }
 
 .fta-text{

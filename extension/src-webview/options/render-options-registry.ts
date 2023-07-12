@@ -18,10 +18,10 @@
 import { inject, injectable, postConstruct } from "inversify";
 import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
-import { Registry } from "../base/registry";
-import { ResetRenderOptionsAction, SelectCutSetAction, SendConfigAction, SetRenderOptionAction } from "./actions";
-import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
 import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
+import { Registry } from "../base/registry";
+import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
+import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
 
 /**
  * Diffrent options for the color style of the relationship graph.
@@ -116,13 +116,6 @@ export class RenderOptionsRegistry extends Registry {
     handle(action: Action): void | Action | ICommand {
         if (SetRenderOptionAction.isThisAction(action)) {
             const option = this._renderOptions.get(action.id);
-
-            if(action.id === 'cut-sets'){
-                const selectCutSetAction = {kind: SelectCutSetAction.KIND, id: action.value};
-                this.vscodeApi.postMessage({action: selectCutSetAction});
-                this.notifyListeners();
-                return;
-            }
             
             if (!option) {return;}
             option.currentValue = action.value;

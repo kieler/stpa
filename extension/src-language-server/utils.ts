@@ -31,11 +31,3 @@ export function getModel(uri: string, shared: LangiumSprottySharedServices): Mod
     const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<Model>;
     return currentDoc.parseResult.value;
 }
-
-/*
-export function getModelFta(uri: string, shared: LangiumSprottySharedServices): ModelFTA {
-    const textDocuments = shared.workspace.LangiumDocuments;
-    const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<ModelFTA>;
-    return currentDoc.parseResult.value;
-}
-*/

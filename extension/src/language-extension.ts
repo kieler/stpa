@@ -23,10 +23,12 @@ import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { FTANode } from '../src-language-server/fta/fta-interfaces';
+import { CutSetToString } from '../src-language-server/fta/fta-utils';
 import { SendCutSetAction, UpdateViewAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
+import { AstNode } from 'langium';
 
 export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
@@ -174,27 +176,27 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 vscode.commands.executeCommand("redo");
             })
         ); 
+        //commands for computing and displaying the (minimal) cut sets of the fault tree.
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.generate.cutSets', async (...commandArgs: any[]) =>{ 
-                this.lastUri = (commandArgs[0] as vscode.Uri).toString();
-                const cutSets:FTANode[][] = await this.languageClient.sendRequest('generate/getCutSets', this.lastUri);      
+            vscode.commands.registerCommand(this.extensionPrefix + '.generate.ftaCutSets', async () =>{ 
+                const cutSets:AstNode[][] = await this.languageClient.sendRequest('generate/getCutSets');      
                 
-                this.dispatchCutSetsToWebview(cutSets);        
+                //Send cut sets to webview to display them in a dropdown menu.
+                //this.dispatchCutSetsToWebview(cutSets);        
 
                 const outputCutSets = vscode.window.createOutputChannel("All cut sets");
-                outputCutSets.append("The resulting " + cutSets.length + " cut sets are: \n" + this.CutSetToString(cutSets));
+                outputCutSets.append("The resulting " + cutSets.length + " cut sets are: \n" /* + CutSetToString(cutSets) */);
                 outputCutSets.show();   
             })
         );
         this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.generate.minimalCutSets', async (...commandArgs: any[]) =>{
-                this.lastUri = (commandArgs[0] as vscode.Uri).toString();
-                const minimalCutSets:FTANode[][] = await this.languageClient.sendRequest('generate/getMinimalCutSets', this.lastUri);
+            vscode.commands.registerCommand(this.extensionPrefix + '.generate.ftaMinimalCutSets', async () =>{
+                const minimalCutSets:AstNode[][] = await this.languageClient.sendRequest('generate/getMinimalCutSets');
 
-                this.dispatchCutSetsToWebview(minimalCutSets);
+                //this.dispatchCutSetsToWebview(minimalCutSets);
 
                 const outputMinimalCutSets = vscode.window.createOutputChannel("All minimal cut sets");
-                outputMinimalCutSets.append("The resulting " + minimalCutSets.length + " minimal cut sets are: \n" + this.CutSetToString(minimalCutSets));
+                outputMinimalCutSets.append("The resulting " + minimalCutSets.length + " minimal cut sets are: \n" /* + CutSetToString(minimalCutSets) */);
                 outputMinimalCutSets.show();           
             })
         );     
@@ -204,49 +206,14 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
      * @param cutSets The (minimal) cut sets of the current Fault Tree.
      */
     protected dispatchCutSetsToWebview(cutSets:FTANode[][]):void{
-        const cutSetDropDownList: { id: string, value: any; }[] = [];
+        const cutSetDropDownList: { value: any; }[] = [];
             for(const set of cutSets){
-                let id = "[";
-                for(const element of set){
-                    if(set.indexOf(element) === set.length -1){
-                        id += element.id;
-                    }else{
-                        id = id + element.id + ",";
-                    }
-                }
-                id += "]";
-                cutSetDropDownList.push({id: id, value: set});
+                cutSetDropDownList.push({value: set});
             }
         this.singleton?.dispatch({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
     }
 
-    /**
-     * Takes all (minimal) cut sets and returns a string that resembles it, so it can be displayed in the console.
-     * @param cutSets The (minimal) cut sets of the current Fault Tree.
-     * @returns A string that resembles the cut sets.
-     */
-    protected CutSetToString(cutSets:FTANode[][]):string{
-        let result =  "[";
-
-        for(const set of cutSets){
-            result += "[";
-            for(const element of set){
-                if(set.indexOf(element) === set.length -1){
-                    result += element.id;
-                }else{
-                    result = result + element.id + ",";
-                }
-            }
-            result += "]";
-            if(cutSets.indexOf(set) === cutSets.length -1){
-                result += "] \n";
-            }else{
-                result += ", \n";
-            }
-        }
-
-        return result;
-    }
+    
 
     /**
      * Creates a quickpick containing the values "true" and "false". The selected value is set for the 

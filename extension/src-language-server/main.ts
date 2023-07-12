@@ -35,7 +35,7 @@ startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
 addSTPANotificationHandler(connection, stpa, shared);
-addFTANotificationHandler(connection, fta, shared);
+addFTANotificationHandler(connection, fta);
 addNotificationHandler(connection, shared);
 
 // handle configuration changes for the validation checks

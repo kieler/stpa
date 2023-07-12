@@ -18,14 +18,14 @@
 import { ContainerModule } from "inversify";
 import { configureActionHandler, TYPES } from "sprotty";
 import { DISymbol } from "../di.symbols";
-import { SetRenderOptionAction, ResetRenderOptionsAction, SendConfigAction, SendCutSetAction, SelectCutSetAction } from "./actions";
-import { OptionsRenderer } from "./options-renderer";
-import { GeneralPanel } from "./general-panel";
-import { RenderOptionsRegistry } from "./render-options-registry";
-import { OptionsRegistry } from "./options-registry";
-import { OptionsPanel } from "./options-panel";
+import { ResetRenderOptionsAction, SendConfigAction, SendCutSetAction, SetRenderOptionAction } from "./actions";
 import { CutSetPanel } from "./cut-set-panel";
 import { CutSetsRegistry } from "./cut-set-registry";
+import { GeneralPanel } from "./general-panel";
+import { OptionsPanel } from "./options-panel";
+import { OptionsRegistry } from "./options-registry";
+import { OptionsRenderer } from "./options-renderer";
+import { RenderOptionsRegistry } from "./render-options-registry";
 // import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
 
 /** Module that configures option related panels and registries. */
@@ -54,5 +54,4 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     configureActionHandler(ctx, ResetRenderOptionsAction.KIND, DISymbol.RenderOptionsRegistry);
     configureActionHandler(ctx, SendConfigAction.KIND, DISymbol.RenderOptionsRegistry);
     configureActionHandler(ctx, SendCutSetAction.KIND, DISymbol.CutSetsRegistry);
-    configureActionHandler(ctx, SelectCutSetAction.KIND, DISymbol.CutSetsRegistry);
 });

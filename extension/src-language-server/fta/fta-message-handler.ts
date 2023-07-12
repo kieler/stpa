@@ -1,53 +1,66 @@
-import { Connection, URI } from "vscode-languageserver";
-import { FtaServices } from './fta-module';
-import { LangiumSprottySharedServices } from "langium-sprotty";
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2023 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+import { IdCache, LangiumSprottySharedServices } from 'langium-sprotty';
+import { Connection } from "vscode-languageserver";
 import { FtaDiagramGenerator } from "./fta-diagram-generator";
+import { FtaServices } from './fta-module';
+import { AstNode } from 'langium';
 
-
-
-let lastUri: URI;
 
 /**
  * Adds handlers for notifications regarding fta.
  * @param connection 
- * @param stpaServices 
+ * @param ftaServices 
  */
-export function addFTANotificationHandler(connection: Connection, ftaServices: FtaServices, sharedServices: LangiumSprottySharedServices): void {
-    addGenerateCutSetsHandler(connection, ftaServices);
-    addGenerateMinimalCutSetsHandler(connection, ftaServices);
+export function addFTANotificationHandler(connection: Connection, ftaServices: FtaServices): void {
+    addCutSetsHandler(connection, ftaServices);
+
 }
+
 
 /**
  * Adds handlers for requests regarding the cut sets.
  * @param connection 
  * @param ftaServices 
  */
-function addGenerateCutSetsHandler(connection: Connection, ftaServices: FtaServices):void{  
-    connection.onRequest('generate/getCutSets', uri =>{
-        lastUri = uri;
+function addCutSetsHandler(connection: Connection, ftaServices: FtaServices):void{
+    connection.onRequest('generate/getCutSets', () =>{
+        
+        
         const diagramGenerator = (ftaServices.diagram.DiagramGenerator) as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
-        const edges = diagramGenerator.getEdges();
+        //const edges = diagramGenerator.getEdges();
+        
 
-        const cutSets = ftaServices.bdd.Bdd.generateCutSets(nodes, edges);
+        const cutSets = ftaServices.bdd.Bdd.generateCutSetsAst(nodes);
+
+
         return cutSets;
     }); 
-   
-}
 
-/**
- * Adds handlers for requests regarding the minimal cut sets.
- * @param connection 
- * @param ftaServices 
- */
-function addGenerateMinimalCutSetsHandler(connection: Connection, ftaServices: FtaServices):void{
-    connection.onRequest('generate/getMinimalCutSets', uri =>{
-        lastUri = uri;
+    connection.onRequest('generate/getMinimalCutSets', () =>{
         const diagramGenerator = (ftaServices.diagram.DiagramGenerator) as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
-        const edges = diagramGenerator.getEdges();
-        const minimalCutSets = ftaServices.bdd.Bdd.determineMinimalCutSet(nodes, edges);
-        return minimalCutSets;
+        //const edges = diagramGenerator.getEdges();
+        
+
+        /* const minimalCutSets = ftaServices.bdd.Bdd.determineMinimalCutSet(nodes, edges);
+        return minimalCutSets; */
     });
 }
 

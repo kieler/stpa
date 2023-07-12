@@ -18,7 +18,6 @@
 import { inject, postConstruct } from "inversify";
 import { ModelViewer } from "sprotty";
 import { DISymbol } from "./di.symbols";
-import { Model } from '../src-language-server/generated/ast';
 
 export class StpaModelViewer extends ModelViewer {
     // @ts-ignore

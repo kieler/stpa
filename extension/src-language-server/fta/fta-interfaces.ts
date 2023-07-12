@@ -1,37 +1,39 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2023 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import { SEdge, SNode } from "sprotty-protocol";
-import { FTAAspect } from "./fta-model";
+import { FTNodeType } from "./fta-model";
 
 
 /**
  * Node representing a FTA component.
  */
 export interface FTANode extends SNode{
-    aspect: FTAAspect,
+    nodeType: FTNodeType,
     description: string
     highlight?: boolean
-    level?: number
     k?: number
     n?: number
 
 }
 
 /**
- * Edge representing an edge in the relationship graph.
+ * Edge representing an edge in the fault Tree.
  */
 export interface FTAEdge extends SEdge {
     highlight?: boolean
-}
-
-/**
- * Node representing a system component in the BDD.
- */
-export interface BDDNode extends SNode {
-    level?: number
-}
-
-/**
- * Edge representing component failure in the BDD.
- */
-export interface BDDEdge extends SEdge {
-    fail?: boolean
 }

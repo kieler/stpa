@@ -18,7 +18,7 @@
 import { hasOwnProperty, isActionMessage, SelectAction } from 'sprotty-protocol';
 import { SprottyLspWebview } from "sprotty-vscode/lib/lsp";
 import * as vscode from 'vscode';
-import { SelectCutSetAction, SendConfigAction } from './actions';
+import { SendConfigAction } from './actions';
 
 
 export class StpaLspWebview extends SprottyLspWebview {
@@ -36,9 +36,7 @@ export class StpaLspWebview extends SprottyLspWebview {
                 case SelectAction.KIND:
                     this.handleSelectAction(message.action as SelectAction);
                     break;
-                case SelectCutSetAction.KIND:
-                    this.selectCutSet(message.action as SelectCutSetAction);
-                    break;
+                
             }
         }
         return super.receiveFromWebview(message);
@@ -74,10 +72,6 @@ export class StpaLspWebview extends SprottyLspWebview {
     protected updateConfigValues(action: SendConfigAction): void {
         const configOptions = vscode.workspace.getConfiguration('pasta');
         action.options.forEach(element => configOptions.update(element.id, element.value));
-    }
-
-    protected selectCutSet(action: SelectCutSetAction):void{
-        this.dispatch(action);
     }
 
 }

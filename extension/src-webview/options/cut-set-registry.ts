@@ -1,30 +1,39 @@
-import { inject, injectable } from "inversify";
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2023 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+import { injectable } from "inversify";
+import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
-import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
-import { ICommand } from "sprotty";
-import { RenderOption, TransformationOptionType } from "./option-models";
-import { SelectCutSetAction, SendCutSetAction } from "./actions";
-import { flagHighlightedFta } from "../helper-methods";
+import { SendCutSetAction } from "./actions";
+import { DropDownOption, TransformationOptionType } from './option-models';
 
 
-export class DropDownMenuOption implements RenderOption{
+export class DropDownMenuOption implements DropDownOption{
     static readonly ID: string = 'cut-sets';
     static readonly NAME: string = 'Cut Sets';
     readonly id: string = DropDownMenuOption.ID;
     readonly currentId:string = DropDownMenuOption.ID;
     readonly name: string = DropDownMenuOption.NAME;
     readonly type: TransformationOptionType = TransformationOptionType.DROPDOWN;
+    values: { displayName: string; id: string }[] = [{displayName: "---", id: "---"}];
     availableValues: { displayName: string; id: string }[] = [{displayName: "---", id: "---"}];
     readonly initialValue: { displayName: string; id: string } = {displayName: "---", id: "---"};
     currentValue = {displayName: "---", id: "---"};
-}
-
-
-export interface RenderOptionType {
-    readonly ID: string,
-    readonly NAME: string,
-    new(): RenderOption,
 }
 
 
@@ -32,51 +41,52 @@ export interface RenderOptionType {
 @injectable()
 export class CutSetsRegistry extends Registry{
 
-    private _options: Map<string, RenderOption> = new Map();
-    private selectedCutSet:string = "";
-    private ftaHightlighting = false;
-
-    @inject(VsCodeApi) private vscodeApi: VsCodeApi;
+    private _options: Map<string, DropDownOption> = new Map();
 
     constructor(){
         super();
     }
-    
 
 
     handle(action: Action): void | Action | ICommand{
         if(SendCutSetAction.isThisAction(action)){
             const dropDownOption = new DropDownMenuOption();
-            for(const entry of action.cutSets){
-                dropDownOption.availableValues.push({displayName: entry.id , id: entry.id});
+            for(const set of action.cutSets){
+                let id = "[";
+                for(const element of set.value){
+                    if(set.value.indexOf(element) === set.value.length -1){
+                        id += element.id;
+                    }else{
+                        id = id + element.id + ",";
+                    }
+                }
+                id += "]";
+
+                dropDownOption.availableValues.push({displayName: id , id: id});
             }
 
             this._options.set('cut-sets', dropDownOption);
             this.notifyListeners();
-        }else if(SelectCutSetAction.isThisAction(action)){
-            this.selectedCutSet = action.id;
-            this.ftaHightlighting = true;
-            this.highlightSelectedNodes(this.selectedCutSet);
-
         }
         return UpdateModelAction.create([], { animate: false, cause: action });
     }
 
-    get allOptions():RenderOption[]{
+    get allOptions():DropDownOption[]{
         return Array.from(this._options.values());
     }
-    
-    highlightSelectedNodes(selectedCutSet:string):void{
-        const selectedSet = selectedCutSet.slice(1,-1); // remove the brackets []
-        if(selectedSet === '-'){
-            this.ftaHightlighting = false;
+
+    getCurrentValue():any{
+        if(this._options.get('cut-sets')?.availableValues.length === 1){
+            return undefined;
         }
-
-        const componentsToHighlight = selectedSet.split(",");
-        flagHighlightedFta(componentsToHighlight);
-    }
-
-    getFtaHightlighting():boolean{
-        return this.ftaHightlighting;
+        const selectedCutSet:{ displayName: string; id: string } = this._options.get('cut-sets')?.currentValue;
+        if(selectedCutSet){
+            const selected = selectedCutSet.displayName.slice(1,-1);
+            if(selected === '-'){
+                return '-';
+            }else{
+                return selected.split(",");
+            }
+        }      
     }
 }

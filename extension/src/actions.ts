@@ -63,13 +63,13 @@ export namespace SendConfigAction {
 
 export interface SendCutSetAction extends Action {
     kind: typeof SendCutSetAction.KIND;
-    cutSets: { id: string, value: any; }[];
+    cutSets: { value: any; }[];
 }
 
  export namespace SendCutSetAction {
     export const KIND = "sendCutSet";
 
-    export function create(cutSets: { id: string, value: any; }[]): SendCutSetAction {
+    export function create(cutSets: { value: any; }[]): SendCutSetAction {
         return {
             kind: KIND,
             cutSets
@@ -80,23 +80,3 @@ export interface SendCutSetAction extends Action {
         return action.kind === SendCutSetAction.KIND;
     }
 } 
-
-export interface SelectCutSetAction extends Action {
-    kind: typeof SelectCutSetAction.KIND;
-    id: string;
-}
-
- export namespace SelectCutSetAction {
-    export const KIND = "selectCutSet";
-
-    export function create(id: string): SelectCutSetAction {
-        return {
-            kind: KIND,
-            id
-        };
-    }
-
-    export function isThisAction(action: Action): action is SelectCutSetAction {
-        return action.kind === SelectCutSetAction.KIND;
-    }
-}

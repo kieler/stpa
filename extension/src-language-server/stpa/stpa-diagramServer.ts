@@ -27,10 +27,12 @@ export class StpaDiagramServer extends DiagramServer {
     clientId: string;
 
     constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string) {
+        services: DiagramServices, clientId: string, synthesisOptions?: StpaSynthesisOptions) {
         super(dispatch, services);
-        this.stpaOptions = synthesisOptions;
         this.clientId = clientId;
+        if(synthesisOptions){
+            this.stpaOptions = synthesisOptions;
+        }
     }
 
     accept(action: Action): Promise<void> {
@@ -84,7 +86,11 @@ export class StpaDiagramServer extends DiagramServer {
             this.state.currentRoot = newRoot;
             await this.submitModel(this.state.currentRoot, true, action);
             // ensures the the filterUCA option is correct
-            this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
+            if(this.stpaOptions){
+                this.dispatch({ kind: UpdateOptionsAction.KIND, clientId: this.clientId, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions()});
+            }else{
+                this.dispatch({ kind: UpdateOptionsAction.KIND, clientId: this.clientId});
+            }
         } catch (err) {
             this.rejectRemoteRequest(action, err as Error);
             console.error('Failed to generate diagram:', err);
@@ -93,7 +99,11 @@ export class StpaDiagramServer extends DiagramServer {
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
         await super.handleRequestModel(action);
-        this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
+        if(this.stpaOptions){
+            this.dispatch({ kind: UpdateOptionsAction.KIND, clientId: this.clientId, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions()});
+        }else{
+            this.dispatch({ kind: UpdateOptionsAction.KIND, clientId: this.clientId});
+        }
     }
 
 }

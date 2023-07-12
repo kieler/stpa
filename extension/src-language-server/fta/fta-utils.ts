@@ -1,7 +1,24 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2023 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 import { AstNode } from 'langium';
 import { Gate, isAND, isComponent, isCondition, isGate, isInhibitGate, isKNGate, isOR, isTopEvent } from '../generated/ast';
-import { FTAEdge, FTANode } from './fta-interfaces';
-import { FTAAspect } from './fta-model';
+import { FTANode } from './fta-interfaces';
+import { FTNodeType } from './fta-model';
 
 
 
@@ -9,171 +26,112 @@ import { FTAAspect } from './fta-model';
 
 /**
  * Getter for the references contained in {@code node}.
- * @param node The FTAAspect which tracings should be returned.
+ * @param node The AstNode we want the children of.
  * @returns The objects {@code node} is traceable to.
  */
 export function getTargets(node: AstNode): AstNode[] {
-    if (node) {
-        const targets: AstNode[] = [];
-        if(isTopEvent(node)){                                              
-            for (const ref of node.child) {
-                if (ref?.ref) { targets.push(ref.ref); }
-            }
-        }else if(isGate(node)){
-            for(const ref of node.type.child){
-                if(ref?.ref){targets.push(ref.ref);}        //G3 = G4 AND G5 Referencen von G3: ref?.ref  gelten wahrscheinlich als undefined
-            }
-            if(node.type.$type === 'InhibitGate'){
-                for(const ref of node.type.condition){
-                    if(ref?.ref){targets.push(ref.ref);}
-                }
+    const targets: AstNode[] = [];
+    if(isTopEvent(node)){                                              
+        for (const ref of node.children) {
+            if (ref?.ref) { targets.push(ref.ref); }
+        }
+    }else if(isGate(node)){
+        for(const ref of node.type.children){
+            if(ref?.ref){targets.push(ref.ref);}
+        }
+        if(isInhibitGate(node.type)){
+            for(const ref of node.type.condition){
+                if(ref?.ref){targets.push(ref.ref);}
             }
         }
-        return targets;
-    }else{
-        return [];
     }
+    return targets;
+    
 }
 
 
 /**
- * Getter for the aspect of a FTA component.
- * @param node AstNode which aspect should determined.
- * @returns the aspect of {@code node}.
+ * Getter for the type of a FTA component.
+ * @param node AstNode which type should be determined.
+ * @returns the type of {@code node}.
  */
-export function getAspect(node: AstNode): FTAAspect {
+export function getFTNodeType(node: AstNode): FTNodeType {
     if (isTopEvent(node)) {
-        return FTAAspect.TOPEVENT;    
+        return FTNodeType.TOPEVENT;    
     }else if (isComponent(node)) {
-        return FTAAspect.COMPONENT;
+        return FTNodeType.COMPONENT;
     }else if (isCondition(node)) {
-        return FTAAspect.CONDITION;
+        return FTNodeType.CONDITION;
     }else if(isGate(node) && isAND(node.type)){
-        return FTAAspect.AND;
+        return FTNodeType.AND;
     }else if (isGate(node) && isOR(node.type)) {
-        return FTAAspect.OR;
+        return FTNodeType.OR;
     }else if (isGate(node) && isKNGate(node.type)) {
-        return FTAAspect.KN;
+        return FTNodeType.KN;
     }else if (isGate(node) && isInhibitGate(node.type)) {
-        return FTAAspect.INHIBIT;
+        return FTNodeType.INHIBIT;
     }
-    return FTAAspect.UNDEFINED;
+    return FTNodeType.UNDEFINED;
 }
 
 
 /** Sorts every gate with its type and puts them into a two dimensional array
- * @param everyGate Every gate within the FTAModel
+ * @param gates Every gate within the FTAModel
  * @returns A two dimensional array with every gate sorted into the respective category of And, Or, KN, Inhibit-Gate
  */
-export function getAllGateTypes(everyGate: Gate[]): AstNode[][]{
+export function getAllGateTypes(gates: Gate[]): Map<string, AstNode[]>{
+    const allGates: Map<string, AstNode[]> = new Map();
+
     const andGates: AstNode[] = [];
     const orGates: AstNode[] = [];
     const kNGates: AstNode[] = [];
     const inhibGates: AstNode[] = [];
 
-    for(const gate of everyGate){
-        if(gate.type.$type === 'AND'){ 
+    for(const gate of gates){
+        if(isAND(gate.type)){
             andGates.push(gate);
-        }else if(gate.type.$type === 'OR'){
+        }else if(isOR(gate.type)){
             orGates.push(gate);
-        }else if(gate.type.$type === 'KNGate'){
+        }else if(isKNGate(gate.type)){
             kNGates.push(gate);
-        }else if(gate.type.$type === 'InhibitGate'){
+        }else if(isInhibitGate(gate.type)){
             inhibGates.push(gate);
         }
     }
-    const result: AstNode[][] = [andGates, orGates, kNGates, inhibGates];
+
+
+    allGates.set('AND', andGates);
+    allGates.set('OR', orGates);
+    allGates.set('KNGate', kNGates);
+    allGates.set('InhibitGate', inhibGates);
+    return allGates;
+}
+
+/**
+     * Takes all (minimal) cut sets and returns a string that resembles it, so it can be displayed in the console.
+     * @param cutSets The (minimal) cut sets of the current Fault Tree.
+     * @returns A string that resembles the cut sets.
+     */
+export function CutSetToString(cutSets:FTANode[][]):string{
+    let result =  "[";
+
+    for(const set of cutSets){
+        result += "[";
+        for(const element of set){
+            if(set.indexOf(element) === set.length -1){
+                result += element.id;
+            }else{
+                result = result + element.id + ",";
+            }
+        }
+        result += "]";
+        if(cutSets.indexOf(set) === cutSets.length -1){
+            result += "] \n";
+        }else{
+            result += ", \n";
+        }
+    }
+
     return result;
-}
-
-
-/**
- * Sets the level property for {@code nodes} depending on the layer they should be in.
- * @param nodes The nodes representing the stpa components.
- */
-export function setLevelsForFTANodes(nodes: FTANode[], edges: FTAEdge[]): void{
-    //start with the top event 
-    const topevent: FTANode[] = [getTopEvent(nodes)];
-    determineLevelForChildren(topevent, 0, edges, nodes);
-}
-
-/**
- * Returns the top event.
- * @param nodes All nodes. 
- * @returns the top event from all nodes.
- */
-function getTopEvent(nodes: FTANode[]): FTANode{
-    for(const node of nodes){
-        if(node.aspect === FTAAspect.TOPEVENT){
-            return node;
-        }
-    }
-    const empty = {} as FTANode;
-    return empty;
-}
-
-/**
- * Recursively determine the level of all nodes, starting with the top event.
- * @param nodes All the nodes on the current layer we want to look at. At the start, this is just the top event.
- * @param level The current level we want to assign.
- * @param edges All edges in the graph.
- * @param allNodes All nodes in the graph.
- */
-function determineLevelForChildren(nodes: FTANode[], level: number, edges: FTAEdge[], allNodes: FTANode[]): void{
-    const children: FTANode[] = []; 
-
-    for(const node of nodes){
-        //for every node on current layer assign the level.
-        node.level = level;
-        for(const edge of edges){
-            //Look at every edge that starts from our current node.
-            if(edge.sourceId === node.id){
-                //Get child that is connected to the second part of the edge
-                const child = getChildWithID(allNodes, edge.targetId); //Edge from G1 to G3 (G1:-:G3) with G3 being the targetId. 
-                if(!children.some((c) => c.id === child.id) && child.aspect !== FTAAspect.CONDITION){ //Don't add conditions yet.
-                    children.push(getChildWithID(allNodes, edge.targetId));
-                }
-            }
-        }
-    }
-    //If there is an inhibit gate in the next iteration/layer, then also
-    //add Condition to children, so that they can be on the same layer as the inhibit gates.
-    for(const node of children){
-        if(node.aspect === FTAAspect.INHIBIT){
-            for(const edge of edges){
-                if(edge.sourceId === node.id){
-                    node.level = level;
-                    const child = getChildWithID(allNodes, edge.targetId);
-                    if(child.aspect === FTAAspect.CONDITION){
-                        children.push(child);
-                    }
-                }    
-            }
-        }
-    }
-
-    level++;
-    //Only repeat until there is no layer below
-    if(children.length !== 0){
-        determineLevelForChildren(children, level, edges, allNodes);
-    }
-
-}
-
-
-/**
- * Gets a child object with its id from all nodes.
- * @param nodes All FtaNodes we want to assign levels to.
- * @param id The id of Node.
- * @returns an FTANode with the given id.
- */
-function getChildWithID(nodes: FTANode[], id: String): FTANode{
-    for(const node of nodes){
-        if(node.id === id){
-            return node;
-        }
-    }
-    const empty = {} as FTANode;
-    return empty;
 }
 

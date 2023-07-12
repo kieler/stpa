@@ -18,10 +18,11 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IActionDispatcher, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { IActionDispatcher, TYPES, html } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { UpdateModelAction } from 'sprotty-protocol';
 import {
     SetRenderOptionAction,
-    SetSynthesisOptionsAction,
+    SetSynthesisOptionsAction
 } from "./actions";
 import {
     CategoryOption,
@@ -29,11 +30,11 @@ import {
 } from "./components/option-inputs";
 import {
     ChoiceRenderOption,
-    RenderOption,
+    DropDownOption,
     RangeOption as RangeOptionData,
+    RenderOption,
     SynthesisOption,
-    TransformationOptionType,
-    DropDownOption
+    TransformationOptionType
 } from "./option-models";
 
 interface AllOptions {
@@ -204,7 +205,7 @@ export class OptionsRenderer {
                             value={option.currentValue}
                             availableValues={(option as DropDownOption).availableValues}
                             description={option.description}
-                            onChange={this.handleRenderOptionChange.bind(this, option)}
+                            onChange={this.setCurrentValueOnChange.bind(this,option)}
                         />
                     );
                 default:
@@ -216,5 +217,10 @@ export class OptionsRenderer {
 
     private handleRenderOptionChange(option: RenderOption, newValue: any) {
         this.actionDispatcher.dispatch(SetRenderOptionAction.create(option.id, newValue));
+    }
+
+    private setCurrentValueOnChange(option:RenderOption, newValue:any){
+        option.currentValue = {displayName: newValue, id: newValue}
+        this.actionDispatcher.dispatch(UpdateModelAction.create([], { animate: false }));
     }
 }
