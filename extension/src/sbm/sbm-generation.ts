@@ -58,6 +58,7 @@ async function createControllerSBM(controllerName: string, controlActions: strin
     // add transitions to the states
     // when adding transition for continous UCA types new states may be added
     states = addTransitions(formulaMap, states);
+    states = getReachableStates(states);
 
     // determine the variables for the scchart including a variable for the control action
     const controlActionVariable = { name: "controlAction", type: `ref ${controllerName}` };
@@ -333,14 +334,14 @@ function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[
     for (const controlAction of stoppedTooSoonMap.keys()) {
         const controlActionState = states.find(state => state.name === controlAction);
         if (controlActionState) {
-            const newlyCreatedStates: Set<{state: State, formula: LTLFormula}> = new Set();
+            const newlyCreatedStates: Set<{ state: State, formula: LTLFormula; }> = new Set();
             stoppedTooSoonMap.get(controlAction)?.forEach(ltlFormula => {
                 // there may be already a dublicate state created because of applied-too-long
                 let dublicateState = states.find(state => state.name === getStateName(controlAction, ltlFormula));
                 // create dublicate state if it does not exist
                 if (dublicateState === undefined) {
                     dublicateState = createDublicateState(states, controlActionState, ltlFormula);
-                    newlyCreatedStates.add({state: dublicateState, formula: ltlFormula});
+                    newlyCreatedStates.add({ state: dublicateState, formula: ltlFormula });
                     states.push(dublicateState);
                 }
                 // adjust trigger of outgoing transitions
@@ -358,14 +359,14 @@ function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[
 }
 
 /**
- * Copies the outgoing transitions of {@code originalState}, adjusts the triggers, and adds these transitions to {@code dublicateState}.
+ * Copies the outgoing transitions of {@code originalState} to duplicate states, adjusts the triggers, and adds these transitions to {@code dublicateState}.
  * @param originalState The state from which the transitions should be copied.
  * @param dublicateState The state to which the copied transitions should be added.
  * @param ltlFormula The LTL formula that triggered the creation of the dublicate state.
  */
 function copyAndAdjustTransitionsToDublicates(originalState: State, dublicateState: State, ltlFormula: LTLFormula): void {
     originalState.transitions.forEach(transition => {
-        if (transition.target !== dublicateState.name) {
+        if (transition.target !== dublicateState.name && transition.target.startsWith(originalState.name + "_")) {
             const newTransition = {
                 target: transition.target,
                 trigger: transition.trigger + ` && !(${ltlFormula.contextVariables})`,
@@ -423,14 +424,63 @@ function copyAndAdjustIncomingTransitions(states: State[], originalState: State,
     states.forEach(state => {
         const transitionsToDublicate: Transition[] = [];
         const transitionsToCA = state.transitions.filter(transition => transition.target === originalState.name);
+        const deletTransitions: Transition[] = [];
         transitionsToCA.forEach(transition => {
-            // transition to dublicate state
-            transitionsToDublicate.push({ target: dublicateState.name, trigger: transition.trigger + ` && (${ltlFormula.contextVariables})`, effect: transition.effect });
-            // adjust trigger of original transition
-            transition.trigger = transition.trigger + ` && !(${ltlFormula.contextVariables})`;
+            if (transition.trigger) {
+                const newTriggers = createNewTriggersForIncomingTransitions(transition.trigger, ltlFormula);
+                // transition to dublicate state
+                transitionsToDublicate.push({ target: dublicateState.name, trigger: newTriggers.duplicateTrigger, effect: transition.effect });
+                // adjust trigger of original transition
+                if (newTriggers.originalTrigger !== "false") {
+                    transition.trigger = newTriggers.originalTrigger;
+                } else {
+                    deletTransitions.push(transition);
+                }
+            }
         });
+        state.transitions = state.transitions.filter(transition => !deletTransitions.includes(transition));
         state.transitions = state.transitions.concat(transitionsToDublicate);
     });
+}
+
+/**
+ * Creates new triggers for incoming transitions of an original state and its duplicate.
+ * @param trigger The original trigger.
+ * @param ltlFormula The formula that triggered the creation of the duplicate state.
+ * @returns new triggers for the incoming transitions of the original state and the duplicate state.
+ */
+function createNewTriggersForIncomingTransitions(trigger: string, ltlFormula: LTLFormula): { originalTrigger: string, duplicateTrigger: string; } {
+    let originalTrigger = trigger;
+    let duplicateTrigger = trigger;
+    const contextVariables = ltlFormula.contextVariables.split("&&");
+    contextVariables.forEach(variable => {
+        const variableName = variable.trim();
+        if (trigger.includes(variableName)) {
+            // the new trigger for the duplicate transition would contain "variableName && variableName", so we do not need to modify the trigger
+            // the new trigger for the original transition would contain "variableName && !variableName", which is always false
+            originalTrigger = "false";
+        } else {
+            duplicateTrigger += ` && ${variableName}`;
+        }
+    });
+    return { originalTrigger, duplicateTrigger };
+}
+
+/**
+ * Collects the reachable states of the SBM (including the initial one).
+ * @param states The states of the SBM.
+ * @returns the reachable states of the SBM (including the initial one).
+ */
+function getReachableStates(states: State[]): State[] {
+    const reachableStates: State[] = [];
+    states.forEach(state => {
+        if (state.name === EMPTY_STATE_NAME) {
+            reachableStates.push(state);
+        } else if (states.find(otherState => otherState.name !== state.name && otherState.transitions.find(transition => transition.target === state.name))) {
+            reachableStates.push(state);
+        }
+    });
+    return reachableStates;
 }
 
 /**
@@ -440,5 +490,37 @@ function copyAndAdjustIncomingTransitions(states: State[], originalState: State,
  * @returns a unique name for a state.
  */
 function getStateName(controlAction: string, ltlFormula: LTLFormula): string {
-    return controlAction + "_" + ltlFormula.contextVariables;
+    return controlAction + "_" + ltlFormula.contextVariables.replace(/>=|<=|<|>|!=|=|!|&&|\|\||\s/g, translate);
+}
+
+/**
+ * Translates the given text to a valid state name.
+ * @param text The text to translate.
+ * @returns a valid state name.
+ */
+function translate(text: string): string {
+    switch (text) {
+        case "<":
+            return "Less";
+        case "<=":
+            return "LessOrEqual";
+        case ">":
+            return "Greater";
+        case ">=":
+            return "GreaterOrEqual";
+        case "=":
+            return "Equal";
+        case "!=":
+            return "NotEqual";
+        case "&&":
+            return "And";
+        case "||":
+            return "Or";
+        case "!":
+            return "Not";
+        case " ":
+            return "";
+        default:
+            return text;
+    }
 }
