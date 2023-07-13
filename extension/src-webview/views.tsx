@@ -16,14 +16,15 @@
  */
 
 /** @jsx svg */
-import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SNode, SPort, svg, toDegrees } from 'sprotty';
-import { DISymbol } from './di.symbols';
-import { collectAllChildren } from './helper-methods';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
-import { CS_EDGE_TYPE, CS_NODE_TYPE, PARENT_TYPE, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_NODE_TYPE } from './stpa-model';
+import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph } from 'sprotty';
+import { inject, injectable } from 'inversify';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE, CSEdge, EdgeType } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
+import { collectAllChildren } from './helper-methods';
+import { DISymbol } from './di.symbols';
+import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
+
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
@@ -43,29 +44,32 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
+        const hidden = edge.type === STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
+        // feedback edges in the control structure should be dashed
+        const feedbackEdge = edge.type === CS_EDGE_TYPE && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printEdge = colorStyle == "black & white";
-        const coloredEdge = colorStyle == "colorful";
-        const lessColoredEdge = colorStyle == "fewer colors";
+        const printEdge = colorStyle === "black & white";
+        const coloredEdge = colorStyle === "colorful";
+        const lessColoredEdge = colorStyle === "fewer colors";
         const aspect = (edge.source as STPANode).aspect % 2 == 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
-        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect} d={path} />;
+        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge} 
+            class-feedback-edge={feedbackEdge} class-hidden={hidden} aspect={aspect} d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
+        const hidden = edge.type === STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
 
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printEdge = colorStyle == "black & white";
-        const coloredEdge = colorStyle == "colorful" && edge.type != CS_EDGE_TYPE;
-        const sprottyEdge = colorStyle == "standard" || (edge.type == CS_EDGE_TYPE && !printEdge);
-        const lessColoredEdge = colorStyle == "fewer colors";
-        const aspect = (edge.source as STPANode).aspect % 2 == 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
+        const printEdge = colorStyle === "black & white";
+        const coloredEdge = colorStyle === "colorful" && edge.type !== CS_EDGE_TYPE;
+        const sprottyEdge = colorStyle === "standard" || (edge.type === CS_EDGE_TYPE && !printEdge);
+        const lessColoredEdge = colorStyle === "fewer colors";
+        const aspect = (edge.source as STPANode).aspect % 2 === 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
         return [
             <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect}
                 class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
@@ -87,11 +91,11 @@ export class STPANodeView extends RectangularNodeView {
 
         // determines the color of the node
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const printNode = colorStyle == "black & white";
-        const coloredNode = colorStyle == "colorful";
-        const sprottyNode = colorStyle == "standard";
-        const lessColoredNode = colorStyle == "fewer colors";
-        const aspect = node.aspect % 2 == 0 || !lessColoredNode ? node.aspect : node.aspect - 1;
+        const printNode = colorStyle === "black & white";
+        const coloredNode = colorStyle === "colorful";
+        const sprottyNode = colorStyle === "standard";
+        const lessColoredNode = colorStyle === "fewer colors";
+        const aspect = node.aspect % 2 === 0 || !lessColoredNode ? node.aspect : node.aspect - 1;
 
         // create the element based on the option and the aspect of the node
         let element: VNode;
@@ -177,7 +181,7 @@ export class CSNodeView extends RectangularNodeView {
         }
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
-        const sprottyNode = colorStyle == "standard";
+        const sprottyNode = colorStyle === "standard";
         const printNode = !sprottyNode;
         return <g>
             <rect class-print-node={printNode}
@@ -194,7 +198,7 @@ export class CSNodeView extends RectangularNodeView {
 export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
 
     render(model: Readonly<SGraph>, context: RenderingContext, args?: IRenderingArgs): VNode {
-        let allNodes: SNode[] = [];
+        const allNodes: SNode[] = [];
         collectAllChildren(model.children as SNode[], allNodes);
         highlighting = allNodes.find(node => {
             return node instanceof STPANode && node.highlight
