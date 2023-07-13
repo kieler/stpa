@@ -28,12 +28,6 @@ import { FtaLayoutConfigurator } from './fta-layout-config';
 import { FtaValidationRegistry, FtaValidator } from './fta-validator';
 
 
-
-
-
-
-
-
 /**
  * Declaration of custom services - add your own service classes here.
  */

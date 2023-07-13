@@ -312,7 +312,7 @@ export class CutSetGenerator{
     }
 
     /**
-     * Checks if array a and b are equal,
+     * Checks if array a and b are equal by sorting them and comparing their values.
      * @param a The first array we want to compare.
      * @param b The second array we want to compaare.
      * @param idCache The idCache of the generator context from the current graph.
@@ -336,7 +336,7 @@ export class CutSetGenerator{
     }
 
     /**
-     * Gets the index of a list in a two-dimensional list of AstNodes, -1 otherwise.
+     * Gets the index of a list if it's contained in a two-dimensional list of AstNodes or -1 otherwise.
      * @param a The list we want the index of.
      * @param b The two-dimensional list of AstNodes we want to search in.
      * @param idCache The idCache of the generator context from the current graph.
