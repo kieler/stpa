@@ -205,7 +205,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
     protected dispatchCutSetsToWebview(cutSets:string):void{
         cutSets = cutSets.substring(cutSets.indexOf("["));
         cutSets = cutSets.slice(1,-2);
-        let cutSetArray = cutSets.split(",\n");
+        const cutSetArray = cutSets.split(",\n");
 
         const cutSetDropDownList: { value: any; }[] = [];
             for(const set of cutSetArray){

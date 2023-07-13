@@ -114,7 +114,7 @@ export function getAllGateTypes(gates: Gate[]): Map<string, AstNode[]>{
  * @returns a string that contains every cut set.
  */
 export function cutSetToString(cutSets:AstNode[][], idCache:IdCache<AstNode>):string{
-    let result = "The resulting " + cutSets.length + " cut sets are: \n";
+    const result = "The resulting " + cutSets.length + " cut sets are: \n";
     return setToString(cutSets, idCache, result);
 }
 
@@ -125,7 +125,7 @@ export function cutSetToString(cutSets:AstNode[][], idCache:IdCache<AstNode>):st
  * @returns a string that contains every minimal cut set.
  */
 export function minimalCutSetToString(minimalCutSets:AstNode[][], idCache:IdCache<AstNode>):string{
-    let result = "The resulting " + minimalCutSets.length + " minimal cut sets are: \n";
+    const result = "The resulting " + minimalCutSets.length + " minimal cut sets are: \n";
     return setToString(minimalCutSets, idCache, result);
 }
 
@@ -136,7 +136,7 @@ export function minimalCutSetToString(minimalCutSets:AstNode[][], idCache:IdCach
  * @returns A string that resembles the cut sets.
 */
 export function setToString(cutSets:AstNode[][], idCache:IdCache<AstNode>, result:string):string{
-    result += "["
+    result += "[";
 
     for(const set of cutSets){
         result += "[";

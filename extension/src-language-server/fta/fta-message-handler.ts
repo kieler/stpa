@@ -44,7 +44,7 @@ function addCutSetsHandler(connection: Connection, ftaServices: FtaServices):voi
         const idCache = diagramGenerator.getCache();
 
         const cutSets = ftaServices.bdd.Bdd.generateCutSets(nodes, idCache);
-        let cutSetsToString = cutSetToString(cutSets, idCache);
+        const cutSetsToString = cutSetToString(cutSets, idCache);
 
         return cutSetsToString;
     }); 
@@ -55,7 +55,7 @@ function addCutSetsHandler(connection: Connection, ftaServices: FtaServices):voi
         const idCache = diagramGenerator.getCache();
         
         const minimalCutSets = ftaServices.bdd.Bdd.determineMinimalCutSet(nodes, idCache);
-        let minCutSetToString = minimalCutSetToString(minimalCutSets, idCache);
+        const minCutSetToString = minimalCutSetToString(minimalCutSets, idCache);
         
         return minCutSetToString;
     });

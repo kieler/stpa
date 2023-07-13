@@ -320,13 +320,13 @@ export class CutSetGenerator{
      */
     arrayEquals(a:AstNode[], b:AstNode[], idCache:IdCache<AstNode>):boolean{
         const sort = (x:AstNode, y:AstNode):number => {
-            let idX = idCache.getId(x);
-            let idY = idCache.getId(y);
+            const idX = idCache.getId(x);
+            const idY = idCache.getId(y);
             if(idX && idY){
                 return idX > idY ? -1 : 1;
             }
             return 0;
-        }
+        };
         const sortA = a.sort(sort);
         const sortB = b.sort(sort);
         
