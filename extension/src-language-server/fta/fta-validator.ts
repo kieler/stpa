@@ -65,7 +65,7 @@ export class FtaValidator {
                 accept('error',  `Condition has non-unique name '${c.name}'.`,  {node: c, property: 'name'});
             }
             componentNames.add(c.name);
-        })
+        });
 
         const gateNames = new Set();
         model.gates.forEach(g => {
