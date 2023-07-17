@@ -48,7 +48,7 @@ export class FtaValidator {
     }
 
     /**
-     * Prevent multiple components and gates from having the same identifier.
+     * Prevent multiple components, conditions and gates from having the same identifier.
      * @param model The model to validate.
      * @param accept 
      */
@@ -60,6 +60,12 @@ export class FtaValidator {
             }
             componentNames.add(c.name);
         });
+        model.conditions.forEach(c => {
+            if(componentNames.has(c.name)){
+                accept('error',  `Condition has non-unique name '${c.name}'.`,  {node: c, property: 'name'});
+            }
+            componentNames.add(c.name);
+        })
 
         const gateNames = new Set();
         model.gates.forEach(g => {
