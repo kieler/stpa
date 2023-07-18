@@ -18,25 +18,10 @@
  :root {
 
 
-    /* Colors for fta aspects */
-    
-    --fta-topevent-dark: #AD0000;
-    --fta-component-dark: #A85400;
-    --fta-condition-dark: #006600;
-    --fta-and-dark: purple;
-    --fta-or-dark: #0054A8;
-    --fta-kn-dark: #006161;
-    --fta-inhibit-dark: #616100;
+    /* Colors for fta nodes */
 
-    --fta-dark-node: #ffffff00;
+    --fta-darker-node: black;
     --fta-light-node: white;
-
-    --fta-topevent-light: #FF2828;
-    --fta-component-light: #ffa852;
-    --fta-condition-light: #00eb00;
-    --fta-and-light: #ff6bff;
-    --fta-or-light: #66b3ff;
-    --fta-kn-light: #00cccc;
-    --fta-inhibit-light: #cccc00;
+    --fta-dark-node: #ffffff00; 
     
 }

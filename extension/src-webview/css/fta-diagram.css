@@ -17,169 +17,27 @@
  
 @import "./fta-theme.css";
 
-.vscode-dark .fta-node[aspect="0"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-light-node);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="1"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-light-node);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="2"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-light-node);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="3"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-light-node);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="4"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-light-node);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="5"] {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-light-node);
-    stroke-width: 2;
-}
-
-.vscode-dark .fta-node[aspect="6"] {
+.vscode-dark .fta-node {
     fill: var(--fta-dark-node);
     stroke: var(--fta-light-node);
     stroke-width: 2;
 }
 
 
-.vscode-dark .fta-edge[aspect="0"],
-.vscode-dark .fta-edge-arrow[aspect="0"] {
-    stroke: var(--fta-light-node);
-}
-
-.vscode-dark .fta-edge[aspect="1"],
-.vscode-dark .fta-edge-arrow[aspect="1"] {
-    stroke: var(--fta-light-node);
-}
-
-.vscode-dark .fta-edge[aspect="2"],
-.vscode-dark .fta-edge-arrow[aspect="2"] {
-    stroke: var(--fta-light-node);
-}
-
-.vscode-dark .fta-edge[aspect="3"],
-.vscode-dark .fta-edge-arrow[aspect="3"] {
-    stroke: var(--fta-light-node);
-}
-
-.vscode-dark .fta-edge[aspect="4"],
-.vscode-dark .fta-edge-arrow[aspect="4"] {
-    stroke: var(--fta-light-node);
-}
-
-.vscode-dark .fta-edge[aspect="5"],
-.vscode-dark .fta-edge-arrow[aspect="5"] {
-    stroke: var(--fta-light-node);
-}
-
-.vscode-dark .fta-edge[aspect="6"],
-.vscode-dark .fta-edge-arrow[aspect="6"] {
+.vscode-dark .fta-edge {
     stroke: var(--fta-light-node);
 }
 
 
-
-
-.vscode-light .fta-node[aspect="0"] {
-    fill: var(--fta-light-node);
-    stroke: black;
-    stroke-width: 2;
-}
-
-.vscode-light .fta-node[aspect="1"] {
-    fill: var(--fta-light-node);
-    stroke: black;
-    stroke-width: 2;
-}
-
-.vscode-light .fta-node[aspect="2"] {
-    fill: var(--fta-light-node);
-    stroke: black;
-    stroke-width: 2;
-}
-
-.vscode-light .fta-node[aspect="3"] {
-    fill: var(--fta-light-node);
-    stroke: black;
-    stroke-width: 2;
-}
-
-.vscode-light .fta-node[aspect="4"] {
-    fill: var(--fta-light-node);
-    stroke: black;
-    stroke-width: 2;
-}
-
-.vscode-light .fta-node[aspect="5"] {
-    fill: var(--fta-light-node);
-    stroke: black;
-    stroke-width: 2;
-}
-
-.vscode-light .fta-node[aspect="6"] {
+.vscode-light .fta-node {
     fill: var(--fta-light-node);
     stroke: black;
     stroke-width: 2;
 }
 
 
-.vscode-light .fta-edge[aspect="0"],
-.vscode-light .fta-edge-arrow[aspect="0"] {
-    stroke: var(--fta-dark-node);
-    stroke-width: 2;
-}
-
-.vscode-light .fta-edge[aspect="1"],
-.vscode-light .fta-edge-arrow[aspect="1"] {
-    stroke: var(--fta-dark-node);
-    stroke-width: 2;
-}
-
-.vscode-light .fta-edge[aspect="2"],
-.vscode-light .fta-edge-arrow[aspect="2"] {
-    stroke: var(--fta-dark-node);
-    stroke-width: 2;
-}
-
-.vscode-light .fta-edge[aspect="3"],
-.vscode-light .fta-edge-arrow[aspect="3"] {
-    stroke: var(--fta-dark-node);
-    stroke-width: 2;
-}
-
-.vscode-light .fta-edge[aspect="4"],
-.vscode-light .fta-edge-arrow[aspect="4"] {
-    stroke: var(--fta-dark-node);
-    stroke-width: 2;
-}
-
-.vscode-light .fta-edge[aspect="5"],
-.vscode-light .fta-edge-arrow[aspect="5"] {
-    stroke: var(--fta-dark-node);
-    stroke-width: 2;
-}
-
-.vscode-light .fta-edge[aspect="6"],
-.vscode-light .fta-edge-arrow[aspect="6"] {
-    stroke: var(--fta-dark-node);
+.vscode-light .fta-edge {
+    stroke: var(--fta-darker-node);
     stroke-width: 2;
 }
 

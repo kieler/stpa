@@ -115,7 +115,7 @@ export class FTANodeView extends RectangularNodeView {
         const hidden = !node.highlight;
 
         return <g
-            class-fta-node={true} aspect={node.nodeType}
+            class-fta-node={true}
             class-mouseover={node.hoverFeedback}
             class-hidden={hidden}>
             <g class-node-selected={node.selected}>{element}</g>
