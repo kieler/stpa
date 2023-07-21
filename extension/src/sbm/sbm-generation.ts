@@ -60,6 +60,18 @@ async function createControllerSBM(controllerName: string, controlActions: strin
     states = addTransitions(formulaMap, states);
     states = getReachableStates(states);
 
+    // sort the transitions so that the ones to the empty state are always the last transitions
+    /* Must be done because the transitions to the empty state should only ensure that the state is left (for types providing and applied-too-long). 
+        When another transition is possible, it should be taken. When not using priorities, the triggers must be adjusted to be exclusive */
+    states.forEach(state => {
+        state.transitions.sort((a, _) => {
+            if (a.target === EMPTY_STATE_NAME) {
+                return 1;
+            }
+            return -1;
+        });
+    });
+
     // determine the variables for the scchart including a variable for the control action
     const controlActionVariable = { name: "controlAction", type: `ref ${controllerName}` };
     const contextVariables = collectContextVariables(ltlFormulas);
@@ -289,6 +301,7 @@ function addProvidedTransitions(providedMap: Map<string, LTLFormula[]>, states: 
         if (controlActionState) {
             providedMap.get(controlAction)?.forEach(ltlFormula => {
                 // only add a transition if there not already exists one with the same trigger
+                // trigger still may be a subset of another trigger -> set priority or trigger accordingly
                 const sameTrigger = controlActionState.transitions.find(transition => transition.trigger === ltlFormula.contextVariables);
                 if (sameTrigger === undefined) {
                     // transition from controlaction state to the empty state
@@ -386,7 +399,7 @@ function copyAndAdjustTransitionsToDublicates(originalState: State, dublicateSta
  */
 function createDublicateState(states: State[], originalState: State, ltlFormula: LTLFormula): State {
     // create state
-    const dublicateState: State = { name: getStateName(originalState.name, ltlFormula), controlAction: originalState.controlAction, transitions: [] };
+    const dublicateState: State = { name: getStateName(originalState.name, ltlFormula), label: `${originalState.name} (${ltlFormula.contextVariables})`, controlAction: originalState.controlAction, transitions: [] };
     // create incoming transitions for the dublicate state
     copyAndAdjustIncomingTransitions(states, originalState, dublicateState, ltlFormula);
     // copy outgoing transitions from controlaction state
@@ -460,6 +473,7 @@ function createNewTriggersForIncomingTransitions(trigger: string, ltlFormula: LT
             // the new trigger for the original transition would contain "variableName && !variableName", which is always false
             originalTrigger = "false";
         } else {
+            //TODO: trigger may already contain another value for the same variable in variableName
             duplicateTrigger += ` && ${variableName}`;
         }
     });

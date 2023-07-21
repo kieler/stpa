@@ -101,7 +101,11 @@ function createStates(states: State[], enumName: string): string {
         if (state.name === EMPTY_STATE_NAME) {
             stateDecl += "initial ";
         }
-        stateDecl += `state ${state.name} {\n`;
+        stateDecl += `state ${state.name}`;
+        if (state.label) {
+            stateDecl += ` "${state.label}"`;
+        }
+        stateDecl += ` {\n`;
         // each state should hava a control action which is set when entering the state
         if (state.controlAction !== "") {
             stateDecl += `entry do controlAction = ${enumName}.${state.controlAction}\n`;

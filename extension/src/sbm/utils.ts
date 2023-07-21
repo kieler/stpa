@@ -49,6 +49,7 @@ export class UCA_TYPE {
  */
 export class State {
     name: string;
+    label?: string;
     controlAction: string;
     transitions: Transition[];
 }
