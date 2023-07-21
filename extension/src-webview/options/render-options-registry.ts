@@ -18,10 +18,13 @@
 import { inject, injectable, postConstruct } from "inversify";
 import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
+import { ActionNotification } from 'sprotty-vscode-protocol';
+import { VsCodeMessenger } from "sprotty-vscode-webview/lib/services";
+import { HOST_EXTENSION } from 'vscode-messenger-common';
+import { Messenger } from 'vscode-messenger-webview';
 import { Registry } from "../base/registry";
 import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
-import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
 
 /**
  * Diffrent options for the color style of the relationship graph.
@@ -91,8 +94,7 @@ export interface RenderOptionDefault extends RenderOptionType {
 export class RenderOptionsRegistry extends Registry {
     private _renderOptions: Map<string, RenderOption> = new Map();
 
-
-    @inject(VsCodeApi) private vscodeApi: VsCodeApi;
+    @inject(VsCodeMessenger) protected messenger: Messenger;
 
     constructor() {
         super();
@@ -106,7 +108,7 @@ export class RenderOptionsRegistry extends Registry {
 
     @postConstruct()
     init(): void {
-        this.vscodeApi.postMessage({ optionRegistryReadyMessage: "Option Registry ready" });
+        this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: "", action: {kind: "optionRegistryReadyMessage"}});
     }
 
     register(Option: RenderOptionType): void {
@@ -121,7 +123,7 @@ export class RenderOptionsRegistry extends Registry {
 
             option.currentValue = action.value;
             const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
-            this.vscodeApi.postMessage({ action: sendAction });
+            this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: "", action: sendAction});
             this.notifyListeners();
 
         } else if (ResetRenderOptionsAction.isThisAction(action)) {
