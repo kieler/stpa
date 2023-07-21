@@ -23,6 +23,7 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 import { Messenger } from 'vscode-messenger';
 import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
+import { createQuickPickForWorkspaceOptions } from './utils';
 
 let languageClient: LanguageClient;
 
@@ -97,7 +98,13 @@ export function activate(context: vscode.ExtensionContext): void {
     ));
 }
 
-export function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string; }): void {
+export async function deactivate(): Promise<void> {
+    if (languageClient) {
+        await languageClient.stop();
+    }
+}
+
+function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string; }): void {
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + '.contextTable.open', async (...commandArgs: any[]) => {
             manager.createContextTable(context);
@@ -142,27 +149,6 @@ export function registerSTPACommands(manager: StpaLspVscodeExtension, context: v
 }
 
 
-/**
- * Creates a quickpick containing the values "true" and "false". The selected value is set for the 
- * configuration option determined by {@code id}.
- * @param id The id of the configuration option that should be set.
- */
-function createQuickPickForWorkspaceOptions(id: string): void {
-    const quickPick = vscode.window.createQuickPick();
-    quickPick.items = [{ label: "true" }, { label: "false" }];
-    quickPick.onDidChangeSelection((selection) => {
-        if (selection[0]?.label === "true") {
-            vscode.workspace.getConfiguration('pasta').update(id, true);
-        } else {
-            vscode.workspace.getConfiguration('pasta').update(id, false);
-        }
-        quickPick.hide();
-    });
-    quickPick.onDidHide(() => quickPick.dispose());
-    quickPick.show();
-
-}
-
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {
     const serverModule = context.asAbsolutePath(path.join('pack', 'language-server'));
     // The debug options for the server
@@ -200,12 +186,6 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
     // Start the client. This will also launch the server
     languageClient.start();
     return languageClient;
-}
-
-export async function deactivate(): Promise<void> {
-    if (languageClient) {
-        await languageClient.stop();
-    }
 }
 
 function registerTextEditorSync(manager: IWebviewEndpointManager, context: vscode.ExtensionContext): void {
