@@ -193,16 +193,16 @@ export class CSNodeView extends RectangularNodeView {
 }
 
 @injectable()
-export class STPAGraphView<IRenderingArgs> extends SGraphView<IRenderingArgs> {
+export class STPAGraphView extends SGraphView {
 
-    render(model: Readonly<SGraph>, context: RenderingContext, args?: IRenderingArgs): VNode {
+    render(model: Readonly<SGraph>, context: RenderingContext): VNode {
         const allNodes: SNode[] = [];
         collectAllChildren(model.children as SNode[], allNodes);
         highlighting = allNodes.find(node => {
             return node instanceof STPANode && node.highlight
         }) !== undefined;
 
-        return super.render(model, context, args);
+        return super.render(model, context);
     }
 
 }
