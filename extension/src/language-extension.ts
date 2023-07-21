@@ -15,6 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { SelectAction } from 'sprotty-protocol';
+import { createFileUri } from 'sprotty-vscode';
 import { SprottyDiagramIdentifier } from 'sprotty-vscode-protocol';
 import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from 'sprotty-vscode/lib/lsp';
 import * as vscode from 'vscode';
@@ -26,8 +28,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
 
     protected extensionPrefix: string;
 
-    protected contextTable: ContextTablePanel;
-    protected lastUri: string;
+    contextTable: ContextTablePanel;
     /** Saves the last selected UCA in the context table. */
     protected lastSelectedUCA: string[];
 
@@ -129,34 +130,34 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     //     return undefined;
     // }
 
-    // TODO
-    // createContextTable(): void {
-    //     const tablePanel = new ContextTablePanel(
-    //         'Context-Table',
-    //         [this.getExtensionFileUri('pack')],
-    //         this.getExtensionFileUri('pack', 'context-table-panel.js')
-    //     );
-    //     this.contextTable = tablePanel;
+    createContextTable(context: vscode.ExtensionContext): void {
+        const extensionPath = this.options.extensionUri.fsPath;
+        const tablePanel = new ContextTablePanel(
+            'Context-Table',
+            [createFileUri(extensionPath, 'pack')],
+            createFileUri(extensionPath, 'pack', 'context-table-panel.js')
+        );
+        this.contextTable = tablePanel;
 
-    //     // adds listener for mouse click on a cell
-    //     this.context.subscriptions.push(
-    //         this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string; } | undefined) => {
-    //             if (cell?.text === "No") {
-    //                 // delete selection in the diagram
-    //                 this.singleton?.dispatch(SelectAction.create({ deselectedElementsIDs: this.lastSelectedUCA }));
-    //                 this.lastSelectedUCA = [];
-    //             } else if (cell?.text) {
-    //                 const texts = cell.text.split(",");
-    //                 // language server must determine the range of the selected uca in the editor in order to highlight it
-    //                 // when there are multiple UCAs in the cell only the first one is highlighted in the editor
-    //                 this.languageClient.sendNotification('contextTable/selected', texts[0]);
-    //                 // highlight corresponding node in the diagram and maybe deselect the last selected one
-    //                 this.singleton?.dispatch(SelectAction.create({ selectedElementsIDs: texts, deselectedElementsIDs: this.lastSelectedUCA }));
-    //                 this.lastSelectedUCA = texts;
-    //             }
-    //         })
-    //     );
-    // }
+        // adds listener for mouse click on a cell
+        context.subscriptions.push(
+            this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string; } | undefined) => {
+                if (cell?.text === "No") {
+                    // delete selection in the diagram
+                    this.endpoints[0].sendAction(SelectAction.create({ deselectedElementsIDs: this.lastSelectedUCA }));
+                    this.lastSelectedUCA = [];
+                } else if (cell?.text) {
+                    const texts = cell.text.split(",");
+                    // language server must determine the range of the selected uca in the editor in order to highlight it
+                    // when there are multiple UCAs in the cell only the first one is highlighted in the editor
+                    this.languageClient.sendNotification('contextTable/selected', texts[0]);
+                    // highlight corresponding node in the diagram and maybe deselect the last selected one
+                    this.endpoints[0].sendAction(SelectAction.create({ selectedElementsIDs: texts, deselectedElementsIDs: this.lastSelectedUCA }));
+                    this.lastSelectedUCA = texts;
+                }
+            })
+        );
+    }
 
     protected override createEndpoint(identifier: SprottyDiagramIdentifier): LspWebviewEndpoint {
         const webviewContainer = this.createWebview(identifier);

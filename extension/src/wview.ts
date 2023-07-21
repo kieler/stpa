@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { hasOwnProperty, isActionMessage, SelectAction } from 'sprotty-protocol';
+import { isActionMessage, SelectAction } from 'sprotty-protocol';
 import { LspWebviewEndpoint } from "sprotty-vscode/lib/lsp";
 import * as vscode from 'vscode';
 import { SendConfigAction } from './actions';
@@ -74,10 +74,3 @@ export class StpaLspWebview extends LspWebviewEndpoint {
     }
 }
 
-interface RenderOptionsRegistryReadyMessage {
-    optionRegistryReadyMessage: string;
-}
-
-function isRenderOptionsRegistryReadyMessage(object: unknown): object is RenderOptionsRegistryReadyMessage {
-    return hasOwnProperty(object, 'optionRegistryReadyMessage');
-}

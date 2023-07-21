@@ -112,4 +112,4 @@ const contextTableConfig = {
 };
 
 
-module.exports = [vscodeConfig, lsConfig, diagramWebviewConfig/* , contextTableConfig */];
+module.exports = [vscodeConfig, lsConfig, diagramWebviewConfig, contextTableConfig];

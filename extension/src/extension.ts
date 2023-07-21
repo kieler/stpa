@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext): void {
             languageClient,
             supportedFileExtensions: ['.stpa'],
             singleton: true,
-            messenger: new Messenger({ignoreHiddenViews: false})
+            messenger: new Messenger({ ignoreHiddenViews: false })
         }, 'stpa');
         registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: 'stpa' });
         registerTextEditorSync(webviewPanelManager, context);
@@ -75,9 +75,9 @@ export function activate(context: vscode.ExtensionContext): void {
             languageClient,
             supportedFileExtensions: ['.stpa'],
             openActiveEditor: true,
-            messenger: new Messenger({ignoreHiddenViews: false})
+            messenger: new Messenger({ ignoreHiddenViews: false })
         });
-        
+
         context.subscriptions.push(
             vscode.window.registerWebviewViewProvider('states', webviewViewProvider, {
                 webviewOptions: { retainContextWhenHidden: true }
@@ -97,16 +97,15 @@ export function activate(context: vscode.ExtensionContext): void {
     ));
 }
 
-export function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string }): void {
-    // TODO
-    /*     context.subscriptions.push(
+export function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string; }): void {
+    context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + '.contextTable.open', async (...commandArgs: any[]) => {
-            this.createContextTable();
-            await this.contextTable.ready();
-            this.lastUri = (commandArgs[0] as vscode.Uri).toString();
-            this.languageClient.sendNotification('contextTable/getData', this.lastUri);
+            manager.createContextTable(context);
+            await manager.contextTable.ready();
+            const uri = (commandArgs[0] as vscode.Uri).toString();
+            languageClient.sendNotification('contextTable/getData', uri);
         })
-    ); */
+    );
     // commands for toggling the provided validation checks
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async () => {
@@ -143,26 +142,26 @@ export function registerSTPACommands(manager: StpaLspVscodeExtension, context: v
 }
 
 
-    /**
-     * Creates a quickpick containing the values "true" and "false". The selected value is set for the 
-     * configuration option determined by {@code id}.
-     * @param id The id of the configuration option that should be set.
-     */
-    function createQuickPickForWorkspaceOptions(id: string): void {
-        const quickPick = vscode.window.createQuickPick();
-        quickPick.items = [{ label: "true" }, { label: "false" }];
-        quickPick.onDidChangeSelection((selection) => {
-            if (selection[0]?.label === "true") {
-                vscode.workspace.getConfiguration('pasta').update(id, true);
-            } else {
-                vscode.workspace.getConfiguration('pasta').update(id, false);
-            }
-            quickPick.hide();
-        });
-        quickPick.onDidHide(() => quickPick.dispose());
-        quickPick.show();
+/**
+ * Creates a quickpick containing the values "true" and "false". The selected value is set for the 
+ * configuration option determined by {@code id}.
+ * @param id The id of the configuration option that should be set.
+ */
+function createQuickPickForWorkspaceOptions(id: string): void {
+    const quickPick = vscode.window.createQuickPick();
+    quickPick.items = [{ label: "true" }, { label: "false" }];
+    quickPick.onDidChangeSelection((selection) => {
+        if (selection[0]?.label === "true") {
+            vscode.workspace.getConfiguration('pasta').update(id, true);
+        } else {
+            vscode.workspace.getConfiguration('pasta').update(id, false);
+        }
+        quickPick.hide();
+    });
+    quickPick.onDidHide(() => quickPick.dispose());
+    quickPick.show();
 
-    }
+}
 
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {
     const serverModule = context.asAbsolutePath(path.join('pack', 'language-server'));
@@ -221,6 +220,7 @@ function registerTextEditorSync(manager: IWebviewEndpointManager, context: vscod
         vscode.workspace.onDidSaveTextDocument(async document => {
             if (document) {
                 manager.openDiagram(document.uri);
+                languageClient.sendNotification('contextTable/getData', document.uri.toString());
             }
         })
     );
