@@ -17,14 +17,14 @@
 
 import { AstNode } from 'langium';
 import { GeneratorContext, IdCache, LangiumDiagramGenerator } from 'langium-sprotty';
-import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
+import { SModelRoot, SLabel, SModelElement, SPort, SNode } from 'sprotty-protocol';
 import {
     Command,
     isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
     isSystemConstraint, isUCA, Model, Node, VE
 } from '../generated/ast';
-import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
-import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType, DUMMY_NODE_TYPE } from './stpa-model';
+import { CSEdge, CSNode, STPANode, STPAEdge, STPAPort } from './stpa-interfaces';
+import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType, DUMMY_NODE_TYPE, PortSide, STPA_PORT_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 import { StpaSynthesisOptions } from './synthesis-options';
@@ -33,6 +33,8 @@ import { filterModel } from './filtering';
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
     protected readonly options: StpaSynthesisOptions;
+
+    protected idToSNode: Map<string, SNode> = new Map();
 
     constructor(services: StpaServices) {
         super(services);
@@ -371,7 +373,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             const targetId = idCache.getId(target);
             const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
             if (sourceId && targetId) {
-                const e = this.generateSTPAEdge(edgeId, sourceId, targetId, '', args);
+                const e = this.generateSTPAEdge(edgeId, node, sourceId, target, '', args);
                 elements.push(e);
             }
         }
@@ -382,12 +384,13 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * Generates a single STPAEdge based on the given arguments.
      * @param edgeId The ID of the edge that should be created.
      * @param sourceId The ID of the source of the edge.
-     * @param targetId The ID of the target of the edge.
+     * @param target The target of the edge.
      * @param label The label of the edge.
      * @param param4 GeneratorContext of the STPA model.
      * @returns An STPAEdge.
      */
-    private generateSTPAEdge(edgeId: string, sourceId: string, targetId: string, label: string, { idCache }: GeneratorContext<Model>): STPAEdge {
+    private generateSTPAEdge(edgeId: string, source: AstNode, sourceId: string, target: AstNode, label: string, { idCache }: GeneratorContext<Model>): STPAEdge {
+        const targetId = idCache.getId(target);
         let children: SModelElement[] = [];
         if (label !== '') {
             children = [
@@ -398,11 +401,100 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 }
             ];
         }
+
+        if ((isHazard(target) || isSystemConstraint(target)) && target.$container?.$type !== 'Model') {
+            // if the target is a subcomponent we need to add ports to route the edges correctly
+            return this.generateEdgeWithIntermediatePorts(target, source, sourceId, edgeId, children, idCache);
+        } else {
+            // we need to add ports for source and target
+            const sourceNode = this.idToSNode.get(sourceId);
+            const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
+            sourceNode?.children?.push(
+                <STPAPort>{
+                    type: STPA_PORT_TYPE,
+                    side: PortSide.NORTH,
+                    id: sourcePortId
+                }
+            );
+            const targetNode = this.idToSNode.get(targetId!);
+            const targetPortId = idCache.uniqueId(edgeId + '.newTransition');
+            targetNode?.children?.push(
+                <STPAPort>{
+                    type: STPA_PORT_TYPE,
+                    side: PortSide.SOUTH,
+                    id: targetPortId
+                }
+            );
+            return {
+                type: STPA_EDGE_TYPE,
+                id: edgeId,
+                sourceId: sourcePortId,
+                targetId: targetPortId,
+                aspect: getAspect(source),
+                children: children
+            };
+        }
+    }
+
+    protected generateEdgeWithIntermediatePorts(target: AstNode, source: AstNode, sourceId: string, edgeId: string, children: SModelElement[], idCache: IdCache<AstNode>): STPAEdge {
+        let parent: AstNode | undefined = target;
+        const ids: string[] = [];
+        // add ports to the nodes
+        while (parent && parent?.$type !== 'Model') {
+            const current = parent;
+            const currentId = idCache.getId(current);
+            const currentNode = this.idToSNode.get(currentId!);
+            const portId = idCache.uniqueId(edgeId + '.newTransition');
+            currentNode?.children?.push(
+                <STPAPort>{
+                    type: STPA_PORT_TYPE,
+                    side: PortSide.SOUTH,
+                    id: portId
+                }
+            );
+            ids.push(portId);
+            parent = parent?.$container;
+        }
+
+        // add port for source node
+        const sourceNode = this.idToSNode.get(sourceId);
+        const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
+        sourceNode?.children?.push(
+            <STPAPort>{
+                type: STPA_PORT_TYPE,
+                side: PortSide.NORTH,
+                id: sourcePortId
+            }
+        );
+
+        // add edges between the ports
+        let counter = 0;
+        parent = target;
+        while (parent && parent?.$type !== 'Model') {
+            const parentId = idCache.getId(parent.$container);
+            const parentNode = this.idToSNode.get(parentId!);
+            const type = counter === 0 ? STPA_EDGE_TYPE : STPA_INTERMEDIATE_EDGE_TYPE;
+            parentNode?.children?.push(
+                {
+                    type: type,
+                    id: idCache.uniqueId(edgeId),
+                    sourceId: ids[counter + 1],
+                    targetId: ids[counter],
+                    aspect: getAspect(source)
+                } as STPAEdge
+            );
+            counter++;
+
+            parent = parent?.$container;
+        }
+
+        // add edge from original source to port of top node
         return {
-            type: STPA_EDGE_TYPE,
+            type: STPA_INTERMEDIATE_EDGE_TYPE,
             id: edgeId,
-            sourceId: sourceId,
-            targetId: targetId,
+            sourceId: sourcePortId,
+            targetId: ids[ids.length - 1],
+            aspect: getAspect(source),
             children: children
         };
     }
@@ -445,7 +537,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
             if (isContext(node)) {
                 // context UCAs have no description
-                return {
+                const result = {
                     type: STPA_NODE_TYPE,
                     id: nodeId,
                     aspect: getAspect(node),
@@ -460,8 +552,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                         paddingRight: 10.0
                     }
                 };
+                this.idToSNode.set(nodeId, result);
+                return result;
             } else {
-                return {
+                const result = {
                     type: STPA_NODE_TYPE,
                     id: nodeId,
                     aspect: getAspect(node),
@@ -476,6 +570,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                         paddingRight: 10.0
                     }
                 };
+                this.idToSNode.set(nodeId, result);
+                return result;
             }
         } else {
             throw new Error("generateSTPANode method should only be called with an STPA component");

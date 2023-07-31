@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SNode, SEdge } from "sprotty-protocol";
-import { EdgeType, STPAAspect } from "./stpa-model";
+import { SEdge, SNode, SPort } from "sprotty-protocol";
+import { EdgeType, PortSide, STPAAspect } from "./stpa-model";
 
 /**
  * Node representing a STPA component.
@@ -34,7 +34,12 @@ export interface STPANode extends SNode {
  * Edge representing an edge in the relationship graph.
  */
  export interface STPAEdge extends SEdge {
+    aspect: STPAAspect
     highlight?: boolean
+}
+
+export interface STPAPort extends SPort {
+    side?: PortSide
 }
 
 /**

@@ -17,9 +17,9 @@
 
 /** @jsx svg */
 import { VNode } from 'snabbdom';
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph } from 'sprotty';
+import { IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph, IView } from 'sprotty';
 import { inject, injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE, CSEdge, EdgeType } from './stpa-model';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE, CSEdge, EdgeType, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { DISymbol } from './di.symbols';
@@ -42,7 +42,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
-        const hidden = edge.type === STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
+        const hidden = (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) && highlighting && !(edge as STPAEdge).highlight;
         // feedback edges in the control structure should be dashed
         const feedbackEdge = edge.type === CS_EDGE_TYPE && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
 
@@ -50,7 +50,10 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const printEdge = colorStyle === "black & white";
         const coloredEdge = colorStyle === "colorful";
         const lessColoredEdge = colorStyle === "fewer colors";
-        const aspect = (edge.source as STPANode).aspect % 2 == 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
+        let aspect: number = -1;
+        if (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) {
+            aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
+        }
         return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge} 
             class-feedback-edge={feedbackEdge} class-hidden={hidden} aspect={aspect} d={path} />;
     }
@@ -67,7 +70,10 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const coloredEdge = colorStyle === "colorful" && edge.type !== CS_EDGE_TYPE;
         const sprottyEdge = colorStyle === "standard" || (edge.type === CS_EDGE_TYPE && !printEdge);
         const lessColoredEdge = colorStyle === "fewer colors";
-        const aspect = (edge.source as STPANode).aspect % 2 === 0 || !lessColoredEdge ? (edge.source as STPANode).aspect : (edge.source as STPANode).aspect - 1;
+        let aspect: number = -1;
+        if (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) {
+            aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
+        }
         return [
             <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect}
                 class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
@@ -77,6 +83,30 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
     angle(x0: Point, x1: Point): number {
         return toDegrees(Math.atan2(x1.y - x0.y, x1.x - x0.x));
+    }
+}
+
+@injectable()
+export class IntermediateEdgeView extends PolylineArrowEdgeView {
+
+    render(edge: Readonly<SEdge>, context: RenderingContext, args?: IViewArgs): VNode | undefined {
+        const route = this.edgeRouterRegistry.route(edge, args);
+        if (route.length === 0) {
+            return this.renderDanglingEdge("Cannot compute route", edge, context);
+        }
+        if (!this.isVisible(edge, route, context)) {
+            if (edge.children.length === 0) {
+                return undefined;
+            }
+            // The children of an edge are not necessarily inside the bounding box of the route,
+            // so we need to render a group to ensure the children have a chance to be rendered.
+            return <g>{context.renderChildren(edge, { route })}</g>;
+        }
+
+        return <g class-sprotty-edge={true} class-mouseover={edge.hoverFeedback}>
+                {this.renderLine(edge, route, context)}
+                {context.renderChildren(edge, { route })}
+            </g>;
     }
 }
 
@@ -199,10 +229,17 @@ export class STPAGraphView extends SGraphView {
         const allNodes: SNode[] = [];
         collectAllChildren(model.children as SNode[], allNodes);
         highlighting = allNodes.find(node => {
-            return node instanceof STPANode && node.highlight
+            return node instanceof STPANode && node.highlight;
         }) !== undefined;
 
         return super.render(model, context);
     }
 
+}
+
+@injectable()
+export class PortView implements IView {
+    render(model: SPort, context: RenderingContext): VNode {
+        return <g/>;
+    }
 }

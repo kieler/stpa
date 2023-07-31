@@ -16,7 +16,7 @@
  */
 
 import { SNode, SEdge, SModelElement } from "sprotty";
-import { STPAAspect, STPAEdge, STPANode, STPA_NODE_TYPE } from "./stpa-model";
+import { PortSide, STPAAspect, STPAEdge, STPANode, STPAPort, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from "./stpa-model";
 
 /**
  * Collects all children of the nodes in {@code nodes}.
@@ -48,21 +48,25 @@ export function flagConnectedElements(node: SNode): (STPANode | STPAEdge)[] {
     if (isSubHazard(node)) {
         (node.parent as STPANode).highlight = true;
         elements.push(node.parent as STPANode);
-        for (const outEdge of (node.parent as STPANode).outgoingEdges) {
-            (outEdge as STPAEdge).highlight = true;
-            elements.push(outEdge);
-            flagSuccNodes(outEdge, elements);
+
+        // flag outgoing edges from parent
+        for (const port of node.parent.children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.NORTH)) {
+            for (const child of (node.parent as STPANode).parent.children) {
+                if (child.type.startsWith('edge:stpa')) {
+                    flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
+                }
+            }
         }
     }
-    for (const edge of node.incomingEdges) {
-        (edge as STPAEdge).highlight = true;
-        elements.push(edge);
-        flagPredNodes(edge, elements);
-    }
-    for (const edge of node.outgoingEdges) {
-        (edge as STPAEdge).highlight = true;
-        elements.push(edge);
-        flagSuccNodes(edge, elements);
+    for (const port of node.children.filter(child => child.type === STPA_PORT_TYPE)) {
+        for (const child of node.parent.children) {
+            if (child.type === STPA_INTERMEDIATE_EDGE_TYPE) {
+                flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
+            } else if (child.type === STPA_EDGE_TYPE) {
+                flagIncomingEdges(child as STPAEdge, port as STPAPort, elements);
+                flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
+            }
+        }
     }
     return elements;
 }
@@ -72,7 +76,7 @@ export function flagConnectedElements(node: SNode): (STPANode | STPAEdge)[] {
  * @param edge The edge which source and further predecessors should be inspected.
  */
 function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
-    const node = edge.source as SNode;
+    const node = edge.source?.type.startsWith('port') ? edge.source.parent as SNode : edge.source as SNode;
     (node as STPANode).highlight = true;
     elements.push(node as STPANode);
     if (isSubConstraint(node)) {
@@ -83,17 +87,21 @@ function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
         for (const subH of subHazards) {
             subH.highlight = true;
             elements.push(subH);
-            for (const inEdge of subH.incomingEdges) {
-                (inEdge as STPAEdge).highlight = true;
-                elements.push(inEdge);
-                flagPredNodes(inEdge, elements);
+            for (const port of subH.children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.SOUTH)) {
+                for (const child of subH.parent.children) {
+                    if (child.type.startsWith('edge:stpa')) {
+                        flagIncomingEdges(child as STPAEdge, port as STPAPort, elements);
+                    }
+                }
             }
         }
     }
-    for (const inEdge of node.incomingEdges) {
-        (inEdge as STPAEdge).highlight = true;
-        elements.push(inEdge);
-        flagPredNodes(inEdge, elements);
+    for (const port of node.children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.SOUTH)) {
+        for (const child of node.parent.children) {
+            if (child.type.startsWith('edge:stpa')) {
+                flagIncomingEdges(child as STPAEdge, port as STPAPort, elements);
+            }
+        }
     }
 }
 
@@ -102,7 +110,7 @@ function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
  * @param edge The edge which target and further successors should be inspected.
  */
 function flagSuccNodes(edge: SEdge, elements: SModelElement[]): void {
-    const node = edge.target as SNode;
+    const node = edge.target?.type.startsWith('port') ? edge.target.parent as SNode : edge.target as SNode;
     (node as STPANode).highlight = true;
     elements.push(node as STPANode);
     if (isSubConstraint(node)) {
@@ -111,16 +119,59 @@ function flagSuccNodes(edge: SEdge, elements: SModelElement[]): void {
     if (isSubHazard(node)) {
         (node.parent as STPANode).highlight = true;
         elements.push(node.parent as STPANode);
-        for (const outEdge of (node.parent as STPANode).outgoingEdges) {
-            (outEdge as STPAEdge).highlight = true;
-            elements.push(outEdge);
-            flagSuccNodes(outEdge, elements);
+        // for (const outEdge of (node.parent as STPANode).outgoingEdges) {
+        //     (outEdge as STPAEdge).highlight = true;
+        //     elements.push(outEdge);
+        //     flagSuccNodes(outEdge, elements);
+        // }
+        for (const port of (node.parent as STPANode).children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.NORTH)) {
+            for (const child of (node.parent as STPANode).parent.children) {
+                if (child.type.startsWith('edge:stpa')) {
+                    flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
+                }
+            }
+        }
+
+
+    }
+    for (const port of node.children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.NORTH)) {
+        for (const child of node.parent.children) {
+            if (child.type.startsWith('edge:stpa')) {
+                flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
+            }
         }
     }
-    for (const outEdge of node.outgoingEdges) {
-        (outEdge as STPAEdge).highlight = true;
-        elements.push(outEdge);
-        flagSuccNodes(outEdge, elements);
+}
+
+function flagIncomingEdges(edge: STPAEdge, port: STPAPort, elements: SModelElement[]): void {
+    if (edge.targetId === port.id) {
+        // flag predecessors
+        edge.highlight = true;
+        elements.push(edge);
+        let furtherEdge = (edge.parent as STPANode).parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).targetId === edge.sourceId) as STPAEdge;
+        while (furtherEdge) {
+            edge = furtherEdge;
+            edge.highlight = true;
+            elements.push(edge);
+            furtherEdge = (edge.parent as STPANode).parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).targetId === edge.sourceId) as STPAEdge;
+        }
+        flagPredNodes(edge, elements);
+    }
+}
+
+function flagOutgoingEdges(edge: STPAEdge, port: STPAPort, elements: SModelElement[]): void {
+    if (edge.sourceId === port.id) {
+        // flag successors
+        edge.highlight = true;
+        elements.push(edge);
+        let furtherEdge = edge.target?.parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).sourceId === edge.targetId) as STPAEdge;
+        while (furtherEdge) {
+            edge = furtherEdge;
+            edge.highlight = true;
+            elements.push(edge);
+            furtherEdge = edge.target?.parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).sourceId === edge.targetId) as STPAEdge;
+        }
+        flagSuccNodes(edge, elements);
     }
 }
 

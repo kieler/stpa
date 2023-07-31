@@ -23,6 +23,8 @@ export const DUMMY_NODE_TYPE = 'node:dummy';
 export const EDGE_TYPE = 'edge';
 export const CS_EDGE_TYPE = 'edge:controlStructure';
 export const STPA_EDGE_TYPE = 'edge:stpa';
+export const STPA_INTERMEDIATE_EDGE_TYPE = 'edge:stpa-intermediate';
+export const STPA_PORT_TYPE = 'port:stpa';
 
 /**
  * The different aspects of STPA.
@@ -49,4 +51,11 @@ export enum EdgeType {
     INPUT,
     OUTPUT,
     UNDEFINED
+}
+
+export enum PortSide {
+    WEST,
+    EAST,
+    NORTH,
+    SOUTH
 }
