@@ -28,7 +28,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
 
     protected extensionPrefix: string;
 
-    contextTable: ContextTablePanel;
+    public contextTable: ContextTablePanel;
     /** Saves the last selected UCA in the context table. */
     protected lastSelectedUCA: string[];
 

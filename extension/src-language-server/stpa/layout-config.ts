@@ -29,7 +29,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         // options for the whole graph containing the control structure and the STPA graph
         return {
             'org.eclipse.elk.partitioning.activate': 'true',
-            'org.eclipse.elk.direction': 'DOWN',
+            'org.eclipse.elk.direction': 'DOWN'
         };
     }
 
@@ -51,13 +51,12 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             // 'org.eclipse.elk.layered.layering.strategy': 'LONGEST_PATH',
             'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': direction,
-            'org.eclipse.elk.algorithm': 'layered',
             // nodes with many edges are streched 
             'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
             'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
             'org.eclipse.elk.spacing.portPort': '10',
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
-            'org.eclipse.elk.priority': priority,
+            'org.eclipse.elk.priority': priority
         };
     }
 
@@ -83,7 +82,10 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
 
             'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
-            'org.eclipse.elk.separateConnectedComponents': 'false'
+            'org.eclipse.elk.separateConnectedComponents': 'false',
+            'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
+            'org.eclipse.elk.layered.crossingMinimization.strategy': 'NONE',
+            'org.eclipse.elk.layered.crossingMinimization.greedySwitch.type': 'OFF',
         };
     }
 

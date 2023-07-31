@@ -85,7 +85,7 @@ export function activate(context: vscode.ExtensionContext): void {
             })
         );
         registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: 'stpa' });
-        registerTextEditorSync(webviewViewProvider, context);
+        // registerTextEditorSync(webviewViewProvider, context);
     }
     // register commands that other extensions can use
     context.subscriptions.push(vscode.commands.registerCommand(
@@ -188,7 +188,7 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
     return languageClient;
 }
 
-function registerTextEditorSync(manager: IWebviewEndpointManager, context: vscode.ExtensionContext): void {
+function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(async editor => {
             if (editor) {
@@ -200,7 +200,9 @@ function registerTextEditorSync(manager: IWebviewEndpointManager, context: vscod
         vscode.workspace.onDidSaveTextDocument(async document => {
             if (document) {
                 manager.openDiagram(document.uri);
-                languageClient.sendNotification('contextTable/getData', document.uri.toString());
+                if (manager.contextTable) {
+                    languageClient.sendNotification('contextTable/getData', document.uri.toString());
+                }
             }
         })
     );
