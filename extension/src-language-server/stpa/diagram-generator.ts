@@ -17,18 +17,19 @@
 
 import { AstNode } from 'langium';
 import { GeneratorContext, IdCache, LangiumDiagramGenerator } from 'langium-sprotty';
-import { SModelRoot, SLabel, SModelElement, SPort, SNode } from 'sprotty-protocol';
+import { SLabel, SModelElement, SModelRoot, SNode } from 'sprotty-protocol';
 import {
     Command,
+    Model, Node, VE,
     isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
-    isSystemConstraint, isUCA, Model, Node, VE
+    isSystemConstraint, isUCA
 } from '../generated/ast';
-import { CSEdge, CSNode, STPANode, STPAEdge, STPAPort } from './stpa-interfaces';
-import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType, DUMMY_NODE_TYPE, PortSide, STPA_PORT_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
-import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
-import { StpaSynthesisOptions } from './synthesis-options';
 import { filterModel } from './filtering';
+import { CSEdge, CSNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces';
+import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
+import { StpaServices } from './stpa-module';
+import { StpaSynthesisOptions } from './synthesis-options';
+import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
@@ -456,17 +457,6 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             parent = parent?.$container;
         }
 
-        // add port for source node
-        const sourceNode = this.idToSNode.get(sourceId);
-        const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
-        sourceNode?.children?.push(
-            <STPAPort>{
-                type: STPA_PORT_TYPE,
-                side: PortSide.NORTH,
-                id: sourcePortId
-            }
-        );
-
         // add edges between the ports
         let counter = 0;
         parent = target;
@@ -487,6 +477,70 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
             parent = parent?.$container;
         }
+
+        // add edges from original source to port of top node
+        if (isSystemConstraint(source) && source.$container?.$type !== 'Model') {
+            let sourceParent: AstNode | undefined = source;
+            const sourceIds: string[] = [];
+            // add ports to the nodes
+            while (sourceParent && sourceParent?.$type !== 'Model') {
+                const current = sourceParent;
+                const currentId = idCache.getId(current);
+                const currentNode = this.idToSNode.get(currentId!);
+                const portId = idCache.uniqueId(edgeId + '.newTransition');
+                currentNode?.children?.push(
+                    <STPAPort>{
+                        type: STPA_PORT_TYPE,
+                        side: PortSide.NORTH,
+                        id: portId
+                    }
+                );
+                sourceIds.push(portId);
+                sourceParent = sourceParent?.$container;
+            }
+    
+            // add edges between the ports
+            let counter = 0;
+            sourceParent = source;
+            while (sourceParent && sourceParent?.$type !== 'Model') {
+                const parentId = idCache.getId(sourceParent.$container);
+                const parentNode = this.idToSNode.get(parentId!);
+                parentNode?.children?.push(
+                    {
+                        type: STPA_INTERMEDIATE_EDGE_TYPE,
+                        id: idCache.uniqueId(edgeId),
+                        sourceId: sourceIds[counter],
+                        targetId: sourceIds[counter + 1],
+                        aspect: getAspect(source)
+                    } as STPAEdge
+                );
+                counter++;
+    
+                sourceParent = sourceParent?.$container;
+            }
+
+            return {
+                type: STPA_INTERMEDIATE_EDGE_TYPE,
+                id: edgeId,
+                sourceId: sourceIds[ids.length - 1],
+                targetId: ids[ids.length - 1],
+                aspect: getAspect(source),
+                children: children
+            };
+
+        }
+
+
+        // add port for source node
+        const sourceNode = this.idToSNode.get(sourceId);
+        const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
+        sourceNode?.children?.push(
+            <STPAPort>{
+                type: STPA_PORT_TYPE,
+                side: PortSide.NORTH,
+                id: sourcePortId
+            }
+        );
 
         // add edge from original source to port of top node
         return {

@@ -56,7 +56,10 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
             'org.eclipse.elk.spacing.portPort': '10',
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
-            'org.eclipse.elk.priority': priority
+            'org.eclipse.elk.priority': priority,
+            'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
+            'org.eclipse.elk.layered.crossingMinimization.strategy': 'NONE',
+            'org.eclipse.elk.layered.crossingMinimization.greedySwitch.type': 'OFF',
         };
     }
 
