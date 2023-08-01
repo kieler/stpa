@@ -56,7 +56,8 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
             'org.eclipse.elk.priority': priority,
             'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-            'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true'
+            'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
+            'org.eclipse.elk.separateConnectedComponents': 'false'
         };
     }
 
@@ -103,11 +104,20 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected csNodeOptions(node: CSNode): LayoutOptions {
-        return {
-            'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
-            // nodes with many edges are streched 
-            'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
-        };
+        if (node.level !== undefined) {
+            return {
+                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
+                'org.eclipse.elk.partitioning.partition': "" + node.level,
+                // nodes with many edges are streched 
+                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
+            };
+        } else {
+            return {
+                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
+                // nodes with many edges are streched 
+                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
+            };
+        }
     }
 
     protected portOptions(sport: SPort, index: SModelIndex): LayoutOptions | undefined {

@@ -141,6 +141,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return {
             type: CS_NODE_TYPE,
             id: nodeId,
+            level: node.level,
             children: this.createLabel([label], nodeId, idCache),
             layout: 'stack',
             layoutOptions: {
@@ -187,7 +188,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         for (const edge of commands) {
             const sourceId = idCache.getId(edge.$container);
             const targetId = idCache.getId(edge.target.ref);
-            const edgeId = idCache.uniqueId(`${sourceId}:${edge.comms[0].name}:${targetId}`, edge);
+            const edgeId = idCache.uniqueId(`${sourceId}_${edge.comms[0].name}_${targetId}`, edge);
             // multiple commands to same target is represented by one edge
             const label: string[] = [];
             for (let i = 0; i < edge.comms.length; i++) {
@@ -225,17 +226,17 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             switch (edgetype) {
                 case EdgeType.INPUT:
                     // create dummy node for the input
-                    const inputDummyNode = this.createDummyNode("input" + node.name, idCache);
+                    const inputDummyNode = this.createDummyNode("input" + node.name, node.level? node.level - 1 : undefined, idCache);
                     // create edge for the input
-                    const inputEdge = this.createControlStructureEdge(idCache.uniqueId(`${inputDummyNode.id}:input:${nodeId}`), inputDummyNode.id ? inputDummyNode.id : '', nodeId ? nodeId : '',
+                    const inputEdge = this.createControlStructureEdge(idCache.uniqueId(`${inputDummyNode.id}_input_${nodeId}`), inputDummyNode.id ? inputDummyNode.id : '', nodeId ? nodeId : '',
                         label, edgetype, args);
                     graphComponents = [inputEdge, inputDummyNode];
                     break;
                 case EdgeType.OUTPUT:
                     // create dummy node for the output
-                    const outputDummyNode = this.createDummyNode("output" + node.name, idCache);
+                    const outputDummyNode = this.createDummyNode("output" + node.name, node.level? node.level + 1: undefined, idCache);
                     // create edge for the output
-                    const outputEdge = this.createControlStructureEdge(idCache.uniqueId(`${nodeId}:output:${outputDummyNode.id}`), nodeId ? nodeId : '', outputDummyNode.id ? outputDummyNode.id : '',
+                    const outputEdge = this.createControlStructureEdge(idCache.uniqueId(`${nodeId}_output_${outputDummyNode.id}`), nodeId ? nodeId : '', outputDummyNode.id ? outputDummyNode.id : '',
                         label, edgetype, args);
                     graphComponents = [outputEdge, outputDummyNode];
                     break;
@@ -299,7 +300,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 container = container.$container;
             }
 
-            let children: SModelElement[] = this.createLabel([node.name],nodeId, idCache);
+            let children: SModelElement[] = this.createLabel([node.name], nodeId, idCache);
             // if the hierarchy option is true, the subcomponents are added as children to the parent
             if (this.options.getHierarchy() && (isHazard(node) && node.subComps.length !== 0)) {
                 // adds subhazards
@@ -357,7 +358,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // get the IDs
         const targetId = idCache.getId(target);
         const sourceId = idCache.getId(source);
-        const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
+        const edgeId = idCache.uniqueId(`${sourceId}_${targetId}`, undefined);
 
         if (sourceId && targetId) {
             // create the label of the edge
@@ -372,11 +373,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             } else {
                 // otherwise it is sufficient to add ports for source and target
                 const sourceNode = this.idToSNode.get(sourceId);
-                const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
+                const sourcePortId = idCache.uniqueId(edgeId + '_newTransition');
                 sourceNode?.children?.push(this.createSTPAPort(sourcePortId, PortSide.NORTH));
 
                 const targetNode = this.idToSNode.get(targetId!);
-                const targetPortId = idCache.uniqueId(edgeId + '.newTransition');
+                const targetPortId = idCache.uniqueId(edgeId + '_newTransition');
                 targetNode?.children?.push(this.createSTPAPort(targetPortId, PortSide.SOUTH));
 
                 // add edge between the two ports
@@ -414,7 +415,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         } else {
             // add port for source node
             const sourceNode = this.idToSNode.get(sourceId);
-            const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
+            const sourcePortId = idCache.uniqueId(edgeId + '_newTransition');
             sourceNode?.children?.push(this.createSTPAPort(sourcePortId, PortSide.NORTH));
 
             // add edge from source to top parent of the target
@@ -459,7 +460,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         while (current && current?.$type !== 'Model') {
             const currentId = idCache.getId(current);
             const currentNode = this.idToSNode.get(currentId!);
-            const portId = idCache.uniqueId(edgeId + '.newTransition');
+            const portId = idCache.uniqueId(edgeId + '_newTransition');
             currentNode?.children?.push(this.createSTPAPort(portId, side));
             ids.push(portId);
             current = current?.$container;
@@ -555,13 +556,13 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param id The ID of the element for which the label should be generated.
      * @returns SLabel elements representing {@code label}.
      */
-    protected createLabel(label: string[], id: string,  idCache: IdCache<AstNode>): SLabel[] {
+    protected createLabel(label: string[], id: string, idCache: IdCache<AstNode>): SLabel[] {
         const children: SLabel[] = [];
         if (label.find(l => l !== '')) {
             label.forEach(l => {
                 children.push({
                     type: 'label:xref',
-                    id: idCache.uniqueId(id + '.label'),
+                    id: idCache.uniqueId(id + '_label'),
                     text: l
                 } as SLabel);
             });
@@ -569,21 +570,22 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             // needed for correct layout
             children.push({
                 type: 'label:xref',
-                id: idCache.uniqueId(id + '.label'),
+                id: idCache.uniqueId(id + '_label'),
                 text: ' '
             } as SLabel);
 
         }
         return children;
     }
-    
+
     /**
      * Creates a dummy node.
      * @param idCache The ID cache of the STPA model.
+     * @param level The level of the dummy node.
      * @returns a dummy node.
      */
-    protected createDummyNode(name: string, idCache: IdCache<AstNode>): CSNode {
-        return {
+    protected createDummyNode(name: string, level: number | undefined, idCache: IdCache<AstNode>): CSNode {
+        const dummyNode: CSNode ={
             type: DUMMY_NODE_TYPE,
             id: idCache.uniqueId('dummy' + name),
             layout: 'stack',
@@ -594,5 +596,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 paddingRight: 10.0
             }
         };
+        if (level) {
+            dummyNode.level = level;
+        } 
+        return dummyNode;
     }
 }
