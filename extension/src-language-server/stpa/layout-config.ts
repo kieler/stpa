@@ -58,8 +58,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
             'org.eclipse.elk.priority': priority,
             'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-            'org.eclipse.elk.layered.crossingMinimization.strategy': 'NONE',
-            'org.eclipse.elk.layered.crossingMinimization.greedySwitch.type': 'OFF',
+            'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true'
         };
     }
 
@@ -87,8 +86,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
             'org.eclipse.elk.separateConnectedComponents': 'false',
             'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-            'org.eclipse.elk.layered.crossingMinimization.strategy': 'NONE',
-            'org.eclipse.elk.layered.crossingMinimization.greedySwitch.type': 'OFF',
+            'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true'
         };
     }
 
