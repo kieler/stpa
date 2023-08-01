@@ -18,7 +18,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import { SGraph, SModelElement, SModelIndex, SNode, SPort } from 'sprotty-protocol';
+import { SGraph, SModelIndex, SNode, SPort } from 'sprotty-protocol';
 import { CSNode, STPANode, STPAPort } from './stpa-interfaces';
 import { CS_NODE_TYPE, PARENT_TYPE, PortSide, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 
@@ -35,14 +35,12 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
 
     protected grandparentNodeOptions(snode: SNode, index: SModelIndex): LayoutOptions {
         // in the STPA graph this is necessary for hierarchy-crossing edges to be better layouted
-        let hierarchyHandling = 'INCLUDE_CHILDREN';
         let direction = 'UP';
         // the control structure is placed above the STPA graph
         let priority = '0';
 
         if (snode.children && snode.children[0] && snode.children[0].type === CS_NODE_TYPE) {
             // options for the control structure
-            hierarchyHandling = 'SEPARATE_CHILDREN';
             direction = 'DOWN';
             priority = '1';
         }

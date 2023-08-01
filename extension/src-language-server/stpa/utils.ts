@@ -17,12 +17,20 @@
 
 import { AstNode } from "langium";
 import {
-    isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
-    isLoss, Hazard, SystemConstraint, isContext
+    Hazard, SystemConstraint,
+    isContConstraint,
+    isContext,
+    isHazard,
+    isLoss,
+    isLossScenario,
+    isResponsibility,
+    isSafetyConstraint,
+    isSystemConstraint,
+    isUCA
 } from "../generated/ast";
-import { groupValue } from "./synthesis-options";
 import { STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
+import { groupValue } from "./synthesis-options";
 
 /**
  * Getter for the references contained in {@code node}.

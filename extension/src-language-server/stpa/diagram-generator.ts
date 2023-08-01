@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -20,13 +20,14 @@ import { GeneratorContext, IdCache, LangiumDiagramGenerator } from 'langium-spro
 import { SLabel, SModelElement, SModelRoot, SNode } from 'sprotty-protocol';
 import {
     Command,
-    Model, Node, VE,
+    Model, Node,
+    VE,
     isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
     isSystemConstraint, isUCA
 } from '../generated/ast';
 import { filterModel } from './filtering';
 import { CSEdge, CSNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces';
-import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
+import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPAAspect, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
 import { StpaSynthesisOptions } from './synthesis-options';
 import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
@@ -35,6 +36,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
     protected readonly options: StpaSynthesisOptions;
 
+    /** Saves the Ids of the generated SNodes */
     protected idToSNode: Map<string, SNode> = new Map();
 
     constructor(services: StpaServices) {
@@ -97,7 +99,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const rootChildren: SModelElement[] = [];
         if (filteredModel.controlStructure) {
             // determine the nodes of the control structure graph
-            const csNodes = filteredModel.controlStructure?.nodes.map(n => this.generateCSNode(n, args));
+            const csNodes = filteredModel.controlStructure?.nodes.map(n => this.createControlStructureNode(n, args));
             // children (nodes and edges) of the control structure
             const CSChildren = [
                 ...csNodes,
@@ -124,6 +126,29 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             type: 'graph',
             id: 'root',
             children: rootChildren
+        };
+    }
+
+    /**
+     * Generates a single control structure node for the given {@code node},
+     * @param node The system component a CSNode should be created for.
+     * @param param1 GeneratorContext of the STPA model.
+     * @returns A CSNode representing {@code node}.
+     */
+    protected createControlStructureNode(node: Node, { idCache }: GeneratorContext<Model>): CSNode {
+        const label = node.label ? node.label : node.name;
+        const nodeId = idCache.uniqueId(node.name, node);
+        return {
+            type: CS_NODE_TYPE,
+            id: nodeId,
+            children: this.createLabel([label], nodeId, idCache),
+            layout: 'stack',
+            layoutOptions: {
+                paddingTop: 10.0,
+                paddingBottom: 10.0,
+                paddngLeft: 10.0,
+                paddingRight: 10.0
+            }
         };
     }
 
@@ -169,7 +194,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 const com = edge.comms[i];
                 label.push(com.label);
             }
-            const e = this.generateControlStructureEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
+            const e = this.createControlStructureEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
                 label, edgetype, args);
             edges.push(e);
         }
@@ -200,17 +225,17 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             switch (edgetype) {
                 case EdgeType.INPUT:
                     // create dummy node for the input
-                    const inputDummyNode = this.generateDummyNode("input" + node.name, idCache);
+                    const inputDummyNode = this.createDummyNode("input" + node.name, idCache);
                     // create edge for the input
-                    const inputEdge = this.generateControlStructureEdge(idCache.uniqueId(`${inputDummyNode.id}:input:${nodeId}`), inputDummyNode.id ? inputDummyNode.id : '', nodeId ? nodeId : '',
+                    const inputEdge = this.createControlStructureEdge(idCache.uniqueId(`${inputDummyNode.id}:input:${nodeId}`), inputDummyNode.id ? inputDummyNode.id : '', nodeId ? nodeId : '',
                         label, edgetype, args);
                     graphComponents = [inputEdge, inputDummyNode];
                     break;
                 case EdgeType.OUTPUT:
                     // create dummy node for the output
-                    const outputDummyNode = this.generateDummyNode("output" + node.name, idCache);
+                    const outputDummyNode = this.createDummyNode("output" + node.name, idCache);
                     // create edge for the output
-                    const outputEdge = this.generateControlStructureEdge(idCache.uniqueId(`${nodeId}:output:${outputDummyNode.id}`), nodeId ? nodeId : '', outputDummyNode.id ? outputDummyNode.id : '',
+                    const outputEdge = this.createControlStructureEdge(idCache.uniqueId(`${nodeId}:output:${outputDummyNode.id}`), nodeId ? nodeId : '', outputDummyNode.id ? outputDummyNode.id : '',
                         label, edgetype, args);
                     graphComponents = [outputEdge, outputDummyNode];
                     break;
@@ -223,7 +248,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return [];
     }
 
-    /*     private generateHorizontalCSEdges(edges: Edge[], args: GeneratorContext<Model>): SEdge[]{
+    /*     protected generateHorizontalCSEdges(edges: Edge[], args: GeneratorContext<Model>): SEdge[]{
             const idCache = args.idCache
             let genEdges: SEdge[] = []
             for (const edge of edges) {
@@ -238,7 +263,273 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         } */
 
     /**
-     * Generates a single control structure edge based on the gven arguments.
+     * Generates a node and the edges for the given {@code node}.
+     * @param node STPA component for which a node and edges should be generated.
+     * @param args GeneratorContext of the STPA model.
+     * @returns A node representing {@code node} and edges representing the references {@code node} contains.
+     */
+    protected generateAspectWithEdges(node: AstNode, args: GeneratorContext<Model>): SModelElement[] {
+        // node must be created first in order to access the id when creating the edges
+        const stpaNode = this.generateSTPANode(node, args);
+        // uca nodes need to save their control action in order to be able to group them by the actions
+        if ((isUCA(node) || isContext(node)) && node.$container.system.ref) {
+            stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name;
+        }
+        const elements: SModelElement[] = this.generateEdgesForSTPANode(node, args);
+        elements.push(stpaNode);
+        return elements;
+    }
+
+    /**
+     * Generates a single STPANode for the given {@code node}.
+     * @param node The STPA component the node should be created for.
+     * @param args GeneratorContext of the STPA model.
+     * @returns A STPANode representing {@code node}.
+     */
+    protected generateSTPANode(node: AstNode, args: GeneratorContext<Model>): STPANode {
+        const idCache = args.idCache;
+        if (isLoss(node) || isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node)
+            || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isContext(node)) {
+            const nodeId = idCache.uniqueId(node.name, node);
+            // determines the hierarchy level for subcomponents. For other components the value is 0.
+            let lvl = 0;
+            let container = node.$container;
+            while (isHazard(container) || isSystemConstraint(container)) {
+                lvl++;
+                container = container.$container;
+            }
+
+            let children: SModelElement[] = this.createLabel([node.name],nodeId, idCache);
+            // if the hierarchy option is true, the subcomponents are added as children to the parent
+            if (this.options.getHierarchy() && (isHazard(node) && node.subComps.length !== 0)) {
+                // adds subhazards
+                children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, args)));
+            }
+            if (this.options.getHierarchy() && isSystemConstraint(node) && node.subComps.length !== 0) {
+                // adds subconstraints
+                children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, args)));
+            }
+
+            if (isContext(node)) {
+                // context UCAs have no description
+                const result = this.createSTPANode(node, nodeId, lvl, "", children);
+                this.idToSNode.set(nodeId, result);
+                return result;
+            } else {
+                const result = this.createSTPANode(node, nodeId, lvl, node.description, children);
+                this.idToSNode.set(nodeId, result);
+                return result;
+            }
+        } else {
+            throw new Error("generateSTPANode method should only be called with an STPA component");
+        }
+    }
+
+    /**
+     * Generates the edges for {@code node}.
+     * @param node STPA component for which the edges should be created.
+     * @param args GeneratorContext of the STPA model.
+     * @returns Edges representing the references {@code node} contains.
+     */
+    protected generateEdgesForSTPANode(node: AstNode, args: GeneratorContext<Model>): SModelElement[] {
+        const elements: SModelElement[] = [];
+        // for every reference an edge is created
+        // if hierarchy option is false, edges from subcomponents to parents are created too
+        const targets = getTargets(node, this.options.getHierarchy());
+        for (const target of targets) {
+            const edge = this.generateSTPAEdge(node, target, '', args);
+            if (edge) {
+                elements.push(edge);
+            }
+        }
+        return elements;
+    }
+
+    /**
+     * Generates a single STPAEdge based on the given arguments.
+     * @param source The source of the edge.
+     * @param target The target of the edge.
+     * @param label The label of the edge.
+     * @param param4 GeneratorContext of the STPA model.
+     * @returns An STPAEdge.
+     */
+    protected generateSTPAEdge(source: AstNode, target: AstNode, label: string, { idCache }: GeneratorContext<Model>): STPAEdge | undefined {
+        // get the IDs
+        const targetId = idCache.getId(target);
+        const sourceId = idCache.getId(source);
+        const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
+
+        if (sourceId && targetId) {
+            // create the label of the edge
+            let children: SModelElement[] = [];
+            if (label !== '') {
+                children = this.createLabel([label], edgeId, idCache);
+            }
+
+            if ((isHazard(target) || isSystemConstraint(target)) && target.$container?.$type !== 'Model') {
+                // if the target is a subcomponent we need to add several ports and edges through the hierarchical structure
+                return this.generateIntermediateIncomingEdges(target, source, sourceId, edgeId, children, idCache);
+            } else {
+                // otherwise it is sufficient to add ports for source and target
+                const sourceNode = this.idToSNode.get(sourceId);
+                const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
+                sourceNode?.children?.push(this.createSTPAPort(sourcePortId, PortSide.NORTH));
+
+                const targetNode = this.idToSNode.get(targetId!);
+                const targetPortId = idCache.uniqueId(edgeId + '.newTransition');
+                targetNode?.children?.push(this.createSTPAPort(targetPortId, PortSide.SOUTH));
+
+                // add edge between the two ports
+                return this.createSTPAEdge(edgeId, sourcePortId, targetPortId, children, STPA_EDGE_TYPE, getAspect(source));
+            }
+        }
+    }
+
+    /**
+     * Generates incoming edges between the {@code source}, the top parent(s), and the {@code target}.
+     * @param target The target of the edge.
+     * @param source The source of the edge.
+     * @param sourceId The ID of the source of the edge.
+     * @param edgeId The ID of the original edge.
+     * @param children The children of the original edge.
+     * @param idCache The ID cache of the STPA model.
+     * @returns an STPAEdge to connect the {@code source} (or its top parent) with the top parent of the {@code target}.
+     */
+    protected generateIntermediateIncomingEdges(target: AstNode, source: AstNode, sourceId: string, edgeId: string, children: SModelElement[], idCache: IdCache<AstNode>): STPAEdge {
+        // add ports to the target and its (grand)parents
+        const targetPortIds = this.generatePortsForHierarchy(target, edgeId, PortSide.SOUTH, idCache);
+
+        // add edges between the ports
+        let current: AstNode | undefined = target;
+        for (let i = 0; current && current?.$type !== 'Model'; i++) {
+            const currentNode = this.idToSNode.get(idCache.getId(current.$container)!);
+            const edgeType = i === 0 ? STPA_EDGE_TYPE : STPA_INTERMEDIATE_EDGE_TYPE;
+            currentNode?.children?.push(this.createSTPAEdge(idCache.uniqueId(edgeId), targetPortIds[i + 1], targetPortIds[i], children, edgeType, getAspect(source)));
+            current = current?.$container;
+        }
+
+        if (isSystemConstraint(source) && source.$container?.$type !== 'Model') {
+            // if the source is a sub-sytemconstraint we also need intermediate edges to the top system constraint
+            return this.generateIntermediateOutgoingEdges(source, edgeId, children, targetPortIds[targetPortIds.length - 1], idCache);
+        } else {
+            // add port for source node
+            const sourceNode = this.idToSNode.get(sourceId);
+            const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
+            sourceNode?.children?.push(this.createSTPAPort(sourcePortId, PortSide.NORTH));
+
+            // add edge from source to top parent of the target
+            return this.createSTPAEdge(edgeId, sourcePortId, targetPortIds[targetPortIds.length - 1], children, STPA_INTERMEDIATE_EDGE_TYPE, getAspect(source));
+        }
+    }
+
+    /**
+     * Generates outgoing edges between the {@code source}, its top parent(s), and {@code targetPortId}.
+     * @param source The source of the original edge.
+     * @param edgeId The ID of the original edge.
+     * @param children The children of the original edge.
+     * @param targetPortId The ID of the target port.
+     * @param idCache The ID cache of the STPA model.
+     * @returns the STPAEdge to connect the top parent of the {@code source} with the {@code targetPortId}.
+     */
+    protected generateIntermediateOutgoingEdges(source: AstNode, edgeId: string, children: SModelElement[], targetPortId: string, idCache: IdCache<AstNode>): STPAEdge {
+        // add ports to the source and its (grand)parents
+        const sourceIds = this.generatePortsForHierarchy(source, edgeId, PortSide.NORTH, idCache);
+
+        // add edges between the ports
+        let current: AstNode | undefined = source;
+        for (let i = 0; current && current?.$type !== 'Model'; i++) {
+            const currentNode = this.idToSNode.get(idCache.getId(current.$container)!);
+            currentNode?.children?.push(this.createSTPAEdge(idCache.uniqueId(edgeId), sourceIds[i], sourceIds[i + 1], children, STPA_INTERMEDIATE_EDGE_TYPE, getAspect(source)));
+            current = current?.$container;
+        }
+
+        return this.createSTPAEdge(edgeId, sourceIds[sourceIds.length - 1], targetPortId, children, STPA_INTERMEDIATE_EDGE_TYPE, getAspect(source));
+    }
+
+    /**
+     * Generates ports for the {@code current} and its (grand)parents.
+     * @param current The current node.
+     * @param edgeId The ID of the original edge for which the ports are created.
+     * @param side The side of the ports.
+     * @param idCache The ID cache of the STPA model.
+     * @returns the IDs of the created ports.
+     */
+    protected generatePortsForHierarchy(current: AstNode | undefined, edgeId: string, side: PortSide, idCache: IdCache<AstNode>): string[] {
+        const ids: string[] = [];
+        while (current && current?.$type !== 'Model') {
+            const currentId = idCache.getId(current);
+            const currentNode = this.idToSNode.get(currentId!);
+            const portId = idCache.uniqueId(edgeId + '.newTransition');
+            currentNode?.children?.push(this.createSTPAPort(portId, side));
+            ids.push(portId);
+            current = current?.$container;
+        }
+        return ids;
+    }
+
+    /**
+     * Creates an STPANode.
+     * @param node The AstNode for which the STPANode should be created.
+     * @param nodeId The ID of the STPANode.
+     * @param lvl The hierarchy level of the STPANode.
+     * @param children The children of the STPANode.
+     * @returns an STPANode.
+     */
+    protected createSTPANode(node: AstNode, nodeId: string, lvl: number, description: string, children: SModelElement[]): STPANode {
+        return {
+            type: STPA_NODE_TYPE,
+            id: nodeId,
+            aspect: getAspect(node),
+            description: description,
+            hierarchyLvl: lvl,
+            children: children,
+            layout: 'stack',
+            layoutOptions: {
+                paddingTop: 10.0,
+                paddingBottom: 10.0,
+                paddngLeft: 10.0,
+                paddingRight: 10.0
+            }
+        };
+    }
+
+    /**
+     * Creates an STPAPort.
+     * @param id The ID of the port.
+     * @param side The side of the port.
+     * @returns an STPAPort.
+     */
+    protected createSTPAPort(id: string, side: PortSide): STPAPort {
+        return {
+            type: STPA_PORT_TYPE,
+            id: id,
+            side: side
+        };
+    }
+
+    /**
+     * Creates an STPAEdge.
+     * @param id The ID of the edge.
+     * @param sourceId The ID of the source of the edge.
+     * @param targetId The ID of the target of the edge.
+     * @param children The children of the edge.
+     * @param type The type of the edge.
+     * @param aspect The aspect of the edge.
+     * @returns an STPAEdge.
+     */
+    protected createSTPAEdge(id: string, sourceId: string, targetId: string, children: SModelElement[], type: string, aspect: STPAAspect): STPAEdge {
+        return {
+            type: type,
+            id: id,
+            sourceId: sourceId,
+            targetId: targetId,
+            children: children,
+            aspect: aspect
+        };
+    }
+
+    /**
+     * Creates a control structure edge based on the given arguments.
      * @param edgeId The ID of the edge that should be created.
      * @param sourceId The ID of the source of the edge.
      * @param targetId The ID of the target of the edge.
@@ -247,15 +538,14 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param param5 GeneratorContext of the STPA model.
      * @returns A control structure edge.
      */
-    protected generateControlStructureEdge(edgeId: string, sourceId: string, targetId: string, label: string[], edgeType: EdgeType, args: GeneratorContext<Model>): CSEdge {
-        const children: SModelElement[] = this.generateLabel(label, edgeId, args);
+    protected createControlStructureEdge(edgeId: string, sourceId: string, targetId: string, label: string[], edgeType: EdgeType, args: GeneratorContext<Model>): CSEdge {
         return {
             type: CS_EDGE_TYPE,
             id: edgeId,
             sourceId: sourceId!,
             targetId: targetId!,
             edgeType: edgeType,
-            children: children
+            children: this.createLabel(label, edgeId, args.idCache)
         };
     }
 
@@ -265,7 +555,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param id The ID of the element for which the label should be generated.
      * @returns SLabel elements representing {@code label}.
      */
-    protected generateLabel(label: string[], id: string, { idCache }: GeneratorContext<Model>): SLabel[] {
+    protected createLabel(label: string[], id: string,  idCache: IdCache<AstNode>): SLabel[] {
         const children: SLabel[] = [];
         if (label.find(l => l !== '')) {
             label.forEach(l => {
@@ -286,46 +576,16 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         }
         return children;
     }
-
+    
     /**
-     * Generates a single control structure node for the given {@code node},
-     * @param node The system component a CSNode should be created for.
-     * @param param1 GeneratorContext of the STPA model.
-     * @returns A CSNode representing {@code node}.
-     */
-    private generateCSNode(node: Node, { idCache }: GeneratorContext<Model>): CSNode {
-        const label = node.label ? node.label : node.name;
-        const nodeId = idCache.uniqueId(node.name, node);
-        return {
-            type: CS_NODE_TYPE,
-            id: nodeId,
-            children: [
-                <SLabel>{
-                    type: 'label',
-                    id: idCache.uniqueId(nodeId + '.label'),
-                    text: label
-                }
-            ],
-            layout: 'stack',
-            layoutOptions: {
-                paddingTop: 10.0,
-                paddingBottom: 10.0,
-                paddngLeft: 10.0,
-                paddingRight: 10.0
-            }
-        };
-    }
-
-    /**
-     * Generates a dummy node.
+     * Creates a dummy node.
      * @param idCache The ID cache of the STPA model.
      * @returns a dummy node.
      */
-    protected generateDummyNode(name: string, idCache: IdCache<AstNode>): CSNode {
-        const id = idCache.uniqueId('dummy' + name);
+    protected createDummyNode(name: string, idCache: IdCache<AstNode>): CSNode {
         return {
             type: DUMMY_NODE_TYPE,
-            id: id,
+            id: idCache.uniqueId('dummy' + name),
             layout: 'stack',
             layoutOptions: {
                 paddingTop: 10.0,
@@ -335,298 +595,4 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             }
         };
     }
-
-    /**
-     * Generates a node and the edges for the given {@code node}.
-     * @param node STPA component for which a node and edges should be generated.
-     * @param args GeneratorContext of the STPA model.
-     * @returns A node representing {@code node} and edges representing the references {@code node} contains.
-     */
-    private generateAspectWithEdges(node: AstNode, args: GeneratorContext<Model>): SModelElement[] {
-        // node must be created first in order to access the id when creating the edges
-        const stpaNode = this.generateSTPANode(node, args);
-        // uca nodes need to save their control action in order to be able to group them by the actions
-        if ((isUCA(node) || isContext(node)) && node.$container.system.ref) {
-            stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name;
-        }
-        const elements: SModelElement[] = this.generateEdgesForSTPANode(node, args);
-        elements.push(stpaNode);
-        return elements;
-    }
-
-    /**
-     * Generates the edges for {@code node}.
-     * @param node STPA component for which the edges should be created.
-     * @param args GeneratorContext of the STPA model.
-     * @returns Edges representing the references {@code node} contains.
-     */
-    private generateEdgesForSTPANode(node: AstNode, args: GeneratorContext<Model>): SModelElement[] {
-        const idCache = args.idCache;
-        const elements: SModelElement[] = [];
-        const sourceId = idCache.getId(node);
-        // for every reference an edge is created
-        // if hierarchy option is false, edges from subcomponents to parents are created too
-        const targets = getTargets(node, this.options.getHierarchy());
-        for (const target of targets) {
-            const targetId = idCache.getId(target);
-            const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
-            if (sourceId && targetId) {
-                const e = this.generateSTPAEdge(edgeId, node, sourceId, target, '', args);
-                elements.push(e);
-            }
-        }
-        return elements;
-    }
-
-    /**
-     * Generates a single STPAEdge based on the given arguments.
-     * @param edgeId The ID of the edge that should be created.
-     * @param sourceId The ID of the source of the edge.
-     * @param target The target of the edge.
-     * @param label The label of the edge.
-     * @param param4 GeneratorContext of the STPA model.
-     * @returns An STPAEdge.
-     */
-    private generateSTPAEdge(edgeId: string, source: AstNode, sourceId: string, target: AstNode, label: string, { idCache }: GeneratorContext<Model>): STPAEdge {
-        const targetId = idCache.getId(target);
-        let children: SModelElement[] = [];
-        if (label !== '') {
-            children = [
-                <SLabel>{
-                    type: 'label:xref',
-                    id: idCache.uniqueId(edgeId + '.label'),
-                    text: label
-                }
-            ];
-        }
-
-        if ((isHazard(target) || isSystemConstraint(target)) && target.$container?.$type !== 'Model') {
-            // if the target is a subcomponent we need to add ports to route the edges correctly
-            return this.generateEdgeWithIntermediatePorts(target, source, sourceId, edgeId, children, idCache);
-        } else {
-            // we need to add ports for source and target
-            const sourceNode = this.idToSNode.get(sourceId);
-            const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
-            sourceNode?.children?.push(
-                <STPAPort>{
-                    type: STPA_PORT_TYPE,
-                    side: PortSide.NORTH,
-                    id: sourcePortId
-                }
-            );
-            const targetNode = this.idToSNode.get(targetId!);
-            const targetPortId = idCache.uniqueId(edgeId + '.newTransition');
-            targetNode?.children?.push(
-                <STPAPort>{
-                    type: STPA_PORT_TYPE,
-                    side: PortSide.SOUTH,
-                    id: targetPortId
-                }
-            );
-            return {
-                type: STPA_EDGE_TYPE,
-                id: edgeId,
-                sourceId: sourcePortId,
-                targetId: targetPortId,
-                aspect: getAspect(source),
-                children: children
-            };
-        }
-    }
-
-    protected generateEdgeWithIntermediatePorts(target: AstNode, source: AstNode, sourceId: string, edgeId: string, children: SModelElement[], idCache: IdCache<AstNode>): STPAEdge {
-        let parent: AstNode | undefined = target;
-        const ids: string[] = [];
-        // add ports to the nodes
-        while (parent && parent?.$type !== 'Model') {
-            const current = parent;
-            const currentId = idCache.getId(current);
-            const currentNode = this.idToSNode.get(currentId!);
-            const portId = idCache.uniqueId(edgeId + '.newTransition');
-            currentNode?.children?.push(
-                <STPAPort>{
-                    type: STPA_PORT_TYPE,
-                    side: PortSide.SOUTH,
-                    id: portId
-                }
-            );
-            ids.push(portId);
-            parent = parent?.$container;
-        }
-
-        // add edges between the ports
-        let counter = 0;
-        parent = target;
-        while (parent && parent?.$type !== 'Model') {
-            const parentId = idCache.getId(parent.$container);
-            const parentNode = this.idToSNode.get(parentId!);
-            const type = counter === 0 ? STPA_EDGE_TYPE : STPA_INTERMEDIATE_EDGE_TYPE;
-            parentNode?.children?.push(
-                {
-                    type: type,
-                    id: idCache.uniqueId(edgeId),
-                    sourceId: ids[counter + 1],
-                    targetId: ids[counter],
-                    aspect: getAspect(source)
-                } as STPAEdge
-            );
-            counter++;
-
-            parent = parent?.$container;
-        }
-
-        // add edges from original source to port of top node
-        if (isSystemConstraint(source) && source.$container?.$type !== 'Model') {
-            let sourceParent: AstNode | undefined = source;
-            const sourceIds: string[] = [];
-            // add ports to the nodes
-            while (sourceParent && sourceParent?.$type !== 'Model') {
-                const current = sourceParent;
-                const currentId = idCache.getId(current);
-                const currentNode = this.idToSNode.get(currentId!);
-                const portId = idCache.uniqueId(edgeId + '.newTransition');
-                currentNode?.children?.push(
-                    <STPAPort>{
-                        type: STPA_PORT_TYPE,
-                        side: PortSide.NORTH,
-                        id: portId
-                    }
-                );
-                sourceIds.push(portId);
-                sourceParent = sourceParent?.$container;
-            }
-    
-            // add edges between the ports
-            let counter = 0;
-            sourceParent = source;
-            while (sourceParent && sourceParent?.$type !== 'Model') {
-                const parentId = idCache.getId(sourceParent.$container);
-                const parentNode = this.idToSNode.get(parentId!);
-                parentNode?.children?.push(
-                    {
-                        type: STPA_INTERMEDIATE_EDGE_TYPE,
-                        id: idCache.uniqueId(edgeId),
-                        sourceId: sourceIds[counter],
-                        targetId: sourceIds[counter + 1],
-                        aspect: getAspect(source)
-                    } as STPAEdge
-                );
-                counter++;
-    
-                sourceParent = sourceParent?.$container;
-            }
-
-            return {
-                type: STPA_INTERMEDIATE_EDGE_TYPE,
-                id: edgeId,
-                sourceId: sourceIds[ids.length - 1],
-                targetId: ids[ids.length - 1],
-                aspect: getAspect(source),
-                children: children
-            };
-
-        }
-
-
-        // add port for source node
-        const sourceNode = this.idToSNode.get(sourceId);
-        const sourcePortId = idCache.uniqueId(edgeId + '.newTransition');
-        sourceNode?.children?.push(
-            <STPAPort>{
-                type: STPA_PORT_TYPE,
-                side: PortSide.NORTH,
-                id: sourcePortId
-            }
-        );
-
-        // add edge from original source to port of top node
-        return {
-            type: STPA_INTERMEDIATE_EDGE_TYPE,
-            id: edgeId,
-            sourceId: sourcePortId,
-            targetId: ids[ids.length - 1],
-            aspect: getAspect(source),
-            children: children
-        };
-    }
-
-    /**
-     * Generates a single STPANode for the given {@code node}.
-     * @param node The STPA component the node should be created for.
-     * @param args GeneratorContext of the STPA model.
-     * @returns A STPANode representing {@code node}.
-     */
-    private generateSTPANode(node: AstNode, args: GeneratorContext<Model>): STPANode {
-        const idCache = args.idCache;
-        if (isLoss(node) || isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node)
-            || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isContext(node)) {
-            const nodeId = idCache.uniqueId(node.name, node);
-            // determines the hierarchy level for subcomponents. For other components the value is 0.
-            let lvl = 0;
-            let container = node.$container;
-            while (isHazard(container) || isSystemConstraint(container)) {
-                lvl++;
-                container = container.$container;
-            }
-
-            let children: SModelElement[] = [
-                <SLabel>{
-                    type: 'label',
-                    id: idCache.uniqueId(nodeId + '.label'),
-                    text: node.name
-                }
-            ];
-            // if the hierarchy option is true, the subcomponents are added as children to the parent
-            if (this.options.getHierarchy() && (isHazard(node) && node.subComps.length !== 0)) {
-                // adds subhazards
-                children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, args)));
-            }
-            if (this.options.getHierarchy() && isSystemConstraint(node) && node.subComps.length !== 0) {
-                // adds subconstraints
-                children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, args)));
-            }
-
-            if (isContext(node)) {
-                // context UCAs have no description
-                const result = {
-                    type: STPA_NODE_TYPE,
-                    id: nodeId,
-                    aspect: getAspect(node),
-                    description: "",
-                    hierarchyLvl: lvl,
-                    children: children,
-                    layout: 'stack',
-                    layoutOptions: {
-                        paddingTop: 10.0,
-                        paddingBottom: 10.0,
-                        paddngLeft: 10.0,
-                        paddingRight: 10.0
-                    }
-                };
-                this.idToSNode.set(nodeId, result);
-                return result;
-            } else {
-                const result = {
-                    type: STPA_NODE_TYPE,
-                    id: nodeId,
-                    aspect: getAspect(node),
-                    description: node.description,
-                    hierarchyLvl: lvl,
-                    children: children,
-                    layout: 'stack',
-                    layoutOptions: {
-                        paddingTop: 10.0,
-                        paddingBottom: 10.0,
-                        paddngLeft: 10.0,
-                        paddingRight: 10.0
-                    }
-                };
-                this.idToSNode.set(nodeId, result);
-                return result;
-            }
-        } else {
-            throw new Error("generateSTPANode method should only be called with an STPA component");
-        }
-    }
-
 }
