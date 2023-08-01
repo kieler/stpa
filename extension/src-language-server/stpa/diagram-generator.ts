@@ -200,7 +200,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             switch (edgetype) {
                 case EdgeType.INPUT:
                     // create dummy node for the input
-                    const inputDummyNode = this.generateDummyNode(node.level - 1, "input" + node.name, idCache);
+                    const inputDummyNode = this.generateDummyNode("input" + node.name, idCache);
                     // create edge for the input
                     const inputEdge = this.generateControlStructureEdge(idCache.uniqueId(`${inputDummyNode.id}:input:${nodeId}`), inputDummyNode.id ? inputDummyNode.id : '', nodeId ? nodeId : '',
                         label, edgetype, args);
@@ -208,7 +208,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     break;
                 case EdgeType.OUTPUT:
                     // create dummy node for the output
-                    const outputDummyNode = this.generateDummyNode(node.level + 1, "output" + node.name, idCache);
+                    const outputDummyNode = this.generateDummyNode("output" + node.name, idCache);
                     // create edge for the output
                     const outputEdge = this.generateControlStructureEdge(idCache.uniqueId(`${nodeId}:output:${outputDummyNode.id}`), nodeId ? nodeId : '', outputDummyNode.id ? outputDummyNode.id : '',
                         label, edgetype, args);
@@ -299,7 +299,6 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return {
             type: CS_NODE_TYPE,
             id: nodeId,
-            level: node.level,
             children: [
                 <SLabel>{
                     type: 'label',
@@ -318,17 +317,15 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     }
 
     /**
-     * Generates a dummy node for the given {@code level}.
-     * @param level The level of the dummy node.
+     * Generates a dummy node.
      * @param idCache The ID cache of the STPA model.
      * @returns a dummy node.
      */
-    protected generateDummyNode(level: number, name: string, idCache: IdCache<AstNode>): CSNode {
+    protected generateDummyNode(name: string, idCache: IdCache<AstNode>): CSNode {
         const id = idCache.uniqueId('dummy' + name);
         return {
             type: DUMMY_NODE_TYPE,
             id: id,
-            level: level,
             layout: 'stack',
             layoutOptions: {
                 paddingTop: 10.0,

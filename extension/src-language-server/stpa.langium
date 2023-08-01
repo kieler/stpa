@@ -61,7 +61,6 @@ Graph:
 
 Node:
     name=ID '{'
-        'hierarchyLevel' level=INT
         ('label' label=STRING)?
         ('processModel' '{'variables+=Variable*'}')?
         ('input' '[' inputs+=Command (',' inputs+=Command)* ']')?

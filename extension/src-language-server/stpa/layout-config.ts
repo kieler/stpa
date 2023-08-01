@@ -107,7 +107,6 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     protected csNodeOptions(node: CSNode): LayoutOptions {
         return {
             'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
-            'org.eclipse.elk.partitioning.partition': "" + node.level,
             // nodes with many edges are streched 
             'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
         };

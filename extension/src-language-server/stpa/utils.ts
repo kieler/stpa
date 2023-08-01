@@ -24,34 +24,6 @@ import { groupValue } from "./synthesis-options";
 import { STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
 
-/* export function determineLayerForCSNodes(nodes: CSNode[]): void {
-    let layer = nodes.length
-    let sinks: CSNode[] = []
-    while (true) {
-        for (let n of nodes) {
-            let s = true
-            for (let edge of n.outgoingEdges) {
-                if (edge instanceof CSEdge && edge.direction == EdgeDirection.DOWN && edge.target instanceof CSNode && !edge.target.layer) {
-                    s = false
-                }
-            }
-            if (s) {
-                sinks.push(n)
-                break;
-            }
-        }
-        if (sinks.length == 0) {
-            break;
-        }
-
-        for (let s of sinks) {
-            s.layer = layer
-        }
-        layer--
-        sinks = []
-    }
-} */
-
 /**
  * Getter for the references contained in {@code node}.
  * @param node The STPAAspect which tracings should be returned.
