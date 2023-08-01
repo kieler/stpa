@@ -190,9 +190,9 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
 
 function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     context.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor(async editor => {
-            if (editor) {
-                manager.openDiagram(editor.document.uri);
+        vscode.workspace.onDidSaveTextDocument(async document => {
+            if (document) {
+                manager.openDiagram(document.uri);
             }
         })
     );
