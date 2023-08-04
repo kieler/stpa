@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -64,7 +64,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     configureModelElement(context, STPA_EDGE_TYPE, SEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
-    configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView );
+    configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);
     configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
     configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
 });

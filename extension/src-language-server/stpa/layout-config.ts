@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -33,28 +33,35 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         };
     }
 
+    /**
+     * Options for the parent nodes of the STPA graph and the control structure
+     */
     protected grandparentNodeOptions(snode: SNode, index: SModelIndex): LayoutOptions {
-        // in the STPA graph this is necessary for hierarchy-crossing edges to be better layouted
-        let direction = 'UP';
-        // the control structure is placed above the STPA graph
-        let priority = '0';
-
-        if (snode.children && snode.children[0] && snode.children[0].type === CS_NODE_TYPE) {
+        let direction = '';
+        // priority is used to determine the order of the nodes
+        let priority = '';
+        if (snode.children?.find(child => child.type === CS_NODE_TYPE)) {
             // options for the control structure
             direction = 'DOWN';
             priority = '1';
+        } else if (snode.children?.find(child => child.type === STPA_NODE_TYPE)) {
+            // options for the STPA graph
+            direction = 'UP';
+            priority = '0';
         }
+
         return {
             'org.eclipse.elk.layered.thoroughness': '70',
-            // 'org.eclipse.elk.layered.layering.strategy': 'LONGEST_PATH',
             'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': direction,
             // nodes with many edges are streched 
             'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
             'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
             'org.eclipse.elk.spacing.portPort': '10',
+            // edges do no start at the border of the node
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
             'org.eclipse.elk.priority': priority,
+            // model order is used to determine the order of the children
             'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
             'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
             'org.eclipse.elk.separateConnectedComponents': 'false'
@@ -72,23 +79,6 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         }
     }
 
-    protected parentSTPANodeOptions(node: STPANode): LayoutOptions {
-        return {
-            'org.eclipse.elk.direction': 'UP',
-            'org.eclipse.elk.nodeLabels.placement': "INSIDE V_TOP H_CENTER",
-            'org.eclipse.elk.partitioning.partition': "" + node.level,
-            'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
-            'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
-            'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
-            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
-
-            'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
-            'org.eclipse.elk.separateConnectedComponents': 'false',
-            'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-            'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true'
-        };
-    }
-
     protected stpaNodeOptions(node: STPANode): LayoutOptions {
         if (node.children?.find(child => child.type.startsWith('node'))) {
             return this.parentSTPANodeOptions(node);
@@ -97,10 +87,29 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
                 'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
                 'org.eclipse.elk.partitioning.partition': "" + node.level,
                 'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
-                // nodes with many edges are streched 
                 'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
             };
         }
+    }
+    
+    protected parentSTPANodeOptions(node: STPANode): LayoutOptions {
+        // options for nodes in the STPA graphs that have children
+        return {
+            'org.eclipse.elk.direction': 'UP',
+            'org.eclipse.elk.nodeLabels.placement': "INSIDE V_TOP H_CENTER",
+            'org.eclipse.elk.partitioning.partition': "" + node.level,
+            'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
+            // nodes with many edges are streched 
+            'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+            'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
+            // edges do no start at the border of the node
+            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
+            'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
+            // model order is used to determine the order of the children
+            'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
+            'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
+            'org.eclipse.elk.separateConnectedComponents': 'false'
+        };
     }
 
     protected csNodeOptions(node: CSNode): LayoutOptions {
@@ -108,13 +117,11 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             return {
                 'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
                 'org.eclipse.elk.partitioning.partition': "" + node.level,
-                // nodes with many edges are streched 
                 'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
             };
         } else {
             return {
                 'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
-                // nodes with many edges are streched 
                 'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
             };
         }
@@ -136,7 +143,6 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
                 case PortSide.SOUTH:
                     side = 'SOUTH';
                     break;
-
             }
             return {
                 'org.eclipse.elk.port.side': side

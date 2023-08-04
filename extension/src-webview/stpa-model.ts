@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -51,6 +51,7 @@ export class STPAEdge extends SEdge {
     highlight?: boolean;
 }
 
+/** Port representing a port in the STPA graph. */
 export class STPAPort extends SPort {
     side?: PortSide;
 }
@@ -98,7 +99,7 @@ export enum EdgeType {
     UNDEFINED
 }
 
-
+/** Possible sides for a port. */
 export enum PortSide {
     WEST,
     EAST,

@@ -16,7 +16,7 @@
  */
 
 import * as path from 'path';
-import { IWebviewEndpointManager, registerDefaultCommands } from 'sprotty-vscode';
+import { registerDefaultCommands } from 'sprotty-vscode';
 import { LspSprottyEditorProvider, LspSprottyViewProvider } from 'sprotty-vscode/lib/lsp';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';

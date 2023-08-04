@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SNode, SEdge, SModelElement } from "sprotty";
+import { SEdge, SModelElement, SNode } from "sprotty";
 import { PortSide, STPAAspect, STPAEdge, STPANode, STPAPort, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from "./stpa-model";
 
 /**
@@ -42,23 +42,12 @@ export function flagConnectedElements(node: SNode): (STPANode | STPAEdge)[] {
     const elements: (STPANode | STPAEdge)[] = [];
     (node as STPANode).highlight = true;
     elements.push(node as STPANode);
-    if (isSubConstraint(node)) {
-        flagSubConsParent(node as STPANode, elements);
-    }
-    if (isSubHazard(node)) {
-        (node.parent as STPANode).highlight = true;
-        elements.push(node.parent as STPANode);
-
-        // flag outgoing edges from parent
-        for (const port of node.parent.children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.NORTH)) {
-            for (const child of (node.parent as STPANode).parent.children) {
-                if (child.type.startsWith('edge:stpa')) {
-                    flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
-                }
-            }
-        }
-    }
+    // flagging four sub components
+    flaggingOutgoingForSubcomponents(node as STPANode, elements);
+    // to find the connected edges and nodes of the selected node, the ports are inspected
     for (const port of node.children.filter(child => child.type === STPA_PORT_TYPE)) {
+        // the edges for a port are defined in the parent node
+        // hence we have to search in the children of the parent node
         for (const child of node.parent.children) {
             if ((node as STPANode).aspect === STPAAspect.SYSTEMCONSTRAINT && (node.parent as STPANode).aspect !== STPAAspect.SYSTEMCONSTRAINT) {
                 // for the top system constraint node the intermediate outoging edges should not be highlighted
@@ -70,6 +59,7 @@ export function flagConnectedElements(node: SNode): (STPANode | STPAEdge)[] {
                 // the intermediate edges should in general only be highlighted when they are outgoing edges
                 flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
             } else if (child.type === STPA_EDGE_TYPE) {
+                // flag incoming and outgoing edges
                 flagIncomingEdges(child as STPAEdge, port as STPAPort, elements);
                 flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
             }
@@ -89,6 +79,7 @@ function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
     if (isSubConstraint(node)) {
         flagSubConsParent(node as STPANode, elements);
     }
+    // flag subhazards and their incoming edges
     if (node.type === STPA_NODE_TYPE && (node as STPANode).aspect === STPAAspect.HAZARD) {
         const subHazards = node.children.filter(child => child.type === STPA_NODE_TYPE) as STPANode[];
         for (const subH of subHazards) {
@@ -103,6 +94,7 @@ function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
             }
         }
     }
+    // flag incoming edges from node by going over the ports
     for (const port of node.children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.SOUTH)) {
         for (const child of node.parent.children) {
             if (child.type.startsWith('edge:stpa')) {
@@ -117,12 +109,31 @@ function flagPredNodes(edge: SEdge, elements: SModelElement[]): void {
  * @param edge The edge which target and further successors should be inspected.
  */
 function flagSuccNodes(edge: SEdge, elements: SModelElement[]): void {
-    const node = edge.target?.type.startsWith('port') ? edge.target.parent as SNode : edge.target as SNode;
-    (node as STPANode).highlight = true;
-    elements.push(node as STPANode);
-    if (isSubConstraint(node)) {
-        flagSubConsParent(node as STPANode, elements);
+    const node = edge.target?.type.startsWith('port') ? edge.target.parent as STPANode : edge.target as STPANode;
+    node.highlight = true;
+    elements.push(node);
+    flaggingOutgoingForSubcomponents(node, elements);
+    // flag outgoing edges from node by going over the ports
+    for (const port of node.children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.NORTH)) {
+        for (const child of node.parent.children) {
+            if (child.type.startsWith('edge:stpa')) {
+                flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
+            }
+        }
     }
+}
+
+/**
+ * Flags parents and their outgoing edges of {@code node}.
+ * @param node The subcomponent node.
+ * @param elements The elements to be highlighted.
+ */
+function flaggingOutgoingForSubcomponents(node: STPANode, elements: SModelElement[]): void {
+    // for sub-systemconstraints the parent node(s) should be highlighted as well
+    if (isSubConstraint(node)) {
+        flagSubConsParent(node, elements);
+    }
+    // for sub-hazards the parent node(s) and its outgoing edges should be highlighted as well
     if (isSubHazard(node)) {
         (node.parent as STPANode).highlight = true;
         elements.push(node.parent as STPANode);
@@ -133,46 +144,40 @@ function flagSuccNodes(edge: SEdge, elements: SModelElement[]): void {
                 }
             }
         }
-
-
-    }
-    for (const port of node.children.filter(child => child.type === STPA_PORT_TYPE && (child as STPAPort).side === PortSide.NORTH)) {
-        for (const child of node.parent.children) {
-            if (child.type.startsWith('edge:stpa')) {
-                flagOutgoingEdges(child as STPAEdge, port as STPAPort, elements);
-            }
-        }
     }
 }
 
+/**
+ * Flags the {@code edge}, its source node, and further predecessors if {@code edge} starts in {@code port}.
+ * @param edge The edge which target and further successors should be inspected.
+ * @param port The port which is checked to be the source of the {@code edge}.
+ * @param elements The elements which should be highlighted.
+ */
 function flagIncomingEdges(edge: STPAEdge, port: STPAPort, elements: SModelElement[]): void {
     if (edge.targetId === port.id) {
-        // flag predecessors
-        edge.highlight = true;
-        elements.push(edge);
-        let furtherEdge: STPAEdge | undefined = undefined;
-        furtherEdge = (edge.parent as STPANode).parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).targetId === edge.sourceId) as STPAEdge;
+        // if the edge leads to another edge, highlight all connected edges
+        let furtherEdge: STPAEdge | undefined = edge;
         while (furtherEdge) {
             edge = furtherEdge;
             edge.highlight = true;
             elements.push(edge);
             furtherEdge = (edge.parent as STPANode).parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).targetId === edge.sourceId) as STPAEdge;
         }
+        // flag the predecessor nodes
         flagPredNodes(edge, elements);
     }
 }
 
+/**
+ * Flags the {@code edge}, its target node, and further succesors if {@code edge} starts in {@code port}.
+ * @param edge The edge which target and further successors should be inspected.
+ * @param port The port which is checked to be the source of the {@code edge}.
+ * @param elements The elements which should be highlighted.
+ */
 function flagOutgoingEdges(edge: STPAEdge, port: STPAPort, elements: SModelElement[]): void {
     if (edge.sourceId === port.id) {
-        // flag successors
-        edge.highlight = true;
-        elements.push(edge);
-        let furtherEdge: STPAEdge | undefined = undefined;
-        if ((edge.parent as STPANode).aspect === STPAAspect.SYSTEMCONSTRAINT) {
-            furtherEdge = (edge.parent as STPANode).parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).sourceId === edge.targetId) as STPAEdge;
-        } else {
-            furtherEdge = edge.target?.parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).sourceId === edge.targetId) as STPAEdge;
-        }
+        // if the edge leads to another edge, highlight all connected edges
+        let furtherEdge: STPAEdge | undefined = edge;
         while (furtherEdge) {
             edge = furtherEdge;
             edge.highlight = true;
@@ -183,6 +188,7 @@ function flagOutgoingEdges(edge: STPAEdge, port: STPAPort, elements: SModelEleme
                 furtherEdge = edge.target?.parent.children.find(child => child.type.startsWith('edge:stpa') && (child as STPAEdge).sourceId === edge.targetId) as STPAEdge;
             }
         }
+        // flag successor nodes
         flagSuccNodes(edge, elements);
     }
 }

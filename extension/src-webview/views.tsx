@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -16,14 +16,14 @@
  */
 
 /** @jsx svg */
-import { VNode } from 'snabbdom';
-import { IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph, IView } from 'sprotty';
 import { inject, injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE, CSEdge, EdgeType, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
-import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
-import { collectAllChildren } from './helper-methods';
+import { VNode } from 'snabbdom';
+import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SNode, SPort, svg, toDegrees } from 'sprotty';
 import { DISymbol } from './di.symbols';
+import { collectAllChildren } from './helper-methods';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
+import { CSEdge, CS_EDGE_TYPE, CS_NODE_TYPE, EdgeType, PARENT_TYPE, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE } from './stpa-model';
+import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
@@ -50,11 +50,12 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const printEdge = colorStyle === "black & white";
         const coloredEdge = colorStyle === "colorful";
         const lessColoredEdge = colorStyle === "fewer colors";
+        // coloring of the edge depends on the aspect
         let aspect: number = -1;
         if (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) {
             aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
         }
-        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge} 
+        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge}
             class-feedback-edge={feedbackEdge} class-hidden={hidden} aspect={aspect} d={path} />;
     }
 
@@ -103,10 +104,11 @@ export class IntermediateEdgeView extends PolylineArrowEdgeView {
             return <g>{context.renderChildren(edge, { route })}</g>;
         }
 
+        // intermediate edge do not have an arrow
         return <g class-sprotty-edge={true} class-mouseover={edge.hoverFeedback}>
-                {this.renderLine(edge, route, context)}
-                {context.renderChildren(edge, { route })}
-            </g>;
+            {this.renderLine(edge, route, context)}
+            {context.renderChildren(edge, { route })}
+        </g>;
     }
 }
 
@@ -240,6 +242,6 @@ export class STPAGraphView extends SGraphView {
 @injectable()
 export class PortView implements IView {
     render(model: SPort, context: RenderingContext): VNode {
-        return <g/>;
+        return <g />;
     }
 }
