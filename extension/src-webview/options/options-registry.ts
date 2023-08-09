@@ -18,7 +18,10 @@
 import { inject, injectable } from "inversify";
 import { ActionHandlerRegistry, IActionHandlerInitializer, ICommand } from "sprotty";
 import { Action } from "sprotty-protocol";
-import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
+import { ActionNotification } from 'sprotty-vscode-protocol';
+import { VsCodeMessenger } from "sprotty-vscode-webview/lib/services";
+import { HOST_EXTENSION } from 'vscode-messenger-common';
+import { Messenger } from 'vscode-messenger-webview';
 import { Registry } from "../base/registry";
 import {
     SetSynthesisOptionsAction,
@@ -37,7 +40,7 @@ import {
 @injectable()
 export class OptionsRegistry extends Registry implements IActionHandlerInitializer {
 
-    @inject(VsCodeApi) private vscodeApi: VsCodeApi;
+    @inject(VsCodeMessenger) protected messenger: Messenger;
 
     private _clientId = "";
     private _synthesisOptions: SynthesisOption[] = [];
@@ -91,7 +94,7 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
         );
         this.notifyListeners();
 
-        this.vscodeApi.postMessage({clientId: this._clientId, action: action});
+        this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: this._clientId, action: action});
     }
 
 }

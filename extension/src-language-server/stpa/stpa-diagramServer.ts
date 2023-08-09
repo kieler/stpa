@@ -52,8 +52,6 @@ export class StpaDiagramServer extends DiagramServer {
         switch (action.kind) {
             case SetSynthesisOptionsAction.KIND:
                 return this.handleSetSynthesisOption(action as SetSynthesisOptionsAction);
-            case UpdateViewAction.KIND:
-                return this.handleUpdateView(action as UpdateViewAction);
             case GenerateSVGsAction.KIND:
                 return this.handleGenerateSVGDiagrams(action as GenerateSVGsAction);
         }
@@ -146,16 +144,12 @@ export class StpaDiagramServer extends DiagramServer {
                 }
             }
         }
-        const updateAction = {
-            kind: UpdateViewAction.KIND,
-            options: this.state.options
-        } as UpdateViewAction;
-        await this.handleUpdateView(updateAction);
+        this.updateView(this.state.options);
         return Promise.resolve();
     }
 
-    protected async handleUpdateView(action: UpdateViewAction): Promise<void> {
-        this.state.options = action.options;
+    protected async updateView(options: JsonMap | undefined): Promise<void> {
+        this.state.options = options;
         try {
             const newRoot = await this.diagramGenerator.generate({
                 options: this.state.options ?? {},
@@ -163,11 +157,11 @@ export class StpaDiagramServer extends DiagramServer {
             });
             newRoot.revision = ++this.state.revision;
             this.state.currentRoot = newRoot;
-            await this.submitModel(this.state.currentRoot, true, action);
+            await this.submitModel(this.state.currentRoot, true);
             // ensures the the filterUCA option is correct
             this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
         } catch (err) {
-            this.rejectRemoteRequest(action, err as Error);
+            this.rejectRemoteRequest(undefined, err as Error);
             console.error('Failed to generate diagram:', err);
         }
     }
