@@ -23,8 +23,6 @@ import * as vscode from 'vscode';
 import { ContextTablePanel } from './context-table-panel';
 import { StpaFormattingEditProvider } from './stpa-formatter';
 import { StpaLspWebview } from './wview';
-import { createSBMs } from './sbm/sbm-generation';
-import { LTLFormula } from './sbm/utils';
 
 export class StpaLspVscodeExtension extends LspWebviewPanelManager {
 
@@ -33,6 +31,9 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     contextTable: ContextTablePanel;
     /** Saves the last selected UCA in the context table. */
     protected lastSelectedUCA: string[];
+
+    protected resolveLSReady: () => void;
+    readonly lsReady = new Promise<void>(resolve => this.resolveLSReady = resolve);
 
     /** needed for undo/redo actions when ID enforcement is active*/
     ignoreNextTextChange: boolean = false;
@@ -69,6 +70,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         options.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
         // laguage server is ready
         options.languageClient.onNotification("ready", () => {
+            this.resolveLSReady();
             // open diagram
             vscode.commands.executeCommand(this.extensionPrefix + '.diagram.open', vscode.window.activeTextEditor?.document.uri);
             // sends configuration of stpa to the language server

@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,11 +15,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServices, DiagramServer, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
-import { UpdateViewAction } from '../../actions';
+import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../../options/actions';
-import { StpaSynthesisOptions } from './synthesis-options';
 import { DropDownOption } from '../../options/option-models';
+import { StpaSynthesisOptions } from './synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {
 
@@ -47,8 +46,6 @@ export class StpaDiagramServer extends DiagramServer {
         switch (action.kind) {
             case SetSynthesisOptionsAction.KIND:
                 return this.handleSetSynthesisOption(action as SetSynthesisOptionsAction);
-            case UpdateViewAction.KIND:
-                return this.handleUpdateView(action as UpdateViewAction);
         }
         return super.handleAction(action);
     }
@@ -61,20 +58,17 @@ export class StpaDiagramServer extends DiagramServer {
                 // for dropdown menu options more must be done
                 if ((opt.synthesisOption as DropDownOption).currentId) {
                     (opt.synthesisOption as DropDownOption).currentId = option.currentValue;
-                    this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });        
+                    this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
                 }
             }
         }
-        const updateAction = {
-            kind: UpdateViewAction.KIND,
-            options: this.state.options
-        } as UpdateViewAction;
-        this.handleUpdateView(updateAction);
+
+        this.updateView(this.state.options);
         return Promise.resolve();
     }
 
-    protected async handleUpdateView(action: UpdateViewAction): Promise<void> {
-        this.state.options = action.options;
+    protected async updateView(options: JsonMap | undefined): Promise<void> {
+        this.state.options = options;
         try {
             const newRoot = await this.diagramGenerator.generate({
                 options: this.state.options ?? {},
@@ -82,11 +76,11 @@ export class StpaDiagramServer extends DiagramServer {
             });
             newRoot.revision = ++this.state.revision;
             this.state.currentRoot = newRoot;
-            await this.submitModel(this.state.currentRoot, true, action);
+            await this.submitModel(this.state.currentRoot, true);
             // ensures the the filterUCA option is correct
             this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
         } catch (err) {
-            this.rejectRemoteRequest(action, err as Error);
+            this.rejectRemoteRequest(undefined, err as Error);
             console.error('Failed to generate diagram:', err);
         }
     }

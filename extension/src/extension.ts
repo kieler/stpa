@@ -25,6 +25,7 @@ import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
 import { createQuickPickForWorkspaceOptions } from './utils';
 import { LTLFormula } from './sbm/utils';
+import { createSBMs } from './sbm/sbm-generation';
 
 let languageClient: LanguageClient;
 
@@ -88,16 +89,6 @@ export function activate(context: vscode.ExtensionContext): void {
         registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: 'stpa' });
         registerTextEditorSync(webviewViewProvider, context);
     }
-    // register commands that other extensions can use
-    context.subscriptions.push(vscode.commands.registerCommand(
-        command.getLTLFormula,
-        async (uri: string) => {
-            // generate and send back the LTLs based on the STPA UCAs
-            await extension.lsReady;
-            const formulas: Record<string, LTLFormula[]> = await extension.languageClient.sendRequest('verification/generateLTL', uri);
-            return formulas;
-        }
-    ));
 }
 
 export async function deactivate(): Promise<void> {
@@ -149,16 +140,27 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
         })
     );
 
-    // context.subscriptions.push(
-    //     vscode.commands.registerCommand(this.extensionPrefix + '.SBM.generation', async (uri: vscode.Uri) => {
-    //         await this.lsReady;
-    //         const formulas: Record<string, LTLFormula[]> = await this.languageClient.sendRequest('verification/generateLTL', uri.path);
-    //         // controlAction names are just the action without the controller as prefix
-    //         // generate a safe behavioral model
-    //         const controlActions: Record<string, string[]> = await this.languageClient.sendRequest('verification/getControlActions', uri.path);
-    //         createSBMs(controlActions, formulas);
-    //     })
-    // );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + '.SBM.generation', async (uri: vscode.Uri) => {
+            await manager.lsReady;
+            const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest('verification/generateLTL', uri.path);
+            // controlAction names are just the action without the controller as prefix
+            // generate a safe behavioral model
+            const controlActions: Record<string, string[]> = await languageClient.sendRequest('verification/getControlActions', uri.path);
+            createSBMs(controlActions, formulas);
+        })
+    );
+
+    // register commands that other extensions can use
+    context.subscriptions.push(vscode.commands.registerCommand(
+        command.getLTLFormula,
+        async (uri: string) => {
+            // generate and send back the LTLs based on the STPA UCAs
+            await manager.lsReady;
+            const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest('verification/generateLTL', uri);
+            return formulas;
+        }
+    ));
 }
 
 
