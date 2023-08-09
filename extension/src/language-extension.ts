@@ -15,17 +15,15 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SelectAction } from 'sprotty-protocol';
+import { JsonMap, SelectAction, ActionMessage } from 'sprotty-protocol';
 import { createFileUri } from 'sprotty-vscode';
 import { SprottyDiagramIdentifier } from 'sprotty-vscode-protocol';
 import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from 'sprotty-vscode/lib/lsp';
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
-import { GenerateSVGsAction, UpdateViewAction } from './actions';
+import { GenerateSVGsAction } from './actions';
 import { ContextTablePanel } from './context-table-panel';
-import { createSTPAResultMarkdownFile } from './md-export';
 import { StpaFormattingEditProvider } from './stpa-formatter';
-import { StpaResult, applyTextEdits, collectOptions, createFile, createQuickPickForWorkspaceOptions } from './utils';
+import { applyTextEdits, collectOptions, createFile } from './utils';
 import { StpaLspWebview } from './wview';
 
 export class StpaLspVscodeExtension extends LspWebviewPanelManager {
@@ -148,24 +146,26 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
      * @returns the widths of the resulting SVGs with the SVG name as the key.
      */
     async createSVGDiagrams(uri: string): Promise<Record<string, number>> {
-        const activeWebview = this.singleton;
-        if (activeWebview) {
-            // create GenerateSVGsAction
-            const mes: ActionMessage = {
-                clientId: activeWebview.diagramIdentifier.clientId,
-                action: {
-                    kind: GenerateSVGsAction.KIND,
-                    options: {
-                        diagramType: activeWebview.diagramIdentifier.diagramType,
-                        needsClientLayout: true,
-                        needsServerLayout: true,
-                        sourceUri: activeWebview.diagramIdentifier.uri
-                    } as JsonMap, uri: uri
-                } as GenerateSVGsAction
-            };
-            // send request
-            const diagramSize: Record<string, number>  = await this.languageClient.sendRequest('result/createDiagrams', mes);
-            return diagramSize;
+        if (this.endpoints.length !== 0) {
+            const activeWebview = this.endpoints[0];
+            if (activeWebview?.diagramIdentifier) {
+                // create GenerateSVGsAction
+                const mes: ActionMessage = {
+                    clientId: activeWebview.diagramIdentifier.clientId,
+                    action: {
+                        kind: GenerateSVGsAction.KIND,
+                        options: {
+                            diagramType: activeWebview.diagramIdentifier.diagramType,
+                            needsClientLayout: true,
+                            needsServerLayout: true,
+                            sourceUri: activeWebview.diagramIdentifier.uri
+                        } as JsonMap, uri: uri
+                    } as GenerateSVGsAction
+                };
+                // send request
+                const diagramSize: Record<string, number> = await this.languageClient.sendRequest('result/createDiagrams', mes);
+                return diagramSize;
+            }
         }
         return {};
     }

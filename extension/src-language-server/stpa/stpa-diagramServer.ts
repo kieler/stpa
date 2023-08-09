@@ -15,9 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServer, DiagramServices, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
+import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
 import { Connection } from 'vscode-languageserver';
-import { UpdateViewAction } from '../actions';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
 import { DropDownOption } from '../options/option-models';
 import { GenerateSVGsAction, RequestSvgAction, SvgAction } from './actions';
@@ -144,7 +143,7 @@ export class StpaDiagramServer extends DiagramServer {
                 }
             }
         }
-        this.updateView(this.state.options);
+        await this.updateView(this.state.options);
         return Promise.resolve();
     }
 

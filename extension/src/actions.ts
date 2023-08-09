@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action } from "sprotty-protocol";
+import { Action, JsonMap } from "sprotty-protocol";
 
 /** Contains config option values */
 export interface SendConfigAction extends Action {
