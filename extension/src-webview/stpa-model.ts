@@ -31,7 +31,7 @@ export const STPA_EDGE_TYPE = 'edge:stpa';
  */
 export class STPANode extends SNode {
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
+        layoutContainerFeature, fadeFeature];
 
     aspect: STPAAspect = STPAAspect.UNDEFINED;
     description: string = "";
@@ -46,6 +46,7 @@ export class STPANode extends SNode {
  */
 export class STPAEdge extends SEdge {
     highlight?: boolean;
+    static readonly DEFAULT_FEATURES = [fadeFeature];
 }
 
 /**
@@ -55,7 +56,7 @@ export class CSNode extends SNode {
     level?: number;
     // processmodel?
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
+        layoutContainerFeature, fadeFeature];
 }
 
 /**
@@ -63,6 +64,7 @@ export class CSNode extends SNode {
  */
 export class CSEdge extends SEdge {
     edgeType: EdgeType = EdgeType.UNDEFINED;
+    static readonly DEFAULT_FEATURES = [fadeFeature];
 }
 
 /**
