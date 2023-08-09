@@ -15,19 +15,19 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { hasOwnProperty, isActionMessage, SelectAction } from 'sprotty-protocol';
-import { SprottyLspWebview } from "sprotty-vscode/lib/lsp";
+import { isActionMessage, SelectAction } from 'sprotty-protocol';
+import { LspWebviewEndpoint } from "sprotty-vscode/lib/lsp";
 import * as vscode from 'vscode';
 import { SendConfigAction } from './actions';
 
-export class StpaLspWebview extends SprottyLspWebview {
+export class StpaLspWebview extends LspWebviewEndpoint {
 
-    protected receiveFromWebview(message: any): Promise<boolean> {
+    receiveAction(message: any): Promise<void> {
         // TODO: for multiple language support here the current language muste be determined
-        if (isRenderOptionsRegistryReadyMessage(message)) {
-            this.sendConfigValues();
-        } else if (isActionMessage(message)) {
+        if (isActionMessage(message)) {
             switch (message.action.kind) {
+                case "optionRegistryReadyMessage":
+                    this.sendConfigValues();
                 case SendConfigAction.KIND:
                     this.updateConfigValues(message.action as SendConfigAction);
                     break;
@@ -35,24 +35,25 @@ export class StpaLspWebview extends SprottyLspWebview {
                     this.handleSelectAction(message.action as SelectAction);
                     break;
             }
-
         }
-        return super.receiveFromWebview(message);
+        return super.receiveAction(message);
     }
-    
+
     /**
      * Handles a SelectAction by sending the ID of the selected element to the language server.
      * @param action The SelectAction.
      */
     protected handleSelectAction(action: SelectAction): void {
         // the uri string must be desrialized first, since sprotty serializes it and langium does not
-        let uriString = this.diagramIdentifier.uri.toString();
-        const match = uriString.match(/file:\/\/\/([a-z]):/i);
-        if (match) {
-            uriString = 'file:///' + match[1] + '%3A' + uriString.substring(match[0].length);
+        if (this.diagramIdentifier) {
+            let uriString = this.diagramIdentifier.uri.toString();
+            const match = uriString.match(/file:\/\/\/([a-z]):/i);
+            if (match) {
+                uriString = 'file:///' + match[1] + '%3A' + uriString.substring(match[0].length);
+            }
+            // send ID of the first selected element to the language server to highlight the textual definition in the editor
+            this.languageClient.sendNotification('diagram/selected', { label: action.selectedElementsIDs[0], uri: uriString });
         }
-        // send ID of the first selected element to the language server to highlight the textual definition in the editor
-        this.languageClient.sendNotification('diagram/selected', {label: action.selectedElementsIDs[0], uri: uriString});
     }
 
     /**
@@ -64,7 +65,7 @@ export class StpaLspWebview extends SprottyLspWebview {
         renderOptions.push({ id: "colorStyle", value: configOptions.get("colorStyle") });
         renderOptions.push({ id: "differentForms", value: configOptions.get("differentForms") });
 
-        this.dispatch({ kind: SendConfigAction.KIND, options: renderOptions } as SendConfigAction);
+        this.sendAction({ kind: SendConfigAction.KIND, options: renderOptions } as SendConfigAction);
     }
 
     protected updateConfigValues(action: SendConfigAction): void {
@@ -73,10 +74,3 @@ export class StpaLspWebview extends SprottyLspWebview {
     }
 }
 
-interface RenderOptionsRegistryReadyMessage {
-    optionRegistryReadyMessage: string;
-}
-
-function isRenderOptionsRegistryReadyMessage(object: unknown): object is RenderOptionsRegistryReadyMessage {
-    return hasOwnProperty(object, 'optionRegistryReadyMessage');
-}

@@ -18,7 +18,7 @@
   ],
   "dependencies": {
     "reflect-metadata": "^0.1.13",
-    "typescript": "3.8.3",
+    "typescript": "^5.1.6",
     "snabbdom": "^3.5.1"
   },
   "devDependencies": {

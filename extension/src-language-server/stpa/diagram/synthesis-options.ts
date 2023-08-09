@@ -31,7 +31,7 @@ const hideScenariosID = "hideScenarios";
 const hierarchicalGraphOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hierarchyID,
-        name: "hierarchy",
+        name: "Hierarchy",
         type: TransformationOptionType.CHECK,
         initialValue: true,
         currentValue: true,
@@ -55,11 +55,11 @@ const groupingOfUCAs: ValuedSynthesisOption = {
         id: groupingUCAsID,
         name: "Group UCAs",
         type: TransformationOptionType.CHOICE,
-        initialValue: "no grouping",
-        currentValue: "no grouping",
-        values: ["no grouping", "Group by Control Action", "Group by System Component"]
+        initialValue: "No grouping",
+        currentValue: "No grouping",
+        values: ["No grouping", "Group by Control Action", "Group by System Component"]
     },
-    currentValue: "no grouping"
+    currentValue: "No grouping"
 };
 
 /**
@@ -85,7 +85,7 @@ const filteringOfUCAs: ValuedSynthesisOption = {
 const hideSysConsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hideSysConsID,
-        name: "hide system-level constraints",
+        name: "Hide system-level constraints",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -100,7 +100,7 @@ const hideSysConsOption: ValuedSynthesisOption = {
 const hideRespsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hideRespsID,
-        name: "hide responsibilities",
+        name: "Hide responsibilities",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -115,7 +115,7 @@ const hideRespsOption: ValuedSynthesisOption = {
 const hideContConsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hideContConsID,
-        name: "hide controller constraints",
+        name: "Hide controller constraints",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -130,7 +130,7 @@ const hideContConsOption: ValuedSynthesisOption = {
 const hideScenariosOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hideScenariosID,
-        name: "hide loss scenarios",
+        name: "Hide loss scenarios",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -162,7 +162,7 @@ export class StpaSynthesisOptions {
     getGroupingUCAs(): groupValue {
         const option = this.options.find(option => option.synthesisOption.id === groupingUCAsID);
         switch (option?.currentValue) {
-            case "no grouping": return groupValue.NO_GROUPING;
+            case "No grouping": return groupValue.NO_GROUPING;
             case "Group by Control Action": return groupValue.CONTROL_ACTION;
             case "Group by System Component": return groupValue.SYSTEM_COMPONENT;
         }
