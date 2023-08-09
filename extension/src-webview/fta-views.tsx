@@ -123,6 +123,12 @@ export class FTANodeView extends RectangularNodeView {
         </g>;
     }
 
+    /**
+     * Takes a node and checks if it is connected to a highlighted node.
+     * @param node The node we want to check.
+     * @param set The set of all highlighted nodes.
+     * @returns True if the node is connected to a node from the set or false otherwise.
+     */
     checkIfHighlighted(node: FTANode, set: any):boolean{
         for(const edge of node.outgoingEdges){
             let target = (edge.target as FTANode);
