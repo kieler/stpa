@@ -17,18 +17,19 @@
 
 import { AstNode } from 'langium';
 import { GeneratorContext, IdCache, LangiumDiagramGenerator } from 'langium-sprotty';
-import { SModelRoot, SLabel, SModelElement } from 'sprotty-protocol';
+import { SLabel, SModelElement, SModelRoot } from 'sprotty-protocol';
 import {
     Command,
+    Model, Node, VE,
     isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
-    isSystemConstraint, isUCA, Model, Node, VE
+    isSystemConstraint, isUCA
 } from '../generated/ast';
-import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
-import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType, DUMMY_NODE_TYPE } from './stpa-model';
-import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
-import { StpaSynthesisOptions } from './synthesis-options';
 import { filterModel } from './filtering';
+import { CSEdge, CSNode, STPAEdge, STPANode } from './stpa-interfaces';
+import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, STPA_EDGE_TYPE, STPA_NODE_TYPE } from './stpa-model';
+import { StpaServices } from './stpa-module';
+import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from './synthesis-options';
+import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
@@ -50,34 +51,36 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // filter model based on the options set by the user
         const filteredModel = filterModel(model, this.options);
 
+        const showLabels = this.options.getShowLabels();
+
         // determine the children for the STPA graph
         // for each component a node is generated with edges representing the references of the component
         // in order to be able to set the target IDs of the edges, the nodes must be created in the correct order
-        let stpaChildren: SModelElement[] = filteredModel.losses?.map(l => this.generateSTPANode(l, args));
+        let stpaChildren: SModelElement[] = filteredModel.losses?.map(l => this.generateSTPANode(l, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.LOSSES, args));
         // the hierarchy option determines whether subcomponents are contained in ther parent or not
         if (!this.options.getHierarchy()) {
             // subcomponents have edges to the parent
             const hazards = collectElementsWithSubComps(filteredModel.hazards);
             const sysCons = collectElementsWithSubComps(filteredModel.systemLevelConstraints);
             stpaChildren = stpaChildren.concat([
-                ...hazards.map(sh => this.generateAspectWithEdges(sh, args)).flat(1),
-                ...sysCons.map(ssc => this.generateAspectWithEdges(ssc, args)).flat(1)
+                ...hazards.map(sh => this.generateAspectWithEdges(sh, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.HAZARDS, args)).flat(1),
+                ...sysCons.map(ssc => this.generateAspectWithEdges(ssc, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SYSTEM_CONSTRAINTS, args)).flat(1)
             ]);
         } else {
             // subcomponents are contained in the parent
             stpaChildren = stpaChildren.concat([
-                ...filteredModel.hazards?.map(h => this.generateAspectWithEdges(h, args)).flat(1),
-                ...filteredModel.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc, args)).flat(1),
+                ...filteredModel.hazards?.map(h => this.generateAspectWithEdges(h, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.HAZARDS, args)).flat(1),
+                ...filteredModel.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SYSTEM_CONSTRAINTS, args)).flat(1),
                 ...filteredModel.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateEdgesForSTPANode(ssc, args))).flat(2)
             ]);
         }
         stpaChildren = stpaChildren.concat([
-            ...filteredModel.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
-            ...filteredModel.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
-            ...filteredModel.rules?.map(rule => rule.contexts.map(context => this.generateAspectWithEdges(context, args))).flat(2),
-            ...filteredModel.controllerConstraints?.map(c => this.generateAspectWithEdges(c, args)).flat(1),
-            ...filteredModel.scenarios?.map(s => this.generateAspectWithEdges(s, args)).flat(1),
-            ...filteredModel.safetyCons?.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
+            ...filteredModel.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.RESPONSIBILITIES, args))).flat(2),
+            ...filteredModel.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS, args))).flat(2),
+            ...filteredModel.rules?.map(rule => rule.contexts.map(context => this.generateAspectWithEdges(context, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS, args))).flat(2),
+            ...filteredModel.controllerConstraints?.map(c => this.generateAspectWithEdges(c, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.CONTROLLER_CONSTRAINTS, args)).flat(1),
+            ...filteredModel.scenarios?.map(s => this.generateAspectWithEdges(s, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SCENARIOS, args)).flat(1),
+            ...filteredModel.safetyCons?.map(sr => this.generateAspectWithEdges(sr, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SAFETY_CONSTRAINTS, args)).flat(1)
         ]);
 
 
@@ -342,9 +345,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param args GeneratorContext of the STPA model.
      * @returns A node representing {@code node} and edges representing the references {@code node} contains.
      */
-    private generateAspectWithEdges(node: AstNode, args: GeneratorContext<Model>): SModelElement[] {
+    private generateAspectWithEdges(node: AstNode, showDescription: boolean, args: GeneratorContext<Model>): SModelElement[] {
         // node must be created first in order to access the id when creating the edges
-        const stpaNode = this.generateSTPANode(node, args);
+        const stpaNode = this.generateSTPANode(node, showDescription, args);
         // uca nodes need to save their control action in order to be able to group them by the actions
         if ((isUCA(node) || isContext(node)) && node.$container.system.ref) {
             stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name;
@@ -413,7 +416,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param args GeneratorContext of the STPA model.
      * @returns A STPANode representing {@code node}.
      */
-    private generateSTPANode(node: AstNode, args: GeneratorContext<Model>): STPANode {
+    private generateSTPANode(node: AstNode, showDescription: boolean, args: GeneratorContext<Model>): STPANode {
         const idCache = args.idCache;
         if (isLoss(node) || isHazard(node) || isSystemConstraint(node) || isContConstraint(node) || isLossScenario(node)
             || isSafetyConstraint(node) || isResponsibility(node) || isUCA(node) || isContext(node)) {
@@ -426,21 +429,16 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 container = container.$container;
             }
 
-            let children: SModelElement[] = [
-                <SLabel>{
-                    type: 'label',
-                    id: idCache.uniqueId(nodeId + '.label'),
-                    text: node.name
-                }
-            ];
+            let children: SModelElement[] = this.generateDescriptionLabels(showDescription, nodeId, node.name, args.idCache, !isContext(node) ? node.description : "");
+
             // if the hierarchy option is true, the subcomponents are added as children to the parent
             if (this.options.getHierarchy() && (isHazard(node) && node.subComps.length !== 0)) {
                 // adds subhazards
-                children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, args)));
+                children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, showDescription, args)));
             }
             if (this.options.getHierarchy() && isSystemConstraint(node) && node.subComps.length !== 0) {
                 // adds subconstraints
-                children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, args)));
+                children = children.concat(node.subComps?.map((sc: AstNode) => this.generateSTPANode(sc, showDescription, args)));
             }
 
             if (isContext(node)) {
@@ -480,6 +478,71 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         } else {
             throw new Error("generateSTPANode method should only be called with an STPA component");
         }
+    }
+
+    generateDescriptionLabels(showDescription: boolean, nodeId: string, nodeName: string, idCache: IdCache<AstNode>, nodeDescription?: string): SModelElement[] {
+        const labelManagement = this.options.getLabelManagement();
+        const children: SModelElement[] = [];
+        //TODO: automatic label selection
+
+        // TODO: translate UCA context table to descriptions
+        if (nodeDescription && showDescription) {
+            const width = this.options.getLabelShorteningWidth();
+            const words = nodeDescription.split(' ');
+            let current = "";
+            switch (labelManagement) {
+                case labelManagementValue.NO_LABELS:
+                    break;
+                case labelManagementValue.ORIGINAL:
+                    children.push(<SLabel>{
+                        type: 'label',
+                        id: idCache.uniqueId(nodeId + '.label'),
+                        text: nodeDescription
+                    });
+                    break;
+                case labelManagementValue.TRUNCATE:
+                    if (words.length > 0) {
+                        current = words[0];
+                        for (let i = 1; i < words.length && current.length + words[i].length <= width; i++) {
+                            current += ' ' + words[i];
+                        }
+                        children.push(<SLabel>{
+                            type: 'label',
+                            id: idCache.uniqueId(nodeId + '.label'),
+                            text: current + "..."
+                        });
+                    }
+                    break;
+                case labelManagementValue.WRAPPING:
+                    const descriptions: string[] = [];
+                    for (const word of words) {
+                        if (current.length + word.length >= width) {
+                            descriptions.push(current);
+                            current = word;
+                        } else {
+                            current += ' ' + word;
+                        }
+                    }
+                    descriptions.push(current);
+                    for (let i = descriptions.length - 1; i >= 0; i--) {
+                        children.push(<SLabel>{
+                            type: 'label',
+                            id: idCache.uniqueId(nodeId + '.label'),
+                            text: descriptions[i]
+                        });
+                    }
+                    break;
+            }
+        }
+
+        children.push(
+            <SLabel>{
+                type: 'label',
+                id: idCache.uniqueId(nodeId + '.label'),
+                text: nodeName
+            }
+        );
+        return children;
     }
 
 }

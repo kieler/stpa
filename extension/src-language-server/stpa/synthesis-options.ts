@@ -15,15 +15,53 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { DropDownOption, TransformationOptionType, ValuedSynthesisOption } from "../options/option-models";
+import { DropDownOption, RangeOption, SynthesisOption, TransformationOptionType, ValuedSynthesisOption } from "../options/option-models";
 
 const hierarchyID = "hierarchy";
+const modelOrderID = "modelOrder";
 const groupingUCAsID = "groupingUCAs";
 const filteringUCAsID = "filteringUCAs";
+
 const hideSysConsID = "hideSysCons";
 const hideRespsID = "hideResps";
 const hideContConsID = "hideContCons";
 const hideScenariosID = "hideScenarios";
+
+const showLabelsID = "showLabels";
+const labelManagementID = "labelManagement";
+const labelShorteningWidthID = "labelShorteningWidth";
+
+const layoutCategoryID = "layoutCategory";
+const filterCategoryID = "filterCategory";
+
+
+const layoutCategory: SynthesisOption = {
+    id: layoutCategoryID,
+    name: "Layout",
+    type: TransformationOptionType.CATEGORY,
+    initialValue: 0,
+    currentValue: 0,
+    values: []
+};
+
+const layoutCategoryOption: ValuedSynthesisOption = {
+    synthesisOption: layoutCategory,
+    currentValue: 0
+};
+
+const filterCategory: SynthesisOption = {
+    id: filterCategoryID,
+    name: "Filtering",
+    type: TransformationOptionType.CATEGORY,
+    initialValue: 0,
+    currentValue: 0,
+    values: []
+};
+
+const filterCategoryOption: ValuedSynthesisOption = {
+    synthesisOption: filterCategory,
+    currentValue: 0
+};
 
 /**
  * Boolean option to toggle the hierarchy representation in the relationship graph.
@@ -35,7 +73,21 @@ const hierarchicalGraphOption: ValuedSynthesisOption = {
         type: TransformationOptionType.CHECK,
         initialValue: true,
         currentValue: true,
-        values: [true, false]
+        values: [true, false],
+        category: layoutCategory
+    },
+    currentValue: true
+};
+
+const modelOrderOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: modelOrderID,
+        name: "Model Order",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false],
+        category: layoutCategory
     },
     currentValue: true
 };
@@ -57,7 +109,8 @@ const groupingOfUCAs: ValuedSynthesisOption = {
         type: TransformationOptionType.CHOICE,
         initialValue: "No grouping",
         currentValue: "No grouping",
-        values: ["No grouping", "Group by Control Action", "Group by System Component"]
+        values: ["No grouping", "Group by Control Action", "Group by System Component"],
+        category: layoutCategory
     },
     currentValue: "No grouping"
 };
@@ -74,7 +127,8 @@ const filteringOfUCAs: ValuedSynthesisOption = {
         availableValues: [{ displayName: "all UCAs", id: "all UCAs" }],
         initialValue: "all UCAs",
         currentValue: "all UCAs",
-        values: []
+        values: [],
+        category: filterCategory
     } as DropDownOption,
     currentValue: "all UCAs"
 };
@@ -89,7 +143,8 @@ const hideSysConsOption: ValuedSynthesisOption = {
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
-        values: [true, false]
+        values: [true, false],
+        category: filterCategory
     },
     currentValue: false
 };
@@ -104,7 +159,8 @@ const hideRespsOption: ValuedSynthesisOption = {
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
-        values: [true, false]
+        values: [true, false],
+        category: filterCategory
     },
     currentValue: false
 };
@@ -119,7 +175,8 @@ const hideContConsOption: ValuedSynthesisOption = {
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
-        values: [true, false]
+        values: [true, false],
+        category: filterCategory
     },
     currentValue: false
 };
@@ -134,24 +191,131 @@ const hideScenariosOption: ValuedSynthesisOption = {
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
-        values: [true, false]
+        values: [true, false],
+        category: filterCategory
     },
     currentValue: false
 };
 
+const labelShorteningWidthOption: ValuedSynthesisOption = {
+    synthesisOption : {
+        id: labelShorteningWidthID,
+        name: "Shortening Width",
+        type: TransformationOptionType.RANGE,
+        initialValue: 30,
+        currentValue: 30,
+        range: {first: 0, second: 100},
+        stepSize: 1,
+        values: [],
+        category: layoutCategory
+    } as RangeOption,
+    currentValue: 30
+};
+
+const labelManagementOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: labelManagementID,
+        name: "Node Label Management",
+        type: TransformationOptionType.CHOICE,
+        initialValue: "No Labels",
+        currentValue: "No Labels",
+        values: ["Original Labels", "Wrapping", "Truncate", "No Labels"],
+        category: layoutCategory
+    },
+    currentValue: "No Labels"
+};
+
+const showLabelsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showLabelsID,
+        name: "Show Labels of",
+        type: TransformationOptionType.DROPDOWN,
+        currentId: "all",
+        availableValues: [{ displayName: "all", id: "all" },
+        { displayName: "Losses", id: "losses" },
+        { displayName: "Hazards", id: "hazards" },
+        { displayName: "System Constraints", id: "systemConstraints" },
+        { displayName: "Responsibilities", id: "responsibilities" },
+        { displayName: "UCAs", id: "ucas" },
+        { displayName: "Controller Constraints", id: "controllerConstraints" },
+        { displayName: "Scenarios", id: "scenarios" },
+        { displayName: "Safety Constraints", id: "safetyConstraints" },
+        { displayName: "Automatic", id: "automatic" }],
+        initialValue: "all",
+        currentValue: "all",
+        values: [],
+        category: layoutCategory
+    } as DropDownOption,
+    currentValue: "all"
+};
+
+export enum labelManagementValue {
+    ORIGINAL,
+    WRAPPING,
+    TRUNCATE,
+    NO_LABELS
+}
+
+export enum showLabelsValue {
+    ALL,
+    LOSSES,
+    HAZARDS,
+    SYSTEM_CONSTRAINTS,
+    UCAS,
+    RESPONSIBILITIES,
+    CONTROLLER_CONSTRAINTS,
+    SCENARIOS,
+    SAFETY_CONSTRAINTS,
+    AUTOMATIC
+}
 export class StpaSynthesisOptions {
 
     private options: ValuedSynthesisOption[];
 
     constructor() {
         this.options = [
-            hierarchicalGraphOption, groupingOfUCAs, filteringOfUCAs,
-            hideSysConsOption, hideRespsOption, hideContConsOption, hideScenariosOption
+            layoutCategoryOption, filterCategoryOption,
+            hierarchicalGraphOption, modelOrderOption, groupingOfUCAs, filteringOfUCAs,
+            hideSysConsOption, hideRespsOption, hideContConsOption, hideScenariosOption,
+            labelManagementOption, labelShorteningWidthOption, showLabelsOption
         ];
     }
 
     getSynthesisOptions(): ValuedSynthesisOption[] {
         return this.options;
+    }
+
+    getShowLabels(): showLabelsValue {
+        const option = this.options.find(option => option.synthesisOption.id === showLabelsID);
+        switch (option?.currentValue) {
+            case "all": return showLabelsValue.ALL;
+            case "losses": return showLabelsValue.LOSSES;
+            case "hazards": return showLabelsValue.HAZARDS;
+            case "systemConstraints": return showLabelsValue.SYSTEM_CONSTRAINTS;
+            case "responsibilities": return showLabelsValue.RESPONSIBILITIES;
+            case "ucas": return showLabelsValue.UCAS;
+            case "controllerConstraints": return showLabelsValue.CONTROLLER_CONSTRAINTS;
+            case "scenarios": return showLabelsValue.SCENARIOS;
+            case "safetyConstraints": return showLabelsValue.SAFETY_CONSTRAINTS;
+            case "automatic": return showLabelsValue.AUTOMATIC;
+        }
+        return option?.currentValue;
+    }
+
+    getLabelManagement(): labelManagementValue {
+        const option = this.options.find(option => option.synthesisOption.id === labelManagementID);
+        switch (option?.currentValue) {
+            case "Original Labels": return labelManagementValue.ORIGINAL;
+            case "Wrapping": return labelManagementValue.WRAPPING;
+            case "Truncate": return labelManagementValue.TRUNCATE;
+            case "No Labels": return labelManagementValue.NO_LABELS;
+        }
+        return option?.currentValue;
+    }
+
+    getLabelShorteningWidth(): number {
+        const option = this.options.find(option => option.synthesisOption.id === labelShorteningWidthID);
+        return option?.currentValue;
     }
 
     getHierarchy(): boolean {

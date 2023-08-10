@@ -66,6 +66,8 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected nodeOptions(snode: SNode, index: SModelIndex): LayoutOptions | undefined {
+        // TODO: check whether model order option is activated
+        
         const parent = snode.children?.find(child => child.type.startsWith('node'));
         const partition = snode.type === CS_NODE_TYPE ? (snode as CSNode).level : (snode as STPANode).level;
         if (parent) {

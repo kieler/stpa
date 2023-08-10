@@ -50,7 +50,7 @@ export class StpaDiagramServer extends DiagramServer {
         return super.handleAction(action);
     }
 
-    protected handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
+    protected async handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
         for (const option of action.options) {
             const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
@@ -62,7 +62,7 @@ export class StpaDiagramServer extends DiagramServer {
                 }
             }
         }
-        this.updateView(this.state.options);
+        await this.updateView(this.state.options);
         return Promise.resolve();
     }
 
