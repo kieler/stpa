@@ -17,7 +17,9 @@
 
 import { AstNode } from "langium";
 import {
-    Hazard, SystemConstraint,
+    Hazard,
+    Node,
+    SystemConstraint,
     isContConstraint,
     isContext,
     isHazard,
@@ -177,5 +179,38 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
     for (const node of nodes) {
         const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth, map, groupUCAs);
         node.level = -layer;
+    }
+}
+
+
+export function setLevelOfCSNodes(nodes: Node[]): void {
+    const visited = new Map<string, Set<string>>();
+    for (const node of nodes) {
+        visited.set(node.name, new Set<string>());
+    }
+    nodes[0].level = 0;
+    assignLevel(nodes[0], 0, visited);
+}
+
+function assignLevel(node: Node, level: number, visited: Map<string, Set<string>>): void {
+    for (const action of node.actions) {
+        const target = action.target.ref;
+        if (target && !visited.get(node.name)?.has(target.name)) {
+            visited.get(node.name)?.add(target.name);
+            if (target.level === undefined || target.level < level + 1) {
+                target.level = level + 1;
+            }
+            assignLevel(target, level + 1, visited);
+        }
+    }
+    for (const feedback of node.feedbacks) {
+        const target = feedback.target.ref;
+        if (target && !visited.get(node.name)?.has(target.name)) {
+            visited.get(node.name)?.add(target.name);
+            if (target.level === undefined || target.level > level - 1) {
+                target.level = level - 1;
+            }
+            assignLevel(target, level - 1, visited);
+        }
     }
 }

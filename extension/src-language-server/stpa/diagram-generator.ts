@@ -30,7 +30,7 @@ import { CSEdge, CSNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces'
 import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPAAspect, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
 import { StpaSynthesisOptions } from './synthesis-options';
-import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
+import { collectElementsWithSubComps, getAspect, getTargets, setLevelOfCSNodes, setLevelsForSTPANodes } from './utils';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
@@ -98,6 +98,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
         const rootChildren: SModelElement[] = [];
         if (filteredModel.controlStructure) {
+            setLevelOfCSNodes(filteredModel.controlStructure?.nodes);
             // determine the nodes of the control structure graph
             const csNodes = filteredModel.controlStructure?.nodes.map(n => this.createControlStructureNode(n, args));
             // children (nodes and edges) of the control structure
@@ -138,7 +139,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     protected createControlStructureNode(node: Node, { idCache }: GeneratorContext<Model>): CSNode {
         const label = node.label ? node.label : node.name;
         const nodeId = idCache.uniqueId(node.name, node);
-        return {
+        const csNode = {
             type: CS_NODE_TYPE,
             id: nodeId,
             level: node.level,
@@ -147,10 +148,12 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             layoutOptions: {
                 paddingTop: 10.0,
                 paddingBottom: 10.0,
-                paddngLeft: 10.0,
+                paddingLeft: 10.0,
                 paddingRight: 10.0
             }
         };
+        this.idToSNode.set(nodeId, csNode);
+        return csNode;
     }
 
     /**
@@ -195,11 +198,30 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 const com = edge.comms[i];
                 label.push(com.label);
             }
-            const e = this.createControlStructureEdge(edgeId, sourceId ? sourceId : '', targetId ? targetId : '',
+            const portIds = this.createPortsForEdge(sourceId ?? "", edgetype === EdgeType.CONTROL_ACTION ?
+                PortSide.SOUTH : PortSide.NORTH, targetId ?? "", edgetype === EdgeType.CONTROL_ACTION ?
+                PortSide.NORTH : PortSide.SOUTH, edgeId, idCache);
+
+            const e = this.createControlStructureEdge(edgeId, portIds.sourcePortId, portIds.targetPortId,
                 label, edgetype, args);
             edges.push(e);
         }
         return edges;
+    }
+
+    //TODO: docstring
+    protected createPortsForEdge(sourceId: string, sourceSide: PortSide, targetId: string,
+        targetSide: PortSide, edgeId: string, idCache: IdCache<AstNode>): { sourcePortId: string, targetPortId: string; } {
+        // add ports for source and target
+        const sourceNode = this.idToSNode.get(sourceId);
+        const sourcePortId = idCache.uniqueId(edgeId + '_newTransition');
+        sourceNode?.children?.push(this.createSTPAPort(sourcePortId, sourceSide, []));
+
+        const targetNode = this.idToSNode.get(targetId!);
+        const targetPortId = idCache.uniqueId(edgeId + '_newTransition');
+        targetNode?.children?.push(this.createSTPAPort(targetPortId, targetSide, []));
+
+        return { sourcePortId, targetPortId };
     }
 
     /**
@@ -372,16 +394,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 return this.generateIntermediateIncomingEdges(target, source, sourceId, edgeId, children, idCache);
             } else {
                 // otherwise it is sufficient to add ports for source and target
-                const sourceNode = this.idToSNode.get(sourceId);
-                const sourcePortId = idCache.uniqueId(edgeId + '_newTransition');
-                sourceNode?.children?.push(this.createSTPAPort(sourcePortId, PortSide.NORTH));
-
-                const targetNode = this.idToSNode.get(targetId!);
-                const targetPortId = idCache.uniqueId(edgeId + '_newTransition');
-                targetNode?.children?.push(this.createSTPAPort(targetPortId, PortSide.SOUTH));
+                const portIds = this.createPortsForEdge(sourceId, PortSide.NORTH, targetId, PortSide.SOUTH, edgeId, idCache);
 
                 // add edge between the two ports
-                return this.createSTPAEdge(edgeId, sourcePortId, targetPortId, children, STPA_EDGE_TYPE, getAspect(source));
+                return this.createSTPAEdge(edgeId, portIds.sourcePortId, portIds.targetPortId, children, STPA_EDGE_TYPE, getAspect(source));
             }
         }
     }
@@ -488,7 +504,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             layoutOptions: {
                 paddingTop: 10.0,
                 paddingBottom: 10.0,
-                paddngLeft: 10.0,
+                paddingLeft: 10.0,
                 paddingRight: 10.0
             }
         };

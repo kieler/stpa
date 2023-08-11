@@ -91,7 +91,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             };
         }
     }
-    
+
     protected parentSTPANodeOptions(node: STPANode): LayoutOptions {
         // options for nodes in the STPA graphs that have children
         return {
@@ -113,18 +113,14 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected csNodeOptions(node: CSNode): LayoutOptions {
-        if (node.level !== undefined) {
-            return {
-                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
-                'org.eclipse.elk.partitioning.partition': "" + node.level,
-                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
-            };
-        } else {
-            return {
-                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
-                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
-            };
-        }
+        return {
+            'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
+            'org.eclipse.elk.partitioning.partition': "" + node.level,
+            'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
+            // edges do no start at the border of the node
+            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
+            'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
+        };
     }
 
     protected portOptions(sport: SPort, index: SModelIndex): LayoutOptions | undefined {
