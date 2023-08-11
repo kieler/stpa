@@ -231,7 +231,7 @@ const showLabelsOption: ValuedSynthesisOption = {
         name: "Show Labels of",
         type: TransformationOptionType.DROPDOWN,
         currentId: "all",
-        availableValues: [{ displayName: "all", id: "all" },
+        availableValues: [{ displayName: "All", id: "all" },
         { displayName: "Losses", id: "losses" },
         { displayName: "Hazards", id: "hazards" },
         { displayName: "System Constraints", id: "systemConstraints" },
