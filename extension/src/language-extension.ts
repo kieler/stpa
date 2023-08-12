@@ -181,9 +181,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
                 //Send cut sets to webview to display them in a dropdown menu.
                 this.dispatchCutSetsToWebview(cutSets);        
 
-                const outputCutSets = vscode.window.createOutputChannel("All cut sets");
-                outputCutSets.append(cutSets);
-                outputCutSets.show();   
+                this.createOutputChannel(cutSets, "All cut sets"); 
             })
         );
         this.context.subscriptions.push(
@@ -192,9 +190,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
 
                 this.dispatchCutSetsToWebview(minimalCutSets);
 
-                const outputMinimalCutSets = vscode.window.createOutputChannel("All minimal cut sets");
-                outputMinimalCutSets.append(minimalCutSets);
-                outputMinimalCutSets.show();           
+                this.createOutputChannel(minimalCutSets, "All minimal cut sets");         
             })
         );     
     }
@@ -214,7 +210,16 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         this.singleton?.dispatch({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
     }
 
-    
+    /**
+     * Creates an output channel with the given name and prints the given cut sets. 
+     * @param cutSets The cut sets to print.
+     * @param channelName The name of the channel.
+     */
+    protected createOutputChannel(cutSets:string, channelName:string):void{
+        const outputCutSets = vscode.window.createOutputChannel(channelName);
+        outputCutSets.append(cutSets);
+        outputCutSets.show();
+    }
 
     /**
      * Creates a quickpick containing the values "true" and "false". The selected value is set for the 
