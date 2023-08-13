@@ -88,12 +88,14 @@ export class FTANodeView extends RectangularNodeView {
                 break;   
         }
 
-        //highlight every node that is in the selected cut set.
+        //highlight every node that is in the selected cut set or on the path to the top event.
         let set = this.cutSetsRegistry.getCurrentValue();
         if(set !== undefined){
+            //highlight all when the empty cut set is selected
             if(set === '-' ){
                 node.highlight = true;
             }else{
+                //unhighlight every node first and then only highlight the correct ones.
                 node.highlight = false;
                 if(node.nodeType === FTNodeType.COMPONENT || node.nodeType === FTNodeType.CONDITION){
                     if(set.includes(node.id)){

@@ -66,11 +66,13 @@ export class CutSetsRegistry extends Registry{
     }
 
     getCurrentValue():any{
+        //if the cut sets were not requested yet, there is nothing to highlight
         if(this._options.get('cut-sets')?.availableValues.length === 1){
             return undefined;
         }
         const selectedCutSet:{ displayName: string; id: string } = this._options.get('cut-sets')?.currentValue;
         if(selectedCutSet){
+            //slice the brackets at the start and at the end.
             const selected = selectedCutSet.displayName.slice(1,-1);
             if(selected === '-'){
                 return '-';
