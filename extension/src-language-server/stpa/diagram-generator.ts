@@ -630,7 +630,15 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return dummyNode;
     }
 
-
+    /**
+     * Generates the labels for the given node based on {@code showDescription} and the label synthesis options.
+     * @param showDescription Determines whether the description should be shown.
+     * @param nodeId The ID of the node for which the labels should be generated.
+     * @param nodeName The name of the node for which the labels should be generated.
+     * @param idCache The ID cache of the STPA model.
+     * @param nodeDescription The description of the node for which the labels should be generated.
+     * @returns the labels for the given node.
+     */
     protected generateDescriptionLabels(showDescription: boolean, nodeId: string, nodeName: string, idCache: IdCache<AstNode>, nodeDescription?: string): SModelElement[] {
         const labelManagement = this.options.getLabelManagement();
         const children: SModelElement[] = [];
@@ -645,6 +653,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 case labelManagementValue.NO_LABELS:
                     break;
                 case labelManagementValue.ORIGINAL:
+                    // show complete description in one line
                     children.push(<SLabel>{
                         type: 'label',
                         id: idCache.uniqueId(nodeId + '.label'),
@@ -652,6 +661,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     });
                     break;
                 case labelManagementValue.TRUNCATE:
+                    // truncate description to the set value
                     if (words.length > 0) {
                         current = words[0];
                         for (let i = 1; i < words.length && current.length + words[i].length <= width; i++) {
@@ -665,6 +675,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     }
                     break;
                 case labelManagementValue.WRAPPING:
+                    // wrap description to the set value
                     const descriptions: string[] = [];
                     for (const word of words) {
                         if (current.length + word.length >= width) {
@@ -686,6 +697,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             }
         }
 
+        // show the name in the top line
         children.push(
             <SLabel>{
                 type: 'label',

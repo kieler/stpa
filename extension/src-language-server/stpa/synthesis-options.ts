@@ -34,7 +34,9 @@ const labelShorteningWidthID = "labelShorteningWidth";
 const layoutCategoryID = "layoutCategory";
 const filterCategoryID = "filterCategory";
 
-
+/**
+ * Category for layout options.
+ */
 const layoutCategory: SynthesisOption = {
     id: layoutCategoryID,
     name: "Layout",
@@ -44,11 +46,17 @@ const layoutCategory: SynthesisOption = {
     values: []
 };
 
+/**
+ * The option for the layout category.
+ */
 const layoutCategoryOption: ValuedSynthesisOption = {
     synthesisOption: layoutCategory,
     currentValue: 0
 };
 
+/**
+ * Category for filtering options.
+ */
 const filterCategory: SynthesisOption = {
     id: filterCategoryID,
     name: "Filtering",
@@ -58,6 +66,9 @@ const filterCategory: SynthesisOption = {
     values: []
 };
 
+/**
+ * The option for the filter category.
+ */
 const filterCategoryOption: ValuedSynthesisOption = {
     synthesisOption: filterCategory,
     currentValue: 0
@@ -79,6 +90,9 @@ const hierarchicalGraphOption: ValuedSynthesisOption = {
     currentValue: true
 };
 
+/**
+ * Boolean option to toggle model order.
+ */
 const modelOrderOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: modelOrderID,
@@ -92,6 +106,9 @@ const modelOrderOption: ValuedSynthesisOption = {
     currentValue: true
 };
 
+/**
+ * Values for the grouping of UCAs.
+ */
 export enum groupValue {
     NO_GROUPING,
     CONTROL_ACTION,
@@ -197,6 +214,9 @@ const hideScenariosOption: ValuedSynthesisOption = {
     currentValue: false
 };
 
+/**
+ * Slider to set the desired width of label lines.
+ */
 const labelShorteningWidthOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: labelShorteningWidthID,
@@ -212,6 +232,10 @@ const labelShorteningWidthOption: ValuedSynthesisOption = {
     currentValue: 30
 };
 
+/**
+ * Option to determine the display of node labels.
+ * It can be original labels (whole label in one line), wrapping (label is wrapped into multiple lines), truncate (label is truncated) or no labels.
+ */
 const labelManagementOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: labelManagementID,
@@ -225,6 +249,9 @@ const labelManagementOption: ValuedSynthesisOption = {
     currentValue: "Wrapping"
 };
 
+/**
+ * Option to filter the node labels based on the aspect of the node.
+ */
 const showLabelsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showLabelsID,
@@ -249,6 +276,9 @@ const showLabelsOption: ValuedSynthesisOption = {
     currentValue: "losses"
 };
 
+/**
+ * Values for general the label management.
+ */
 export enum labelManagementValue {
     ORIGINAL,
     WRAPPING,
@@ -256,6 +286,9 @@ export enum labelManagementValue {
     NO_LABELS
 }
 
+/**
+ * Values for filtering the node labels.
+ */
 export enum showLabelsValue {
     ALL,
     LOSSES,
