@@ -85,7 +85,6 @@ export function activate(context: vscode.ExtensionContext): void {
             })
         );
         registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: 'stpa' });
-        // registerTextEditorSync(webviewViewProvider, context);
     }
     // register commands that other extensions can use
     context.subscriptions.push(vscode.commands.registerCommand(

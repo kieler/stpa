@@ -17,9 +17,21 @@
 
 import { AstNode } from "langium";
 import {
+    Command,
+    ContConstraint,
+    Context,
+    Graph,
     Hazard,
+    HazardList,
+    Loss,
+    LossScenario,
     Node,
+    Responsibility,
+    Rule,
+    SafetyConstraint,
     SystemConstraint,
+    UCA,
+    Variable,
     isContConstraint,
     isContext,
     isHazard,
@@ -33,6 +45,11 @@ import {
 import { STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
 import { groupValue } from "./synthesis-options";
+
+
+export type leafElement = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Context;
+export type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context | Rule;
+export type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint | SafetyConstraint;
 
 /**
  * Getter for the references contained in {@code node}.
@@ -96,7 +113,7 @@ export function getAspect(node: AstNode): STPAAspect {
  * @param topElements The top elements that possbible have children.
  * @returns A list with the given {@code topElements} and their descendants.
  */
-export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): AstNode[] {
+export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): (Hazard | SystemConstraint)[] {
     let result = topElements;
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {
@@ -182,35 +199,43 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
     }
 }
 
-
+/**
+ * Set the levels of the control structure nodes.
+ * @param nodes The nodes representing the control structure.
+ */
 export function setLevelOfCSNodes(nodes: Node[]): void {
     const visited = new Map<string, Set<string>>();
     for (const node of nodes) {
         visited.set(node.name, new Set<string>());
     }
     nodes[0].level = 0;
-    assignLevel(nodes[0], 0, visited);
+    assignLevel(nodes[0], visited);
 }
 
-function assignLevel(node: Node, level: number, visited: Map<string, Set<string>>): void {
+/**
+ * Assigns the level to the connected nodes of {@code node}.
+ * @param node The node for which the connected nodes should be assigned a level.
+ * @param visited The edges that have been visited.
+ */
+function assignLevel(node: Node, visited: Map<string, Set<string>>): void {
     for (const action of node.actions) {
         const target = action.target.ref;
         if (target && !visited.get(node.name)?.has(target.name)) {
             visited.get(node.name)?.add(target.name);
-            if (target.level === undefined || target.level < level + 1) {
-                target.level = level + 1;
+            if (target.level === undefined || target.level < node.level! + 1) {
+                target.level = node.level! + 1;
             }
-            assignLevel(target, level + 1, visited);
+            assignLevel(target, visited);
         }
     }
     for (const feedback of node.feedbacks) {
         const target = feedback.target.ref;
         if (target && !visited.get(node.name)?.has(target.name)) {
             visited.get(node.name)?.add(target.name);
-            if (target.level === undefined || target.level > level - 1) {
-                target.level = level - 1;
+            if (target.level === undefined || target.level > node.level! - 1) {
+                target.level = node.level! - 1;
             }
-            assignLevel(target, level - 1, visited);
+            assignLevel(target, visited);
         }
     }
 }
