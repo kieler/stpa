@@ -19,7 +19,7 @@
 import { LayoutOptions } from 'elkjs';
 import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { SGraph, SModelIndex, SNode, SPort } from 'sprotty-protocol';
-import { CSNode, STPANode, STPAPort } from './stpa-interfaces';
+import { CSNode, ParentNode, STPANode, STPAPort } from './stpa-interfaces';
 import { CS_NODE_TYPE, PARENT_TYPE, PortSide, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 
 
@@ -36,7 +36,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     /**
      * Options for the parent nodes of the STPA graph and the control structure
      */
-    protected grandparentNodeOptions(snode: SNode, index: SModelIndex): LayoutOptions {
+    protected grandparentNodeOptions(snode: ParentNode, index: SModelIndex): LayoutOptions {
         let direction = '';
         // priority is used to determine the order of the nodes
         let priority = '';
@@ -50,7 +50,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             priority = '0';
         }
 
-        return {
+        const options: LayoutOptions = {
             'org.eclipse.elk.layered.thoroughness': '70',
             'org.eclipse.elk.partitioning.activate': 'true',
             'org.eclipse.elk.direction': direction,
@@ -61,11 +61,16 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             // edges do no start at the border of the node
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
             'org.eclipse.elk.priority': priority,
-            // model order is used to determine the order of the children
-            'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-            'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
-            'org.eclipse.elk.separateConnectedComponents': 'false'
         };
+
+        // model order is used to determine the order of the children
+        if (snode.modelOrder) {
+            options['org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeOrdering'] = 'NODES_AND_EDGES';
+            options['org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder'] = 'true';
+            options['org.eclipse.elk.separateConnectedComponents'] = 'false';
+        }
+
+        return options;
     }
 
     protected nodeOptions(snode: SNode, index: SModelIndex): LayoutOptions | undefined {
@@ -76,7 +81,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             case STPA_NODE_TYPE:
                 return this.stpaNodeOptions(snode as STPANode);
             case PARENT_TYPE:
-                return this.grandparentNodeOptions(snode, index);
+                return this.grandparentNodeOptions(snode as ParentNode, index);
         }
     }
 
@@ -95,7 +100,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
 
     protected parentSTPANodeOptions(node: STPANode): LayoutOptions {
         // options for nodes in the STPA graphs that have children
-        return {
+        const options: LayoutOptions = {
             'org.eclipse.elk.direction': 'UP',
             'org.eclipse.elk.nodeLabels.placement': "INSIDE V_TOP H_CENTER",
             'org.eclipse.elk.partitioning.partition': "" + node.level,
@@ -105,12 +110,16 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
             // edges do no start at the border of the node
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
-            'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
-            // model order is used to determine the order of the children
-            'org.eclipse.elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-            'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
-            'org.eclipse.elk.separateConnectedComponents': 'false'
+            'org.eclipse.elk.portConstraints': 'FIXED_SIDE'
         };
+
+        // model order is used to determine the order of the children
+        if (node.modelOrder) {
+            options['org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeOrdering'] = 'NODES_AND_EDGES';
+            options['org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder'] = 'true';
+            options['org.eclipse.elk.separateConnectedComponents'] = 'false';
+        }
+        return options;
     }
 
     protected csNodeOptions(node: CSNode): LayoutOptions {

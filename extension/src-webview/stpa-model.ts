@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdge, SNode, SPort, connectableFeature, fadeFeature, hoverFeedbackFeature, layoutContainerFeature, popupFeature, selectFeature } from "sprotty";
+import { SEdge, SNode, SPort, connectableFeature, fadeFeature, layoutContainerFeature, selectFeature } from "sprotty";
 
 // The types of diagram elements
 export const STPA_NODE_TYPE = 'node:stpa';
@@ -27,6 +27,10 @@ export const CS_EDGE_TYPE = 'edge:controlStructure';
 export const STPA_EDGE_TYPE = 'edge:stpa';
 export const STPA_INTERMEDIATE_EDGE_TYPE = 'edge:stpa-intermediate';
 export const STPA_PORT_TYPE = 'port:stpa';
+
+export class ParentNode extends SNode {
+    modelOrder: boolean;
+}
 
 /**
  * Node representing an STPA component.
@@ -41,6 +45,7 @@ export class STPANode extends SNode {
     highlight?: boolean;
     level?: number;
     controlAction?: string;
+    modelOrder?: boolean;
 }
 
 /**

@@ -198,13 +198,13 @@ const hideScenariosOption: ValuedSynthesisOption = {
 };
 
 const labelShorteningWidthOption: ValuedSynthesisOption = {
-    synthesisOption : {
+    synthesisOption: {
         id: labelShorteningWidthID,
         name: "Shortening Width",
         type: TransformationOptionType.RANGE,
         initialValue: 30,
         currentValue: 30,
-        range: {first: 0, second: 100},
+        range: { first: 0, second: 100 },
         stepSize: 1,
         values: [],
         category: layoutCategory
@@ -217,12 +217,12 @@ const labelManagementOption: ValuedSynthesisOption = {
         id: labelManagementID,
         name: "Node Label Management",
         type: TransformationOptionType.CHOICE,
-        initialValue: "No Labels",
-        currentValue: "No Labels",
+        initialValue: "Wrapping",
+        currentValue: "Wrapping",
         values: ["Original Labels", "Wrapping", "Truncate", "No Labels"],
         category: layoutCategory
     },
-    currentValue: "No Labels"
+    currentValue: "Wrapping"
 };
 
 const showLabelsOption: ValuedSynthesisOption = {
@@ -230,7 +230,7 @@ const showLabelsOption: ValuedSynthesisOption = {
         id: showLabelsID,
         name: "Show Labels of",
         type: TransformationOptionType.DROPDOWN,
-        currentId: "all",
+        currentId: "losses",
         availableValues: [{ displayName: "All", id: "all" },
         { displayName: "Losses", id: "losses" },
         { displayName: "Hazards", id: "hazards" },
@@ -241,12 +241,12 @@ const showLabelsOption: ValuedSynthesisOption = {
         { displayName: "Scenarios", id: "scenarios" },
         { displayName: "Safety Constraints", id: "safetyConstraints" },
         { displayName: "Automatic", id: "automatic" }],
-        initialValue: "all",
-        currentValue: "all",
+        initialValue: "losses",
+        currentValue: "losses",
         values: [],
         category: layoutCategory
     } as DropDownOption,
-    currentValue: "all"
+    currentValue: "losses"
 };
 
 export enum labelManagementValue {
@@ -268,6 +268,7 @@ export enum showLabelsValue {
     SAFETY_CONSTRAINTS,
     AUTOMATIC
 }
+
 export class StpaSynthesisOptions {
 
     private options: ValuedSynthesisOption[];
@@ -283,6 +284,11 @@ export class StpaSynthesisOptions {
 
     getSynthesisOptions(): ValuedSynthesisOption[] {
         return this.options;
+    }
+
+    getModelOrder(): boolean {
+        const option = this.options.find(option => option.synthesisOption.id === modelOrderID);
+        return option?.currentValue;
     }
 
     getShowLabels(): showLabelsValue {

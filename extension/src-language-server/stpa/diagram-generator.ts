@@ -28,7 +28,7 @@ import {
     isSystemConstraint, isUCA
 } from '../generated/ast';
 import { filterModel } from './filtering';
-import { CSEdge, CSNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces';
+import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces';
 import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPAAspect, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
 import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from './synthesis-options';
@@ -115,16 +115,18 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             rootChildren.push({
                 type: PARENT_TYPE,
                 id: 'controlStructure',
-                children: CSChildren
-            });
+                children: CSChildren,
+                modelOrder: this.options.getModelOrder()
+            } as ParentNode);
         }
         // add relationship graph to roots children
         rootChildren.push(
             {
                 type: PARENT_TYPE,
                 id: 'relationships',
-                children: stpaChildren
-            }
+                children: stpaChildren,
+                modelOrder: this.options.getModelOrder()
+            } as ParentNode
         );
         // return root
         return {
@@ -515,7 +517,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 paddingBottom: 10.0,
                 paddingLeft: 10.0,
                 paddingRight: 10.0
-            }
+            },
+            modelOrder: this.options.getModelOrder()
         };
     }
 
