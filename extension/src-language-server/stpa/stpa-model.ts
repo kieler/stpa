@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -23,6 +23,8 @@ export const DUMMY_NODE_TYPE = 'node:dummy';
 export const EDGE_TYPE = 'edge';
 export const CS_EDGE_TYPE = 'edge:controlStructure';
 export const STPA_EDGE_TYPE = 'edge:stpa';
+export const STPA_INTERMEDIATE_EDGE_TYPE = 'edge:stpa-intermediate';
+export const STPA_PORT_TYPE = 'port:stpa';
 
 /**
  * The different aspects of STPA.
@@ -49,4 +51,12 @@ export enum EdgeType {
     INPUT,
     OUTPUT,
     UNDEFINED
+}
+
+/** Possible sides for a port. */
+export enum PortSide {
+    WEST,
+    EAST,
+    NORTH,
+    SOUTH
 }

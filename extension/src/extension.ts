@@ -16,7 +16,7 @@
  */
 
 import * as path from 'path';
-import { IWebviewEndpointManager, registerDefaultCommands } from 'sprotty-vscode';
+import { registerDefaultCommands } from 'sprotty-vscode';
 import { LspSprottyEditorProvider, LspSprottyViewProvider } from 'sprotty-vscode/lib/lsp';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
@@ -85,7 +85,6 @@ export function activate(context: vscode.ExtensionContext): void {
             })
         );
         registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: 'stpa' });
-        registerTextEditorSync(webviewViewProvider, context);
     }
     // register commands that other extensions can use
     context.subscriptions.push(vscode.commands.registerCommand(
@@ -188,11 +187,11 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
     return languageClient;
 }
 
-function registerTextEditorSync(manager: IWebviewEndpointManager, context: vscode.ExtensionContext): void {
+function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     context.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor(async editor => {
-            if (editor) {
-                manager.openDiagram(editor.document.uri);
+        vscode.workspace.onDidSaveTextDocument(async document => {
+            if (document) {
+                manager.openDiagram(document.uri);
             }
         })
     );
@@ -200,7 +199,9 @@ function registerTextEditorSync(manager: IWebviewEndpointManager, context: vscod
         vscode.workspace.onDidSaveTextDocument(async document => {
             if (document) {
                 manager.openDiagram(document.uri);
-                languageClient.sendNotification('contextTable/getData', document.uri.toString());
+                if (manager.contextTable) {
+                    languageClient.sendNotification('contextTable/getData', document.uri.toString());
+                }
             }
         })
     );
