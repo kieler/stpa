@@ -6,7 +6,8 @@ const path = require('path');
 /**@type {import('webpack').Configuration}*/
 const commonConfig = {
     target: 'node',
-    devtool: 'source-map',
+    mode: "none", // Leave source code as close as possible. Only set to production during distribution.
+    devtool: 'nosources-source-map',
     externals: {
         vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded
     },
@@ -55,7 +56,8 @@ const lsConfig = {
 /**@type {import('webpack').Configuration}*/
 const commonWebConfig = {
     target: 'web',
-    devtool: 'eval-source-map',
+    mode: "none", // Leave source code as close as possible. Only set to production during distribution.
+    devtool: 'nosources-source-map',
     resolve: {
         extensions: ['.ts', '.tsx', '.js']
     },

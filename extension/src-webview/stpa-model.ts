@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SNode, SEdge, connectableFeature, selectFeature, layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature } from "sprotty";
+import { SEdge, SNode, SPort, connectableFeature, fadeFeature, hoverFeedbackFeature, layoutContainerFeature, popupFeature, selectFeature } from "sprotty";
 
 // The types of diagram elements
 export const STPA_NODE_TYPE = 'node:stpa';
@@ -25,6 +25,8 @@ export const DUMMY_NODE_TYPE = 'node:dummy';
 export const EDGE_TYPE = 'edge';
 export const CS_EDGE_TYPE = 'edge:controlStructure';
 export const STPA_EDGE_TYPE = 'edge:stpa';
+export const STPA_INTERMEDIATE_EDGE_TYPE = 'edge:stpa-intermediate';
+export const STPA_PORT_TYPE = 'port:stpa';
 
 /**
  * Node representing an STPA component.
@@ -45,8 +47,14 @@ export class STPANode extends SNode {
  * Edge representing an edge in the relationship graph.
  */
 export class STPAEdge extends SEdge {
+    aspect: STPAAspect = STPAAspect.UNDEFINED;
     highlight?: boolean;
     static readonly DEFAULT_FEATURES = [fadeFeature];
+}
+
+/** Port representing a port in the STPA graph. */
+export class STPAPort extends SPort {
+    side?: PortSide;
 }
 
 /**
@@ -91,4 +99,12 @@ export enum EdgeType {
     INPUT,
     OUTPUT,
     UNDEFINED
+}
+
+/** Possible sides for a port. */
+export enum PortSide {
+    WEST,
+    EAST,
+    NORTH,
+    SOUTH
 }

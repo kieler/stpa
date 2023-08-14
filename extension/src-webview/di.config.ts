@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,22 +15,30 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import './css/diagram.css';
 import 'sprotty/css/sprotty.css';
+import './css/diagram.css';
 
 import { Container, ContainerModule } from 'inversify';
 import {
-    configureModelElement, ConsoleLogger, HtmlRoot,
-    HtmlRootView, LogLevel, overrideViewerOptions, PreRenderedElement,
-    PreRenderedView, SLabelView,
-    TYPES, loadDefaultModules, SGraph, SLabel, SNode, SEdge, ModelViewer
+    ConsoleLogger, HtmlRoot,
+    HtmlRootView, LogLevel,
+    ModelViewer,
+    PreRenderedElement,
+    PreRenderedView,
+    SGraph, SLabel,
+    SLabelView,
+    SNode,
+    TYPES,
+    configureModelElement,
+    loadDefaultModules,
+    overrideViewerOptions
 } from 'sprotty';
-import { PolylineArrowEdgeView, STPANodeView, CSNodeView, STPAGraphView } from './views';
-import { STPA_EDGE_TYPE, STPA_NODE_TYPE, STPANode, PARENT_TYPE, CSEdge, CS_EDGE_TYPE, CSNode, CS_NODE_TYPE, DUMMY_NODE_TYPE, STPAEdge } from './stpa-model';
-import { sidebarModule } from './sidebar';
-import { optionsModule } from './options/options-module';
 import { StpaModelViewer } from './model-viewer';
+import { optionsModule } from './options/options-module';
+import { sidebarModule } from './sidebar';
+import { CSEdge, CSNode, CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, PARENT_TYPE, STPAEdge, STPANode, STPAPort, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 import { StpaMouseListener } from './stpa-mouselistener';
+import { CSNodeView, IntermediateEdgeView, PolylineArrowEdgeView, PortView, STPAGraphView, STPANodeView } from './views';
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
@@ -53,7 +61,9 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     configureModelElement(context, 'label', SLabel, SLabelView);
     configureModelElement(context, 'label:xref', SLabel, SLabelView);
     configureModelElement(context, STPA_EDGE_TYPE, STPAEdge, PolylineArrowEdgeView);
+    configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
+    configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);
     configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
     configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
 });
