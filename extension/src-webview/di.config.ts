@@ -25,7 +25,6 @@ import {
     ModelViewer,
     PreRenderedElement,
     PreRenderedView,
-    SEdge,
     SGraph, SLabel,
     SLabelView,
     SNode,
@@ -61,7 +60,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
     configureModelElement(context, 'label', SLabel, SLabelView);
     configureModelElement(context, 'label:xref', SLabel, SLabelView);
-    configureModelElement(context, STPA_EDGE_TYPE, SEdge, PolylineArrowEdgeView);
+    configureModelElement(context, STPA_EDGE_TYPE, STPAEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);

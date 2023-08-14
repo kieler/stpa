@@ -33,7 +33,7 @@ export const STPA_PORT_TYPE = 'port:stpa';
  */
 export class STPANode extends SNode {
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
+        layoutContainerFeature, fadeFeature];
 
     aspect: STPAAspect = STPAAspect.UNDEFINED;
     description: string = "";
@@ -49,6 +49,7 @@ export class STPANode extends SNode {
 export class STPAEdge extends SEdge {
     aspect: STPAAspect = STPAAspect.UNDEFINED;
     highlight?: boolean;
+    static readonly DEFAULT_FEATURES = [fadeFeature];
 }
 
 /** Port representing a port in the STPA graph. */
@@ -63,7 +64,7 @@ export class CSNode extends SNode {
     level?: number;
     // processmodel?
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
+        layoutContainerFeature, fadeFeature];
 }
 
 /**
@@ -71,6 +72,7 @@ export class CSNode extends SNode {
  */
 export class CSEdge extends SEdge {
     edgeType: EdgeType = EdgeType.UNDEFINED;
+    static readonly DEFAULT_FEATURES = [fadeFeature];
 }
 
 /**
