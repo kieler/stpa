@@ -28,8 +28,7 @@
     "ts-node": "^10.9.1"
   },
   "workspaces": [
-    "extension",
-    "table-webview"
+    "extension"
   ],
   "dependencies": {
   }
