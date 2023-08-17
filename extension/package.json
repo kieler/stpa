@@ -323,7 +323,7 @@
         "reflect-metadata": "^0.1.13",
         "feather-icons": "^4.28.0",
         "sprotty-vscode-webview": "^0.5.0",
-        "@kieler/table-webview": "^0.0.1",
+        "@kieler/table-webview": "^0.0.3",
         "snabbdom": "^3.5.1"
     },
     "devDependencies": {
