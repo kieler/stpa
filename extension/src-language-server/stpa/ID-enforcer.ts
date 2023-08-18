@@ -20,8 +20,7 @@ import { TextDocumentContentChangeEvent } from "vscode";
 import { Range, RenameParams, TextEdit } from "vscode-languageserver";
 import { Hazard, isHazard, isSystemConstraint, LossScenario, Model, SystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
-import { elementWithName, elementWithRefs } from "./stpa-validator";
-import { collectElementsWithSubComps } from "./diagram/utils";
+import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
 
 /**
  * Default prefixes for the different STPA aspects.

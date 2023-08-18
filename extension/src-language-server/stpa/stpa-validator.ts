@@ -17,9 +17,9 @@
 
 import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { StpaAstType, Loss, Hazard, Command, SystemConstraint, Node, Responsibility, UCA, ContConstraint, LossScenario, SafetyConstraint, Variable, Graph, Context, HazardList, Model, isModel, Rule } from '../generated/ast';
+import { ContConstraint, Context, Hazard, HazardList, Loss, Model, Node, Responsibility, StpaAstType, SystemConstraint, isModel } from '../generated/ast';
 import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps } from './diagram/utils';
+import { collectElementsWithSubComps, elementWithName, elementWithRefs } from './utils';
 
 /**
  * Registry for validation checks.
@@ -41,9 +41,6 @@ export class StpaValidationRegistry extends ValidationRegistry {
         this.register(checks, validator);
     }
 }
-
-export type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context | Rule;
-export type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint | SafetyConstraint;
 
 /**
  * Implementation of custom validations.

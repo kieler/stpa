@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022-2023 by
+ * Copyright 2022 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -16,9 +16,10 @@
  */
 
 import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
+
+import { StpaSynthesisOptions } from './synthesis-options';
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../../options/actions';
 import { DropDownOption } from '../../options/option-models';
-import { StpaSynthesisOptions } from './synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {
 
@@ -50,7 +51,7 @@ export class StpaDiagramServer extends DiagramServer {
         return super.handleAction(action);
     }
 
-    protected handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
+    protected async handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
         for (const option of action.options) {
             const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
@@ -62,8 +63,7 @@ export class StpaDiagramServer extends DiagramServer {
                 }
             }
         }
-
-        this.updateView(this.state.options);
+        await this.updateView(this.state.options);
         return Promise.resolve();
     }
 

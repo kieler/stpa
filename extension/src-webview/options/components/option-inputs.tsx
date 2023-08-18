@@ -84,6 +84,8 @@ interface RangeOptionProps extends BaseProps<number> {
     minValue: number;
     maxValue: number;
     stepSize: number;
+    /** Same as onChange() but to be executed on each input, i.e. when the slider is held down instead of when it's let go. */
+    onInput?: OptionChangeHandler<number>;
 }
 
 /** Render a labeled range slider as input. */
@@ -105,6 +107,7 @@ export function RangeOption(props: RangeOptionProps): VNode {
                 attrs={{ "value": props.value }}
                 step={props.stepSize}
                 on-change={(e: any) => props.onChange(e.target.value)}
+                on-input={(e: any) => props.onInput ? props.onInput(e.target.value) : undefined}
             />
         </div>
     );
