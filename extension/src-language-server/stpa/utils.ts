@@ -239,3 +239,46 @@ function assignLevel(node: Node, visited: Map<string, Set<string>>): void {
         }
     }
 }
+
+/**
+ * Creates a description for the given UCA context.
+ * @param uca The UCA context.
+ * @returns the description of the UCA context.
+ */
+export function createUCAContextDescription(uca: Context): string {
+    const rule = uca.$container;
+    const controlAction = rule.action.$refText;
+    let description = rule.system.$refText;
+    switch (rule.type) {
+        case 'not-provided':
+            description += " did not provide " + controlAction;
+            break;
+        case 'provided':
+            description += " provided " + controlAction;
+            break;
+        case 'too-late':
+            description += " provided " + controlAction + " too late";
+            break;
+        case 'too-early':
+            description += " provided " + controlAction + " too early";
+            break;
+        case 'wrong-time':
+            description += " provided " + controlAction + " at the wrong time";
+            break;
+        case 'applied-too-long':
+            description += " applied " + controlAction + " too long";
+            break;
+        case 'stopped-too-soon':
+            description += " stopped " + controlAction + " too soon";
+            break;
+    }
+    description += " in the context of ";
+    for (let i = 0; i < uca.vars.length; i++) {
+        description += uca.vars[i].$refText + "=" + uca.values[i];
+        if (i < uca.vars.length - 1) {
+            description += ", ";
+        }
+    }
+
+    return description;
+}

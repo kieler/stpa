@@ -32,7 +32,7 @@ import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, STPAPort } from './stpa
 import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPAAspect, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
 import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from './synthesis-options';
-import { collectElementsWithSubComps, getAspect, getTargets, leafElement, setLevelOfCSNodes, setLevelsForSTPANodes } from './utils';
+import { collectElementsWithSubComps, createUCAContextDescription, getAspect, getTargets, leafElement, setLevelOfCSNodes, setLevelsForSTPANodes } from './utils';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
@@ -336,7 +336,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             container = container.$container;
         }
 
-        let children: SModelElement[] = this.generateDescriptionLabels(showDescription, nodeId, node.name, args.idCache, !isContext(node) ? node.description : "");
+        let children: SModelElement[] = this.generateDescriptionLabels(showDescription, nodeId, node.name, args.idCache, isContext(node) ? createUCAContextDescription(node) : node.description);
         // if the hierarchy option is true, the subcomponents are added as children to the parent
         if (this.options.getHierarchy() && (isHazard(node) && node.subComps.length !== 0)) {
             // adds subhazards
@@ -644,7 +644,6 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const children: SModelElement[] = [];
         //TODO: automatic label selection
 
-        // TODO: translate UCA context table to descriptions
         if (nodeDescription && showDescription) {
             const width = this.options.getLabelShorteningWidth();
             const words = nodeDescription.split(' ');
