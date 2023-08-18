@@ -313,7 +313,7 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
             debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
         };
 
-        const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.(stpa|fta)');
+        const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.{stpa,fta}');
         context.subscriptions.push(fileSystemWatcher);
 
         // Options to control the language client
