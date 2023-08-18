@@ -21,6 +21,7 @@ import { TextDocumentContentChangeEvent } from 'vscode';
 import { Connection, URI } from "vscode-languageserver";
 import { generateLTLFormulae } from './modelChecking/model-checking';
 import { StpaServices } from "./stpa-module";
+import { getControlActions } from './utils';
 
 let lastUri: URI;
 
@@ -37,7 +38,7 @@ let changeUri: string;
 export function addSTPANotificationHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
     addContextTableHandler(connection, stpaServices);
     addTextChangeHandler(connection, stpaServices, sharedServices);
-    addModelCheckingHandler(connection, sharedServices);
+    addVerificationHandler(connection, sharedServices);
 }
 
 /**
@@ -98,15 +99,20 @@ function addTextChangeHandler(connection: Connection, stpaServices: StpaServices
 }
 
 /**
- * Adds handlers for model checking.
+ * Adds handlers for verification.
  * @param connection 
  * @param sharedServices 
  */
-function addModelCheckingHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
-    // model checking
-    connection.onRequest('modelChecking/generateLTL', async (uri: string) => {
+function addVerificationHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    // LTL generation
+    connection.onRequest('verification/generateLTL', async (uri: string) => {
         // generate and send back the LTL formula based on the STPA UCAs
         const formulas = await generateLTLFormulae(uri, sharedServices);
         return formulas;
+    });
+    // get the control actions
+    connection.onRequest('verification/getControlActions', async (uri: string) => {
+        const controlActions = getControlActions(uri, sharedServices);
+        return controlActions;
     });
 }

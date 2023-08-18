@@ -16,9 +16,10 @@
  */
 
 import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
-import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
-import { DropDownOption } from '../options/option-models';
+
 import { StpaSynthesisOptions } from './synthesis-options';
+import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../../options/actions';
+import { DropDownOption } from '../../options/option-models';
 
 export class StpaDiagramServer extends DiagramServer {
 

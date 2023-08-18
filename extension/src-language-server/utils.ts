@@ -18,7 +18,7 @@
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
 import { URI } from 'vscode-uri';
-import { LangiumDocument } from "langium";
+import { LangiumDocument, LangiumSharedServices } from "langium";
 
 /**
  * Determines the model for {@code uri}.
@@ -26,7 +26,7 @@ import { LangiumDocument } from "langium";
  * @param shared The shared service.
  * @returns the model for the given uri.
  */
-export function getModel(uri: string, shared: LangiumSprottySharedServices): Model {
+export function getModel(uri: string, shared: LangiumSprottySharedServices | LangiumSharedServices): Model {
     const textDocuments = shared.workspace.LangiumDocuments;
     const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<Model>;
     return currentDoc.parseResult.value;

@@ -19,17 +19,17 @@ import ElkConstructor from 'elkjs/lib/elk.bundled';
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module, PartialLangiumServices } from 'langium';
 import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import { StpaDiagramGenerator } from './diagram-generator';
-import { StpaLayoutConfigurator } from './layout-config';
-import { StpaDiagramServer } from './stpa-diagramServer';
+import { DiagramOptions } from 'sprotty-protocol';
+import { URI } from 'vscode-uri';
+import { StpaGeneratedModule, StpaGeneratedSharedModule } from '../generated/module';
+import { ContextTableProvider } from './contextTable/context-dataProvider';
+import { StpaDiagramGenerator } from './diagram/diagram-generator';
+import { StpaLayoutConfigurator } from './diagram/layout-config';
+import { StpaDiagramServer } from './diagram/stpa-diagramServer';
+import { StpaSynthesisOptions } from './diagram/synthesis-options';
+import { IDEnforcer } from './ID-enforcer';
 import { StpaScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
-import { URI } from 'vscode-uri';
-import { DiagramOptions } from 'sprotty-protocol';
-import { StpaGeneratedSharedModule, StpaGeneratedModule } from '../generated/module';
-import { StpaSynthesisOptions } from './synthesis-options';
-import { ContextTableProvider } from './contextTable/context-dataProvider';
-import { IDEnforcer } from './ID-enforcer';
 
 
 /**

@@ -145,6 +145,11 @@
                 "command": "stpa.IDs.redo",
                 "title": "Executes the redo action",
                 "category": "STPA ID Enforcement"
+            },
+            {
+                "command": "stpa.SBM.generation",
+                "title": "Generate Safe Behavioral Model (SBM)",
+                "category": "STPA SBM"
             }
         ],
         "menus": {
@@ -192,6 +197,10 @@
                 {
                     "command": "stpa.checks.checkSafetyRequirementsForUCAs",
                     "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "stpa.SBM.generation",
+                    "when": "editorLangId == 'stpa'"
                 }
             ],
             "editor/context": [
@@ -207,7 +216,13 @@
                 },
                 {
                     "submenu": "stpa.checks",
+                    "when": "editorLangId == 'stpa'",
                     "group": "checks"
+                },
+                {
+                    "command": "stpa.SBM.generation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
                 }
             ],
             "stpa.checks": [

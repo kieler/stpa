@@ -32,6 +32,9 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     /** Saves the last selected UCA in the context table. */
     protected lastSelectedUCA: string[];
 
+    protected resolveLSReady: () => void;
+    readonly lsReady = new Promise<void>(resolve => this.resolveLSReady = resolve);
+
     /** needed for undo/redo actions when ID enforcement is active*/
     ignoreNextTextChange: boolean = false;
 
@@ -67,6 +70,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         options.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
         // laguage server is ready
         options.languageClient.onNotification("ready", () => {
+            this.resolveLSReady();
             // open diagram
             vscode.commands.executeCommand(this.extensionPrefix + '.diagram.open', vscode.window.activeTextEditor?.document.uri);
             // sends configuration of stpa to the language server
@@ -120,7 +124,6 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         values.push({ id: "checkSafetyRequirementsForUCAs", value: configuration.get("checkSafetyRequirementsForUCAs") });
         return values;
     }
-
 
     // protected getDiagramType(uri: vscode.Uri): string | undefined {
     //     if (commandArgs.length === 0

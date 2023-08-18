@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { DropDownOption, RangeOption, SynthesisOption, TransformationOptionType, ValuedSynthesisOption } from "../options/option-models";
+import { SynthesisOption, TransformationOptionType, ValuedSynthesisOption, DropDownOption, RangeOption } from "../../options/option-models";
 
 const hierarchyID = "hierarchy";
 const modelOrderID = "modelOrder";
