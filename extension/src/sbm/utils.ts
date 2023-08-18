@@ -25,8 +25,9 @@ export class LTLFormula {
     description: string;
     /** UCA that was used to create the LTL formula */
     ucaId: string;
-
+    /** string representing the values for the contxt variables */
     contextVariables: string;
+    /** the type of the UCA used to create the LTL formula */
     type: string;
 }
 

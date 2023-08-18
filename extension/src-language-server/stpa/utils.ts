@@ -41,17 +41,43 @@ import {
     isResponsibility,
     isSafetyConstraint,
     isSystemConstraint,
-    isUCA
+    isUCA,
 } from "../generated/ast";
 import { getModel } from "../utils";
-import { STPANode } from "./diagram/stpa-interfaces";
 import { STPAAspect } from "./diagram/stpa-model";
-import { groupValue } from "./diagram/synthesis-options";
 
-
-export type leafElement = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Context;
-export type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context | Rule;
-export type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint | SafetyConstraint;
+export type leafElement =
+    | Loss
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | UCA
+    | ContConstraint
+    | LossScenario
+    | SafetyConstraint
+    | Context;
+export type elementWithName =
+    | Loss
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | UCA
+    | ContConstraint
+    | LossScenario
+    | SafetyConstraint
+    | Node
+    | Variable
+    | Graph
+    | Command
+    | Context
+    | Rule;
+export type elementWithRefs =
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | HazardList
+    | ContConstraint
+    | SafetyConstraint;
 
 /**
  * Returns the control actions defined in the file given by the {@code uri}.
@@ -59,14 +85,17 @@ export type elementWithRefs = Hazard | SystemConstraint | Responsibility | Hazar
  * @param shared The shared services of Langium.
  * @returns the control actions that are defined in the file determined by the {@code uri}.
  */
-export function getControlActions(uri: string, shared: LangiumSprottySharedServices | LangiumSharedServices): Record<string, string[]> {
+export function getControlActions(
+    uri: string,
+    shared: LangiumSprottySharedServices | LangiumSharedServices
+): Record<string, string[]> {
     const controlActionsMap: Record<string, string[]> = {};
     // get the model from the file determined by the uri
     const model = getModel(uri, shared);
     // collect control actions grouped by their controller
-    model.controlStructure?.nodes.forEach(systemComponent => {
-        systemComponent.actions.forEach(action => {
-            action.comms.forEach(command => {
+    model.controlStructure?.nodes.forEach((systemComponent) => {
+        systemComponent.actions.forEach((action) => {
+            action.comms.forEach((command) => {
                 const actionList = controlActionsMap[systemComponent.name];
                 if (actionList !== undefined) {
                     actionList.push(command.name);

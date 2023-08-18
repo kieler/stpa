@@ -18,9 +18,7 @@
 import { AstNode } from "langium";
 import {
     Context,
-    Hazard,
     Node,
-    SystemConstraint,
     isContConstraint,
     isContext,
     isHazard,
@@ -131,7 +129,8 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
 
     // used to determine which control action or system component belongs to which group number
     const map = new Map<string, number>();
-    // sets level property to the layer of the nodes.
+    // sets level property to the layer of the nodes. Since we layout the relationship graph with the direction "UP", 
+    // the determined layer must be negated to get the correct layer.
     for (const node of nodes) {
         const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth, map, groupUCAs);
         node.level = -layer;

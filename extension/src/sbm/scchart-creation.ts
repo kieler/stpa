@@ -27,16 +27,23 @@ import { EMPTY_STATE_NAME, Enum, LTLFormula, State, Variable } from "./utils";
  * @param controlActions The control actions which will be modelled as an enum.
  * @returns The text for an scchart.
  */
-export function createSCChartText(controllerName: string, states: State[], variables: Variable[], enums: Enum[], ltlFormulas: LTLFormula[], controlActions: string[]): string {
+export function createSCChartText(
+    controllerName: string,
+    states: State[],
+    variables: Variable[],
+    enums: Enum[],
+    ltlFormulas: LTLFormula[],
+    controlActions: string[]
+): string {
     let result = "";
     // ltl annotations at the top
-    ltlFormulas.forEach(LTLFormula => result += createLTLAnnotation(LTLFormula));
+    ltlFormulas.forEach((LTLFormula) => (result += createLTLAnnotation(LTLFormula)));
     // name of the acchart must be different to the enum name
     result += `scchart SBM_${controllerName} {\n\n`;
     // enum for the control action
     result += createEnum(controllerName, controlActions);
     // other enums
-    enums.forEach(enumDecl => result += createEnum(enumDecl.name, enumDecl.values));
+    enums.forEach((enumDeclaration) => (result += createEnum(enumDeclaration.name, enumDeclaration.values)));
     // variables and states
     // TODO: AssumeRange annotation for variables?
     result += createVariables(variables);
@@ -61,13 +68,15 @@ function createLTLAnnotation(ltlFormula: LTLFormula): string {
  * @returns an enum declaration with the given {@code enumName} and its {@code values}.
  */
 function createEnum(enumName: string, values: string[]): string {
-    let enumDecl = `enum ${enumName} {`;
+    let enumDeclaration = `enum ${enumName} {`;
     values.forEach((controlAction, index) => {
-        enumDecl += controlAction;
-        if (index < values.length - 1) { enumDecl += ", "; }
+        enumDeclaration += controlAction;
+        if (index < values.length - 1) {
+            enumDeclaration += ", ";
+        }
     });
-    enumDecl += "}\n";
-    return enumDecl;
+    enumDeclaration += "}\n";
+    return enumDeclaration;
 }
 
 /**
@@ -76,16 +85,16 @@ function createEnum(enumName: string, values: string[]): string {
  * @returns variable declarations for the given {@code variables}.
  */
 function createVariables(variables: Variable[]): string {
-    let variableDecl = "";
-    variables.forEach(variable => {
+    let variableDeclarations = "";
+    variables.forEach((variable) => {
         if (variable.input) {
-            variableDecl += "input ";
+            variableDeclarations += "input ";
         } else if (variable.output) {
-            variableDecl += "output ";
+            variableDeclarations += "output ";
         }
-        variableDecl += `${variable.type} ${variable.name}\n`;
+        variableDeclarations += `${variable.type} ${variable.name}\n`;
     });
-    return variableDecl + "\n";
+    return variableDeclarations + "\n";
 }
 
 /**
@@ -95,35 +104,34 @@ function createVariables(variables: Variable[]): string {
  * @returns SCChart states for the given {@states}.
  */
 function createStates(states: State[], enumName: string): string {
-    let stateDecl = "";
-    states.forEach(state => {
+    let stateDeclarations = "";
+    states.forEach((state) => {
         // the empty state is the initial one
         if (state.name === EMPTY_STATE_NAME) {
-            stateDecl += "initial ";
+            stateDeclarations += "initial ";
         }
-        stateDecl += `state ${state.name}`;
+        stateDeclarations += `state ${state.name}`;
         if (state.label) {
-            stateDecl += ` "${state.label}"`;
+            stateDeclarations += ` "${state.label}"`;
         }
-        stateDecl += ` {\n`;
+        stateDeclarations += ` {\n`;
         // each state should hava a control action which is set when entering the state
         if (state.controlAction !== "") {
-            stateDecl += `entry do controlAction = ${enumName}.${state.controlAction}\n`;
+            stateDeclarations += `entry do controlAction = ${enumName}.${state.controlAction}\n`;
         }
-        stateDecl += "}\n";
+        stateDeclarations += "}\n";
         // translate transitions
         // the first transition in the list has the highest priority
-        state.transitions.forEach(transition => {
+        state.transitions.forEach((transition) => {
             if (transition.trigger) {
-                stateDecl += `if ${transition.trigger} `;
+                stateDeclarations += `if ${transition.trigger} `;
             }
             if (transition.effect) {
-                stateDecl += `do ${transition.effect} `;
+                stateDeclarations += `do ${transition.effect} `;
             }
-            stateDecl += `go to ${transition.target}\n`;
+            stateDeclarations += `go to ${transition.target}\n`;
         });
-        stateDecl += "\n";
+        stateDeclarations += "\n";
     });
-    return stateDecl;
+    return stateDeclarations;
 }
-
