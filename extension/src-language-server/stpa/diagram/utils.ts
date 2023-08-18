@@ -66,23 +66,6 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
 }
 
 /**
- * Collects the {@code topElements}, their children, their children's children and so on.
- * @param topElements The top elements that possbible have children.
- * @returns A list with the given {@code topElements} and their descendants.
- */
-export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): (Hazard | SystemConstraint)[] {
-    let result = topElements;
-    let todo = topElements;
-    for (let i = 0; i < todo.length; i++) {
-        const current = todo[i];
-        if (current.subComps) {
-            result = result.concat(current.subComps);
-            todo = todo.concat(current.subComps);
-        }
-    }
-    return result;
-}
-/**
  * Determines the layer {@code node} should be in depending on the STPA aspect it represents.
  * @param node STPANode for which the layer should be determined.
  * @param hazardDepth Maximal depth of the hazard hierarchy.

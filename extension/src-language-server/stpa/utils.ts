@@ -104,3 +104,21 @@ export function getAspect(node: AstNode): STPAAspect {
     }
     return STPAAspect.UNDEFINED;
 }
+
+/**
+ * Collects the {@code topElements}, their children, their children's children and so on.
+ * @param topElements The top elements that possbible have children.
+ * @returns A list with the given {@code topElements} and their descendants.
+ */
+export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): (Hazard | SystemConstraint)[] {
+    let result = topElements;
+    let todo = topElements;
+    for (let i = 0; i < todo.length; i++) {
+        const current = todo[i];
+        if (current.subComps) {
+            result = result.concat(current.subComps);
+            todo = todo.concat(current.subComps);
+        }
+    }
+    return result;
+}
