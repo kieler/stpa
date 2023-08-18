@@ -18,6 +18,10 @@
 import { SEdge, SNode, SPort } from "sprotty-protocol";
 import { EdgeType, PortSide, STPAAspect } from "./stpa-model";
 
+export interface ParentNode extends SNode {
+    modelOrder: boolean;
+}
+
 /**
  * Node representing a STPA component.
  */
@@ -28,6 +32,7 @@ export interface STPANode extends SNode {
     highlight?: boolean
     level?: number
     controlAction?: string
+    modelOrder?: boolean
 }
 
 /**

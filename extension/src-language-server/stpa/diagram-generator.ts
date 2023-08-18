@@ -28,11 +28,11 @@ import {
     isSystemConstraint, isUCA
 } from '../generated/ast';
 import { filterModel } from './filtering';
-import { CSEdge, CSNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces';
+import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces';
 import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPAAspect, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 import { StpaServices } from './stpa-module';
-import { StpaSynthesisOptions } from './synthesis-options';
-import { collectElementsWithSubComps, getAspect, getTargets, leafElement, setLevelOfCSNodes, setLevelsForSTPANodes } from './utils';
+import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from './synthesis-options';
+import { collectElementsWithSubComps, createUCAContextDescription, getAspect, getTargets, leafElement, setLevelOfCSNodes, setLevelsForSTPANodes } from './utils';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
@@ -57,34 +57,36 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // filter model based on the options set by the user
         const filteredModel = filterModel(model, this.options);
 
+        const showLabels = this.options.getShowLabels();
+
         // determine the children for the STPA graph
         // for each component a node is generated with edges representing the references of the component
         // in order to be able to set the target IDs of the edges, the nodes must be created in the correct order
-        let stpaChildren: SModelElement[] = filteredModel.losses?.map(l => this.generateSTPANode(l, args));
+        let stpaChildren: SModelElement[] = filteredModel.losses?.map(l => this.generateSTPANode(l, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.LOSSES, args));
         // the hierarchy option determines whether subcomponents are contained in ther parent or not
         if (!this.options.getHierarchy()) {
             // subcomponents have edges to the parent
             const hazards = collectElementsWithSubComps(filteredModel.hazards);
             const sysCons = collectElementsWithSubComps(filteredModel.systemLevelConstraints);
             stpaChildren = stpaChildren.concat([
-                ...hazards.map(sh => this.generateAspectWithEdges(sh, args)).flat(1),
-                ...sysCons.map(ssc => this.generateAspectWithEdges(ssc, args)).flat(1)
+                ...hazards.map(sh => this.generateAspectWithEdges(sh, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.HAZARDS, args)).flat(1),
+                ...sysCons.map(ssc => this.generateAspectWithEdges(ssc, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SYSTEM_CONSTRAINTS, args)).flat(1)
             ]);
         } else {
             // subcomponents are contained in the parent
             stpaChildren = stpaChildren.concat([
-                ...filteredModel.hazards?.map(h => this.generateAspectWithEdges(h, args)).flat(1),
-                ...filteredModel.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc, args)).flat(1),
+                ...filteredModel.hazards?.map(h => this.generateAspectWithEdges(h, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.HAZARDS, args)).flat(1),
+                ...filteredModel.systemLevelConstraints?.map(sc => this.generateAspectWithEdges(sc, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SYSTEM_CONSTRAINTS, args)).flat(1),
                 ...filteredModel.systemLevelConstraints?.map(sc => sc.subComps?.map(ssc => this.generateEdgesForSTPANode(ssc, args))).flat(2)
             ]);
         }
         stpaChildren = stpaChildren.concat([
-            ...filteredModel.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, args))).flat(2),
-            ...filteredModel.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, args))).flat(2),
-            ...filteredModel.rules?.map(rule => rule.contexts.map(context => this.generateAspectWithEdges(context, args))).flat(2),
-            ...filteredModel.controllerConstraints?.map(c => this.generateAspectWithEdges(c, args)).flat(1),
-            ...filteredModel.scenarios?.map(s => this.generateAspectWithEdges(s, args)).flat(1),
-            ...filteredModel.safetyCons?.map(sr => this.generateAspectWithEdges(sr, args)).flat(1)
+            ...filteredModel.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.RESPONSIBILITIES, args))).flat(2),
+            ...filteredModel.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS, args))).flat(2),
+            ...filteredModel.rules?.map(rule => rule.contexts.map(context => this.generateAspectWithEdges(context, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS, args))).flat(2),
+            ...filteredModel.controllerConstraints?.map(c => this.generateAspectWithEdges(c, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.CONTROLLER_CONSTRAINTS, args)).flat(1),
+            ...filteredModel.scenarios?.map(s => this.generateAspectWithEdges(s, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SCENARIOS, args)).flat(1),
+            ...filteredModel.safetyCons?.map(sr => this.generateAspectWithEdges(sr, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SAFETY_CONSTRAINTS, args)).flat(1)
         ]);
 
 
@@ -113,16 +115,18 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             rootChildren.push({
                 type: PARENT_TYPE,
                 id: 'controlStructure',
-                children: CSChildren
-            });
+                children: CSChildren,
+                modelOrder: this.options.getModelOrder()
+            } as ParentNode);
         }
         // add relationship graph to roots children
         rootChildren.push(
             {
                 type: PARENT_TYPE,
                 id: 'relationships',
-                children: stpaChildren
-            }
+                children: stpaChildren,
+                modelOrder: this.options.getModelOrder()
+            } as ParentNode
         );
         // return root
         return {
@@ -303,9 +307,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param args GeneratorContext of the STPA model.
      * @returns A node representing {@code node} and edges representing the references {@code node} contains.
      */
-    protected generateAspectWithEdges(node: leafElement, args: GeneratorContext<Model>): SModelElement[] {
+    protected generateAspectWithEdges(node: leafElement, showDescription: boolean, args: GeneratorContext<Model>): SModelElement[] {
         // node must be created first in order to access the id when creating the edges
-        const stpaNode = this.generateSTPANode(node, args);
+        const stpaNode = this.generateSTPANode(node, showDescription, args);
         // uca nodes need to save their control action in order to be able to group them by the actions
         if ((isUCA(node) || isContext(node)) && node.$container.system.ref) {
             stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name;
@@ -321,7 +325,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param args GeneratorContext of the STPA model.
      * @returns A STPANode representing {@code node}.
      */
-    protected generateSTPANode(node: leafElement, args: GeneratorContext<Model>): STPANode {
+    protected generateSTPANode(node: leafElement, showDescription: boolean, args: GeneratorContext<Model>): STPANode {
         const idCache = args.idCache;
         const nodeId = idCache.uniqueId(node.name, node);
         // determines the hierarchy level for subcomponents. For other components the value is 0.
@@ -332,15 +336,15 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             container = container.$container;
         }
 
-        let children: SModelElement[] = this.createLabel([node.name], nodeId, idCache);
+        let children: SModelElement[] = this.generateDescriptionLabels(showDescription, nodeId, node.name, args.idCache, isContext(node) ? createUCAContextDescription(node) : node.description);
         // if the hierarchy option is true, the subcomponents are added as children to the parent
         if (this.options.getHierarchy() && (isHazard(node) && node.subComps.length !== 0)) {
             // adds subhazards
-            children = children.concat(node.subComps?.map((sc: Hazard) => this.generateSTPANode(sc, args)));
+            children = children.concat(node.subComps?.map((sc: Hazard) => this.generateSTPANode(sc, showDescription, args)));
         }
         if (this.options.getHierarchy() && isSystemConstraint(node) && node.subComps.length !== 0) {
             // adds subconstraints
-            children = children.concat(node.subComps?.map((sc: SystemConstraint) => this.generateSTPANode(sc, args)));
+            children = children.concat(node.subComps?.map((sc: SystemConstraint) => this.generateSTPANode(sc, showDescription, args)));
         }
 
         if (isContext(node)) {
@@ -513,7 +517,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 paddingBottom: 10.0,
                 paddingLeft: 10.0,
                 paddingRight: 10.0
-            }
+            },
+            modelOrder: this.options.getModelOrder()
         };
     }
 
@@ -624,4 +629,82 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         }
         return dummyNode;
     }
+
+    /**
+     * Generates the labels for the given node based on {@code showDescription} and the label synthesis options.
+     * @param showDescription Determines whether the description should be shown.
+     * @param nodeId The ID of the node for which the labels should be generated.
+     * @param nodeName The name of the node for which the labels should be generated.
+     * @param idCache The ID cache of the STPA model.
+     * @param nodeDescription The description of the node for which the labels should be generated.
+     * @returns the labels for the given node.
+     */
+    protected generateDescriptionLabels(showDescription: boolean, nodeId: string, nodeName: string, idCache: IdCache<AstNode>, nodeDescription?: string): SModelElement[] {
+        const labelManagement = this.options.getLabelManagement();
+        const children: SModelElement[] = [];
+        //TODO: automatic label selection
+
+        if (nodeDescription && showDescription) {
+            const width = this.options.getLabelShorteningWidth();
+            const words = nodeDescription.split(' ');
+            let current = "";
+            switch (labelManagement) {
+                case labelManagementValue.NO_LABELS:
+                    break;
+                case labelManagementValue.ORIGINAL:
+                    // show complete description in one line
+                    children.push(<SLabel>{
+                        type: 'label',
+                        id: idCache.uniqueId(nodeId + '.label'),
+                        text: nodeDescription
+                    });
+                    break;
+                case labelManagementValue.TRUNCATE:
+                    // truncate description to the set value
+                    if (words.length > 0) {
+                        current = words[0];
+                        for (let i = 1; i < words.length && current.length + words[i].length <= width; i++) {
+                            current += ' ' + words[i];
+                        }
+                        children.push(<SLabel>{
+                            type: 'label',
+                            id: idCache.uniqueId(nodeId + '.label'),
+                            text: current + "..."
+                        });
+                    }
+                    break;
+                case labelManagementValue.WRAPPING:
+                    // wrap description to the set value
+                    const descriptions: string[] = [];
+                    for (const word of words) {
+                        if (current.length + word.length >= width) {
+                            descriptions.push(current);
+                            current = word;
+                        } else {
+                            current += ' ' + word;
+                        }
+                    }
+                    descriptions.push(current);
+                    for (let i = descriptions.length - 1; i >= 0; i--) {
+                        children.push(<SLabel>{
+                            type: 'label',
+                            id: idCache.uniqueId(nodeId + '.label'),
+                            text: descriptions[i]
+                        });
+                    }
+                    break;
+            }
+        }
+
+        // show the name in the top line
+        children.push(
+            <SLabel>{
+                type: 'label',
+                id: idCache.uniqueId(nodeId + '.label'),
+                text: nodeName
+            }
+        );
+        return children;
+    }
+
 }

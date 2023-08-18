@@ -21,7 +21,7 @@ import { VNode } from 'snabbdom';
 import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SNode, SPort, svg, toDegrees } from 'sprotty';
 import { DISymbol } from './di.symbols';
 import { collectAllChildren } from './helper-methods';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
+import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from './options/render-options-registry';
 import { CSEdge, CS_EDGE_TYPE, CS_NODE_TYPE, EdgeType, PARENT_TYPE, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
 
@@ -204,12 +204,6 @@ export class CSNodeView extends RectangularNodeView {
     @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
     render(node: SNode, context: RenderingContext): VNode {
-        // hides the control structure and/or relationship graph if the corresponding option is set to false
-        if (!this.renderOptionsRegistry.getValue(ShowCSOption) && (node.type == CS_NODE_TYPE || node.type == PARENT_TYPE && node.children.filter(child => child instanceof SNode)[0].type == CS_NODE_TYPE)
-            || !this.renderOptionsRegistry.getValue(ShowRelationshipGraphOption) && (node.type == STPA_NODE_TYPE || node.type == PARENT_TYPE && node.children.filter(child => child instanceof SNode)[0].type == STPA_NODE_TYPE)) {
-            return <g></g>;
-        }
-
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const sprottyNode = colorStyle === "standard";
         const printNode = !sprottyNode;
