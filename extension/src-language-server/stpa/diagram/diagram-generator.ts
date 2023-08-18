@@ -19,14 +19,14 @@ import { AstNode } from 'langium';
 import { GeneratorContext, IdCache, LangiumDiagramGenerator } from 'langium-sprotty';
 import { SLabel, SModelElement, SModelRoot, SNode } from 'sprotty-protocol';
 
-import { Hazard, Model, SystemConstraint, VE, isHazard, isSystemConstraint, isUCA, Node, Command, isContext } from '../../generated/ast';
+import { Command, Hazard, Model, Node, SystemConstraint, VE, isContext, isHazard, isSystemConstraint, isUCA } from '../../generated/ast';
 import { StpaServices } from '../stpa-module';
-import { collectElementsWithSubComps, createUCAContextDescription, getAspect, leafElement, setLevelOfCSNodes, setLevelsForSTPANodes } from '../utils';
+import { getAspect, leafElement } from '../utils';
 import { filterModel } from './filtering';
 import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces';
 import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPAAspect, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from './synthesis-options';
-import { getTargets } from './utils';
+import { collectElementsWithSubComps, createUCAContextDescription, getTargets, setLevelOfCSNodes, setLevelsForSTPANodes } from './utils';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 

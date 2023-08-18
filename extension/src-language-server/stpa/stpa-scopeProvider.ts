@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -16,10 +16,18 @@
  */
 
 import {
-    DefaultScopeProvider, stream, Stream, AstNode, Scope, getDocument, PrecomputedScopes, AstNodeDescription,
-    EMPTY_SCOPE, ReferenceInfo
+    AstNode,
+    AstNodeDescription,
+    DefaultScopeProvider,
+    EMPTY_SCOPE,
+    PrecomputedScopes,
+    ReferenceInfo,
+    Scope,
+    Stream,
+    getDocument,
+    stream
 } from "langium";
-import { Hazard, SystemConstraint, UCA, Context, Variable, isModel, isContConstraint, isLossScenario, isSafetyConstraint, isHazardList, isResponsibility, isSystemConstraint, isActionUCAs, isRule, isContext, isResps, Model, LossScenario, ActionUCAs, Rule, Command, Node, isDCARule, DCARule, isDCAContext, DCAContext } from "../generated/ast";
+import { ActionUCAs, Command, Context, DCAContext, DCARule, Hazard, LossScenario, Model, Node, Rule, SystemConstraint, UCA, Variable, isActionUCAs, isContConstraint, isContext, isDCAContext, isDCARule, isHazardList, isLossScenario, isModel, isResponsibility, isResps, isRule, isSafetyConstraint, isSystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 
 

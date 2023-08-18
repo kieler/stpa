@@ -75,6 +75,11 @@ export async function generateLTLFormulae(uri: string, shared: LangiumSprottySha
     return map;
 }
 
+/**
+ * Translates the DCAs of the given model to LTL formulae.
+ * @param model The model containing the DCAs that should be translated.
+ * @param map Map containing the LTL formulae for the controllers of the model.
+ */
 async function translateDCAsToLTLFormulas(model: Model, map: Record<string, LTLFormula[]>): Promise<void> {
     if (model.allDCAs.length > 0 && model.allDCAs) {
         for (const rule of model.allDCAs) {
@@ -83,6 +88,11 @@ async function translateDCAsToLTLFormulas(model: Model, map: Record<string, LTLF
     }
 }
 
+/**
+ * Translates the UCAs of the given model to LTL formulae.
+ * @param model The model containing the UCAs that should be translated.
+ * @param map Map containing the LTL formulae for the controllers of the model.
+ */
 async function translateUCAsToLTLFormulas(model: Model, map: Record<string, LTLFormula[]>): Promise<void> {
     if (model.rules.length > 0 && model.rules) {
         for (const rule of model.rules) {
@@ -91,6 +101,11 @@ async function translateUCAsToLTLFormulas(model: Model, map: Record<string, LTLF
     }
 }
 
+/**
+ * Translates the given rule to LTL formulae.
+ * @param rule The rule that should be translated.
+ * @param map Map containing the LTL formulae for the controllers of the model.
+ */
 async function translateRuleToLTLFormulas(rule: Rule | DCARule, map: Record<string, LTLFormula[]>): Promise<void> {
     const controller = rule.system.$refText;
     // control action string
@@ -152,6 +167,11 @@ async function createLTLContextVariable(variable: Reference<Variable>, value: st
     }
 }
 
+/**
+ * Checks whether the parenthesis of the given value are inclusive or exclusive.
+ * @param value The value to check.
+ * @returns true if the parenthesis are inclusive, false otherwise.
+ */
 function isParenthesisInclusive(value: string | undefined): boolean {
     return value === "]" || value === "[";
 }
@@ -215,6 +235,13 @@ const enumValue = (variable: string, value: string): string => {
     return variable + EQ + variable + "_Enum." + value;
 };
 
+/**
+ * Determines the operator for the LTL string.
+ * @param equal Determines whether the variable should be (un)equal to the value.
+ * @param inclusive Determines whether the variable should be in the given range or outside of it.
+ * @param first Determines whether the first value is greater or smaller than the second value when equal is true.
+ * @returns 
+ */
 function determineOperator(equal: boolean, inclusive: boolean, first: boolean): string {
     if (equal && first) {
         return inclusive ? GTE : GT;
@@ -227,6 +254,9 @@ function determineOperator(equal: boolean, inclusive: boolean, first: boolean): 
     }
 }
 
+/**
+ * Operator strings.
+ */
 const GT = ">";
 const LT = "<";
 const GTE = ">=";
