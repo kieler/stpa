@@ -15,7 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode } from "langium";
+import { AstNode, LangiumSharedServices } from "langium";
+import { LangiumSprottySharedServices } from "langium-sprotty";
 import {
     Command,
     ContConstraint,
@@ -42,9 +43,10 @@ import {
     isSystemConstraint,
     isUCA
 } from "../generated/ast";
-import { STPANode } from "./stpa-interfaces";
-import { STPAAspect } from "./stpa-model";
-import { groupValue } from "./synthesis-options";
+import { getModel } from "../utils";
+import { STPANode } from "./diagram/stpa-interfaces";
+import { STPAAspect } from "./diagram/stpa-model";
+import { groupValue } from "./diagram/synthesis-options";
 
 
 export type leafElement = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Context;
