@@ -72,7 +72,7 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
         const remainingScenarios = new Set<string>();
         newModel.scenarios = options.getHideScenarios() ? [] :
             model.scenarios?.filter(scenario => {
-                if (!scenario.uca || (options.getHideUCAs() && (scenario.uca?.ref?.$container.system.ref?.name + "."
+                if (!scenario.uca || (!options.getHideUCAs() && (scenario.uca?.ref?.$container.system.ref?.name + "."
                     + scenario.uca?.ref?.$container.action.ref?.name === options.getFilteringUCAs()
                     || options.getFilteringUCAs() === "all UCAs"))) {
                     remainingScenarios.add(scenario.name);

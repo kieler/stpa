@@ -136,6 +136,7 @@ export class StpaDiagramServer extends DiagramServer {
             const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
             if (opt) {
                 opt.currentValue = option.currentValue;
+                opt.synthesisOption.currentValue = option.currentValue;
                 // for dropdown menu options more must be done
                 if ((opt.synthesisOption as DropDownOption).currentId) {
                     (opt.synthesisOption as DropDownOption).currentId = option.currentValue;

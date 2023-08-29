@@ -46,66 +46,6 @@ const showControlStructureID = "showControlStructure";
 const showRelationshipGraphID = "showRelationshipGraph";
 
 /**
- * Boolean option to toggle the visualization of the control structure.
- */
-const showControlStructureOption: ValuedSynthesisOption = {
-    synthesisOption: {
-        id: showControlStructureID,
-        name: "Show Control Structure",
-        type: TransformationOptionType.CHECK,
-        initialValue: true,
-        currentValue: true,
-        values: [true, false],
-    },
-    currentValue: true,
-};
-
-/**
- * Boolean option to toggle the visualization of the relationship graph.
- */
-const showRelationshipGraphOption: ValuedSynthesisOption = {
-    synthesisOption: {
-        id: showRelationshipGraphID,
-        name: "Show Relationship Graph",
-        type: TransformationOptionType.CHECK,
-        initialValue: true,
-        currentValue: true,
-        values: [true, false],
-    },
-    currentValue: true,
-};
-
-/**
- * Boolean option to toggle the visualization of UCAs.
- */
-const hideUCAsOption: ValuedSynthesisOption = {
-    synthesisOption: {
-        id: hideUCAsID,
-        name: "Hide UCAs",
-        type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
-        values: [true, false],
-    },
-    currentValue: false,
-};
-
-/**
- * Boolean option to toggle the visualization of safety constraints.
- */
-const hideSafetyConstraintsOption: ValuedSynthesisOption = {
-    synthesisOption: {
-        id: hideSafetyConstraintsID,
-        name: "Hide safety constraints",
-        type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
-        values: [true, false],
-    },
-    currentValue: false,
-};
-
-/**
  * Category for layout options.
  */
 const layoutCategory: SynthesisOption = {
@@ -143,6 +83,70 @@ const filterCategory: SynthesisOption = {
 const filterCategoryOption: ValuedSynthesisOption = {
     synthesisOption: filterCategory,
     currentValue: 0,
+};
+
+/**
+ * Boolean option to toggle the visualization of the control structure.
+ */
+const showControlStructureOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showControlStructureID,
+        name: "Show Control Structure",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false],
+        category: filterCategory,
+    },
+    currentValue: true,
+};
+
+/**
+ * Boolean option to toggle the visualization of the relationship graph.
+ */
+const showRelationshipGraphOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showRelationshipGraphID,
+        name: "Show Relationship Graph",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false],
+        category: filterCategory,
+    },
+    currentValue: true,
+};
+
+/**
+ * Boolean option to toggle the visualization of UCAs.
+ */
+const hideUCAsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: hideUCAsID,
+        name: "Hide UCAs",
+        type: TransformationOptionType.CHECK,
+        initialValue: false,
+        currentValue: false,
+        values: [true, false],
+        category: filterCategory,
+    },
+    currentValue: false,
+};
+
+/**
+ * Boolean option to toggle the visualization of safety constraints.
+ */
+const hideSafetyConstraintsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: hideSafetyConstraintsID,
+        name: "Hide Safety Constraints",
+        type: TransformationOptionType.CHECK,
+        initialValue: false,
+        currentValue: false,
+        values: [true, false],
+        category: filterCategory,
+    },
+    currentValue: false,
 };
 
 /**
@@ -227,7 +231,7 @@ const filteringOfUCAs: ValuedSynthesisOption = {
 const hideSysConsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hideSysConsID,
-        name: "Hide system-level constraints",
+        name: "Hide System-level Constraints",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -243,7 +247,7 @@ const hideSysConsOption: ValuedSynthesisOption = {
 const hideRespsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hideRespsID,
-        name: "Hide responsibilities",
+        name: "Hide Responsibilities",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -259,7 +263,7 @@ const hideRespsOption: ValuedSynthesisOption = {
 const hideContConsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hideContConsID,
-        name: "Hide controller constraints",
+        name: "Hide Controller Constraints",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -275,7 +279,7 @@ const hideContConsOption: ValuedSynthesisOption = {
 const hideScenariosOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hideScenariosID,
-        name: "Hide loss scenarios",
+        name: "Hide Loss Scenarios",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -389,8 +393,8 @@ export class StpaSynthesisOptions {
             filteringOfUCAs,
             hideSysConsOption,
             hideRespsOption,
-            hideContConsOption,
             hideUCAsOption,
+            hideContConsOption,
             hideScenariosOption,
             hideSafetyConstraintsOption,
             labelManagementOption,
