@@ -23,5 +23,7 @@
     --fta-darker-node: black;
     --fta-light-node: white;
     --fta-dark-node: #ffffff00; 
+    --fta-highlight-node: #FF2828;
+
     
 }

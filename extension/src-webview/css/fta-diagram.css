@@ -46,3 +46,15 @@
     stroke-width: 0.5;
     font-size: 10px;
 }
+
+.fta-hidden {
+    opacity: 0.1;
+}
+
+.vscode-dark .fta-highlight-node{
+    stroke: var(--fta-highlight-node);
+}
+
+.vscode-light .fta-highlight-node{
+    stroke: var(--fta-highlight-node);
+}

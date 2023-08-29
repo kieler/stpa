@@ -45,7 +45,7 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
         // if an FTANode is selected, the components not connected to it should fade out
         const hidden = edge.type == FTA_EDGE_TYPE && !(edge as FTAEdge).highlight;
  
-        return <path class-fta-edge={true} class-hidden={hidden} d={path} />;
+        return <path class-fta-edge={true} class-fta-hidden={hidden} d={path} />;
     }
     
 }
@@ -90,6 +90,7 @@ export class FTANodeView extends RectangularNodeView {
 
         //highlight every node that is in the selected cut set or on the path to the top event.
         let set = this.cutSetsRegistry.getCurrentValue();
+        let bool = false;
         if(set !== undefined){
             //highlight all when the empty cut set is selected
             if(set === '-' ){
@@ -98,12 +99,18 @@ export class FTANodeView extends RectangularNodeView {
                 //unhighlight every node first and then only highlight the correct ones.
                 node.highlight = false;
                 if(node.nodeType === FTNodeType.COMPONENT || node.nodeType === FTNodeType.CONDITION){
+                    //node is component or condition and in the selected cut set.
                     if(set.includes(node.id)){
                         node.highlight = true;
+                        bool = true;
+
                     }else{
+                        //all other components and conditions are not highlighted.
                         node.highlight = false;   
+                        bool= false;
                     }
                 }else{
+                    //check if a gate should be highlighted
                     if(this.checkIfHighlighted(node, set) === true){
                         node.highlight = true;
                     }else{
@@ -119,7 +126,8 @@ export class FTANodeView extends RectangularNodeView {
         return <g
             class-fta-node={true}
             class-mouseover={node.hoverFeedback}
-            class-hidden={hidden}>
+            class-fta-hidden={hidden}
+            class-fta-highlight-node={bool}>
             <g class-node-selected={node.selected}>{element}</g>
             {context.renderChildren(node)}
         </g>;
