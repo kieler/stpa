@@ -147,6 +147,11 @@
                 "category": "STPA ID Enforcement"
             },
             {
+                "command": "stpa.SBM.generation",
+                "title": "Generate Safe Behavioral Model (SBM)",
+                "category": "STPA SBM"
+            },
+            {
                 "command": "stpa.md.creation",
                 "title": "Create a Markdown file",
                 "category": "STPA PDF Creation"
@@ -199,6 +204,10 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
+                    "command": "stpa.SBM.generation",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
                     "command": "stpa.md.creation",
                     "when": "editorLangId == 'stpa'"
                 }
@@ -216,7 +225,13 @@
                 },
                 {
                     "submenu": "stpa.checks",
+                    "when": "editorLangId == 'stpa'",
                     "group": "checks"
+                },
+                {
+                    "command": "stpa.SBM.generation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
                 },
                 {
                     "command": "stpa.md.creation",
@@ -337,7 +352,7 @@
         "reflect-metadata": "^0.1.13",
         "feather-icons": "^4.28.0",
         "sprotty-vscode-webview": "^0.5.0",
-        "@kieler/table-webview": "^0.0.1",
+        "@kieler/table-webview": "^0.0.3",
         "snabbdom": "^3.5.1",
         "dayjs": "^1.11.8"
     },
@@ -365,7 +380,7 @@
         "langium:generate": "langium generate",
         "langium:watch": "langium generate --watch",
         "lint": "eslint .",
-        "build": "yarn run langium:generate && webpack --mode production",
+        "build": "yarn run langium:generate && webpack --mode development --devtool eval-source-map",
         "watch": "webpack --watch",
         "package": "vsce package --yarn -o pasta.vsix",
         "predistribute": "yarn run package",

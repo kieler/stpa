@@ -16,7 +16,7 @@
  */
 
 import * as path from 'path';
-import { IWebviewEndpointManager, registerDefaultCommands } from 'sprotty-vscode';
+import { registerDefaultCommands } from 'sprotty-vscode';
 import { LspSprottyEditorProvider, LspSprottyViewProvider } from 'sprotty-vscode/lib/lsp';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
@@ -25,6 +25,8 @@ import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
 import { StpaResult, createQuickPickForWorkspaceOptions } from './utils';
 import { createSTPAResultMarkdownFile } from './md-export';
+import { LTLFormula } from './sbm/utils';
+import { createSBMs } from './sbm/sbm-generation';
 
 let languageClient: LanguageClient;
 
@@ -86,17 +88,7 @@ export function activate(context: vscode.ExtensionContext): void {
             })
         );
         registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: 'stpa' });
-        registerTextEditorSync(webviewViewProvider, context);
     }
-    // register commands that other extensions can use
-    context.subscriptions.push(vscode.commands.registerCommand(
-        command.getLTLFormula,
-        async (uri: string) => {
-            // generate and send back the LTLs based on the STPA UCAs
-            const formulas: { formula: string, text: string, ucaId: string; }[] = await languageClient.sendRequest('modelChecking/generateLTL', uri);
-            return formulas;
-        }
-    ));
 }
 
 export async function deactivate(): Promise<void> {
@@ -155,6 +147,28 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
             await createSTPAResultMarkdownFile(data, manager);
         })
     );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + '.SBM.generation', async (uri: vscode.Uri) => {
+            await manager.lsReady;
+            const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest('verification/generateLTL', uri.path);
+            // controlAction names are just the action without the controller as prefix
+            // generate a safe behavioral model
+            const controlActions: Record<string, string[]> = await languageClient.sendRequest('verification/getControlActions', uri.path);
+            createSBMs(controlActions, formulas);
+        })
+    );
+
+    // register commands that other extensions can use
+    context.subscriptions.push(vscode.commands.registerCommand(
+        command.getLTLFormula,
+        async (uri: string) => {
+            // generate and send back the LTLs based on the STPA UCAs
+            await manager.lsReady;
+            const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest('verification/generateLTL', uri);
+            return formulas;
+        }
+    ));
 }
 
 
@@ -197,11 +211,11 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
     return languageClient;
 }
 
-function registerTextEditorSync(manager: IWebviewEndpointManager, context: vscode.ExtensionContext): void {
+function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     context.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor(async editor => {
-            if (editor) {
-                manager.openDiagram(editor.document.uri);
+        vscode.workspace.onDidSaveTextDocument(async document => {
+            if (document) {
+                manager.openDiagram(document.uri);
             }
         })
     );
@@ -209,7 +223,9 @@ function registerTextEditorSync(manager: IWebviewEndpointManager, context: vscod
         vscode.workspace.onDidSaveTextDocument(async document => {
             if (document) {
                 manager.openDiagram(document.uri);
-                languageClient.sendNotification('contextTable/getData', document.uri.toString());
+                if (manager.contextTable) {
+                    languageClient.sendNotification('contextTable/getData', document.uri.toString());
+                }
             }
         })
     );

@@ -24,6 +24,7 @@ entry Model:
     ('ControlStructure' controlStructure=Graph)?
     ('Responsibilities' responsibilities+=Resps*)?
     (('UCAs' allUCAs+=ActionUCAs*) | ('Context-Table' rules+=Rule*))?
+    ('DCAs' allDCAs+=DCARule*)?
     ('ControllerConstraints' controllerConstraints+=ContConstraint*)?
     ('LossScenarios' scenarios+=LossScenario*)?
     ('SafetyRequirements' safetyCons+=SafetyConstraint*)?;
@@ -31,7 +32,7 @@ entry Model:
 Rule:
     name=ID '{'
         'controlAction:' system=[Node] '.' action=[Command]
-        'type:' type=('not-provided' | 'provided' | 'too-late' | 'too-early' | 'wrong-time' | 'applied-too-long' | 'stopped-too-soon')
+        'type:' type=(NotProvided | Provided | 'too-late' | 'too-early' | 'wrong-time' | 'applied-too-long' | 'stopped-too-soon')
         'contexts:' '{'
             contexts+=Context*
         '}'
@@ -61,7 +62,7 @@ Graph:
 
 Node:
     name=ID '{'
-        'hierarchyLevel' level=INT
+        ('hierarchyLevel' level = INT)?
         ('label' label=STRING)?
         ('processModel' '{'variables+=Variable*'}')?
         ('input' '[' inputs+=Command (',' inputs+=Command)* ']')?
@@ -80,7 +81,9 @@ Variable:
     name=ID':' '['values+=VariableValue (',' values+=VariableValue)*']';
 
 VariableValue:
-    name=QualifiedName (operator=('!='|'=') '[' firstValue=(QualifiedName | INT | 'MIN' | 'true' | 'false') (',' secondValue=(QualifiedName | INT | 'MAX'))? ']')?;
+    name=QualifiedName (operator=('!='|'=') firstParenthesis=('['|'(') 
+        firstValue=(QualifiedName | INT | 'MIN' | 'true' | 'false') (',' secondValue=(QualifiedName | INT | 'MAX'))? 
+    secondParenthesis=(']'|')'))?;
 
 VE:
     '[' comms+=Command (',' comms+=Command)* ']' '->' target=[Node];
@@ -108,6 +111,18 @@ ActionUCAs:
 UCA:
     name=ID description=STRING list=HazardList;
 
+DCARule:
+    name=ID '{'
+        'controlAction:' system=[Node] '.' action=[Command]
+        'type:' type=(NotProvided | Provided)
+        'contexts:' '{'
+            contexts+=DCAContext*
+        '}'
+    '}';
+
+DCAContext:
+    name=ID '['vars+=[Variable] '=' values+=QualifiedName (',' vars+=[Variable] '=' values+=QualifiedName)*']';
+
 ContConstraint:
     name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
 
@@ -120,6 +135,12 @@ HazardList:
 
 SafetyConstraint:
     name=ID description=STRING '['refs+=[LossScenario] (',' refs+=[LossScenario])*']';
+
+NotProvided returns string:
+    'not-provided';
+
+Provided returns string:
+    'provided';
 
 SubID returns string:
     ID('.'INT)*;

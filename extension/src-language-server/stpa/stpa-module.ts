@@ -29,7 +29,13 @@ import { DiagramOptions } from 'sprotty-protocol';
 import { StpaGeneratedSharedModule, StpaGeneratedModule } from '../generated/module';
 import { StpaSynthesisOptions } from './diagram/synthesis-options';
 import { ContextTableProvider } from './contextTable/context-dataProvider';
+import { StpaDiagramGenerator } from './diagram/diagram-generator';
+import { StpaLayoutConfigurator } from './diagram/layout-config';
+import { StpaDiagramServer } from './diagram/stpa-diagramServer';
+import { StpaSynthesisOptions } from './diagram/synthesis-options';
 import { IDEnforcer } from './ID-enforcer';
+import { StpaScopeProvider } from './stpa-scopeProvider';
+import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 
 
 /**

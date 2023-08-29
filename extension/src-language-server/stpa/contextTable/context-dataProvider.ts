@@ -20,6 +20,7 @@ import { StpaServices } from "../stpa-module";
 import { Range, URI } from "vscode-languageserver";
 import { ContextTableData, ContextTableControlAction, ContextTableRule, ContextTableSystemVariables, ContextTableVariable, ContextTableVariableValues } from "../../../src-context-table/utils";
 import { Model } from "../../generated/ast";
+import { getModel } from "../../utils";
 
 export class ContextTableProvider {
     protected services: StpaServices;
@@ -56,9 +57,7 @@ export class ContextTableProvider {
      */
     getData(uri: URI): ContextTableData {
         // get the current model
-        const textDocuments = this.services.shared.workspace.LangiumDocuments;
-        const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
-        const model: Model = currentDoc.parseResult.value;
+        const model = getModel(uri, this.services.shared);
 
         const actions: ContextTableControlAction[] = [];
         const variables: ContextTableSystemVariables[] = [];

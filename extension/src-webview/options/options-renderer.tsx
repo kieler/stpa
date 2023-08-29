@@ -108,6 +108,7 @@ export class OptionsRenderer {
                                 stepSize={(option as RangeOptionData).stepSize}
                                 description={option.description}
                                 onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                                onInput={this.handleSynthesisOptionInput.bind(this, option)}
                             />
                         );
                     case TransformationOptionType.TEXT:
@@ -157,6 +158,13 @@ export class OptionsRenderer {
                         return "";
                 }
             });
+    }
+
+    /** Handler for synthesis options onInput, e.g. while a slider is being dragged. */
+    private handleSynthesisOptionInput(option: SynthesisOption, newValue: any) {
+        this.actionDispatcher.dispatch(
+            SetSynthesisOptionsAction.create([{ ...option, currentValue: newValue }])
+        );
     }
 
     private handleSynthesisOptionChange(option: SynthesisOption, newValue: any) {

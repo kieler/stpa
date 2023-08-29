@@ -18,7 +18,7 @@
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
 import { URI } from 'vscode-uri';
-import { LangiumDocument } from "langium";
+import { LangiumDocument, LangiumSharedServices } from "langium";
 
 /**
  * Determines the model for {@code uri}.

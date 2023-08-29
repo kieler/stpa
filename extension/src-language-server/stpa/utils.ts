@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,72 +15,99 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode } from "langium";
+import { AstNode, LangiumSharedServices } from "langium";
+import { LangiumSprottySharedServices } from "langium-sprotty";
 import {
-    isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
-    isLoss, Hazard, SystemConstraint, isContext
+    Command,
+    ContConstraint,
+    Context,
+    Graph,
+    Hazard,
+    HazardList,
+    Loss,
+    LossScenario,
+    Node,
+    Responsibility,
+    Rule,
+    SafetyConstraint,
+    SystemConstraint,
+    UCA,
+    Variable,
+    isContConstraint,
+    isContext,
+    isHazard,
+    isLoss,
+    isLossScenario,
+    isResponsibility,
+    isSafetyConstraint,
+    isSystemConstraint,
+    isUCA,
 } from "../generated/ast";
+import { getModel } from "../utils";
+import { STPAAspect } from "./diagram/stpa-model";
 import { groupValue } from "./diagram/synthesis-options";
 import { STPANode } from "./stpa-interfaces";
-import { STPAAspect } from "./stpa-model";
 
-/* export function determineLayerForCSNodes(nodes: CSNode[]): void {
-    let layer = nodes.length
-    let sinks: CSNode[] = []
-    while (true) {
-        for (let n of nodes) {
-            let s = true
-            for (let edge of n.outgoingEdges) {
-                if (edge instanceof CSEdge && edge.direction == EdgeDirection.DOWN && edge.target instanceof CSNode && !edge.target.layer) {
-                    s = false
-                }
-            }
-            if (s) {
-                sinks.push(n)
-                break;
-            }
-        }
-        if (sinks.length == 0) {
-            break;
-        }
-
-        for (let s of sinks) {
-            s.layer = layer
-        }
-        layer--
-        sinks = []
-    }
-} */
+export type leafElement =
+    | Loss
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | UCA
+    | ContConstraint
+    | LossScenario
+    | SafetyConstraint
+    | Context;
+export type elementWithName =
+    | Loss
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | UCA
+    | ContConstraint
+    | LossScenario
+    | SafetyConstraint
+    | Node
+    | Variable
+    | Graph
+    | Command
+    | Context
+    | Rule;
+export type elementWithRefs =
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | HazardList
+    | ContConstraint
+    | SafetyConstraint;
 
 /**
- * Getter for the references contained in {@code node}.
- * @param node The STPAAspect which tracings should be returned.
- * @param hierarchy If this is true, subcomponents are children of their parents in the diagram, otherwise the relationship is represented by edges.
- * @returns The objects {@code node} is traceable to.
+ * Returns the control actions defined in the file given by the {@code uri}.
+ * @param uri Uri of the file which control actions should be returned.
+ * @param shared The shared services of Langium.
+ * @returns the control actions that are defined in the file determined by the {@code uri}.
  */
-export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
-    if (node) {
-        const targets: AstNode[] = [];
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node) || isSafetyConstraint(node)) {
-            for (const ref of node.refs) {
-                if (ref?.ref) { targets.push(ref.ref); }
-            }
-            // for subcomponents the parents must be declared as targets too, if hierarchy is false
-            if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
-                targets.push(node.$container);
-            }
-        } else if (isLossScenario(node) && node.uca && node.uca.ref) {
-            targets.push(node.uca.ref);
-        } else if ((isUCA(node) || isContext(node) || isLossScenario(node)) && node.list) {
-            const refs = node.list.refs.map(x => x.ref);
-            for (const ref of refs) {
-                if (ref) { targets.push(ref); }
-            }
-        }
-        return targets;
-    } else {
-        return [];
-    }
+export function getControlActions(
+    uri: string,
+    shared: LangiumSprottySharedServices | LangiumSharedServices
+): Record<string, string[]> {
+    const controlActionsMap: Record<string, string[]> = {};
+    // get the model from the file determined by the uri
+    const model = getModel(uri, shared);
+    // collect control actions grouped by their controller
+    model.controlStructure?.nodes.forEach((systemComponent) => {
+        systemComponent.actions.forEach((action) => {
+            action.comms.forEach((command) => {
+                const actionList = controlActionsMap[systemComponent.name];
+                if (actionList !== undefined) {
+                    actionList.push(command.name);
+                } else {
+                    controlActionsMap[systemComponent.name] = [command.name];
+                }
+            });
+        });
+    });
+    return controlActionsMap;
 }
 
 /**
@@ -114,7 +141,7 @@ export function getAspect(node: AstNode): STPAAspect {
  * @param topElements The top elements that possbible have children.
  * @returns A list with the given {@code topElements} and their descendants.
  */
-export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): AstNode[] {
+export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): (Hazard | SystemConstraint)[] {
     let result = topElements;
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {

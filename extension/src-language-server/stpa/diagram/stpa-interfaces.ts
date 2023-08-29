@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,8 +15,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SNode, SEdge } from "sprotty-protocol";
-import { EdgeType, STPAAspect } from "./stpa-model";
+import { SEdge, SNode, SPort } from "sprotty-protocol";
+import { EdgeType, PortSide, STPAAspect } from "./stpa-model";
+
+export interface ParentNode extends SNode {
+    modelOrder: boolean;
+}
 
 /**
  * Node representing a STPA component.
@@ -28,13 +32,20 @@ export interface STPANode extends SNode {
     highlight?: boolean
     level?: number
     controlAction?: string
+    modelOrder?: boolean
 }
 
 /**
  * Edge representing an edge in the relationship graph.
  */
  export interface STPAEdge extends SEdge {
+    aspect: STPAAspect
     highlight?: boolean
+}
+
+/** Port representing a port in the STPA graph. */
+export interface STPAPort extends SPort {
+    side?: PortSide
 }
 
 /**

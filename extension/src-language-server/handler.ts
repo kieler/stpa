@@ -18,8 +18,8 @@
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
 import { Connection, Range } from "vscode-languageserver";
-import { elementWithName } from "./stpa/stpa-validator";
 import { getModel } from "./utils";
+import { elementWithName } from "./stpa/utils";
 
 /**
  * Adds handler for notifications.
