@@ -31,7 +31,8 @@ import {
     TYPES,
     configureModelElement,
     loadDefaultModules,
-    overrideViewerOptions
+    overrideViewerOptions,
+    configureCommand
 } from 'sprotty';
 import { StpaModelViewer } from './model-viewer';
 import { optionsModule } from './options/options-module';

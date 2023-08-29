@@ -26,7 +26,7 @@ import { LangiumDocument, LangiumSharedServices } from "langium";
  * @param shared The shared service.
  * @returns the model for the given uri.
  */
-export async function getModel(uri: string, shared: LangiumSprottySharedServices): Promise<Model> {
+export async function getModel(uri: string, shared: LangiumSprottySharedServices | LangiumSharedServices): Promise<Model> {
     const textDocuments = shared.workspace.LangiumDocuments;
     const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<Model>;
     let currentModel = currentDoc.parseResult.value;

@@ -23,7 +23,7 @@ import { generateLTLFormulae } from './modelChecking/model-checking';
 import { createResultData } from './result-report/result-generator';
 import { StpaServices } from "./stpa-module";
 import { getControlActions } from './utils';
-import { diagramSizes } from './stpa-diagramServer';
+import { diagramSizes } from './diagram/stpa-diagramServer';
 
 let lastUri: URI;
 
@@ -41,7 +41,6 @@ export function addSTPANotificationHandler(connection: Connection, stpaServices:
     addContextTableHandler(connection, stpaServices);
     addTextChangeHandler(connection, stpaServices, sharedServices);
     addVerificationHandler(connection, sharedServices);
-    addModelCheckingHandler(connection, sharedServices);
     addResultHandler(connection, sharedServices);
 }
 
@@ -52,11 +51,12 @@ export function addSTPANotificationHandler(connection: Connection, stpaServices:
  */
 function addContextTableHandler(connection: Connection, stpaServices: StpaServices): void {
     // the data needed to create the context table is requested
-    connection.onNotification('contextTable/getData', uri => {
+    connection.onNotification('contextTable/getData', async uri => {
         // data is computed and send back to the extension
         lastUri = uri;
         const contextTable = stpaServices.contextTable.ContextTableProvider;
-        connection.sendNotification('contextTable/data', contextTable.getData(uri));
+        const data = await contextTable.getData(uri);
+        connection.sendNotification('contextTable/data', data);
     });
     // a cell in the context table is selected
     connection.onNotification('contextTable/selected', text => {
@@ -116,7 +116,7 @@ function addVerificationHandler(connection: Connection, sharedServices: LangiumS
     });
     // get the control actions
     connection.onRequest('verification/getControlActions', async (uri: string) => {
-        const controlActions = getControlActions(uri, sharedServices);
+        const controlActions = await getControlActions(uri, sharedServices);
         return controlActions;
     });
 }

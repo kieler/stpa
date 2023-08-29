@@ -17,10 +17,10 @@
 
 import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
 import { Connection } from 'vscode-languageserver';
-import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../options/actions';
-import { DropDownOption } from '../options/option-models';
-import { GenerateSVGsAction, RequestSvgAction, SvgAction } from './actions';
-import { COMPLETE_GRAPH_PATH, CONTROLLER_CONSTRAINT_PATH, CONTROL_STRUCTURE_PATH, HAZARD_PATH, RESPONSIBILITY_PATH, SAFETY_REQUIREMENT_PATH, SCENARIO_PATH, SYSTEM_CONSTRAINT_PATH, resetOptions, saveOptions, setControlStructureOptions, setControllerConstraintGraphOptions, setFilteredUcaGraphOptions, setHazardGraphOptions, setRelationshipGraphOptions, setResponsibilityGraphOptions, setSafetyRequirementGraphOptions, setScenarioGraphOptions, setSystemConstraintGraphOptions } from './result-report/svg-generator';
+import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../../options/actions';
+import { DropDownOption } from '../../options/option-models';
+import { GenerateSVGsAction, RequestSvgAction, SvgAction } from '../actions';
+import { COMPLETE_GRAPH_PATH, CONTROLLER_CONSTRAINT_PATH, CONTROL_STRUCTURE_PATH, HAZARD_PATH, RESPONSIBILITY_PATH, SAFETY_REQUIREMENT_PATH, SCENARIO_PATH, SYSTEM_CONSTRAINT_PATH, resetOptions, saveOptions, setControlStructureOptions, setControllerConstraintGraphOptions, setFilteredUcaGraphOptions, setHazardGraphOptions, setRelationshipGraphOptions, setResponsibilityGraphOptions, setSafetyRequirementGraphOptions, setScenarioGraphOptions, setSystemConstraintGraphOptions } from '../result-report/svg-generator';
 import { StpaSynthesisOptions, filteringUCAsID } from './synthesis-options';
 
 export class StpaDiagramServer extends DiagramServer {

@@ -26,7 +26,7 @@ import {
 const hierarchyID = "hierarchy";
 const modelOrderID = "modelOrder";
 const groupingUCAsID = "groupingUCAs";
-const filteringUCAsID = "filteringUCAs";
+export const filteringUCAsID = "filteringUCAs";
 
 const hideSysConsID = "hideSysCons";
 const hideRespsID = "hideResps";

@@ -22,6 +22,7 @@ import {
     isContConstraint,
     isContext,
     isHazard,
+    isLoss,
     isLossScenario,
     isResponsibility,
     isSafetyConstraint,
@@ -220,4 +221,30 @@ export function createUCAContextDescription(uca: Context): string {
     }
 
     return description;
+}
+
+/**
+ * Getter for the aspect of a STPA component.
+ * @param node AstNode which aspect should determined.
+ * @returns the aspect of {@code node}.
+ */
+export function getAspect(node: AstNode): STPAAspect {
+    if (isLoss(node)) {
+        return STPAAspect.LOSS;
+    } else if (isHazard(node)) {
+        return STPAAspect.HAZARD;
+    } else if (isSystemConstraint(node)) {
+        return STPAAspect.SYSTEMCONSTRAINT;
+    } else if (isUCA(node) || isContext(node)) {
+        return STPAAspect.UCA;
+    } else if (isResponsibility(node)) {
+        return STPAAspect.RESPONSIBILITY;
+    } else if (isContConstraint(node)) {
+        return STPAAspect.CONTROLLERCONSTRAINT;
+    } else if (isLossScenario(node)) {
+        return STPAAspect.SCENARIO;
+    } else if (isSafetyConstraint(node)) {
+        return STPAAspect.SAFETYREQUIREMENT;
+    }
+    return STPAAspect.UNDEFINED;
 }

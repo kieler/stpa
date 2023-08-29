@@ -55,9 +55,9 @@ export class ContextTableProvider {
      * Collects all the data needed for constructing the context table.
      * @returns The data in a set of arrays.
      */
-    getData(uri: URI): ContextTableData {
+    async getData(uri: URI): Promise<ContextTableData> {
         // get the current model
-        const model = getModel(uri, this.services.shared);
+        const model = await getModel(uri, this.services.shared);
 
         const actions: ContextTableControlAction[] = [];
         const variables: ContextTableSystemVariables[] = [];

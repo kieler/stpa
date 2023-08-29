@@ -21,12 +21,12 @@ import { SLabel, SModelElement, SModelRoot, SNode } from 'sprotty-protocol';
 
 import { Command, Hazard, Model, Node, SystemConstraint, VE, isContext, isHazard, isSystemConstraint, isUCA } from '../../generated/ast';
 import { StpaServices } from '../stpa-module';
-import { collectElementsWithSubComps, getAspect, leafElement } from '../utils';
+import { collectElementsWithSubComps, leafElement } from '../utils';
 import { filterModel } from './filtering';
 import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, STPAPort } from './stpa-interfaces';
 import { CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, EdgeType, PARENT_TYPE, PortSide, STPAAspect, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
 import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from './synthesis-options';
-import { createUCAContextDescription, getTargets, setLevelOfCSNodes, setLevelsForSTPANodes } from './utils';
+import { createUCAContextDescription, getTargets, getAspect, setLevelOfCSNodes, setLevelsForSTPANodes } from './utils';
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
@@ -76,7 +76,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         }
         stpaChildren = stpaChildren.concat([
             ...filteredModel.responsibilities?.map(r => r.responsiblitiesForOneSystem.map(resp => this.generateAspectWithEdges(resp, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.RESPONSIBILITIES, args))).flat(2),
-            ...filteredModel.allUCAs?.map(allUCA => allUCA.ucas.map(uca => this.generateAspectWithEdges(uca, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS, args))).flat(2),
+            ...filteredModel.allUCAs?.map(sysUCA => sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas).map(uca => this.generateAspectWithEdges(uca, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS, args))).flat(2),
             ...filteredModel.rules?.map(rule => rule.contexts.map(context => this.generateAspectWithEdges(context, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS, args))).flat(2),
             ...filteredModel.controllerConstraints?.map(c => this.generateAspectWithEdges(c, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.CONTROLLER_CONSTRAINTS, args)).flat(1),
             ...filteredModel.scenarios?.map(s => this.generateAspectWithEdges(s, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SCENARIOS, args)).flat(1),

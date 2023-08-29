@@ -78,7 +78,7 @@ export async function generateLTLFormulae(
         // build document
         await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
         // update the model
-        model = getModel(uri, shared);
+        model = await getModel(uri, shared);
     }
     // ltl formulas are saved per controller
     const map: Record<string, LTLFormula[]> = {};
