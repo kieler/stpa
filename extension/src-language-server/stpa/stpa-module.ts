@@ -20,14 +20,14 @@ import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleCont
 import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { StpaDiagramGenerator } from './diagram-generator';
-import { StpaLayoutConfigurator } from './layout-config';
+import { StpaLayoutConfigurator } from './diagram/layout-config';
 import { StpaDiagramServer } from './stpa-diagramServer';
 import { StpaScopeProvider } from './stpa-scopeProvider';
 import { StpaValidationRegistry, StpaValidator } from './stpa-validator';
 import { URI } from 'vscode-uri';
 import { DiagramOptions } from 'sprotty-protocol';
 import { StpaGeneratedSharedModule, StpaGeneratedModule } from '../generated/module';
-import { StpaSynthesisOptions } from './synthesis-options';
+import { StpaSynthesisOptions } from './diagram/synthesis-options';
 import { ContextTableProvider } from './contextTable/context-dataProvider';
 import { IDEnforcer } from './ID-enforcer';
 

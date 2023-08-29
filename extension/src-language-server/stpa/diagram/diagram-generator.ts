@@ -22,11 +22,11 @@ import {
     Command,
     isContConstraint, isContext, isHazard, isLoss, isLossScenario, isResponsibility, isSafetyConstraint,
     isSystemConstraint, isUCA, Model, Node, VE
-} from '../generated/ast';
-import { CSEdge, CSNode, STPANode, STPAEdge } from './stpa-interfaces';
-import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType, DUMMY_NODE_TYPE } from './stpa-model';
-import { StpaServices } from './stpa-module';
-import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from './utils';
+} from '../../generated/ast';
+import { CSEdge, CSNode, STPANode, STPAEdge } from '../stpa-interfaces';
+import { PARENT_TYPE, CS_EDGE_TYPE, CS_NODE_TYPE, STPA_NODE_TYPE, STPA_EDGE_TYPE, EdgeType, DUMMY_NODE_TYPE } from '../stpa-model';
+import { StpaServices } from '../stpa-module';
+import { collectElementsWithSubComps, getAspect, getTargets, setLevelsForSTPANodes } from '../utils';
 import { StpaSynthesisOptions } from './synthesis-options';
 import { CustomModel, filterModel } from './filtering';
 

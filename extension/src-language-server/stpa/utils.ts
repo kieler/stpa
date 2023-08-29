@@ -20,7 +20,7 @@ import {
     isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
     isLoss, Hazard, SystemConstraint, isContext
 } from "../generated/ast";
-import { groupValue } from "./synthesis-options";
+import { groupValue } from "./diagram/synthesis-options";
 import { STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
 
