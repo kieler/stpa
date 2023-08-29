@@ -226,17 +226,17 @@
                 {
                     "submenu": "stpa.checks",
                     "when": "editorLangId == 'stpa'",
-                    "group": "checks"
+                    "group": "stpa"
                 },
                 {
                     "command": "stpa.SBM.generation",
                     "when": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "group": "stpa"
                 },
                 {
                     "command": "stpa.md.creation",
                     "when": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "group": "stpa"
                 }
             ],
             "stpa.checks": [
