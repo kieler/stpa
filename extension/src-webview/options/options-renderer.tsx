@@ -145,7 +145,7 @@ export class OptionsRenderer {
                             <DropDownMenuOption
                                 key={option.id}
                                 id={option.id}
-                                currentId = {(option as DropDownOption).currentId}
+                                currentId={(option as DropDownOption).currentId}
                                 name={option.name}
                                 value={option.currentValue}
                                 availableValues={(option as DropDownOption).availableValues}
@@ -199,9 +199,9 @@ export class OptionsRenderer {
                             value={option.currentValue}
                             description={option.description}
                             onChange={this.handleRenderOptionChange.bind(this, option)}
-                            availableValues = {(option as ChoiceRenderOption).availableValues}
+                            availableValues={(option as ChoiceRenderOption).availableValues}
                         />
-                    )
+                    );
                 default:
                     console.error("Unsupported option type for option:", option.name);
                     return "";

@@ -37,7 +37,7 @@ const savedOptions: Map<string, string> = new Map();
  * @param options The synthesis options.
  */
 export function saveOptions(options: StpaSynthesisOptions): void {
-    options.getSynthesisOptions().forEach(option => {
+    options.getSynthesisOptions().forEach((option) => {
         savedOptions.set(option.synthesisOption.id, option.currentValue);
     });
 }
@@ -49,7 +49,7 @@ export function saveOptions(options: StpaSynthesisOptions): void {
  */
 export function resetOptions(options: StpaSynthesisOptions): SetSynthesisOptionsAction {
     // set the values to the saved ones
-    options.getSynthesisOptions().forEach(option => {
+    options.getSynthesisOptions().forEach((option) => {
         const savedValue = savedOptions.get(option.synthesisOption.id);
         if (savedValue) {
             option.currentValue = savedValue === "true" || savedValue === "false" ? savedValue === "true" : savedValue;
@@ -59,7 +59,7 @@ export function resetOptions(options: StpaSynthesisOptions): SetSynthesisOptions
     // create an action to set the options on the client
     const setSynthesisOption = {
         kind: SetSynthesisOptionsAction.KIND,
-        options: options.getSynthesisOptions().map(option => option.synthesisOption)
+        options: options.getSynthesisOptions().map((option) => option.synthesisOption),
     } as SetSynthesisOptionsAction;
     return setSynthesisOption;
 }

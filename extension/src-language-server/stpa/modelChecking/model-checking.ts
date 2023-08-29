@@ -15,10 +15,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { DCARule, Model, Rule, Variable, VariableValue, isRule } from "../../generated/ast";
-import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Reference } from "langium";
+import { LangiumSprottySharedServices } from "langium-sprotty";
 import { URI } from "vscode-uri";
+import { DCARule, Model, Rule, Variable, VariableValue, isRule } from "../../generated/ast";
 import { getModel } from "../../utils";
 
 /**

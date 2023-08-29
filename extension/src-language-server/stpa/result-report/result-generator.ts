@@ -17,10 +17,18 @@
 
 import { AstNode, Reference } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { ActionUCAs, ContConstraint, Hazard, LossScenario, Responsibility, SafetyConstraint, SystemConstraint, UCA } from "../../generated/ast";
+import {
+    ActionUCAs,
+    ContConstraint,
+    Hazard,
+    LossScenario,
+    Responsibility,
+    SafetyConstraint,
+    SystemConstraint,
+    UCA,
+} from "../../generated/ast";
 import { getModel } from "../../utils";
 import { StpaComponent, StpaResult, UCA_TYPE } from "../utils";
-
 
 /**
  * Creates the STPA result data.
@@ -34,8 +42,8 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
     const model = await getModel(uri, shared);
 
     // losses
-    const resultLosses: { id: string, description: string; }[] = [];
-    model.losses.forEach(component => {
+    const resultLosses: { id: string; description: string }[] = [];
+    model.losses.forEach((component) => {
         resultLosses.push({ id: component.name, description: component.description });
     });
     result.losses = resultLosses;
@@ -47,19 +55,19 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
     result.safetyCons = createResultComponents(model.safetyCons);
 
     // responsibilities
-    model.responsibilities.forEach(component => {
+    model.responsibilities.forEach((component) => {
         const responsibilities = createResultComponents(component.responsiblitiesForOneSystem);
         // responsibilities are grouped by their system component
         result.responsibilities[component.system.$refText] = responsibilities;
     });
 
     // loss scenarios
-    model.scenarios.forEach(component => {
+    model.scenarios.forEach((component) => {
         createScenarioResult(component, result);
     });
 
     //UCAs
-    model.allUCAs.forEach(component => {
+    model.allUCAs.forEach((component) => {
         result.ucas.push(createUCAResult(component));
     });
 
@@ -71,12 +79,12 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
 
 /**
  * Creates the result components list for loss scenarios and UCAs.
- * @param components The scenarios/UCAs for which the result components should be created. 
+ * @param components The scenarios/UCAs for which the result components should be created.
  * @returns the result components list for loss scenarios/UCAs.
  */
 function createResultListComponents(components: LossScenario[] | UCA[]): StpaComponent[] {
     const resultList: StpaComponent[] = [];
-    components.forEach(component => {
+    components.forEach((component) => {
         resultList.push(createSingleListComponent(component));
     });
     return resultList;
@@ -90,7 +98,9 @@ function createResultListComponents(components: LossScenario[] | UCA[]): StpaCom
 function createSingleListComponent(component: LossScenario | UCA): StpaComponent {
     const id = component.name;
     const description = component.description;
-    const references = component.list ? component.list.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", ") : undefined;
+    const references = component.list
+        ? component.list.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", ")
+        : undefined;
     return { id, description, references };
 }
 
@@ -99,9 +109,11 @@ function createSingleListComponent(component: LossScenario | UCA): StpaComponent
  * @param components The STPA components to translate.
  * @returns the result components for the given {@code components}.
  */
-function createResultComponents(components: Hazard[] | SystemConstraint[] | ContConstraint[] | SafetyConstraint[] | Responsibility[]): StpaComponent[] {
+function createResultComponents(
+    components: Hazard[] | SystemConstraint[] | ContConstraint[] | SafetyConstraint[] | Responsibility[]
+): StpaComponent[] {
     const resultList: StpaComponent[] = [];
-    components.forEach(component => {
+    components.forEach((component) => {
         resultList.push(createSingleComponent(component));
     });
     return resultList;
@@ -114,7 +126,7 @@ function createResultComponents(components: Hazard[] | SystemConstraint[] | Cont
  */
 function createHazardOrSystemConstraintComponents(components: Hazard[] | SystemConstraint[]): StpaComponent[] {
     const resultList: StpaComponent[] = [];
-    components.forEach(component => {
+    components.forEach((component) => {
         const resultComponent = createSingleComponent(component);
         resultComponent.subComponents = createHazardOrSystemConstraintComponents(component.subComps);
         resultList.push(resultComponent);
@@ -127,8 +139,14 @@ function createHazardOrSystemConstraintComponents(components: Hazard[] | SystemC
  * @param component the component to translate.
  * @returns the result component for the given {@code component}.
  */
-function createSingleComponent(component: Hazard | SystemConstraint | ContConstraint | SafetyConstraint | Responsibility): StpaComponent {
-    return { id: component.name, description: component.description, references: component.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", ") };
+function createSingleComponent(
+    component: Hazard | SystemConstraint | ContConstraint | SafetyConstraint | Responsibility
+): StpaComponent {
+    return {
+        id: component.name,
+        description: component.description,
+        references: component.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", "),
+    };
 }
 
 /**
@@ -136,7 +154,7 @@ function createSingleComponent(component: Hazard | SystemConstraint | ContConstr
  * @param component The UCAs for which the result should be created.
  * @returns the result for UCAs grouped by the UCA types.
  */
-function createUCAResult(component: ActionUCAs): { controlAction: string, ucas: Record<string, StpaComponent[]>; } {
+function createUCAResult(component: ActionUCAs): { controlAction: string; ucas: Record<string, StpaComponent[]> } {
     const controlAction = component.system.$refText + "." + component.action.$refText;
     const ucas: Record<string, StpaComponent[]> = {};
     ucas[UCA_TYPE.NOT_PROVIDED] = createResultListComponents(component.notProvidingUcas);

@@ -32,7 +32,7 @@ import {
     SafetyConstraint,
     SystemConstraint,
     UCA,
-    Variable
+    Variable,
 } from "../generated/ast";
 import { getModel } from "../utils";
 
@@ -124,7 +124,7 @@ export class StpaResult {
     // sorted by system components
     responsibilities: Record<string, StpaComponent[]> = {};
     // sorted first by control action, then by uca type
-    ucas: { controlAction: string, ucas: Record<string, StpaComponent[]>; }[] = [];
+    ucas: { controlAction: string; ucas: Record<string, StpaComponent[]> }[] = [];
     controllerConstraints: StpaComponent[] = [];
     // sorted by ucas
     ucaScenarios: Record<string, StpaComponent[]> = {};

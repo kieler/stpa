@@ -16,11 +16,11 @@
  */
 
 import {
+    DropDownOption,
+    RangeOption,
     SynthesisOption,
     TransformationOptionType,
     ValuedSynthesisOption,
-    DropDownOption,
-    RangeOption,
 } from "../../options/option-models";
 
 const hierarchyID = "hierarchy";

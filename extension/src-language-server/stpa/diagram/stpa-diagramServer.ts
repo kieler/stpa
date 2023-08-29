@@ -15,22 +15,54 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServer, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from 'sprotty-protocol';
-import { Connection } from 'vscode-languageserver';
-import { SetSynthesisOptionsAction, UpdateOptionsAction } from '../../options/actions';
-import { DropDownOption } from '../../options/option-models';
-import { GenerateSVGsAction, RequestSvgAction, SvgAction } from '../actions';
-import { COMPLETE_GRAPH_PATH, CONTROLLER_CONSTRAINT_PATH, CONTROL_STRUCTURE_PATH, HAZARD_PATH, RESPONSIBILITY_PATH, SAFETY_REQUIREMENT_PATH, SCENARIO_PATH, SYSTEM_CONSTRAINT_PATH, resetOptions, saveOptions, setControlStructureOptions, setControllerConstraintGraphOptions, setFilteredUcaGraphOptions, setHazardGraphOptions, setRelationshipGraphOptions, setResponsibilityGraphOptions, setSafetyRequirementGraphOptions, setScenarioGraphOptions, setSystemConstraintGraphOptions } from '../result-report/svg-generator';
-import { StpaSynthesisOptions, filteringUCAsID } from './synthesis-options';
+import {
+    Action,
+    DiagramServer,
+    DiagramServices,
+    JsonMap,
+    RequestAction,
+    RequestModelAction,
+    ResponseAction,
+} from "sprotty-protocol";
+import { Connection } from "vscode-languageserver";
+import { SetSynthesisOptionsAction, UpdateOptionsAction } from "../../options/actions";
+import { DropDownOption } from "../../options/option-models";
+import { GenerateSVGsAction, RequestSvgAction, SvgAction } from "../actions";
+import {
+    COMPLETE_GRAPH_PATH,
+    CONTROLLER_CONSTRAINT_PATH,
+    CONTROL_STRUCTURE_PATH,
+    HAZARD_PATH,
+    RESPONSIBILITY_PATH,
+    SAFETY_REQUIREMENT_PATH,
+    SCENARIO_PATH,
+    SYSTEM_CONSTRAINT_PATH,
+    resetOptions,
+    saveOptions,
+    setControlStructureOptions,
+    setControllerConstraintGraphOptions,
+    setFilteredUcaGraphOptions,
+    setHazardGraphOptions,
+    setRelationshipGraphOptions,
+    setResponsibilityGraphOptions,
+    setSafetyRequirementGraphOptions,
+    setScenarioGraphOptions,
+    setSystemConstraintGraphOptions,
+} from "../result-report/svg-generator";
+import { StpaSynthesisOptions, filteringUCAsID } from "./synthesis-options";
 
 export class StpaDiagramServer extends DiagramServer {
-
     protected stpaOptions: StpaSynthesisOptions;
     clientId: string;
     protected connection: Connection | undefined;
 
-    constructor(dispatch: <A extends Action>(action: A) => Promise<void>,
-        services: DiagramServices, synthesisOptions: StpaSynthesisOptions, clientId: string, connection: Connection | undefined) {
+    constructor(
+        dispatch: <A extends Action>(action: A) => Promise<void>,
+        services: DiagramServices,
+        synthesisOptions: StpaSynthesisOptions,
+        clientId: string,
+        connection: Connection | undefined
+    ) {
         super(dispatch, services);
         this.stpaOptions = synthesisOptions;
         this.clientId = clientId;
@@ -58,17 +90,17 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     /**
-     * Generates the diagrams for the STPA results by setting the synthesis options 
+     * Generates the diagrams for the STPA results by setting the synthesis options
      * accordingly and requesting the SVG from the client.
-     * 
+     *
      * @param action The action that triggered this method.
-     * @returns 
+     * @returns
      */
     async handleGenerateSVGDiagrams(action: GenerateSVGsAction): Promise<void> {
         diagramSizes = {};
         const setSynthesisOption = {
             kind: SetSynthesisOptionsAction.KIND,
-            options: this.stpaOptions.getSynthesisOptions().map(option => option.synthesisOption)
+            options: this.stpaOptions.getSynthesisOptions().map((option) => option.synthesisOption),
         } as SetSynthesisOptionsAction;
         // save current option values
         saveOptions(this.stpaOptions);
@@ -86,10 +118,16 @@ export class StpaDiagramServer extends DiagramServer {
         await this.createSVG(setSynthesisOption, action.uri, RESPONSIBILITY_PATH);
 
         // filtered uca graph svg
-        const filteringUcaOption = this.stpaOptions.getSynthesisOptions().find(option => option.synthesisOption.id === filteringUCAsID);
+        const filteringUcaOption = this.stpaOptions
+            .getSynthesisOptions()
+            .find((option) => option.synthesisOption.id === filteringUCAsID);
         for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
             setFilteredUcaGraphOptions(this.stpaOptions, value.id);
-            await this.createSVG(setSynthesisOption, action.uri, "/" + value.id.replace(".", "-").replace(" ", "-") + ".svg");
+            await this.createSVG(
+                setSynthesisOption,
+                action.uri,
+                "/" + value.id.replace(".", "-").replace(" ", "-") + ".svg"
+            );
         }
 
         // controller constraint graph svg
@@ -133,14 +171,20 @@ export class StpaDiagramServer extends DiagramServer {
 
     protected async handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
         for (const option of action.options) {
-            const opt = this.stpaOptions.getSynthesisOptions().find(synOpt => synOpt.synthesisOption.id === option.id);
+            const opt = this.stpaOptions
+                .getSynthesisOptions()
+                .find((synOpt) => synOpt.synthesisOption.id === option.id);
             if (opt) {
                 opt.currentValue = option.currentValue;
                 opt.synthesisOption.currentValue = option.currentValue;
                 // for dropdown menu options more must be done
                 if ((opt.synthesisOption as DropDownOption).currentId) {
                     (opt.synthesisOption as DropDownOption).currentId = option.currentValue;
-                    this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
+                    this.dispatch({
+                        kind: UpdateOptionsAction.KIND,
+                        valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(),
+                        clientId: this.clientId,
+                    });
                 }
             }
         }
@@ -153,24 +197,31 @@ export class StpaDiagramServer extends DiagramServer {
         try {
             const newRoot = await this.diagramGenerator.generate({
                 options: this.state.options ?? {},
-                state: this.state
+                state: this.state,
             });
             newRoot.revision = ++this.state.revision;
             this.state.currentRoot = newRoot;
             await this.submitModel(this.state.currentRoot, true);
             // ensures the the filterUCA option is correct
-            this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
+            this.dispatch({
+                kind: UpdateOptionsAction.KIND,
+                valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(),
+                clientId: this.clientId,
+            });
         } catch (err) {
             this.rejectRemoteRequest(undefined, err as Error);
-            console.error('Failed to generate diagram:', err);
+            console.error("Failed to generate diagram:", err);
         }
     }
 
     protected async handleRequestModel(action: RequestModelAction): Promise<void> {
         await super.handleRequestModel(action);
-        this.dispatch({ kind: UpdateOptionsAction.KIND, valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(), clientId: this.clientId });
+        this.dispatch({
+            kind: UpdateOptionsAction.KIND,
+            valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(),
+            clientId: this.clientId,
+        });
     }
-
 }
 
 export let diagramSizes: Record<string, number> = {};

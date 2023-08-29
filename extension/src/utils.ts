@@ -15,10 +15,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 /**
- * Creates a quickpick containing the values "true" and "false". The selected value is set for the 
+ * Creates a quickpick containing the values "true" and "false". The selected value is set for the
  * configuration option determined by {@code id}.
  * @param id The id of the configuration option that should be set.
  */
@@ -27,9 +27,9 @@ export function createQuickPickForWorkspaceOptions(id: string): void {
     quickPick.items = [{ label: "true" }, { label: "false" }];
     quickPick.onDidChangeSelection((selection) => {
         if (selection[0]?.label === "true") {
-            vscode.workspace.getConfiguration('pasta').update(id, true);
+            vscode.workspace.getConfiguration("pasta").update(id, true);
         } else {
-            vscode.workspace.getConfiguration('pasta').update(id, false);
+            vscode.workspace.getConfiguration("pasta").update(id, false);
         }
         quickPick.hide();
     });
@@ -59,9 +59,12 @@ export async function applyTextEdits(edits: vscode.TextEdit[], uri: string): Pro
  * @param configuration The workspace configuration options.
  * @returns A list of the workspace options, whereby a option is represented with an id and its value.
  */
-export function collectOptions(configuration: vscode.WorkspaceConfiguration): { id: string, value: any; }[] {
-    const values: { id: string, value: any; }[] = [];
-    values.push({ id: "checkResponsibilitiesForConstraints", value: configuration.get("checkResponsibilitiesForConstraints") });
+export function collectOptions(configuration: vscode.WorkspaceConfiguration): { id: string; value: any }[] {
+    const values: { id: string; value: any }[] = [];
+    values.push({
+        id: "checkResponsibilitiesForConstraints",
+        value: configuration.get("checkResponsibilitiesForConstraints"),
+    });
     values.push({ id: "checkConstraintsForUCAs", value: configuration.get("checkConstraintsForUCAs") });
     values.push({ id: "checkScenariosForUCAs", value: configuration.get("checkScenariosForUCAs") });
     values.push({ id: "checkSafetyRequirementsForUCAs", value: configuration.get("checkSafetyRequirementsForUCAs") });
@@ -88,7 +91,7 @@ export async function createFile(uri: string, text: string): Promise<void> {
         return;
     }
     // save the edit
-    const doc = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === vscode.Uri.parse(uri).toString());
+    const doc = vscode.workspace.textDocuments.find((doc) => doc.uri.toString() === vscode.Uri.parse(uri).toString());
     const saved = await doc?.save();
     if (!saved) {
         console.error(`TextDocument ${doc?.uri} could not be saved!`);
@@ -104,7 +107,7 @@ export class StpaResult {
     // sorted by system components
     responsibilities: Record<string, StpaComponent[]> = {};
     // sorted first by control action, then by uca type
-    ucas: {controlAction: string, ucas: Record<string, StpaComponent[]>}[]= [];
+    ucas: { controlAction: string; ucas: Record<string, StpaComponent[]> }[] = [];
     controllerConstraints: StpaComponent[] = [];
     // sorted by ucas
     ucaScenarios: Record<string, StpaComponent[]> = {};
@@ -133,4 +136,3 @@ export class UCA_TYPE {
     static CONTINUOUS = "continuous-problem";
     static UNDEFINED = "undefined";
 }
-
