@@ -114,7 +114,8 @@ export class CutSetGenerator{
                     const orList = [child];
                     result.push(orList);
                 }else{
-                    for(const list of this.evaluate(child, allNodes, idCache)){  //push every inner list of the child gate.
+                    //push every inner list of the child gate.
+                    for(const list of this.evaluate(child, allNodes, idCache)){  
                         result.push(list);
                     }
                 }
@@ -135,7 +136,7 @@ export class CutSetGenerator{
                 }
             }
 
-            //Now we want to evaluate G1 (e.g evaluation(G1) = [[C]]).
+            //Now we want to evaluate G1 from the example above (e.g evaluation(G1) = [[C]]).
             //Our result list should look like this -> [[M1,M2], [M1,C], [M2,C]].
             for(const comb of combinations){
                 if(comb.some(e => isGate(e) && (isAND(e.type) || isInhibitGate(e.type) || isOR(e.type) || isKNGate(e.type)))){

@@ -90,7 +90,7 @@ export class FTANodeView extends RectangularNodeView {
 
         //highlight every node that is in the selected cut set or on the path to the top event.
         let set = this.cutSetsRegistry.getCurrentValue();
-        let bool = false;
+        let onlyInCutSet = false;
         if(set !== undefined){
             //highlight all when the empty cut set is selected
             if(set === '-' ){
@@ -102,12 +102,12 @@ export class FTANodeView extends RectangularNodeView {
                     //node is component or condition and in the selected cut set.
                     if(set.includes(node.id)){
                         node.highlight = true;
-                        bool = true;
+                        onlyInCutSet = true;
 
                     }else{
                         //all other components and conditions are not highlighted.
                         node.highlight = false;   
-                        bool= false;
+                        onlyInCutSet= false;
                     }
                 }else{
                     //check if a gate should be highlighted
@@ -127,7 +127,7 @@ export class FTANodeView extends RectangularNodeView {
             class-fta-node={true}
             class-mouseover={node.hoverFeedback}
             class-fta-hidden={hidden}
-            class-fta-highlight-node={bool}>
+            class-fta-highlight-node={onlyInCutSet}>
             <g class-node-selected={node.selected}>{element}</g>
             {context.renderChildren(node)}
         </g>;
