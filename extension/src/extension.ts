@@ -24,7 +24,7 @@ import { Messenger } from 'vscode-messenger';
 import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
 import { StpaResult, createQuickPickForWorkspaceOptions } from './utils';
-import { createSTPAResultMarkdownFile } from './md-export';
+import { createSTPAResultMarkdownFile } from './report/md-export';
 import { LTLFormula } from './sbm/utils';
 import { createSBMs } from './sbm/sbm-generation';
 

@@ -15,19 +15,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { JsonMap, SelectAction, ActionMessage } from 'sprotty-protocol';
-import { createFileUri } from 'sprotty-vscode';
-import { SprottyDiagramIdentifier } from 'sprotty-vscode-protocol';
-import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from 'sprotty-vscode/lib/lsp';
-import * as vscode from 'vscode';
-import { GenerateSVGsAction } from './actions';
-import { ContextTablePanel } from './context-table-panel';
-import { StpaFormattingEditProvider } from './stpa-formatter';
-import { applyTextEdits, collectOptions, createFile } from './utils';
-import { StpaLspWebview } from './wview';
+import { ActionMessage, JsonMap, SelectAction } from "sprotty-protocol";
+import { createFileUri } from "sprotty-vscode";
+import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
+import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from "sprotty-vscode/lib/lsp";
+import * as vscode from "vscode";
+import { GenerateSVGsAction } from "./actions";
+import { ContextTablePanel } from "./context-table-panel";
+import { StpaFormattingEditProvider } from "./stpa-formatter";
+import { applyTextEdits, collectOptions, createFile } from "./utils";
+import { StpaLspWebview } from "./wview";
 
 export class StpaLspVscodeExtension extends LspWebviewPanelManager {
-
     protected extensionPrefix: string;
 
     public contextTable: ContextTablePanel;
@@ -35,7 +34,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     protected lastSelectedUCA: string[];
 
     protected resolveLSReady: () => void;
-    readonly lsReady = new Promise<void>(resolve => this.resolveLSReady = resolve);
+    readonly lsReady = new Promise<void>((resolve) => (this.resolveLSReady = resolve));
 
     /** needed for undo/redo actions when ID enforcement is active*/
     ignoreNextTextChange: boolean = false;
@@ -46,41 +45,57 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         // user changed configuration settings
         vscode.workspace.onDidChangeConfiguration(() => {
             // sends configuration of stpa to the language server
-            this.languageClient.sendNotification('configuration', collectOptions(vscode.workspace.getConfiguration('pasta')));
+            this.languageClient.sendNotification(
+                "configuration",
+                collectOptions(vscode.workspace.getConfiguration("pasta"))
+            );
         });
 
         // add auto formatting provider
-        const sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
+        const sel: vscode.DocumentSelector = { scheme: "file", language: "stpa" };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
         // handling of notifications regarding the context table
-        options.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
-        options.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string; }) => {
-            // highlight and reveal the given range in the editor
-            const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === msg.uri);
-            if (editor) {
-                const startPosition = new vscode.Position(msg.startLine, msg.startChar);
-                const endPosition = new vscode.Position(msg.endLine, msg.endChar);
-                editor.selection = new vscode.Selection(startPosition, endPosition);
-                editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+        options.languageClient.onNotification("contextTable/data", (data) => this.contextTable.setData(data));
+        options.languageClient.onNotification(
+            "editor/highlight",
+            (msg: { startLine: number; startChar: number; endLine: number; endChar: number; uri: string }) => {
+                // highlight and reveal the given range in the editor
+                const editor = vscode.window.visibleTextEditors.find(
+                    (visibleEditor) => visibleEditor.document.uri.toString() === msg.uri
+                );
+                if (editor) {
+                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+                    editor.selection = new vscode.Selection(startPosition, endPosition);
+                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+                }
             }
-        });
+        );
 
         // textdocument has changed
-        vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
+        vscode.workspace.onDidChangeTextDocument((changeEvent) => {
+            this.handleTextChangeEvent(changeEvent);
+        });
         // language client sent workspace edits
-        options.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => applyTextEdits(edits, uri));
+        options.languageClient.onNotification("editor/workspaceedit", ({ edits, uri }) => applyTextEdits(edits, uri));
         // laguage server is ready
         options.languageClient.onNotification("ready", () => {
             this.resolveLSReady();
             // open diagram
-            vscode.commands.executeCommand(this.extensionPrefix + '.diagram.open', vscode.window.activeTextEditor?.document.uri);
+            vscode.commands.executeCommand(
+                this.extensionPrefix + ".diagram.open",
+                vscode.window.activeTextEditor?.document.uri
+            );
             // sends configuration of stpa to the language server
-            options.languageClient.sendNotification('configuration', collectOptions(vscode.workspace.getConfiguration('pasta')));
+            options.languageClient.sendNotification(
+                "configuration",
+                collectOptions(vscode.workspace.getConfiguration("pasta"))
+            );
         });
 
         // server sent svg that should be saved
-        this.languageClient.onNotification('svg', ({ uri, svg }) => {
+        this.languageClient.onNotification("svg", ({ uri, svg }) => {
             createFile(uri, svg);
         });
     }
@@ -98,23 +113,21 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         // send the changes to the language server
         const changes = changeEvent.contentChanges;
         const uri = changeEvent.document.uri.toString();
-        this.languageClient.sendNotification('editor/textChange', { changes: changes, uri: uri });
+        this.languageClient.sendNotification("editor/textChange", { changes: changes, uri: uri });
     }
-
-
 
     createContextTable(context: vscode.ExtensionContext): void {
         const extensionPath = this.options.extensionUri.fsPath;
         const tablePanel = new ContextTablePanel(
-            'Context-Table',
-            [createFileUri(extensionPath, 'pack')],
-            createFileUri(extensionPath, 'pack', 'context-table-panel.js')
+            "Context-Table",
+            [createFileUri(extensionPath, "pack")],
+            createFileUri(extensionPath, "pack", "context-table-panel.js")
         );
         this.contextTable = tablePanel;
 
         // adds listener for mouse click on a cell
         context.subscriptions.push(
-            this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string; } | undefined) => {
+            this.contextTable.cellClicked((cell: { rowId: string; columnId: string; text?: string } | undefined) => {
                 if (cell?.text === "No") {
                     // delete selection in the diagram
                     this.endpoints[0].sendAction(SelectAction.create({ deselectedElementsIDs: this.lastSelectedUCA }));
@@ -123,9 +136,11 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
                     const texts = cell.text.split(",");
                     // language server must determine the range of the selected uca in the editor in order to highlight it
                     // when there are multiple UCAs in the cell only the first one is highlighted in the editor
-                    this.languageClient.sendNotification('contextTable/selected', texts[0]);
+                    this.languageClient.sendNotification("contextTable/selected", texts[0]);
                     // highlight corresponding node in the diagram and maybe deselect the last selected one
-                    this.endpoints[0].sendAction(SelectAction.create({ selectedElementsIDs: texts, deselectedElementsIDs: this.lastSelectedUCA }));
+                    this.endpoints[0].sendAction(
+                        SelectAction.create({ selectedElementsIDs: texts, deselectedElementsIDs: this.lastSelectedUCA })
+                    );
                     this.lastSelectedUCA = texts;
                 }
             })
@@ -140,7 +155,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
             webviewContainer,
             messenger: this.messenger,
             messageParticipant: participant,
-            identifier
+            identifier,
         });
     }
 
@@ -162,12 +177,16 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
                             diagramType: activeWebview.diagramIdentifier.diagramType,
                             needsClientLayout: true,
                             needsServerLayout: true,
-                            sourceUri: activeWebview.diagramIdentifier.uri
-                        } as JsonMap, uri: uri
-                    } as GenerateSVGsAction
+                            sourceUri: activeWebview.diagramIdentifier.uri,
+                        } as JsonMap,
+                        uri: uri,
+                    } as GenerateSVGsAction,
                 };
                 // send request
-                const diagramSize: Record<string, number> = await this.languageClient.sendRequest('result/createDiagrams', mes);
+                const diagramSize: Record<string, number> = await this.languageClient.sendRequest(
+                    "result/createDiagrams",
+                    mes
+                );
                 return diagramSize;
             }
         }

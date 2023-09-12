@@ -15,16 +15,30 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import * as vscode from 'vscode';
-import { StpaComponent, StpaResult, UCA_TYPE, createFile } from './utils';
-import { StpaLspVscodeExtension } from './language-extension';
-import * as dayjs from 'dayjs';
+import * as dayjs from "dayjs";
+import * as vscode from "vscode";
+import { StpaLspVscodeExtension } from "../language-extension";
+import { StpaComponent, StpaResult, UCA_TYPE, createFile } from "../utils";
+import {
+    COMPLETE_GRAPH_PATH,
+    CONTROLLER_CONSTRAINT_PATH,
+    CONTROL_STRUCTURE_PATH,
+    HAZARD_PATH,
+    Headers,
+    RESPONSIBILITY_PATH,
+    SAFETY_REQUIREMENT_PATH,
+    SCENARIO_PATH,
+    SIZE_MULTIPLIER,
+    SVG_PATH,
+    SYSTEM_CONSTRAINT_PATH,
+    UCA_PATH,
+} from "./utils";
 
 /**
  * Creates a markdown file for the given {@code data}.
  * @param data The STPA result for which the markdown file should be created.
  * @param extension The PASTA extension.
- * @returns 
+ * @returns
  */
 export async function createSTPAResultMarkdownFile(data: StpaResult, extension: StpaLspVscodeExtension): Promise<void> {
     // Ask the user where to save the markdown file
@@ -32,7 +46,7 @@ export async function createSTPAResultMarkdownFile(data: StpaResult, extension: 
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : undefined;
     const uri = await vscode.window.showSaveDialog({
-        filters: { Markdown: ['md'] },
+        filters: { Markdown: ["md"] },
         // TODO: not possible with current vscode version
         // title: 'Save Markdown to...',
         defaultUri: currentFolder ? vscode.Uri.file(`${currentFolder}/report.md`) : undefined,
@@ -43,28 +57,14 @@ export async function createSTPAResultMarkdownFile(data: StpaResult, extension: 
     }
 
     // create svg diagrams and save their width
-    const diagramSizes: Record<string, number> = await extension.createSVGDiagrams(uri.path.substring(0, uri.path.lastIndexOf('/')) + SVG_PATH);
+    const diagramSizes: Record<string, number> = await extension.createSVGDiagrams(
+        uri.path.substring(0, uri.path.lastIndexOf("/")) + SVG_PATH
+    );
 
     // create the markdown text
     const markdown = createSTPAResultMarkdownText(data, diagramSizes);
     // create the file
     createFile(uri.path, markdown);
-}
-
-/**
- * The Headers for the STPA result file.
- */
-class Headers {
-    static Loss = "Losses";
-    static Hazard = "Hazards";
-    static SystemLevelConstraint = "System-level Constraints";
-    static Responsibility = "Responsibilities";
-    static ControlStructure = "Control Structure";
-    static UCA = "UCAs";
-    static ControllerConstraint = "Controller Constraints";
-    static LossScenario = "Loss Scenarios";
-    static SafetyRequirement = "Safety Requirements";
-    static summary = "Summarized Safety Constraints";
 }
 
 /**
@@ -83,18 +83,30 @@ function createSTPAResultMarkdownText(data: StpaResult, diagramSizes: Record<str
     // hazards
     markdown += stpaAspectToMarkdown(Headers.Hazard, data.hazards, HAZARD_PATH, diagramSizes);
     // system-level constraints
-    markdown += stpaAspectToMarkdown(Headers.SystemLevelConstraint, data.systemLevelConstraints, SYSTEM_CONSTRAINT_PATH, diagramSizes);
+    markdown += stpaAspectToMarkdown(
+        Headers.SystemLevelConstraint,
+        data.systemLevelConstraints,
+        SYSTEM_CONSTRAINT_PATH,
+        diagramSizes
+    );
     // control structure
     markdown += addControlStructure(diagramSizes);
     // responsibilities
     markdown += recordToMarkdown(Headers.Responsibility, data.responsibilities);
     if (Object.keys(data.responsibilities).length > 0) {
-        markdown += `<img src=".${SVG_PATH + RESPONSIBILITY_PATH}" width="${diagramSizes[RESPONSIBILITY_PATH] * SIZE_MULTIPLIER}">\n\n<br>\n\n`;
+        markdown += `<img src=".${SVG_PATH + RESPONSIBILITY_PATH}" width="${
+            diagramSizes[RESPONSIBILITY_PATH] * SIZE_MULTIPLIER
+        }">\n\n<br>\n\n`;
     }
     // UCAs
     markdown += ucasToMarkdown(data.ucas, diagramSizes);
     // controller constraints
-    markdown += stpaAspectToMarkdown(Headers.ControllerConstraint, data.controllerConstraints, CONTROLLER_CONSTRAINT_PATH, diagramSizes);
+    markdown += stpaAspectToMarkdown(
+        Headers.ControllerConstraint,
+        data.controllerConstraints,
+        CONTROLLER_CONSTRAINT_PATH,
+        diagramSizes
+    );
     // loss scenarios
     markdown += scenariosToMarkdown(data.ucaScenarios, data.scenarios, diagramSizes);
     // safety requirements
@@ -114,7 +126,12 @@ function createSTPAResultMarkdownText(data: StpaResult, diagramSizes: Record<str
  * @param diagramSizes The widths of the diagrams that should be embedded.
  * @returns the markdown text for the given aspect and its components.
  */
-function stpaAspectToMarkdown(aspect: string, components: StpaComponent[], svgName?: string, diagramSizes?: Record<string, number>): string {
+function stpaAspectToMarkdown(
+    aspect: string,
+    components: StpaComponent[],
+    svgName?: string,
+    diagramSizes?: Record<string, number>
+): string {
     let markdown = `## ${aspect}\n\n`;
     if (components.length === 0) {
         // extra text if no components are defined.
@@ -130,7 +147,9 @@ function stpaAspectToMarkdown(aspect: string, components: StpaComponent[], svgNa
         }
         // add the diagram if one is given
         if (svgName && diagramSizes) {
-            markdown += `\n<img src=".${SVG_PATH + svgName}" width="${diagramSizes[svgName] * SIZE_MULTIPLIER}">\n\n<br>\n\n`;
+            markdown += `\n<img src=".${SVG_PATH + svgName}" width="${
+                diagramSizes[svgName] * SIZE_MULTIPLIER
+            }">\n\n<br>\n\n`;
         }
     }
     return markdown;
@@ -216,17 +235,23 @@ function recordToMarkdown(aspect: string, data: Record<string, StpaComponent[]>)
  * @param diagramSizes The widths of the diagrams to include.
  * @returns the markdown text for the given scenarios.
  */
-function scenariosToMarkdown(ucaScenarios: Record<string, StpaComponent[]>, scenarios: StpaComponent[], diagramSizes: Record<string, number>): string {
+function scenariosToMarkdown(
+    ucaScenarios: Record<string, StpaComponent[]>,
+    scenarios: StpaComponent[],
+    diagramSizes: Record<string, number>
+): string {
     // translate the uca scenarios
     let markdown = recordToMarkdown(Headers.LossScenario, ucaScenarios);
     // translate the other scenarios
     if (scenarios.length !== 0) {
         markdown += `**Scenarios without associated UCA**\n\n`;
-        markdown += scenarios.map(scenario => stpaComponentToMarkdown(scenario)).join("  \n");
+        markdown += scenarios.map((scenario) => stpaComponentToMarkdown(scenario)).join("  \n");
         markdown += `\n`;
     }
     // add the diagram for the loss scenarios
-    markdown += `\n<img src=".${SVG_PATH + SCENARIO_PATH}" width="${diagramSizes[SCENARIO_PATH] * SIZE_MULTIPLIER}">\n\n<br>\n\n`;
+    markdown += `\n<img src=".${SVG_PATH + SCENARIO_PATH}" width="${
+        diagramSizes[SCENARIO_PATH] * SIZE_MULTIPLIER
+    }">\n\n<br>\n\n`;
     return markdown;
 }
 
@@ -236,7 +261,10 @@ function scenariosToMarkdown(ucaScenarios: Record<string, StpaComponent[]>, scen
  * @param diagramSizes The widths of the diagrams to include.
  * @returns the markdown table for the UCAs.
  */
-function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string, StpaComponent[]>; }[], diagramSizes: Record<string, number>): string {
+function ucasToMarkdown(
+    actionUcas: { controlAction: string; ucas: Record<string, StpaComponent[]> }[],
+    diagramSizes: Record<string, number>
+): string {
     let markdown = `## ${Headers.UCA}\n\n`;
     for (const actionUCA of actionUcas) {
         // for each control action a table is generated
@@ -245,19 +273,21 @@ function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string
         markdown += `<table border="1px"  border-collapse="collapse">\n<tr>\n<th>not provided</th>\n<th>provided</th>\n<th>too late or too early</th>\n<th>applied too long or stopped too soon</th>\n</tr>\n`;
         markdown += "<tr><td>\n";
         // add not provided UCAs
-        markdown += actionUCA.ucas[UCA_TYPE.NOT_PROVIDED].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += actionUCA.ucas[UCA_TYPE.NOT_PROVIDED].map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n<td>\n";
         // add provided UCAs
-        markdown += actionUCA.ucas[UCA_TYPE.PROVIDED].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += actionUCA.ucas[UCA_TYPE.PROVIDED].map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n<td>\n";
         // add wrong timing UCAs
-        markdown += actionUCA.ucas[UCA_TYPE.WRONG_TIME].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += actionUCA.ucas[UCA_TYPE.WRONG_TIME].map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n<td>\n";
         // add continous UCAs
-        markdown += actionUCA.ucas[UCA_TYPE.CONTINUOUS].map(uca => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += actionUCA.ucas[UCA_TYPE.CONTINUOUS].map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n</tr>\n</table>\n\n<br>\n\n";
         // add the filtered diagram for the control action
-        markdown += `<img src=".${SVG_PATH + "/" + actionUCA.controlAction.replace(".", "-") + ".svg"}" width="${diagramSizes["/" + actionUCA.controlAction.replace(".", "-") + ".svg"] * SIZE_MULTIPLIER}">\n\n<br><br>\n\n`;
+        markdown += `<img src=".${SVG_PATH + "/" + actionUCA.controlAction.replace(".", "-") + ".svg"}" width="${
+            diagramSizes["/" + actionUCA.controlAction.replace(".", "-") + ".svg"] * SIZE_MULTIPLIER
+        }">\n\n<br><br>\n\n`;
     }
     // add a diagram for all UCAs
     markdown += `### _All UCAs_\n\n`;
@@ -272,7 +302,7 @@ function ucasToMarkdown(actionUcas: { controlAction: string, ucas: Record<string
  * @returns the markdown text for the summary of the defined constraints.
  */
 function addSummary(data: StpaResult, diagramSizes: Record<string, number>): string {
-    let markdown = `## ${Headers.summary}\n\n`;
+    let markdown = `## ${Headers.Summary}\n\n`;
     // add system-level constraints
     for (const component of data.systemLevelConstraints) {
         markdown += stpaComponentToMarkdown(component);
@@ -289,7 +319,9 @@ function addSummary(data: StpaResult, diagramSizes: Record<string, number>): str
         markdown += `  \n`;
     }
     // add a diagram of the whole diagram
-    markdown += `\n\n<img src=".${SVG_PATH + COMPLETE_GRAPH_PATH}" width="${diagramSizes[COMPLETE_GRAPH_PATH] * SIZE_MULTIPLIER}">\n\n`;
+    markdown += `\n\n<img src=".${SVG_PATH + COMPLETE_GRAPH_PATH}" width="${
+        diagramSizes[COMPLETE_GRAPH_PATH] * SIZE_MULTIPLIER
+    }">\n\n`;
     return markdown;
 }
 
@@ -300,7 +332,9 @@ function addSummary(data: StpaResult, diagramSizes: Record<string, number>): str
  */
 function addControlStructure(diagramSizes: Record<string, number>): string {
     let markdown = `## ${Headers.ControlStructure}\n\n`;
-    markdown += `<img src=".${SVG_PATH + CONTROL_STRUCTURE_PATH}" width="${diagramSizes[CONTROL_STRUCTURE_PATH] * SIZE_MULTIPLIER}">\n\n<br>\n\n`;
+    markdown += `<img src=".${SVG_PATH + CONTROL_STRUCTURE_PATH}" width="${
+        diagramSizes[CONTROL_STRUCTURE_PATH] * SIZE_MULTIPLIER
+    }">\n\n<br>\n\n`;
     return markdown;
 }
 
@@ -309,7 +343,10 @@ function addControlStructure(diagramSizes: Record<string, number>): string {
  * @returns the copyright for the markdown file.
  */
 function addCopyRight(): string {
-    const markdown = "<br><br>\n\nSTPA Report generated by PASTA, " + dayjs().format("YYYY-MM-DD HH:mm:ss") + " (https://github.com/kieler/stpa)";
+    const markdown =
+        "<br><br>\n\nSTPA Report generated by PASTA, " +
+        dayjs().format("YYYY-MM-DD HH:mm:ss") +
+        " (https://github.com/kieler/stpa)";
     return markdown;
 }
 
@@ -322,29 +359,23 @@ function createTOC(): string {
     let markdown = "## Table of Contents\n\n";
     markdown += `1. [${Headers.Loss}](#${Headers.Loss.toLowerCase()})\n`;
     markdown += `2. [${Headers.Hazard}](#${Headers.Hazard.toLowerCase()})\n`;
-    markdown += `3. [${Headers.SystemLevelConstraint}](#${Headers.SystemLevelConstraint.toLowerCase().replace(" ", "-")})\n`;
+    markdown += `3. [${Headers.SystemLevelConstraint}](#${Headers.SystemLevelConstraint.toLowerCase().replace(
+        " ",
+        "-"
+    )})\n`;
     markdown += `4. [${Headers.ControlStructure}](#${Headers.ControlStructure.toLowerCase().replace(" ", "-")})\n`;
     markdown += `5. [${Headers.Responsibility}](#${Headers.Responsibility.toLowerCase()})\n`;
     markdown += `6. [${Headers.UCA}](#${Headers.UCA.toLowerCase()})\n`;
-    markdown += `7. [${Headers.ControllerConstraint}](#${Headers.ControllerConstraint.toLowerCase().replace(" ", "-")})\n`;
+    markdown += `7. [${Headers.ControllerConstraint}](#${Headers.ControllerConstraint.toLowerCase().replace(
+        " ",
+        "-"
+    )})\n`;
     markdown += `8. [${Headers.LossScenario}](#${Headers.LossScenario.toLowerCase().replace(" ", "-")})\n`;
     markdown += `9. [${Headers.SafetyRequirement}](#${Headers.SafetyRequirement.toLowerCase().replace(" ", "-")})\n`;
-    markdown += `10. [${Headers.ControllerConstraint}](#${Headers.ControllerConstraint.toLowerCase().replace(" ", "-")})\n`;
-    markdown += `11. [${Headers.summary}](#${Headers.summary.toLowerCase().replace(" ", "-").replace(" ", "-")})\n`;
+    markdown += `10. [${Headers.ControllerConstraint}](#${Headers.ControllerConstraint.toLowerCase().replace(
+        " ",
+        "-"
+    )})\n`;
+    markdown += `11. [${Headers.Summary}](#${Headers.Summary.toLowerCase().replace(" ", "-").replace(" ", "-")})\n`;
     return markdown;
 }
-
-/* the paths for the several diagrams of the STPA aspects */
-const SVG_PATH = "/images";
-const CONTROL_STRUCTURE_PATH = "/control-structure.svg";
-const HAZARD_PATH = "/hazard.svg";
-const SYSTEM_CONSTRAINT_PATH = "/system-constraint.svg";
-const RESPONSIBILITY_PATH = "/responsibility.svg";
-const UCA_PATH = "/all-UCAs.svg";
-const CONTROLLER_CONSTRAINT_PATH = "/controller-constraint.svg";
-const SCENARIO_PATH = "/scenario.svg";
-const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
-const COMPLETE_GRAPH_PATH = "/complete-graph.svg";
-
-/* size multiplier for the diagrams */
-const SIZE_MULTIPLIER = 0.85;
