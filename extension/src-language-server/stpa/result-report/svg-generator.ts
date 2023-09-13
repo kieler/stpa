@@ -28,6 +28,9 @@ export const CONTROLLER_CONSTRAINT_PATH = "/controller-constraint.svg";
 export const SCENARIO_PATH = "/scenario.svg";
 export const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
 export const COMPLETE_GRAPH_PATH = "/complete-graph.svg";
+export const FILTERED_UCA_PATH = (controlAction: string): string => {
+    return "/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
+};
 
 /* used to reset the options after diagrams were created */
 const savedOptions: Map<string, string> = new Map();

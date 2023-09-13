@@ -23,9 +23,10 @@ import {
     Hazard,
     LossScenario,
     Responsibility,
+    Rule,
     SafetyConstraint,
     SystemConstraint,
-    UCA,
+    UCA
 } from "../../generated/ast";
 import { getModel } from "../../utils";
 import { StpaComponent, StpaResult, UCA_TYPE } from "../utils";
@@ -68,7 +69,11 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
 
     //UCAs
     model.allUCAs.forEach((component) => {
-        result.ucas.push(createUCAResult(component));
+        const ucaResult = createUCAResult(component);
+        result.ucas[ucaResult.controlAction] = ucaResult.ucas;
+    });
+    model.rules.forEach((component) => {
+        addRuleUCA(component, result);
     });
 
     // title for the result report
@@ -162,6 +167,91 @@ function createUCAResult(component: ActionUCAs): { controlAction: string; ucas: 
     ucas[UCA_TYPE.WRONG_TIME] = createResultListComponents(component.wrongTimingUcas);
     ucas[UCA_TYPE.CONTINUOUS] = createResultListComponents(component.continousUcas);
     return { controlAction, ucas };
+}
+
+/**
+ */
+function addRuleUCA(rule: Rule, result: StpaResult): void {
+    const controlAction = rule.system.$refText + "." + rule.action.$refText;
+    if (result.ucas[controlAction] === undefined) {
+        result.ucas[controlAction] = {};
+    }
+    const ucas = translateRuleToUCAs(rule);
+    switch (rule.type) {
+        case "provided":
+            if (result.ucas[controlAction][UCA_TYPE.PROVIDED] === undefined) {
+                result.ucas[controlAction][UCA_TYPE.PROVIDED] = ucas;
+            } else {
+                result.ucas[controlAction][UCA_TYPE.PROVIDED].concat(ucas);
+            }
+            break;
+        case "not-provided":
+            if (result.ucas[controlAction][UCA_TYPE.NOT_PROVIDED] === undefined) {
+                result.ucas[controlAction][UCA_TYPE.NOT_PROVIDED] = ucas;
+            } else {
+                result.ucas[controlAction][UCA_TYPE.NOT_PROVIDED].concat(ucas);
+            }
+            break;
+        case "wrong-time":
+        case "too-early":
+        case "too-late":
+            if (result.ucas[controlAction][UCA_TYPE.WRONG_TIME] === undefined) {
+                result.ucas[controlAction][UCA_TYPE.WRONG_TIME] = ucas;
+            } else {
+                result.ucas[controlAction][UCA_TYPE.WRONG_TIME].concat(ucas);
+            }
+            break;
+        case "applied-too-long":
+        case "stopped-too-soon":
+            if (result.ucas[controlAction][UCA_TYPE.CONTINUOUS] === undefined) {
+                result.ucas[controlAction][UCA_TYPE.CONTINUOUS] = ucas;
+            } else {
+                result.ucas[controlAction][UCA_TYPE.CONTINUOUS].concat(ucas);
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+function translateRuleToUCAs(rule: Rule): StpaComponent[] {
+    const ucas: StpaComponent[] = [];
+    let type = ``;
+    switch (rule.type) {
+        case "provided":
+        case "not-provided":
+            type = `${rule.type} the control action ${rule.action.$refText}`;
+            break;
+        case "wrong-time":
+            type = `provided the control action ${rule.action.$refText} at the wrong time`;
+        case "too-early":
+        case "too-late":
+            type = `provided the control action ${rule.action.$refText} ${rule.type}`;
+            break;
+        case "applied-too-long":
+            type = `applied the control action ${rule.action.$refText} too long`;
+            break;
+        case "stopped-too-soon":
+            type = `stopped the control action ${rule.action.$refText} too soon`;
+            break;
+    }
+
+    rule.contexts.forEach((context) => {
+        let contextText = ``;
+        for (let i = 0; i < context.values.length; i++) {
+            contextText += `${context.vars[i].$refText} = ${context.values[i]}`;
+            if (i !== context.values.length - 1) {
+                contextText += ` and `;
+            }
+        }
+        const description = `${rule.system.$refText} ${type}, when ${contextText}.`;
+        ucas.push({
+            id: context.name,
+            description,
+            references: context.list.refs.map((ref: Reference<AstNode>) => ref.$refText).join(", "),
+        });
+    });
+    return ucas;
 }
 
 /**

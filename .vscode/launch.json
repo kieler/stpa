@@ -34,7 +34,7 @@
 				"webpack:///./~/*": "${workspaceFolder}/extension/node_modules/*",
 				"webpack://?:*/*": "${workspaceFolder}/extension/*"
 			},
-            "type": "pwa-node"
+            "type": "node"
         }
     ]
 }

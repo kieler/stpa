@@ -23,6 +23,7 @@ import {
     COMPLETE_GRAPH_PATH,
     CONTROLLER_CONSTRAINT_PATH,
     CONTROL_STRUCTURE_PATH,
+    FILTERED_UCA_PATH,
     HAZARD_PATH,
     Headers,
     RESPONSIBILITY_PATH,
@@ -262,31 +263,32 @@ function scenariosToMarkdown(
  * @returns the markdown table for the UCAs.
  */
 function ucasToMarkdown(
-    actionUcas: { controlAction: string; ucas: Record<string, StpaComponent[]> }[],
+    actionUcas: Record<string, Record<string, StpaComponent[]>>,
     diagramSizes: Record<string, number>
 ): string {
     let markdown = `## ${Headers.UCA}\n\n`;
-    for (const actionUCA of actionUcas) {
+    for (const actionUCA of Object.keys(actionUcas)) {
         // for each control action a table is generated
-        markdown += `### _${actionUCA.controlAction}_\n\n`;
+        markdown += `### _${actionUCA}_\n\n`;
         // header of the table containing the UCA types
         markdown += `<table border="1px"  border-collapse="collapse">\n<tr>\n<th>not provided</th>\n<th>provided</th>\n<th>too late or too early</th>\n<th>applied too long or stopped too soon</th>\n</tr>\n`;
         markdown += "<tr><td>\n";
         // add not provided UCAs
-        markdown += actionUCA.ucas[UCA_TYPE.NOT_PROVIDED].map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += actionUcas[actionUCA][UCA_TYPE.NOT_PROVIDED]?.map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n<td>\n";
         // add provided UCAs
-        markdown += actionUCA.ucas[UCA_TYPE.PROVIDED].map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += actionUcas[actionUCA][UCA_TYPE.PROVIDED]?.map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n<td>\n";
         // add wrong timing UCAs
-        markdown += actionUCA.ucas[UCA_TYPE.WRONG_TIME].map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += actionUcas[actionUCA][UCA_TYPE.WRONG_TIME]?.map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n<td>\n";
         // add continous UCAs
-        markdown += actionUCA.ucas[UCA_TYPE.CONTINUOUS].map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
+        markdown += actionUcas[actionUCA][UCA_TYPE.CONTINUOUS]?.map((uca) => ucaComponentToMarkdown(uca)).join("<br><br>");
         markdown += "</td>\n</tr>\n</table>\n\n<br>\n\n";
         // add the filtered diagram for the control action
-        markdown += `<img src=".${SVG_PATH + "/" + actionUCA.controlAction.replace(".", "-") + ".svg"}" width="${
-            diagramSizes["/" + actionUCA.controlAction.replace(".", "-") + ".svg"] * SIZE_MULTIPLIER
+        const path = FILTERED_UCA_PATH(actionUCA);
+        markdown += `<img src=".${SVG_PATH + path}" width="${
+            diagramSizes[path] * SIZE_MULTIPLIER
         }">\n\n<br><br>\n\n`;
     }
     // add a diagram for all UCAs

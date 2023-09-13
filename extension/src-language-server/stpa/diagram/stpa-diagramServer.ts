@@ -32,6 +32,7 @@ import {
     COMPLETE_GRAPH_PATH,
     CONTROLLER_CONSTRAINT_PATH,
     CONTROL_STRUCTURE_PATH,
+    FILTERED_UCA_PATH,
     HAZARD_PATH,
     RESPONSIBILITY_PATH,
     SAFETY_REQUIREMENT_PATH,
@@ -126,7 +127,7 @@ export class StpaDiagramServer extends DiagramServer {
             await this.createSVG(
                 setSynthesisOption,
                 action.uri,
-                "/" + value.id.replace(".", "-").replace(" ", "-") + ".svg"
+                FILTERED_UCA_PATH(value.id)
             );
         }
 
