@@ -37,14 +37,17 @@ export const CONTROL_STRUCTURE_PATH = "/control-structure.svg";
 export const HAZARD_PATH = "/hazard.svg";
 export const SYSTEM_CONSTRAINT_PATH = "/system-constraint.svg";
 export const RESPONSIBILITY_PATH = "/responsibility.svg";
-export const UCA_PATH = "/all-UCAs.svg";
-export const CONTROLLER_CONSTRAINT_PATH = "/controller-constraint.svg";
 export const SCENARIO_PATH = "/scenario.svg";
 export const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
 export const COMPLETE_GRAPH_PATH = "/complete-graph.svg";
 export const FILTERED_UCA_PATH = (controlAction: string): string => {
-    return "/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
+    return "/ucas/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
 };
+export const UCA_PATH = FILTERED_UCA_PATH("all-UCAs");
+export const FILTERED_CONTROLLER_CONSTRAINT_PATH = (controlAction: string): string => {
+    return "/controller-constraints/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
+};
+export const CONTROLLER_CONSTRAINT_PATH = FILTERED_CONTROLLER_CONSTRAINT_PATH("all-UCAs");
 
 /* size multiplier for the diagrams */
 export const SIZE_MULTIPLIER = 0.85;

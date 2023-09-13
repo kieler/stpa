@@ -27,7 +27,8 @@ const commonConfig = {
                 use: ['source-map-loader'],
             }
         ]
-    }
+    },
+    ignoreWarnings: [/Failed to parse source map/]
 }
 
 /**@type {import('webpack').Configuration}*/
@@ -88,7 +89,8 @@ const commonWebConfig = {
                 }
             },
         ]
-    }
+    },
+    ignoreWarnings: [/Failed to parse source map/]
 };
 
 /**@type {import('webpack').Configuration}*/

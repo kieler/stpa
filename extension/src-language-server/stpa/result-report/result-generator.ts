@@ -52,7 +52,20 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
     // TODO: consider subhazard headers
     result.hazards = createHazardOrSystemConstraintComponents(model.hazards);
     result.systemLevelConstraints = createHazardOrSystemConstraintComponents(model.systemLevelConstraints);
-    result.controllerConstraints = createResultComponents(model.controllerConstraints);
+
+    // controller constraints sorted by control action
+    model.controllerConstraints.forEach((component) => {
+        const resultComponent = createSingleComponent(component);
+        const controlAction = createControlActionText(component.refs[0].ref?.$container);
+        if (result.controllerConstraints[controlAction] === undefined) {
+            result.controllerConstraints[controlAction] = [resultComponent];
+        } else {
+            result.controllerConstraints[controlAction].push(resultComponent);
+        }
+
+    });
+    
+    // safety constraints
     result.safetyCons = createResultComponents(model.safetyCons);
 
     // responsibilities
@@ -160,7 +173,7 @@ function createSingleComponent(
  * @returns the result for UCAs grouped by the UCA types.
  */
 function createUCAResult(component: ActionUCAs): { controlAction: string; ucas: Record<string, StpaComponent[]> } {
-    const controlAction = component.system.$refText + "." + component.action.$refText;
+    const controlAction = createControlActionText(component);
     const ucas: Record<string, StpaComponent[]> = {};
     ucas[UCA_TYPE.NOT_PROVIDED] = createResultListComponents(component.notProvidingUcas);
     ucas[UCA_TYPE.PROVIDED] = createResultListComponents(component.providingUcas);
@@ -169,10 +182,17 @@ function createUCAResult(component: ActionUCAs): { controlAction: string; ucas: 
     return { controlAction, ucas };
 }
 
+function createControlActionText(component: ActionUCAs | Rule | undefined): string {
+    if (component === undefined) {
+        return "";
+    }
+    return component.system.$refText + "." + component.action.$refText;
+}
+
 /**
  */
 function addRuleUCA(rule: Rule, result: StpaResult): void {
-    const controlAction = rule.system.$refText + "." + rule.action.$refText;
+    const controlAction = createControlActionText(rule);
     if (result.ucas[controlAction] === undefined) {
         result.ucas[controlAction] = {};
     }

@@ -30,8 +30,8 @@ import { DropDownOption } from "../../options/option-models";
 import { GenerateSVGsAction, RequestSvgAction, SvgAction } from "../actions";
 import {
     COMPLETE_GRAPH_PATH,
-    CONTROLLER_CONSTRAINT_PATH,
     CONTROL_STRUCTURE_PATH,
+    FILTERED_CONTROLLER_CONSTRAINT_PATH,
     FILTERED_UCA_PATH,
     HAZARD_PATH,
     RESPONSIBILITY_PATH,
@@ -41,14 +41,14 @@ import {
     resetOptions,
     saveOptions,
     setControlStructureOptions,
-    setControllerConstraintGraphOptions,
+    setControllerConstraintWithFilteredUcaGraphOptions,
     setFilteredUcaGraphOptions,
     setHazardGraphOptions,
     setRelationshipGraphOptions,
     setResponsibilityGraphOptions,
     setSafetyRequirementGraphOptions,
     setScenarioGraphOptions,
-    setSystemConstraintGraphOptions,
+    setSystemConstraintGraphOptions
 } from "../result-report/svg-generator";
 import { StpaSynthesisOptions, filteringUCAsID } from "./synthesis-options";
 
@@ -124,16 +124,15 @@ export class StpaDiagramServer extends DiagramServer {
             .find((option) => option.synthesisOption.id === filteringUCAsID);
         for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
             setFilteredUcaGraphOptions(this.stpaOptions, value.id);
-            await this.createSVG(
-                setSynthesisOption,
-                action.uri,
-                FILTERED_UCA_PATH(value.id)
-            );
+            await this.createSVG(setSynthesisOption, action.uri, FILTERED_UCA_PATH(value.id));
         }
 
-        // controller constraint graph svg
-        setControllerConstraintGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, CONTROLLER_CONSTRAINT_PATH);
+        // filtered controller constraint graph svg
+        for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
+            setControllerConstraintWithFilteredUcaGraphOptions(this.stpaOptions, value.id);
+            await this.createSVG(setSynthesisOption, action.uri, FILTERED_CONTROLLER_CONSTRAINT_PATH(value.id));
+        }
+
         // scenario svg graph
         setScenarioGraphOptions(this.stpaOptions);
         await this.createSVG(setSynthesisOption, action.uri, SCENARIO_PATH);

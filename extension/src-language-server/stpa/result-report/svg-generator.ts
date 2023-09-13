@@ -24,12 +24,14 @@ export const CONTROL_STRUCTURE_PATH = "/control-structure.svg";
 export const HAZARD_PATH = "/hazard.svg";
 export const SYSTEM_CONSTRAINT_PATH = "/system-constraint.svg";
 export const RESPONSIBILITY_PATH = "/responsibility.svg";
-export const CONTROLLER_CONSTRAINT_PATH = "/controller-constraint.svg";
 export const SCENARIO_PATH = "/scenario.svg";
 export const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
 export const COMPLETE_GRAPH_PATH = "/complete-graph.svg";
 export const FILTERED_UCA_PATH = (controlAction: string): string => {
-    return "/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
+    return "/ucas/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
+};
+export const FILTERED_CONTROLLER_CONSTRAINT_PATH = (controlAction: string): string => {
+    return "/controller-constraints/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
 };
 
 /* used to reset the options after diagrams were created */
@@ -161,6 +163,18 @@ export function setControllerConstraintGraphOptions(options: StpaSynthesisOption
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
+    options.setHideSysCons(true);
+    options.setHideResps(false);
+    options.setHideUCAs(false);
+    options.setHideContCons(false);
+    options.setHideScenarios(true);
+    options.setHideSafetyConstraints(true);
+}
+
+export function setControllerConstraintWithFilteredUcaGraphOptions(options: StpaSynthesisOptions, value: string): void {
+    options.setShowRelationshipGraph(true);
+    options.setShowControlStructure(false);
+    options.setFilteringUCAs(value);
     options.setHideSysCons(true);
     options.setHideResps(false);
     options.setHideUCAs(false);
