@@ -18,21 +18,25 @@
 import * as dayjs from "dayjs";
 import * as vscode from "vscode";
 import { StpaLspVscodeExtension } from "../language-extension";
-import { StpaComponent, StpaResult, UCA_TYPE, createFile } from "../utils";
+import { UCA_TYPE, createFile } from "../utils";
 import {
     COMPLETE_GRAPH_PATH,
     CONTROLLER_CONSTRAINT_PATH,
     CONTROL_STRUCTURE_PATH,
     FILTERED_CONTROLLER_CONSTRAINT_PATH,
+    FILTERED_SCENARIO_PATH,
     FILTERED_UCA_PATH,
     HAZARD_PATH,
     Headers,
     RESPONSIBILITY_PATH,
     SAFETY_REQUIREMENT_PATH,
     SCENARIO_PATH,
+    SCENARIO_WITH_HAZARDS_PATH,
     SIZE_MULTIPLIER,
     SVG_PATH,
     SYSTEM_CONSTRAINT_PATH,
+    StpaComponent,
+    StpaResult,
     UCA_PATH,
 } from "./utils";
 
@@ -94,7 +98,7 @@ function createSTPAResultMarkdownText(data: StpaResult, diagramSizes: Record<str
     // control structure
     markdown += addControlStructure(diagramSizes);
     // responsibilities
-    markdown += recordToMarkdown(Headers.Responsibility, data.responsibilities);
+    markdown += recordToMarkdown(data.responsibilities, Headers.Responsibility);
     if (Object.keys(data.responsibilities).length > 0) {
         markdown += `<img src=".${SVG_PATH + RESPONSIBILITY_PATH}" width="${
             diagramSizes[RESPONSIBILITY_PATH] * SIZE_MULTIPLIER
@@ -205,23 +209,27 @@ function stpaComponentToMarkdown(component: StpaComponent): string {
  * @param data The data to translate.
  * @returns the markdown text for the given {@code data}.
  */
-function recordToMarkdown(aspect: string, data: Record<string, StpaComponent[]>): string {
-    let markdown = `## ${aspect}\n\n`;
-    if (Object.keys(data).length === 0) {
-        // extra text if no component is defined
-        markdown += `No ${aspect} defined.\n`;
-    } else {
-        for (const reference in data) {
-            // the components are grouped by their keys
-            markdown += `_${reference}_  \n`;
-            // translate the components
-            for (const component of data[reference]) {
-                markdown += stpaComponentToMarkdown(component);
-                markdown += `  \n`;
-            }
-            markdown += `\n`;
+function recordToMarkdown(data: Record<string, StpaComponent[]>, aspect?: string): string {
+    let markdown = ``;
+    if (aspect) {
+        markdown += `## ${aspect}\n\n`;
+        if (Object.keys(data).length === 0) {
+            // extra text if no component is defined
+            markdown += `No ${aspect} defined.\n`;
+            return markdown;
         }
     }
+    for (const reference in data) {
+        // the components are grouped by their keys
+        markdown += `_${reference}_  \n`;
+        // translate the components
+        for (const component of data[reference]) {
+            markdown += stpaComponentToMarkdown(component);
+            markdown += `  \n`;
+        }
+        markdown += `\n`;
+    }
+
     return markdown;
 }
 
@@ -233,20 +241,33 @@ function recordToMarkdown(aspect: string, data: Record<string, StpaComponent[]>)
  * @returns the markdown text for the given scenarios.
  */
 function scenariosToMarkdown(
-    ucaScenarios: Record<string, StpaComponent[]>,
+    ucaScenarios: Record<string, Record<string, StpaComponent[]>>,
     scenarios: StpaComponent[],
     diagramSizes: Record<string, number>
 ): string {
     // translate the uca scenarios
-    let markdown = recordToMarkdown(Headers.LossScenario, ucaScenarios);
+    let markdown = `## ${Headers.LossScenario}\n\n`;
+    markdown += `### Scenarios with associated UCA\n\n`;
+    for (const key of Object.keys(ucaScenarios)) {
+        markdown += `#### _${key}_\n\n`;
+        markdown += recordToMarkdown(ucaScenarios[key]) + "\n";
+        // add the filtered diagram for the control action
+        const path = FILTERED_SCENARIO_PATH(key);
+        markdown += `<img src=".${SVG_PATH + path}" width="${diagramSizes[path] * SIZE_MULTIPLIER}">\n\n<br>\n\n`;
+    }
+
     // translate the other scenarios
     if (scenarios.length !== 0) {
-        markdown += `**Scenarios without associated UCA**\n\n`;
-        markdown += scenarios.map((scenario) => stpaComponentToMarkdown(scenario)).join("  \n");
-        markdown += `\n`;
+        markdown += `### Scenarios without associated UCA\n\n`;
+        markdown += scenarios.map((scenario) => stpaComponentToMarkdown(scenario)).join("  \n") + `\n`;
+        markdown += `<img src=".${SVG_PATH + SCENARIO_WITH_HAZARDS_PATH}" width="${
+            diagramSizes[SCENARIO_WITH_HAZARDS_PATH] * SIZE_MULTIPLIER
+        }">\n\n`;
     }
-    // add the diagram for the loss scenarios
-    markdown += `\n<img src=".${SVG_PATH + SCENARIO_PATH}" width="${
+
+    // add the diagram for all scenarios
+    markdown += `### All Scenarios\n\n`;
+    markdown += `<img src=".${SVG_PATH + SCENARIO_PATH}" width="${
         diagramSizes[SCENARIO_PATH] * SIZE_MULTIPLIER
     }">\n\n<br>\n\n`;
     return markdown;

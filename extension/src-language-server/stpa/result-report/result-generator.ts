@@ -283,11 +283,15 @@ function createScenarioResult(component: LossScenario, result: StpaResult): void
     if (component.uca) {
         // translates scenario with a reference to an UCA
         const scenario = createSingleListComponent(component);
-        const scenarioList = result.ucaScenarios[component.uca.$refText];
+        const controlAction = createControlActionText(component.uca.ref?.$container);
+        if (result.ucaScenarios[controlAction] === undefined) {
+            result.ucaScenarios[controlAction] = {};
+        }
+        const scenarioList = result.ucaScenarios[controlAction][component.uca.$refText];
         if (scenarioList !== undefined) {
             scenarioList.push(scenario);
         } else {
-            result.ucaScenarios[component.uca.$refText] = [scenario];
+            result.ucaScenarios[controlAction][component.uca.$refText] = [scenario];
         }
     } else {
         // translates scenario without a reference to an UCA

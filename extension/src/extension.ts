@@ -23,10 +23,11 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 import { Messenger } from 'vscode-messenger';
 import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
-import { StpaResult, createQuickPickForWorkspaceOptions } from './utils';
+import { createQuickPickForWorkspaceOptions } from './utils';
 import { createSTPAResultMarkdownFile } from './report/md-export';
 import { LTLFormula } from './sbm/utils';
 import { createSBMs } from './sbm/sbm-generation';
+import { StpaResult } from './report/utils';
 
 let languageClient: LanguageClient;
 

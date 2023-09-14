@@ -37,7 +37,6 @@ export const CONTROL_STRUCTURE_PATH = "/control-structure.svg";
 export const HAZARD_PATH = "/hazard.svg";
 export const SYSTEM_CONSTRAINT_PATH = "/system-constraint.svg";
 export const RESPONSIBILITY_PATH = "/responsibility.svg";
-export const SCENARIO_PATH = "/scenario.svg";
 export const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
 export const COMPLETE_GRAPH_PATH = "/complete-graph.svg";
 export const FILTERED_UCA_PATH = (controlAction: string): string => {
@@ -48,6 +47,35 @@ export const FILTERED_CONTROLLER_CONSTRAINT_PATH = (controlAction: string): stri
     return "/controller-constraints/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
 };
 export const CONTROLLER_CONSTRAINT_PATH = FILTERED_CONTROLLER_CONSTRAINT_PATH("all-UCAs");
+export const FILTERED_SCENARIO_PATH = (controlAction: string): string => {
+    return "/scenarios/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
+};
+export const SCENARIO_PATH = FILTERED_SCENARIO_PATH("all-UCAs");
+export const SCENARIO_WITH_HAZARDS_PATH = FILTERED_SCENARIO_PATH("no-UCAs");
 
 /* size multiplier for the diagrams */
 export const SIZE_MULTIPLIER = 0.85;
+
+export class StpaResult {
+    title: string;
+    losses: StpaComponent[] = [];
+    hazards: StpaComponent[] = [];
+    systemLevelConstraints: StpaComponent[] = [];
+    // sorted by system components
+    responsibilities: Record<string, StpaComponent[]> = {};
+    // sorted first by control action, then by uca type
+    ucas: Record<string, Record<string, StpaComponent[]>> = {};
+    // sorted by control action
+    controllerConstraints: Record<string, StpaComponent[]> = {};
+    // sorted by control action and by ucas
+    ucaScenarios: Record<string, Record<string, StpaComponent[]>> = {};
+    scenarios: StpaComponent[] = [];
+    safetyCons: StpaComponent[] = [];
+}
+
+export class StpaComponent {
+    id: string;
+    description: string;
+    references?: string;
+    subComponents?: StpaComponent[];
+}

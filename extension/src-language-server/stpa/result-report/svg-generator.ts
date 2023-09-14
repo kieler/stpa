@@ -24,7 +24,6 @@ export const CONTROL_STRUCTURE_PATH = "/control-structure.svg";
 export const HAZARD_PATH = "/hazard.svg";
 export const SYSTEM_CONSTRAINT_PATH = "/system-constraint.svg";
 export const RESPONSIBILITY_PATH = "/responsibility.svg";
-export const SCENARIO_PATH = "/scenario.svg";
 export const SAFETY_REQUIREMENT_PATH = "/safety-requirement.svg";
 export const COMPLETE_GRAPH_PATH = "/complete-graph.svg";
 export const FILTERED_UCA_PATH = (controlAction: string): string => {
@@ -33,6 +32,10 @@ export const FILTERED_UCA_PATH = (controlAction: string): string => {
 export const FILTERED_CONTROLLER_CONSTRAINT_PATH = (controlAction: string): string => {
     return "/controller-constraints/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
 };
+export const FILTERED_SCENARIO_PATH = (controlAction: string): string => {
+    return "/scenarios/" + controlAction.replace(".", "-").replace(" ", "-") + ".svg";
+};
+export const SCENARIO_WITH_HAZARDS_PATH = FILTERED_SCENARIO_PATH("no-UCAs");
 
 /* used to reset the options after diagrams were created */
 const savedOptions: Map<string, string> = new Map();
@@ -187,13 +190,37 @@ export function setControllerConstraintWithFilteredUcaGraphOptions(options: Stpa
  * Sets the values of {@code options} such that the relationship graph is reduced to the loss scenarios without system-level constraints.
  * @param options The synthesis options.
  */
-export function setScenarioGraphOptions(options: StpaSynthesisOptions): void {
+function setScenarioGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
     options.setHideSysCons(true);
     options.setHideResps(false);
     options.setHideUCAs(false);
+    options.setHideContCons(false);
+    options.setHideScenarios(false);
+    options.setHideSafetyConstraints(true);
+}
+
+export function setScenarioWithFilteredUCAGraphOptions(options: StpaSynthesisOptions, value: string): void {
+    options.setShowRelationshipGraph(true);
+    options.setShowControlStructure(false);
+    options.setFilteringUCAs(value);
+    options.setHideSysCons(true);
+    options.setHideResps(false);
+    options.setHideUCAs(false);
+    options.setHideContCons(false);
+    options.setHideScenarios(false);
+    options.setHideSafetyConstraints(true);
+}
+
+export function setScenarioWithNoUCAGraphOptions(options: StpaSynthesisOptions): void {
+    options.setShowRelationshipGraph(true);
+    options.setShowControlStructure(false);
+    options.setFilteringUCAs("all UCAs");
+    options.setHideSysCons(true);
+    options.setHideResps(false);
+    options.setHideUCAs(true);
     options.setHideContCons(false);
     options.setHideScenarios(false);
     options.setHideSafetyConstraints(true);

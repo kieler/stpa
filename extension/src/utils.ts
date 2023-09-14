@@ -99,30 +99,6 @@ export async function createFile(uri: string, text: string): Promise<void> {
     }
 }
 
-export class StpaResult {
-    title: string;
-    losses: StpaComponent[] = [];
-    hazards: StpaComponent[] = [];
-    systemLevelConstraints: StpaComponent[] = [];
-    // sorted by system components
-    responsibilities: Record<string, StpaComponent[]> = {};
-    // sorted first by control action, then by uca type
-    ucas: Record<string, Record<string, StpaComponent[]>> = {};
-    // sorted by control action
-    controllerConstraints: Record<string, StpaComponent[]> = {};
-    // sorted by ucas
-    ucaScenarios: Record<string, StpaComponent[]> = {};
-    scenarios: StpaComponent[] = [];
-    safetyCons: StpaComponent[] = [];
-}
-
-export class StpaComponent {
-    id: string;
-    description: string;
-    references?: string;
-    subComponents?: StpaComponent[];
-}
-
 /**
  * Provides the different UCA types.
  */

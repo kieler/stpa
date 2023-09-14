@@ -32,11 +32,12 @@ import {
     COMPLETE_GRAPH_PATH,
     CONTROL_STRUCTURE_PATH,
     FILTERED_CONTROLLER_CONSTRAINT_PATH,
+    FILTERED_SCENARIO_PATH,
     FILTERED_UCA_PATH,
     HAZARD_PATH,
     RESPONSIBILITY_PATH,
     SAFETY_REQUIREMENT_PATH,
-    SCENARIO_PATH,
+    SCENARIO_WITH_HAZARDS_PATH,
     SYSTEM_CONSTRAINT_PATH,
     resetOptions,
     saveOptions,
@@ -47,7 +48,8 @@ import {
     setRelationshipGraphOptions,
     setResponsibilityGraphOptions,
     setSafetyRequirementGraphOptions,
-    setScenarioGraphOptions,
+    setScenarioWithFilteredUCAGraphOptions,
+    setScenarioWithNoUCAGraphOptions,
     setSystemConstraintGraphOptions
 } from "../result-report/svg-generator";
 import { StpaSynthesisOptions, filteringUCAsID } from "./synthesis-options";
@@ -133,9 +135,15 @@ export class StpaDiagramServer extends DiagramServer {
             await this.createSVG(setSynthesisOption, action.uri, FILTERED_CONTROLLER_CONSTRAINT_PATH(value.id));
         }
 
-        // scenario svg graph
-        setScenarioGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, SCENARIO_PATH);
+        // filtered scenario graph svg
+        for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
+            setScenarioWithFilteredUCAGraphOptions(this.stpaOptions, value.id);
+            await this.createSVG(setSynthesisOption, action.uri, FILTERED_SCENARIO_PATH(value.id));
+        }
+        // scenario with hazard svg graph
+        setScenarioWithNoUCAGraphOptions(this.stpaOptions);
+        await this.createSVG(setSynthesisOption, action.uri, SCENARIO_WITH_HAZARDS_PATH);
+
         // safety requirement svg graph
         setSafetyRequirementGraphOptions(this.stpaOptions);
         await this.createSVG(setSynthesisOption, action.uri, SAFETY_REQUIREMENT_PATH);

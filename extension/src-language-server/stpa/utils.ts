@@ -127,8 +127,8 @@ export class StpaResult {
     ucas: Record<string, Record<string, StpaComponent[]>> = {};
     // sorted by control action
     controllerConstraints: Record<string, StpaComponent[]> = {};
-    // sorted by ucas
-    ucaScenarios: Record<string, StpaComponent[]> = {};
+    // sorted by control action and by ucas
+    ucaScenarios: Record<string, Record<string, StpaComponent[]>> = {};
     scenarios: StpaComponent[] = [];
     safetyCons: StpaComponent[] = [];
 }
