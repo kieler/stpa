@@ -100,8 +100,8 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
             ? []
             : model.scenarios?.filter((scenario) => {
                   if (
-                      !scenario.uca ||
-                      (!options.getHideUCAs() &&
+                      (!scenario.uca && !options.getHideScenariosWithHazard()) ||
+                      (scenario.uca && !options.getHideUCAs() &&
                           (scenario.uca?.ref?.$container.system.ref?.name +
                               "." +
                               scenario.uca?.ref?.$container.action.ref?.name ===

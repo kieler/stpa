@@ -32,6 +32,7 @@ const hideSysConsID = "hideSysCons";
 const hideRespsID = "hideResps";
 const hideContConsID = "hideContCons";
 const hideScenariosID = "hideScenarios";
+const hideScenariosWithHazardID = "hideScenariosWithHazards";
 const hideUCAsID = "hideUCAs";
 const hideSafetyConstraintsID = "hideSafetyConstraints";
 
@@ -290,6 +291,22 @@ const hideScenariosOption: ValuedSynthesisOption = {
 };
 
 /**
+ * Boolean option to toggle the visualization of loss scenarios that are not associated with a UCA.
+ */
+const hideScenariosWithHazardsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: hideScenariosWithHazardID,
+        name: "Hide Loss Scenarios Without UCAs",
+        type: TransformationOptionType.CHECK,
+        initialValue: false,
+        currentValue: false,
+        values: [true, false],
+        category: filterCategory,
+    },
+    currentValue: false,
+};
+
+/**
  * Slider to set the desired width of label lines.
  */
 const labelShorteningWidthOption: ValuedSynthesisOption = {
@@ -396,6 +413,7 @@ export class StpaSynthesisOptions {
             hideUCAsOption,
             hideContConsOption,
             hideScenariosOption,
+            hideScenariosWithHazardsOption,
             hideSafetyConstraintsOption,
             labelManagementOption,
             labelShorteningWidthOption,
@@ -565,6 +583,14 @@ export class StpaSynthesisOptions {
 
     getHideScenarios(): boolean {
         return this.getOption(hideScenariosID)?.currentValue;
+    }
+
+    setHideScenariosWithHazard(value: boolean): void {
+        this.setOption(hideScenariosWithHazardID, value);
+    }
+
+    getHideScenariosWithHazard(): boolean {
+        return this.getOption(hideScenariosWithHazardID)?.currentValue;
     }
 
     setHideSafetyConstraints(value: boolean): void {

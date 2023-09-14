@@ -209,8 +209,9 @@ export function setScenarioWithFilteredUCAGraphOptions(options: StpaSynthesisOpt
     options.setHideSysCons(true);
     options.setHideResps(false);
     options.setHideUCAs(false);
-    options.setHideContCons(false);
+    options.setHideContCons(true);
     options.setHideScenarios(false);
+    options.setHideScenariosWithHazard(true);
     options.setHideSafetyConstraints(true);
 }
 
@@ -221,8 +222,9 @@ export function setScenarioWithNoUCAGraphOptions(options: StpaSynthesisOptions):
     options.setHideSysCons(true);
     options.setHideResps(false);
     options.setHideUCAs(true);
-    options.setHideContCons(false);
+    options.setHideContCons(true);
     options.setHideScenarios(false);
+    options.setHideScenariosWithHazard(false);
     options.setHideSafetyConstraints(true);
 }
 
@@ -239,6 +241,7 @@ export function setSafetyRequirementGraphOptions(options: StpaSynthesisOptions):
     options.setHideUCAs(false);
     options.setHideContCons(false);
     options.setHideScenarios(false);
+    options.setHideScenariosWithHazard(false);
     options.setHideSafetyConstraints(false);
 }
 
@@ -255,5 +258,6 @@ export function setRelationshipGraphOptions(options: StpaSynthesisOptions): void
     options.setHideUCAs(false);
     options.setHideContCons(false);
     options.setHideScenarios(false);
+    options.setHideScenariosWithHazard(false);
     options.setHideSafetyConstraints(false);
 }
