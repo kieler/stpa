@@ -200,12 +200,12 @@ const groupingOfUCAs: ValuedSynthesisOption = {
         id: groupingUCAsID,
         name: "Group UCAs",
         type: TransformationOptionType.CHOICE,
-        initialValue: "No grouping",
+        initialValue: "No Grouping",
         currentValue: "No grouping",
-        values: ["No grouping", "Group by Control Action", "Group by System Component"],
+        values: ["No Grouping", "Group by Control Action", "Group by System Component"],
         category: layoutCategory,
     },
-    currentValue: "No grouping",
+    currentValue: "No Grouping",
 };
 
 /**
@@ -506,7 +506,7 @@ export class StpaSynthesisOptions {
         if (option) {
             switch (value) {
                 case groupValue.NO_GROUPING:
-                    option.currentValue = "no grouping";
+                    option.currentValue = "No Grouping";
                     break;
                 case groupValue.CONTROL_ACTION:
                     option.currentValue = "Group by Control Action";
@@ -520,9 +520,9 @@ export class StpaSynthesisOptions {
     }
 
     getGroupingUCAs(): groupValue {
-        const option = this.getOption(groupingUCAsID)?.currentValue;
+        const option = this.getOption(groupingUCAsID);
         switch (option?.currentValue) {
-            case "No grouping":
+            case "No Grouping":
                 return groupValue.NO_GROUPING;
             case "Group by Control Action":
                 return groupValue.CONTROL_ACTION;
