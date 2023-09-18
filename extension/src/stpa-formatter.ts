@@ -15,13 +15,25 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { CancellationToken, DocumentFormattingEditProvider, FormattingOptions, Position, ProviderResult, Range, TextDocument, TextEdit } from "vscode";
+import {
+    CancellationToken,
+    DocumentFormattingEditProvider,
+    FormattingOptions,
+    Position,
+    ProviderResult,
+    Range,
+    TextDocument,
+    TextEdit,
+} from "vscode";
 
 export class StpaFormattingEditProvider implements DocumentFormattingEditProvider {
-
     protected tabSize: number;
 
-    provideDocumentFormattingEdits(document: TextDocument, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]> {
+    provideDocumentFormattingEdits(
+        document: TextDocument,
+        options: FormattingOptions,
+        token: CancellationToken
+    ): ProviderResult<TextEdit[]> {
         this.tabSize = options.tabSize;
         const edits: TextEdit[] = [];
         const text = document.getText();
@@ -46,17 +58,17 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
         for (let i = 1; i < splits.length; i++) {
             offset += splits[i - 1].length;
             switch (splits[i - 1][splits[i - 1].length - 1]) {
-                case '\n':
+                case "\n":
                     this.formatIndentation(offset, document, openParens, edits, splits[i]);
                     break;
-                case ']':
+                case "]":
                     this.formatClosedBracket(offset, document, openParens, edits, splits[i]);
                     break;
-                case '{':
+                case "{":
                     openParens++;
                     this.formatNewLineAfter(offset, document, openParens, edits, splits[i]);
                     break;
-                case '}':
+                case "}":
                     this.formatNewLineBefore(offset, document, openParens, edits, splits[i - 1]);
                     openParens--;
                     this.formatNewLineAfter(offset, document, openParens, edits, splits[i]);
@@ -86,12 +98,18 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text to indent.
      */
-    protected formatIndentation(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
+    protected formatIndentation(
+        offset: number,
+        document: TextDocument,
+        openParens: number,
+        edits: TextEdit[],
+        line: string
+    ): void {
         let whiteSpaces = 0;
-        while (line[whiteSpaces] === ' ') {
+        while (line[whiteSpaces] === " ") {
             whiteSpaces++;
         }
-        if (line[whiteSpaces] === '}') {
+        if (line[whiteSpaces] === "}") {
             openParens--;
         }
         // adjust whitespaces
@@ -106,14 +124,20 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text at which end a newline should be inserted.
      */
-    protected formatNewLineBefore(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
+    protected formatNewLineBefore(
+        offset: number,
+        document: TextDocument,
+        openParens: number,
+        edits: TextEdit[],
+        line: string
+    ): void {
         const trimmed = line.trim();
-        if (trimmed !== '}') {
+        if (trimmed !== "}") {
             const newOffset = offset - 1;
             const pos: Position = document.positionAt(newOffset);
             // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
-            edits.push(TextEdit.insert(pos, '\r\n'));
-            this.formatIndentation(newOffset + 1, document, openParens, edits, line.substring(line.indexOf('}')));
+            edits.push(TextEdit.insert(pos, "\r\n"));
+            this.formatIndentation(newOffset + 1, document, openParens, edits, line.substring(line.indexOf("}")));
         }
     }
 
@@ -125,19 +149,25 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text before which a newline should be inserted.
      */
-    protected formatNewLineAfter(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
+    protected formatNewLineAfter(
+        offset: number,
+        document: TextDocument,
+        openParens: number,
+        edits: TextEdit[],
+        line: string
+    ): void {
         let nextChar = 0;
-        while (line[nextChar] === ' ') {
+        while (line[nextChar] === " ") {
             nextChar++;
         }
         const startPos = document.positionAt(offset);
         const endPos = document.positionAt(offset + nextChar);
         const delRange = new Range(startPos, endPos);
         edits.push(TextEdit.delete(delRange));
-        if (line[nextChar] !== '\r') {
+        if (line[nextChar] !== "\r") {
             const pos: Position = document.positionAt(offset);
             // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
-            edits.push(TextEdit.insert(pos, '\r\n'));
+            edits.push(TextEdit.insert(pos, "\r\n"));
             this.formatIndentation(offset + nextChar, document, openParens, edits, line.substring(nextChar));
         }
     }
@@ -150,13 +180,19 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text before which a newline should be inserted.
      */
-    protected formatClosedBracket(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
+    protected formatClosedBracket(
+        offset: number,
+        document: TextDocument,
+        openParens: number,
+        edits: TextEdit[],
+        line: string
+    ): void {
         const trimmed = line.trim();
-        if (trimmed[0] === '-') {
+        if (trimmed[0] === "-") {
             // bracket belongs to a control action or feedback in the control structure
             // format before arrow
             let beforeWhitespaces = 0;
-            while (line[beforeWhitespaces] === ' ') {
+            while (line[beforeWhitespaces] === " ") {
                 beforeWhitespaces++;
             }
             this.adjustWhitespaces(beforeWhitespaces, document, offset, 1, edits);
@@ -164,11 +200,11 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
 
             // format after arrow
             let afterWhitespaces = 0;
-            while (line[afterWhitespaces + beforeWhitespaces + 2] === ' ') {
+            while (line[afterWhitespaces + beforeWhitespaces + 2] === " ") {
                 afterWhitespaces++;
             }
             this.adjustWhitespaces(afterWhitespaces, document, offset, 1, edits);
-        } else if (trimmed[0] !== '{') {
+        } else if (trimmed[0] !== "{") {
             this.formatNewLineAfter(offset, document, openParens, edits, line);
         }
     }
@@ -181,19 +217,25 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param edits Array to push the created edits to.
      * @param line The text before which a newline should be inserted.
      */
-    protected formatQuotes(offset: number, document: TextDocument, openParens: number, edits: TextEdit[], line: string): void {
+    protected formatQuotes(
+        offset: number,
+        document: TextDocument,
+        openParens: number,
+        edits: TextEdit[],
+        line: string
+    ): void {
         let nextChar = 0;
-        while (line[nextChar] === ' ') {
+        while (line[nextChar] === " ") {
             nextChar++;
         }
-        if (line[nextChar] !== '[' && line[nextChar] !== '\r' && line[nextChar] !== ']' && line[nextChar] !== ',') {
+        if (line[nextChar] !== "[" && line[nextChar] !== "\r" && line[nextChar] !== "]" && line[nextChar] !== ",") {
             const startPos = document.positionAt(offset);
             const endPos = document.positionAt(offset + nextChar);
             const delRange = new Range(startPos, endPos);
             edits.push(TextEdit.delete(delRange));
             const pos: Position = document.positionAt(offset);
             // IMPORTANT: "\r\n" is specific to windows, linux just uses "\n"
-            edits.push(TextEdit.insert(pos, '\r\n'));
+            edits.push(TextEdit.insert(pos, "\r\n"));
             this.formatIndentation(offset + nextChar, document, openParens, edits, line.substring(nextChar));
         }
     }
@@ -206,11 +248,17 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
      * @param desired The desired number of whitespaces.
      * @param edits Array to push the created edits to.
      */
-    protected adjustWhitespaces(whiteSpaces: number, document: TextDocument, offset: number, desired: number, edits: TextEdit[]): void {
+    protected adjustWhitespaces(
+        whiteSpaces: number,
+        document: TextDocument,
+        offset: number,
+        desired: number,
+        edits: TextEdit[]
+    ): void {
         if (whiteSpaces < desired) {
-            let insertWhiteSpaces = '';
+            let insertWhiteSpaces = "";
             while (whiteSpaces < desired) {
-                insertWhiteSpaces += ' ';
+                insertWhiteSpaces += " ";
                 whiteSpaces++;
             }
             const pos: Position = document.positionAt(offset);
@@ -227,5 +275,4 @@ export class StpaFormattingEditProvider implements DocumentFormattingEditProvide
             edits.push(TextEdit.delete(delRange));
         }
     }
-
 }

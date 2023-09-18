@@ -24,8 +24,10 @@ import { Messenger } from 'vscode-messenger';
 import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
 import { createQuickPickForWorkspaceOptions } from './utils';
+import { createSTPAResultMarkdownFile } from './report/md-export';
 import { LTLFormula } from './sbm/utils';
 import { createSBMs } from './sbm/sbm-generation';
+import { StpaResult } from './report/utils';
 
 let languageClient: LanguageClient;
 
@@ -136,6 +138,14 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
         vscode.commands.registerCommand(options.extensionPrefix + '.IDs.redo', async () => {
             manager.ignoreNextTextChange = true;
             vscode.commands.executeCommand("redo");
+        })
+    );
+
+    // command for creating a pdf
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + '.md.creation', async (uri: vscode.Uri) => {
+            const data: StpaResult = await languageClient.sendRequest('result/getData', uri.toString());
+            await createSTPAResultMarkdownFile(data, manager);
         })
     );
 

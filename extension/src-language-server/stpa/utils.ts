@@ -15,11 +15,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode, LangiumSharedServices } from "langium";
+import { LangiumSharedServices } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import {
     Command,
-    ContConstraint,
+    ControllerConstraint,
     Context,
     Graph,
     Hazard,
@@ -33,18 +33,8 @@ import {
     SystemConstraint,
     UCA,
     Variable,
-    isContConstraint,
-    isContext,
-    isHazard,
-    isLoss,
-    isLossScenario,
-    isResponsibility,
-    isSafetyConstraint,
-    isSystemConstraint,
-    isUCA,
 } from "../generated/ast";
 import { getModel } from "../utils";
-import { STPAAspect } from "./diagram/stpa-model";
 
 export type leafElement =
     | Loss
@@ -52,7 +42,7 @@ export type leafElement =
     | SystemConstraint
     | Responsibility
     | UCA
-    | ContConstraint
+    | ControllerConstraint
     | LossScenario
     | SafetyConstraint
     | Context;
@@ -62,7 +52,7 @@ export type elementWithName =
     | SystemConstraint
     | Responsibility
     | UCA
-    | ContConstraint
+    | ControllerConstraint
     | LossScenario
     | SafetyConstraint
     | Node
@@ -76,7 +66,7 @@ export type elementWithRefs =
     | SystemConstraint
     | Responsibility
     | HazardList
-    | ContConstraint
+    | ControllerConstraint
     | SafetyConstraint;
 
 /**
@@ -85,13 +75,13 @@ export type elementWithRefs =
  * @param shared The shared services of Langium.
  * @returns the control actions that are defined in the file determined by the {@code uri}.
  */
-export function getControlActions(
+export async function getControlActions(
     uri: string,
     shared: LangiumSprottySharedServices | LangiumSharedServices
-): Record<string, string[]> {
+): Promise<Record<string, string[]>> {
     const controlActionsMap: Record<string, string[]> = {};
     // get the model from the file determined by the uri
-    const model = getModel(uri, shared);
+    const model = await getModel(uri, shared);
     // collect control actions grouped by their controller
     model.controlStructure?.nodes.forEach((systemComponent) => {
         systemComponent.actions.forEach((action) => {
@@ -109,32 +99,6 @@ export function getControlActions(
 }
 
 /**
- * Getter for the aspect of a STPA component.
- * @param node AstNode which aspect should determined.
- * @returns the aspect of {@code node}.
- */
-export function getAspect(node: AstNode): STPAAspect {
-    if (isLoss(node)) {
-        return STPAAspect.LOSS;
-    } else if (isHazard(node)) {
-        return STPAAspect.HAZARD;
-    } else if (isSystemConstraint(node)) {
-        return STPAAspect.SYSTEMCONSTRAINT;
-    } else if (isUCA(node) || isContext(node)) {
-        return STPAAspect.UCA;
-    } else if (isResponsibility(node)) {
-        return STPAAspect.RESPONSIBILITY;
-    } else if (isContConstraint(node)) {
-        return STPAAspect.CONTROLLERCONSTRAINT;
-    } else if (isLossScenario(node)) {
-        return STPAAspect.SCENARIO;
-    } else if (isSafetyConstraint(node)) {
-        return STPAAspect.SAFETYREQUIREMENT;
-    }
-    return STPAAspect.UNDEFINED;
-}
-
-/**
  * Collects the {@code topElements}, their children, their children's children and so on.
  * @param topElements The top elements that possbible have children.
  * @returns A list with the given {@code topElements} and their descendants.
@@ -144,10 +108,49 @@ export function collectElementsWithSubComps(topElements: (Hazard | SystemConstra
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {
         const current = todo[i];
-        if (current.subComps) {
-            result = result.concat(current.subComps);
-            todo = todo.concat(current.subComps);
+        if (current.subComponents) {
+            result = result.concat(current.subComponents);
+            todo = todo.concat(current.subComponents);
         }
     }
     return result;
+}
+
+export class StpaResult {
+    title: string;
+    losses: StpaComponent[] = [];
+    hazards: StpaComponent[] = [];
+    systemLevelConstraints: StpaComponent[] = [];
+    // sorted by system components
+    responsibilities: Record<string, StpaComponent[]> = {};
+    // sorted first by control action, then by uca type
+    ucas: Record<string, Record<string, StpaComponent[]>> = {};
+    // sorted by control action
+    controllerConstraints: Record<string, StpaComponent[]> = {};
+    // sorted by control action and by ucas
+    ucaScenarios: Record<string, Record<string, StpaComponent[]>> = {};
+    scenarios: StpaComponent[] = [];
+    safetyConstraints: StpaComponent[] = [];
+}
+
+export class StpaComponent {
+    id: string;
+    description: string;
+    references?: string;
+    subComponents?: StpaComponent[];
+}
+
+/**
+ * Provides the different UCA types.
+ */
+export class UCA_TYPE {
+    static NOT_PROVIDED = "not-provided";
+    static PROVIDED = "provided";
+    static TOO_EARLY = "too-early";
+    static TOO_LATE = "too-late";
+    static APPLIED_TOO_LONG = "applied-too-long";
+    static STOPPED_TOO_SOON = "stopped-too-soon";
+    static WRONG_TIME = "wrong-time";
+    static CONTINUOUS = "continuous-problem";
+    static UNDEFINED = "undefined";
 }

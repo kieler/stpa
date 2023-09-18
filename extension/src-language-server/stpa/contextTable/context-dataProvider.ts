@@ -16,11 +16,18 @@
  */
 
 import { LangiumDocument } from "langium";
-import { StpaServices } from "../stpa-module";
 import { Range, URI } from "vscode-languageserver";
-import { ContextTableData, ContextTableControlAction, ContextTableRule, ContextTableSystemVariables, ContextTableVariable, ContextTableVariableValues } from "../../../src-context-table/utils";
+import {
+    ContextTableControlAction,
+    ContextTableData,
+    ContextTableRule,
+    ContextTableSystemVariables,
+    ContextTableVariable,
+    ContextTableVariableValues,
+} from "../../../src-context-table/utils";
 import { Model } from "../../generated/ast";
 import { getModel } from "../../utils";
+import { StpaServices } from "../stpa-module";
 
 export class ContextTableProvider {
     protected services: StpaServices;
@@ -42,12 +49,14 @@ export class ContextTableProvider {
         const model: Model = currentDoc.parseResult.value;
 
         let range: Range | undefined = undefined;
-        model.rules.forEach(rule => rule.contexts.forEach(uca => {
-            if (uca.name === ucaName) {
-                range = uca.$cstNode?.range;
-                return;
-            }
-        }));
+        model.rules.forEach((rule) =>
+            rule.contexts.forEach((uca) => {
+                if (uca.name === ucaName) {
+                    range = uca.$cstNode?.range;
+                    return;
+                }
+            })
+        );
         return range;
     }
 
@@ -55,32 +64,32 @@ export class ContextTableProvider {
      * Collects all the data needed for constructing the context table.
      * @returns The data in a set of arrays.
      */
-    getData(uri: URI): ContextTableData {
+    async getData(uri: URI): Promise<ContextTableData> {
         // get the current model
-        const model = getModel(uri, this.services.shared);
+        const model = await getModel(uri, this.services.shared);
 
         const actions: ContextTableControlAction[] = [];
         const variables: ContextTableSystemVariables[] = [];
         const rules: ContextTableRule[] = [];
 
         // collect control actions and variables
-        model.controlStructure?.nodes.forEach(systemComponent => {
+        model.controlStructure?.nodes.forEach((systemComponent) => {
             // control actions of the current system component
-            systemComponent.actions.forEach(action => {
-                action.comms.forEach(command => {
+            systemComponent.actions.forEach((action) => {
+                action.comms.forEach((command) => {
                     actions.push({ controller: systemComponent.name, action: command.name });
                 });
             });
             // variables of the current system component
             const variableValues: ContextTableVariableValues[] = [];
-            systemComponent.variables.forEach(variable => {
-                variableValues.push({ name: variable.name, values: variable.values.map(value => value.name) });
+            systemComponent.variables.forEach((variable) => {
+                variableValues.push({ name: variable.name, values: variable.values.map((value) => value.name) });
             });
             variables.push({ system: systemComponent.name, variables: variableValues });
         });
         // collect rules
-        model.rules.forEach(rule => {
-            rule.contexts.forEach(context => {
+        model.rules.forEach((rule) => {
+            rule.contexts.forEach((context) => {
                 // determine context variables
                 const contextVariables: ContextTableVariable[] = [];
                 for (let i = 0; i < context.values.length; i++) {
@@ -91,7 +100,7 @@ export class ContextTableProvider {
                 //determine hazards
                 const hazards: string[] = [];
                 const hazardList = context.list.refs;
-                hazardList.forEach(hazard => {
+                hazardList.forEach((hazard) => {
                     if (hazard.ref?.name) {
                         hazards.push(hazard.ref.name);
                     }
@@ -99,14 +108,14 @@ export class ContextTableProvider {
                 // create rule/uca
                 if (rule.action.ref?.name && rule.system.ref?.name) {
                     rules.push({
-                        id: context.name, controlAction: { controller: rule.system.ref!.name, action: rule.action.ref!.name }, type: rule.type,
-                        variables: contextVariables, hazards: hazards
+                        id: context.name,
+                        controlAction: { controller: rule.system.ref!.name, action: rule.action.ref!.name },
+                        type: rule.type,
+                        variables: contextVariables,
+                        hazards: hazards,
                     });
                 }
             });
-            
-           
-            
         });
         return { rules: rules, actions: actions, systemVariables: variables };
     }

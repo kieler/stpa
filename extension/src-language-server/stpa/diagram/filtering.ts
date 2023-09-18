@@ -15,23 +15,35 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ActionUCAs, ContConstraint, Graph, Hazard, Loss, LossScenario, Model, Resps, Rule, SafetyConstraint, SystemConstraint } from "../../generated/ast";
+import {
+    ActionUCAs,
+    ControllerConstraint,
+    Graph,
+    Hazard,
+    Loss,
+    LossScenario,
+    Model,
+    SystemResponsibilities,
+    Rule,
+    SafetyConstraint,
+    SystemConstraint,
+} from "../../generated/ast";
 import { StpaSynthesisOptions } from "./synthesis-options";
 
 /**
  * Needed to work on a filtered model without changing the original model.
  */
 export class CustomModel {
-    losses: Loss[];
-    hazards: Hazard[];
-    systemLevelConstraints: SystemConstraint[];
-    responsibilities: Resps[];
-    allUCAs: ActionUCAs[];
-    controllerConstraints: ContConstraint[];
-    scenarios: LossScenario[];
-    safetyCons: SafetyConstraint[];
+    losses: Loss[] = [];
+    hazards: Hazard[] = [];
+    systemLevelConstraints: SystemConstraint[] = [];
+    responsibilities: SystemResponsibilities[] = [];
+    allUCAs: ActionUCAs[] = [];
+    controllerConstraints: ControllerConstraint[] = [];
+    scenarios: LossScenario[] = [];
+    safetyCons: SafetyConstraint[] = [];
     controlStructure?: Graph;
-    rules: Rule[];
+    rules: Rule[] = [];
 }
 
 /**
@@ -44,44 +56,72 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
     // updates the control actions that can be used to filter the UCAs
     setFilterUCAOption(model.allUCAs, model.rules, options);
     const newModel = new CustomModel();
-    // aspects for which no filter exists are just copied
-    newModel.losses = model.losses;
-    newModel.hazards = model.hazards;
-    newModel.controlStructure = model.controlStructure;
+    if (options.getShowControlStructure()) {
+        newModel.controlStructure = model.controlStructure;
+    }
+    if (options.getShowRelationshipGraph()) {
+        // aspects for which no filter exists are just copied
+        newModel.losses = model.losses;
+        newModel.hazards = model.hazards;
 
-    newModel.systemLevelConstraints = options.getHideSysCons() ? [] : model.systemLevelConstraints;
-    newModel.responsibilities = options.getHideSysCons() || options.getHideRespsCons() ? [] : model.responsibilities;
+        newModel.systemLevelConstraints = options.getHideSysCons() ? [] : model.systemLevelConstraints;
+        newModel.responsibilities =
+            options.getHideSysCons() || options.getHideRespsCons() ? [] : model.responsibilities;
 
-    // filter UCAs by the filteringUCA option
-    newModel.allUCAs = model.allUCAs?.filter(allUCA =>
-        (allUCA.system.ref?.name + "." + allUCA.action.ref?.name) === options.getFilteringUCAs()
-        || options.getFilteringUCAs() === "all UCAs");
-    newModel.rules = model.rules?.filter(rule =>
-        (rule.system.ref?.name + "." + rule.action.ref?.name) === options.getFilteringUCAs()
-        || options.getFilteringUCAs() === "all UCAs");
-    newModel.controllerConstraints = options.getHideContCons() ? [] :
-        model.controllerConstraints?.filter(cons =>
-            (cons.refs[0].ref?.$container.system.ref?.name + "."
-                + cons.refs[0].ref?.$container.action.ref?.name) === options.getFilteringUCAs()
-            || options.getFilteringUCAs() === "all UCAs");
+        // filter UCAs by the filteringUCA option
+        newModel.allUCAs = options.getHideUCAs()
+            ? []
+            : model.allUCAs?.filter(
+                  (allUCA) =>
+                      allUCA.system.ref?.name + "." + allUCA.action.ref?.name === options.getFilteringUCAs() ||
+                      options.getFilteringUCAs() === "all UCAs"
+              );
+        newModel.rules = options.getHideUCAs()
+            ? []
+            : model.rules?.filter(
+                  (rule) =>
+                      rule.system.ref?.name + "." + rule.action.ref?.name === options.getFilteringUCAs() ||
+                      options.getFilteringUCAs() === "all UCAs"
+              );
+        newModel.controllerConstraints =
+            options.getHideUCAs() || options.getHideContCons()
+                ? []
+                : model.controllerConstraints?.filter(
+                      (cons) =>
+                          cons.refs[0].ref?.$container.system.ref?.name +
+                              "." +
+                              cons.refs[0].ref?.$container.action.ref?.name ===
+                              options.getFilteringUCAs() || options.getFilteringUCAs() === "all UCAs"
+                  );
 
-    // remaining scenarios must be saved to filter safety constraints
-    const remainingScenarios = new Set<string>();
-    newModel.scenarios = options.getHideScenarios() ? [] :
-        model.scenarios?.filter(scenario => {
-            if ((!scenario.uca || scenario.uca?.ref?.$container.system.ref?.name + "."
-                + scenario.uca?.ref?.$container.action.ref?.name) === options.getFilteringUCAs()
-                || options.getFilteringUCAs() === "all UCAs") {
-                remainingScenarios.add(scenario.name);
-                return true;
-            };
-        });
-    // filter safety constraints by the remaining scenarios
-    newModel.safetyCons = options.getHideScenarios() ? [] :
-        model.safetyCons?.filter(safetyCons =>
-            (safetyCons.refs.filter(ref => remainingScenarios.has(ref.$refText)).length !== 0)
-            || options.getFilteringUCAs() === "all UCAs");
-
+        // remaining scenarios must be saved to filter safety constraints
+        const remainingScenarios = new Set<string>();
+        newModel.scenarios = options.getHideScenarios()
+            ? []
+            : model.scenarios?.filter((scenario) => {
+                  if (
+                      (!scenario.uca && !options.getHideScenariosWithHazard()) ||
+                      (scenario.uca && !options.getHideUCAs() &&
+                          (scenario.uca?.ref?.$container.system.ref?.name +
+                              "." +
+                              scenario.uca?.ref?.$container.action.ref?.name ===
+                              options.getFilteringUCAs() ||
+                              options.getFilteringUCAs() === "all UCAs"))
+                  ) {
+                      remainingScenarios.add(scenario.name);
+                      return true;
+                  }
+              });
+        // filter safety constraints by the remaining scenarios
+        newModel.safetyCons =
+            options.getHideSafetyConstraints() || options.getHideScenarios()
+                ? []
+                : model.safetyCons?.filter(
+                      (safetyCons) =>
+                          safetyCons.refs.filter((ref) => remainingScenarios.has(ref.$refText)).length !== 0 ||
+                          options.getFilteringUCAs() === "all UCAs"
+                  );
+    }
     return newModel;
 }
 
@@ -95,19 +135,19 @@ function setFilterUCAOption(allUCAs: ActionUCAs[], rules: Rule[], options: StpaS
     const set = new Set<string>();
     set.add("all UCAs");
     // collect all available control actions
-    allUCAs.forEach(uca => {
+    allUCAs.forEach((uca) => {
         if (!set.has(uca.system.ref?.name + "." + uca.action.ref?.name)) {
             set.add(uca.system.ref?.name + "." + uca.action.ref?.name);
         }
     });
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
         if (!set.has(rule.system.ref?.name + "." + rule.action.ref?.name)) {
             set.add(rule.system.ref?.name + "." + rule.action.ref?.name);
         }
     });
     // generate the options for the UCAs
-    const list: { displayName: string; id: string; }[] = [];
-    set.forEach(entry => list.push({ displayName: entry, id: entry }));
+    const list: { displayName: string; id: string }[] = [];
+    set.forEach((entry) => list.push({ displayName: entry, id: entry }));
     // update the option
     options.updateFilterUCAsOption(list);
 }

@@ -27,7 +27,7 @@ import {
     getDocument,
     stream
 } from "langium";
-import { ActionUCAs, Command, Context, DCAContext, DCARule, Hazard, LossScenario, Model, Node, Rule, SystemConstraint, UCA, Variable, isActionUCAs, isContConstraint, isContext, isDCAContext, isDCARule, isHazardList, isLossScenario, isModel, isResponsibility, isResps, isRule, isSafetyConstraint, isSystemConstraint } from "../generated/ast";
+import { ActionUCAs, Command, Context, DCAContext, DCARule, Hazard, LossScenario, Model, Node, Rule, SystemConstraint, UCA, Variable, isActionUCAs, isControllerConstraint, isContext, isDCAContext, isDCARule, isHazardList, isLossScenario, isModel, isResponsibility, isSystemResponsibilities, isRule, isSafetyConstraint, isSystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -56,7 +56,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         }
         if (precomputed && model) {
             // determine the scope for the different aspects & reference types
-            if ((isContConstraint(node) || isLossScenario(node) || isSafetyConstraint(node)) && (referenceType === this.UCA_TYPE || referenceType === this.CONTEXT_TYPE)) {
+            if ((isControllerConstraint(node) || isLossScenario(node) || isSafetyConstraint(node)) && (referenceType === this.UCA_TYPE || referenceType === this.CONTEXT_TYPE)) {
                 return this.getUCAs(model, precomputed);
             } else if (isHazardList(node) && isLossScenario(node.$container) && node.$container.uca && referenceType === this.HAZARD_TYPE) {
                 return this.getUCAHazards(node.$container, model, precomputed);
@@ -86,7 +86,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     private getStandardScope(node: AstNode, referenceType: string, precomputed: PrecomputedScopes): Scope {
         let currentNode: AstNode | undefined = node;
         // responsibilities, UCAs, and DCAs should have references to the nodes in the control structure
-        if ((isResps(node) || isActionUCAs(node) || isRule(node) || isDCARule(node)) && referenceType === Node) {
+        if ((isSystemResponsibilities(node) || isActionUCAs(node) || isRule(node) || isDCARule(node)) && referenceType === Node) {
             const model = node.$container as Model;
             currentNode = model.controlStructure;
         }
@@ -183,8 +183,8 @@ export class StpaScopeProvider extends DefaultScopeProvider {
             let res: AstNodeDescription[] = [];
             for (const node of nodes) {
                 const currentNode: AstNode | undefined = node;
-                if (node.subComps.length !== 0) {
-                    res = this.getHazardSysCompsDescriptions(node.subComps, precomputed, type);
+                if (node.subComponents.length !== 0) {
+                    res = this.getHazardSysCompsDescriptions(node.subComponents, precomputed, type);
                 }
                 res = res.concat(this.getDescriptions(currentNode, type, precomputed));
             }

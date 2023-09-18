@@ -15,17 +15,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SelectAction } from 'sprotty-protocol';
-import { createFileUri } from 'sprotty-vscode';
-import { SprottyDiagramIdentifier } from 'sprotty-vscode-protocol';
-import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from 'sprotty-vscode/lib/lsp';
-import * as vscode from 'vscode';
-import { ContextTablePanel } from './context-table-panel';
-import { StpaFormattingEditProvider } from './stpa-formatter';
-import { StpaLspWebview } from './wview';
+import { ActionMessage, JsonMap, SelectAction } from "sprotty-protocol";
+import { createFileUri } from "sprotty-vscode";
+import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
+import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from "sprotty-vscode/lib/lsp";
+import * as vscode from "vscode";
+import { GenerateSVGsAction } from "./actions";
+import { ContextTablePanel } from "./context-table-panel";
+import { StpaFormattingEditProvider } from "./stpa-formatter";
+import { applyTextEdits, collectOptions, createFile } from "./utils";
+import { StpaLspWebview } from "./wview";
 
 export class StpaLspVscodeExtension extends LspWebviewPanelManager {
-
     protected extensionPrefix: string;
 
     public contextTable: ContextTablePanel;
@@ -33,7 +34,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     protected lastSelectedUCA: string[];
 
     protected resolveLSReady: () => void;
-    readonly lsReady = new Promise<void>(resolve => this.resolveLSReady = resolve);
+    readonly lsReady = new Promise<void>((resolve) => (this.resolveLSReady = resolve));
 
     /** needed for undo/redo actions when ID enforcement is active*/
     ignoreNextTextChange: boolean = false;
@@ -44,37 +45,58 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         // user changed configuration settings
         vscode.workspace.onDidChangeConfiguration(() => {
             // sends configuration of stpa to the language server
-            options.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
+            this.languageClient.sendNotification(
+                "configuration",
+                collectOptions(vscode.workspace.getConfiguration("pasta"))
+            );
         });
 
         // add auto formatting provider
-        const sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
+        const sel: vscode.DocumentSelector = { scheme: "file", language: "stpa" };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
         // handling of notifications regarding the context table
-        options.languageClient.onNotification('contextTable/data', data => this.contextTable.setData(data));
-        options.languageClient.onNotification('editor/highlight', (msg: { startLine: number, startChar: number, endLine: number, endChar: number; uri: string; }) => {
-            // highlight and reveal the given range in the editor
-            const editor = vscode.window.visibleTextEditors.find(visibleEditor => visibleEditor.document.uri.toString() === msg.uri);
-            if (editor) {
-                const startPosition = new vscode.Position(msg.startLine, msg.startChar);
-                const endPosition = new vscode.Position(msg.endLine, msg.endChar);
-                editor.selection = new vscode.Selection(startPosition, endPosition);
-                editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+        options.languageClient.onNotification("contextTable/data", (data) => this.contextTable.setData(data));
+        options.languageClient.onNotification(
+            "editor/highlight",
+            (msg: { startLine: number; startChar: number; endLine: number; endChar: number; uri: string }) => {
+                // highlight and reveal the given range in the editor
+                const editor = vscode.window.visibleTextEditors.find(
+                    (visibleEditor) => visibleEditor.document.uri.toString() === msg.uri
+                );
+                if (editor) {
+                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+                    editor.selection = new vscode.Selection(startPosition, endPosition);
+                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+                }
             }
-        });
+        );
 
         // textdocument has changed
-        vscode.workspace.onDidChangeTextDocument(changeEvent => { this.handleTextChangeEvent(changeEvent); });
+        vscode.workspace.onDidChangeTextDocument((changeEvent) => {
+            this.handleTextChangeEvent(changeEvent);
+        });
         // language client sent workspace edits
-        options.languageClient.onNotification('editor/workspaceedit', ({ edits, uri }) => this.applyTextEdits(edits, uri));
+        options.languageClient.onNotification("editor/workspaceedit", ({ edits, uri }) => applyTextEdits(edits, uri));
         // laguage server is ready
         options.languageClient.onNotification("ready", () => {
             this.resolveLSReady();
             // open diagram
-            vscode.commands.executeCommand(this.extensionPrefix + '.diagram.open', vscode.window.activeTextEditor?.document.uri);
+            vscode.commands.executeCommand(
+                this.extensionPrefix + ".diagram.open",
+                vscode.window.activeTextEditor?.document.uri
+            );
             // sends configuration of stpa to the language server
-            options.languageClient.sendNotification('configuration', this.collectOptions(vscode.workspace.getConfiguration('pasta')));
+            options.languageClient.sendNotification(
+                "configuration",
+                collectOptions(vscode.workspace.getConfiguration("pasta"))
+            );
+        });
+
+        // server sent svg that should be saved
+        this.languageClient.onNotification("svg", ({ uri, svg }) => {
+            createFile(uri, svg);
         });
     }
 
@@ -91,60 +113,21 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         // send the changes to the language server
         const changes = changeEvent.contentChanges;
         const uri = changeEvent.document.uri.toString();
-        this.languageClient.sendNotification('editor/textChange', { changes: changes, uri: uri });
+        this.languageClient.sendNotification("editor/textChange", { changes: changes, uri: uri });
     }
-
-    /**
-     * Applies text edits to the document.
-     * @param edits The edits to apply.
-     * @param uri The uri of the document that should be edited.
-     */
-    protected async applyTextEdits(edits: vscode.TextEdit[], uri: string): Promise<void> {
-        // create a workspace edit
-        const workSpaceEdit = new vscode.WorkspaceEdit();
-        workSpaceEdit.set(vscode.Uri.parse(uri), edits);
-        // Apply the edit. Report possible failures.
-        const edited = await vscode.workspace.applyEdit(workSpaceEdit);
-        if (!edited) {
-            console.error("Workspace edit could not be applied!");
-            return;
-        }
-    }
-
-    /**
-     * Collects the STPA options of the configuration settings and returns them as a list of their ids and values.
-     * @param configuration The workspace configuration options.
-     * @returns A list of the workspace options, whereby a option is represented with an id and its value.
-     */
-    protected collectOptions(configuration: vscode.WorkspaceConfiguration): { id: string, value: any; }[] {
-        const values: { id: string, value: any; }[] = [];
-        values.push({ id: "checkResponsibilitiesForConstraints", value: configuration.get("checkResponsibilitiesForConstraints") });
-        values.push({ id: "checkConstraintsForUCAs", value: configuration.get("checkConstraintsForUCAs") });
-        values.push({ id: "checkScenariosForUCAs", value: configuration.get("checkScenariosForUCAs") });
-        values.push({ id: "checkSafetyRequirementsForUCAs", value: configuration.get("checkSafetyRequirementsForUCAs") });
-        return values;
-    }
-
-    // protected getDiagramType(uri: vscode.Uri): string | undefined {
-    //     if (commandArgs.length === 0
-    //         || commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
-    //         return 'stpa-diagram';
-    //     }
-    //     return undefined;
-    // }
 
     createContextTable(context: vscode.ExtensionContext): void {
         const extensionPath = this.options.extensionUri.fsPath;
         const tablePanel = new ContextTablePanel(
-            'Context-Table',
-            [createFileUri(extensionPath, 'pack')],
-            createFileUri(extensionPath, 'pack', 'context-table-panel.js')
+            "Context-Table",
+            [createFileUri(extensionPath, "pack")],
+            createFileUri(extensionPath, "pack", "context-table-panel.js")
         );
         this.contextTable = tablePanel;
 
         // adds listener for mouse click on a cell
         context.subscriptions.push(
-            this.contextTable.cellClicked((cell: { rowId: string; columnId: string, text?: string; } | undefined) => {
+            this.contextTable.cellClicked((cell: { rowId: string; columnId: string; text?: string } | undefined) => {
                 if (cell?.text === "No") {
                     // delete selection in the diagram
                     this.endpoints[0].sendAction(SelectAction.create({ deselectedElementsIDs: this.lastSelectedUCA }));
@@ -153,9 +136,11 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
                     const texts = cell.text.split(",");
                     // language server must determine the range of the selected uca in the editor in order to highlight it
                     // when there are multiple UCAs in the cell only the first one is highlighted in the editor
-                    this.languageClient.sendNotification('contextTable/selected', texts[0]);
+                    this.languageClient.sendNotification("contextTable/selected", texts[0]);
                     // highlight corresponding node in the diagram and maybe deselect the last selected one
-                    this.endpoints[0].sendAction(SelectAction.create({ selectedElementsIDs: texts, deselectedElementsIDs: this.lastSelectedUCA }));
+                    this.endpoints[0].sendAction(
+                        SelectAction.create({ selectedElementsIDs: texts, deselectedElementsIDs: this.lastSelectedUCA })
+                    );
                     this.lastSelectedUCA = texts;
                 }
             })
@@ -170,8 +155,41 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
             webviewContainer,
             messenger: this.messenger,
             messageParticipant: participant,
-            identifier
+            identifier,
         });
     }
 
+    /**
+     * Triggers the creation of SVGs for the current model.
+     * @param uri The folder uri where to save the SVGs.
+     * @returns the widths of the resulting SVGs with the SVG name as the key.
+     */
+    async createSVGDiagrams(uri: string): Promise<Record<string, number>> {
+        if (this.endpoints.length !== 0) {
+            const activeWebview = this.endpoints[0];
+            if (activeWebview?.diagramIdentifier) {
+                // create GenerateSVGsAction
+                const mes: ActionMessage = {
+                    clientId: activeWebview.diagramIdentifier.clientId,
+                    action: {
+                        kind: GenerateSVGsAction.KIND,
+                        options: {
+                            diagramType: activeWebview.diagramIdentifier.diagramType,
+                            needsClientLayout: true,
+                            needsServerLayout: true,
+                            sourceUri: activeWebview.diagramIdentifier.uri,
+                        } as JsonMap,
+                        uri: uri,
+                    } as GenerateSVGsAction,
+                };
+                // send request
+                const diagramSize: Record<string, number> = await this.languageClient.sendRequest(
+                    "result/createDiagrams",
+                    mes
+                );
+                return diagramSize;
+            }
+        }
+        return {};
+    }
 }

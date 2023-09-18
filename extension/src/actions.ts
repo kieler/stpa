@@ -15,25 +15,48 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action } from "sprotty-protocol";
+import { Action, JsonMap } from "sprotty-protocol";
 
 /** Contains config option values */
 export interface SendConfigAction extends Action {
     kind: typeof SendConfigAction.KIND;
-    options: { id: string, value: any; }[];
+    options: { id: string; value: any }[];
 }
 
 export namespace SendConfigAction {
     export const KIND = "sendConfig";
 
-    export function create(options: { id: string, value: any; }[]): SendConfigAction {
+    export function create(options: { id: string; value: any }[]): SendConfigAction {
         return {
             kind: KIND,
-            options
+            options,
         };
     }
 
     export function isThisAction(action: Action): action is SendConfigAction {
         return action.kind === SendConfigAction.KIND;
+    }
+}
+
+/** Send to server to generate SVGs for the STPA result report */
+export interface GenerateSVGsAction extends Action {
+    kind: typeof GenerateSVGsAction.KIND;
+    uri: string;
+    options?: JsonMap;
+}
+
+export namespace GenerateSVGsAction {
+    export const KIND = "generateSVGs";
+
+    export function create(uri: string, options?: JsonMap): GenerateSVGsAction {
+        return {
+            kind: KIND,
+            uri,
+            options,
+        };
+    }
+
+    export function isThisAction(action: Action): action is GenerateSVGsAction {
+        return action.kind === GenerateSVGsAction.KIND;
     }
 }

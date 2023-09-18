@@ -15,30 +15,58 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import 'sprotty/css/sprotty.css';
-import './css/diagram.css';
+import "sprotty/css/sprotty.css";
+import "./css/diagram.css";
 
-import { Container, ContainerModule } from 'inversify';
+import { Container, ContainerModule } from "inversify";
 import {
-    ConsoleLogger, HtmlRoot,
-    HtmlRootView, LogLevel,
+    ConsoleLogger,
+    HtmlRoot,
+    HtmlRootView,
+    LogLevel,
     ModelViewer,
     PreRenderedElement,
     PreRenderedView,
-    SGraph, SLabel,
+    SGraph,
+    SLabel,
     SLabelView,
     SNode,
     TYPES,
+    configureCommand,
     configureModelElement,
     loadDefaultModules,
-    overrideViewerOptions
-} from 'sprotty';
-import { StpaModelViewer } from './model-viewer';
-import { optionsModule } from './options/options-module';
-import { sidebarModule } from './sidebar';
-import { CSEdge, CSNode, CS_EDGE_TYPE, CS_NODE_TYPE, DUMMY_NODE_TYPE, PARENT_TYPE, STPAEdge, STPANode, STPAPort, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
-import { StpaMouseListener } from './stpa-mouselistener';
-import { CSNodeView, IntermediateEdgeView, PolylineArrowEdgeView, PortView, STPAGraphView, STPANodeView } from './views';
+    overrideViewerOptions,
+} from "sprotty";
+import { SvgCommand } from "./actions";
+import { SvgPostprocessor } from "./exportPostProcessor";
+import { CustomSvgExporter } from "./exporter";
+import { StpaModelViewer } from "./model-viewer";
+import { optionsModule } from "./options/options-module";
+import { sidebarModule } from "./sidebar";
+import {
+    CSEdge,
+    CSNode,
+    CS_EDGE_TYPE,
+    CS_NODE_TYPE,
+    DUMMY_NODE_TYPE,
+    PARENT_TYPE,
+    STPAEdge,
+    STPANode,
+    STPAPort,
+    STPA_EDGE_TYPE,
+    STPA_INTERMEDIATE_EDGE_TYPE,
+    STPA_NODE_TYPE,
+    STPA_PORT_TYPE,
+} from "./stpa-model";
+import { StpaMouseListener } from "./stpa-mouselistener";
+import {
+    CSNodeView,
+    IntermediateEdgeView,
+    PolylineArrowEdgeView,
+    PortView,
+    STPAGraphView,
+    STPANodeView,
+} from "./views";
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
@@ -46,26 +74,30 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     rebind(TYPES.CommandStackOptions).toConstantValue({
         // Override the default animation speed to be 700 ms, as the default value is too quick.
         defaultDuration: 700,
-        undoHistoryLimit: 50
+        undoHistoryLimit: 50,
     });
     bind(TYPES.MouseListener).to(StpaMouseListener).inSingletonScope();
     rebind(ModelViewer).to(StpaModelViewer).inSingletonScope();
+    rebind(TYPES.SvgExporter).to(CustomSvgExporter).inSingletonScope();
+    bind(SvgPostprocessor).toSelf().inSingletonScope();
+    bind(TYPES.HiddenVNodePostprocessor).toService(SvgPostprocessor);
+    configureCommand({ bind, isBound }, SvgCommand);
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
-    configureModelElement(context, 'graph', SGraph, STPAGraphView);
+    configureModelElement(context, "graph", SGraph, STPAGraphView);
     configureModelElement(context, DUMMY_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
     configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
-    configureModelElement(context, 'label', SLabel, SLabelView);
-    configureModelElement(context, 'label:xref', SLabel, SLabelView);
+    configureModelElement(context, "label", SLabel, SLabelView);
+    configureModelElement(context, "label:xref", SLabel, SLabelView);
     configureModelElement(context, STPA_EDGE_TYPE, STPAEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);
-    configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
-    configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
+    configureModelElement(context, "html", HtmlRoot, HtmlRootView);
+    configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
 });
 
 export function createSTPADiagramContainer(widgetId: string): Container {
@@ -76,7 +108,7 @@ export function createSTPADiagramContainer(widgetId: string): Container {
         needsClientLayout: true,
         needsServerLayout: true,
         baseDiv: widgetId,
-        hiddenDiv: widgetId + '_hidden'
+        hiddenDiv: widgetId + "_hidden",
     });
     return container;
 }

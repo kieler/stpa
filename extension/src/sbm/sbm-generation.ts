@@ -16,9 +16,9 @@
  */
 
 import * as vscode from "vscode";
-import { EMPTY_STATE_NAME, Enum, LTLFormula, State, Transition, UCA_TYPE, Variable } from "./utils";
-import { createSCChartText } from "./scchart-creation";
 import { createFile } from "../utils";
+import { createSCChartText } from "./scchart-creation";
+import { EMPTY_STATE_NAME, Enum, LTLFormula, State, Transition, UCA_TYPE, Variable } from "./utils";
 
 /**
  * Creates a safe behavioral model for each controller.

@@ -150,6 +150,11 @@
                 "command": "stpa.SBM.generation",
                 "title": "Generate Safe Behavioral Model (SBM)",
                 "category": "STPA SBM"
+            },
+            {
+                "command": "stpa.md.creation",
+                "title": "Create a Markdown file",
+                "category": "STPA PDF Creation"
             }
         ],
         "menus": {
@@ -201,6 +206,10 @@
                 {
                     "command": "stpa.SBM.generation",
                     "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "stpa.md.creation",
+                    "when": "editorLangId == 'stpa'"
                 }
             ],
             "editor/context": [
@@ -217,12 +226,17 @@
                 {
                     "submenu": "stpa.checks",
                     "when": "editorLangId == 'stpa'",
-                    "group": "checks"
+                    "group": "stpa"
                 },
                 {
                     "command": "stpa.SBM.generation",
                     "when": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "group": "stpa"
+                },
+                {
+                    "command": "stpa.md.creation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "stpa"
                 }
             ],
             "stpa.checks": [
@@ -339,7 +353,8 @@
         "feather-icons": "^4.28.0",
         "sprotty-vscode-webview": "^0.5.0",
         "@kieler/table-webview": "^0.0.3",
-        "snabbdom": "^3.5.1"
+        "snabbdom": "^3.5.1",
+        "dayjs": "^1.11.8"
     },
     "devDependencies": {
         "@types/node": "^12.12.6",
@@ -365,7 +380,7 @@
         "langium:generate": "langium generate",
         "langium:watch": "langium generate --watch",
         "lint": "eslint .",
-        "build": "yarn run langium:generate && webpack --mode development --devtool eval-source-map",
+        "build": "yarn run langium:generate && webpack --mode development",
         "watch": "webpack --watch",
         "package": "vsce package --yarn -o pasta.vsix",
         "predistribute": "yarn run package",
