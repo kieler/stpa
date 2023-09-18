@@ -64,6 +64,7 @@ export class SvgCommand extends HiddenCommand {
         super();
     }
 
+    /** Same functionality as for the default SVGCommand provided by Sprotty. */
     execute(context: CommandExecutionContext): CommandResult {
         if (isExportable(context.root)) {
             const root = context.modelFactory.createRoot(context.root);

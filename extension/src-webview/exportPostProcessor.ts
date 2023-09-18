@@ -22,6 +22,7 @@ import { Action } from "sprotty-protocol";
 import { RequestSvgAction } from "./actions";
 import { CustomSvgExporter } from "./exporter";
 
+/** Replaces the default SvgPostprocessor to use the custom svg exporter. */
 @injectable()
 export class SvgPostprocessor implements IVNodePostprocessor {
 

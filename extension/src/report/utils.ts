@@ -70,7 +70,7 @@ export class StpaResult {
     // sorted by control action and by ucas
     ucaScenarios: Record<string, Record<string, StpaComponent[]>> = {};
     scenarios: StpaComponent[] = [];
-    safetyCons: StpaComponent[] = [];
+    safetyConstraints: StpaComponent[] = [];
 }
 
 export class StpaComponent {

@@ -277,9 +277,9 @@ export class IDEnforcer {
                 edits = edits.concat(edit.changes[this.currentUri]);
             }
             // rename children
-            if ((isHazard(element) || isSystemConstraint(element)) && element.subComps.length !== 0) {
+            if ((isHazard(element) || isSystemConstraint(element)) && element.subComponents.length !== 0) {
                 let index = 1;
-                for (const child of element.subComps) {
+                for (const child of element.subComponents) {
                     edits = edits.concat(await this.renameID(child, prefix + counter + ".", index));
                     index++;
                 }
@@ -380,8 +380,8 @@ export class IDEnforcer {
         // check whether the children are affected
         // if the children are affected, it must be checked whether they have again affected children
         // otherwise the current elements are the affected ones
-        if (element.subComps.length !== 0 && element.subComps[0].$cstNode && element.subComps[0].$cstNode.offset <= offset) {
-            const modified = this.findAffectedSubComponents(element.subComps, element.name + ".", offset);
+        if (element.subComponents.length !== 0 && element.subComponents[0].$cstNode && element.subComponents[0].$cstNode.offset <= offset) {
+            const modified = this.findAffectedSubComponents(element.subComponents, element.name + ".", offset);
             elements = modified.elements;
             prefix = modified.prefix;
         }

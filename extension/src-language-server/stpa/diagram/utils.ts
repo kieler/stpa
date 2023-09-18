@@ -19,7 +19,7 @@ import { AstNode } from "langium";
 import {
     Context,
     Node,
-    isContConstraint,
+    isControllerConstraint,
     isContext,
     isHazard,
     isLoss,
@@ -42,7 +42,7 @@ import { groupValue } from "./synthesis-options";
 export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
     if (node) {
         const targets: AstNode[] = [];
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node) || isSafetyConstraint(node)) {
+        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isControllerConstraint(node) || isSafetyConstraint(node)) {
             for (const ref of node.refs) {
                 if (ref?.ref) { targets.push(ref.ref); }
             }
@@ -239,7 +239,7 @@ export function getAspect(node: AstNode): STPAAspect {
         return STPAAspect.UCA;
     } else if (isResponsibility(node)) {
         return STPAAspect.RESPONSIBILITY;
-    } else if (isContConstraint(node)) {
+    } else if (isControllerConstraint(node)) {
         return STPAAspect.CONTROLLERCONSTRAINT;
     } else if (isLossScenario(node)) {
         return STPAAspect.SCENARIO;

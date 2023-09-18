@@ -19,7 +19,7 @@ import { AstNode, Reference } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import {
     ActionUCAs,
-    ContConstraint,
+    ControllerConstraint,
     Hazard,
     LossScenario,
     Responsibility,
@@ -66,7 +66,7 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
     });
     
     // safety constraints
-    result.safetyCons = createResultComponents(model.safetyCons);
+    result.safetyConstraints = createResultComponents(model.safetyCons);
 
     // responsibilities
     model.responsibilities.forEach((component) => {
@@ -128,7 +128,7 @@ function createSingleListComponent(component: LossScenario | UCA): StpaComponent
  * @returns the result components for the given {@code components}.
  */
 function createResultComponents(
-    components: Hazard[] | SystemConstraint[] | ContConstraint[] | SafetyConstraint[] | Responsibility[]
+    components: Hazard[] | SystemConstraint[] | ControllerConstraint[] | SafetyConstraint[] | Responsibility[]
 ): StpaComponent[] {
     const resultList: StpaComponent[] = [];
     components.forEach((component) => {
@@ -146,7 +146,7 @@ function createHazardOrSystemConstraintComponents(components: Hazard[] | SystemC
     const resultList: StpaComponent[] = [];
     components.forEach((component) => {
         const resultComponent = createSingleComponent(component);
-        resultComponent.subComponents = createHazardOrSystemConstraintComponents(component.subComps);
+        resultComponent.subComponents = createHazardOrSystemConstraintComponents(component.subComponents);
         resultList.push(resultComponent);
     });
     return resultList;
@@ -158,7 +158,7 @@ function createHazardOrSystemConstraintComponents(components: Hazard[] | SystemC
  * @returns the result component for the given {@code component}.
  */
 function createSingleComponent(
-    component: Hazard | SystemConstraint | ContConstraint | SafetyConstraint | Responsibility
+    component: Hazard | SystemConstraint | ControllerConstraint | SafetyConstraint | Responsibility
 ): StpaComponent {
     return {
         id: component.name,

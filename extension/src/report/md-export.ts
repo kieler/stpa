@@ -111,7 +111,7 @@ function createSTPAResultMarkdownText(data: StpaResult, diagramSizes: Record<str
     // loss scenarios
     markdown += scenariosToMarkdown(data.ucaScenarios, data.scenarios, diagramSizes);
     // safety requirements
-    markdown += stpaAspectToMarkdown(Headers.SafetyRequirement, data.safetyCons, SAFETY_REQUIREMENT_PATH, diagramSizes);
+    markdown += stpaAspectToMarkdown(Headers.SafetyRequirement, data.safetyConstraints, SAFETY_REQUIREMENT_PATH, diagramSizes);
     // summarized safety constraints
     markdown += addSummary(data, diagramSizes);
     // copyright
@@ -259,7 +259,7 @@ function scenariosToMarkdown(
     // translate the other scenarios
     if (scenarios.length !== 0) {
         markdown += `### Scenarios without associated UCA\n\n`;
-        markdown += scenarios.map((scenario) => stpaComponentToMarkdown(scenario)).join("  \n") + `\n`;
+        markdown += scenarios.map((scenario) => stpaComponentToMarkdown(scenario)).join("  \n") + `\n\n`;
         markdown += `<img src=".${SVG_PATH + SCENARIO_WITH_HAZARDS_PATH}" width="${
             diagramSizes[SCENARIO_WITH_HAZARDS_PATH] * SIZE_MULTIPLIER
         }">\n\n`;
@@ -312,7 +312,7 @@ function ucasToMarkdown(
         markdown += "</td>\n</tr>\n</table>\n\n<br>\n\n";
         // add the filtered diagram for the control action
         const path = FILTERED_UCA_PATH(actionUCA);
-        markdown += `<img src=".${SVG_PATH + path}" width="${diagramSizes[path] * SIZE_MULTIPLIER}">\n\n<br><br>\n\n`;
+        markdown += `<img src=".${SVG_PATH + path}" width="${diagramSizes[path] * SIZE_MULTIPLIER}">\n\n<br>\n\n`;
     }
     // add a diagram for all UCAs
     markdown += `### _All UCAs_\n\n`;
@@ -365,7 +365,7 @@ function addSummary(data: StpaResult, diagramSizes: Record<string, number>): str
         }
     }
     // add safety constraints
-    for (const component of data.safetyCons) {
+    for (const component of data.safetyConstraints) {
         markdown += stpaComponentToMarkdown(component);
         markdown += `  \n`;
     }

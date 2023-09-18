@@ -17,7 +17,7 @@
 
 import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ContConstraint, Context, Hazard, HazardList, Loss, Model, Node, Responsibility, StpaAstType, SystemConstraint, isModel } from '../generated/ast';
+import { ControllerConstraint, Context, Hazard, HazardList, Loss, Model, Node, Responsibility, StpaAstType, SystemConstraint, isModel } from '../generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, elementWithName, elementWithRefs } from './utils';
 
@@ -33,7 +33,7 @@ export class StpaValidationRegistry extends ValidationRegistry {
             Hazard: validator.checkHazard,
             SystemConstraint: validator.checkSystemConstraint,
             Responsibility: validator.checkResponsibility,
-            ContConstraint: validator.checkControllerConstraints,
+            ControllerConstraint: validator.checkControllerConstraints,
             HazardList: validator.checkHazardList,
             Node: validator.checkNode,
             Context: validator.checkContext
@@ -176,9 +176,9 @@ export class StpaValidator {
      * @param accept 
      */
     checkHazard(hazard: Hazard, accept: ValidationAcceptor): void {
-        if (hazard.subComps) {
-            this.checkPrefixOfSubElements(hazard.name, hazard.subComps, accept);
-            this.checkReferencedLossesOfSubHazard(hazard.refs, hazard.subComps, accept);
+        if (hazard.subComponents) {
+            this.checkPrefixOfSubElements(hazard.name, hazard.subComponents, accept);
+            this.checkReferencedLossesOfSubHazard(hazard.refs, hazard.subComponents, accept);
         }
         this.checkReferenceListForDuplicates(hazard, hazard.refs, accept);
         // a top-level hazard should reference loss(es)
@@ -197,8 +197,8 @@ export class StpaValidator {
      * @param accept 
      */
     checkSystemConstraint(sysCons: SystemConstraint, accept: ValidationAcceptor): void {
-        if (sysCons.subComps) {
-            this.checkPrefixOfSubElements(sysCons.name, sysCons.subComps, accept);
+        if (sysCons.subComponents) {
+            this.checkPrefixOfSubElements(sysCons.name, sysCons.subComponents, accept);
         }
         this.checkReferenceListForDuplicates(sysCons, sysCons.refs, accept);
     }
@@ -228,7 +228,7 @@ export class StpaValidator {
      * @param contCons The ContConstraint to check.
      * @param accept 
      */
-    checkControllerConstraints(contCons: ContConstraint, accept: ValidationAcceptor): void {
+    checkControllerConstraints(contCons: ControllerConstraint, accept: ValidationAcceptor): void {
         this.checkReferenceListForDuplicates(contCons, contCons.refs, accept);
     }
 

@@ -17,13 +17,13 @@
 
 import {
     ActionUCAs,
-    ContConstraint,
+    ControllerConstraint,
     Graph,
     Hazard,
     Loss,
     LossScenario,
     Model,
-    Resps,
+    SystemResponsibilities,
     Rule,
     SafetyConstraint,
     SystemConstraint,
@@ -37,9 +37,9 @@ export class CustomModel {
     losses: Loss[] = [];
     hazards: Hazard[] = [];
     systemLevelConstraints: SystemConstraint[] = [];
-    responsibilities: Resps[] = [];
+    responsibilities: SystemResponsibilities[] = [];
     allUCAs: ActionUCAs[] = [];
-    controllerConstraints: ContConstraint[] = [];
+    controllerConstraints: ControllerConstraint[] = [];
     scenarios: LossScenario[] = [];
     safetyCons: SafetyConstraint[] = [];
     controlStructure?: Graph;

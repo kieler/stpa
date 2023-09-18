@@ -25,7 +25,7 @@ import {
     Model,
     Node,
     SystemConstraint,
-    VE,
+    VerticalEdge,
     isContext,
     isHazard,
     isSystemConstraint,
@@ -128,7 +128,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     )
                     .flat(1),
                 ...filteredModel.systemLevelConstraints
-                    ?.map((sc) => sc.subComps?.map((ssc) => this.generateEdgesForSTPANode(ssc, args)))
+                    ?.map((sc) => sc.subComponents?.map((ssc) => this.generateEdgesForSTPANode(ssc, args)))
                     .flat(2),
             ]);
         }
@@ -296,7 +296,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param args GeneratorContext of the STPA model.
      * @returns A list of edges representing the commands.
      */
-    protected translateCommandsToEdges(commands: VE[], edgetype: EdgeType, args: GeneratorContext<Model>): CSEdge[] {
+    protected translateCommandsToEdges(commands: VerticalEdge[], edgetype: EdgeType, args: GeneratorContext<Model>): CSEdge[] {
         const idCache = args.idCache;
         const edges: CSEdge[] = [];
         for (const edge of commands) {
@@ -495,16 +495,16 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             isContext(node) ? createUCAContextDescription(node) : node.description
         );
         // if the hierarchy option is true, the subcomponents are added as children to the parent
-        if (this.options.getHierarchy() && isHazard(node) && node.subComps.length !== 0) {
+        if (this.options.getHierarchy() && isHazard(node) && node.subComponents.length !== 0) {
             // adds subhazards
             children = children.concat(
-                node.subComps?.map((sc: Hazard) => this.generateSTPANode(sc, showDescription, args))
+                node.subComponents?.map((sc: Hazard) => this.generateSTPANode(sc, showDescription, args))
             );
         }
-        if (this.options.getHierarchy() && isSystemConstraint(node) && node.subComps.length !== 0) {
+        if (this.options.getHierarchy() && isSystemConstraint(node) && node.subComponents.length !== 0) {
             // adds subconstraints
             children = children.concat(
-                node.subComps?.map((sc: SystemConstraint) => this.generateSTPANode(sc, showDescription, args))
+                node.subComponents?.map((sc: SystemConstraint) => this.generateSTPANode(sc, showDescription, args))
             );
         }
 

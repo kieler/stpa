@@ -19,7 +19,7 @@ import { LangiumSharedServices } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import {
     Command,
-    ContConstraint,
+    ControllerConstraint,
     Context,
     Graph,
     Hazard,
@@ -42,7 +42,7 @@ export type leafElement =
     | SystemConstraint
     | Responsibility
     | UCA
-    | ContConstraint
+    | ControllerConstraint
     | LossScenario
     | SafetyConstraint
     | Context;
@@ -52,7 +52,7 @@ export type elementWithName =
     | SystemConstraint
     | Responsibility
     | UCA
-    | ContConstraint
+    | ControllerConstraint
     | LossScenario
     | SafetyConstraint
     | Node
@@ -66,7 +66,7 @@ export type elementWithRefs =
     | SystemConstraint
     | Responsibility
     | HazardList
-    | ContConstraint
+    | ControllerConstraint
     | SafetyConstraint;
 
 /**
@@ -108,9 +108,9 @@ export function collectElementsWithSubComps(topElements: (Hazard | SystemConstra
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {
         const current = todo[i];
-        if (current.subComps) {
-            result = result.concat(current.subComps);
-            todo = todo.concat(current.subComps);
+        if (current.subComponents) {
+            result = result.concat(current.subComponents);
+            todo = todo.concat(current.subComponents);
         }
     }
     return result;
@@ -130,7 +130,7 @@ export class StpaResult {
     // sorted by control action and by ucas
     ucaScenarios: Record<string, Record<string, StpaComponent[]>> = {};
     scenarios: StpaComponent[] = [];
-    safetyCons: StpaComponent[] = [];
+    safetyConstraints: StpaComponent[] = [];
 }
 
 export class StpaComponent {

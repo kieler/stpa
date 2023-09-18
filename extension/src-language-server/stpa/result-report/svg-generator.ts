@@ -146,34 +146,11 @@ export function setFilteredUcaGraphOptions(options: StpaSynthesisOptions, value:
     options.setHideSafetyConstraints(true);
 }
 
-export function setUcaGraphOptions(options: StpaSynthesisOptions): void {
-    options.setShowRelationshipGraph(true);
-    options.setShowControlStructure(false);
-    options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
-}
-
 /**
- * Sets the values of {@code options} such that the relationship graph is reduced to the controller constraints without system-level constraints.
+ * Sets the values of {@code options} such that the relationship graph is reduced to the controller constraints without 
+ * system-level constraints. The relationship graph is filtered based on {@code value} for the UCA filter.
  * @param options The synthesis options.
  */
-export function setControllerConstraintGraphOptions(options: StpaSynthesisOptions): void {
-    options.setShowRelationshipGraph(true);
-    options.setShowControlStructure(false);
-    options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(false);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
-}
-
 export function setControllerConstraintWithFilteredUcaGraphOptions(options: StpaSynthesisOptions, value: string): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -187,21 +164,10 @@ export function setControllerConstraintWithFilteredUcaGraphOptions(options: Stpa
 }
 
 /**
- * Sets the values of {@code options} such that the relationship graph is reduced to the loss scenarios without system-level constraints.
+ * Sets the values of {@code options} such that the relationship graph is reduced to the loss scenarios without 
+ * system-level constraints. The relationship graph is filtered based on {@code value} for the UCA filter.
  * @param options The synthesis options.
  */
-function setScenarioGraphOptions(options: StpaSynthesisOptions): void {
-    options.setShowRelationshipGraph(true);
-    options.setShowControlStructure(false);
-    options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(false);
-    options.setHideScenarios(false);
-    options.setHideSafetyConstraints(true);
-}
-
 export function setScenarioWithFilteredUCAGraphOptions(options: StpaSynthesisOptions, value: string): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
@@ -215,6 +181,11 @@ export function setScenarioWithFilteredUCAGraphOptions(options: StpaSynthesisOpt
     options.setHideSafetyConstraints(true);
 }
 
+/**
+ * Sets the values of {@code options} such that the relationship graph is reduced to the loss scenarios that are not 
+ * connected to a UCA without system-level constraints. 
+ * @param options The synthesis options.
+ */
 export function setScenarioWithNoUCAGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);

@@ -22,10 +22,10 @@ entry Model:
     ('Hazards' hazards+=Hazard*)?
     ('SystemConstraints' systemLevelConstraints+=SystemConstraint*)?
     ('ControlStructure' controlStructure=Graph)?
-    ('Responsibilities' responsibilities+=Resps*)?
+    ('Responsibilities' responsibilities+=SystemResponsibilities*)?
     (('UCAs' allUCAs+=ActionUCAs*) | ('Context-Table' rules+=Rule*))?
     ('DCAs' allDCAs+=DCARule*)?
-    ('ControllerConstraints' controllerConstraints+=ContConstraint*)?
+    ('ControllerConstraints' controllerConstraints+=ControllerConstraint*)?
     ('LossScenarios' scenarios+=LossScenario*)?
     ('SafetyRequirements' safetyCons+=SafetyConstraint*)?;
 
@@ -48,14 +48,14 @@ Loss:
 Hazard:
     name=SubID description=STRING 
     ('['refs+=[Loss] (',' refs+=[Loss])*']')?
-    ('{' (header=STRING? subComps+=Hazard+)*'}')?;
+    ('{' (header=STRING? subComponents+=Hazard+)*'}')?;
 
 SystemConstraint:
     name=SubID description=STRING 
     '[' 
     refs+=[Hazard:SubID] (',' refs+=[Hazard:SubID])*
     ']'
-    ('{' (header=STRING? subComps+=SystemConstraint+)*'}')?;
+    ('{' (header=STRING? subComponents+=SystemConstraint+)*'}')?;
 
 Graph:
     name=ID '{'(nodes+=Node /* | edges+=Edge */)*'}';
@@ -67,8 +67,8 @@ Node:
         ('processModel' '{'variables+=Variable*'}')?
         ('input' '[' inputs+=Command (',' inputs+=Command)* ']')?
         ('output' '[' outputs+=Command (',' outputs+=Command)* ']')?
-        ('controlActions' '{'actions+=VE*'}')?
-        ('feedback' '{'feedbacks+=VE*'}')?
+        ('controlActions' '{'actions+=VerticalEdge*'}')?
+        ('feedback' '{'feedbacks+=VerticalEdge*'}')?
     '}';
 
 /* Edge:
@@ -85,13 +85,13 @@ VariableValue:
         firstValue=(QualifiedName | INT | 'MIN' | 'true' | 'false') (',' secondValue=(QualifiedName | INT | 'MAX'))? 
     secondParenthesis=(']'|')'))?;
 
-VE:
+VerticalEdge:
     '[' comms+=Command (',' comms+=Command)* ']' '->' target=[Node];
 
 Command:
     name=ID label=STRING;
 
-Resps:
+SystemResponsibilities:
     system=[Node] '{'responsiblitiesForOneSystem+=Responsibility*'}';
 
 Responsibility:
@@ -123,7 +123,7 @@ DCARule:
 DCAContext:
     name=ID '['vars+=[Variable] '=' values+=QualifiedName (',' vars+=[Variable] '=' values+=QualifiedName)*']';
 
-ContConstraint:
+ControllerConstraint:
     name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
 
 LossScenario:
