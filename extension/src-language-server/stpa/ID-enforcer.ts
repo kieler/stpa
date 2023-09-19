@@ -340,7 +340,7 @@ export class IDEnforcer {
             elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
             prefix = IDPrefix.Responsibility;
         } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
-            elements = model.allUCAs.flatMap(sysUCA => sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas));
+            elements = model.allUCAs.flatMap(sysUCA => sysUCA.notProvidingUcas.concat(sysUCA.providingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas));
             elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
             prefix = IDPrefix.UCA;
             // rules must be handled separately since they are mixed with the UCAs
