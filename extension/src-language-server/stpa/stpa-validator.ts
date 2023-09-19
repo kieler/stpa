@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -17,7 +17,7 @@
 
 import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
 import { Position } from 'vscode-languageserver-types';
-import { ControllerConstraint, Context, Hazard, HazardList, Loss, Model, Node, Responsibility, StpaAstType, SystemConstraint, isModel } from '../generated/ast';
+import { Context, ControllerConstraint, Hazard, HazardList, Loss, Model, Node, Responsibility, StpaAstType, SystemConstraint, isModel } from '../generated/ast';
 import { StpaServices } from './stpa-module';
 import { collectElementsWithSubComps, elementWithName, elementWithRefs } from './utils';
 
@@ -152,6 +152,51 @@ export class StpaValidator {
                 accept('warning', 'This element is not referenced by a UCA', { node: command, property: 'name' });
             }
         })));
+
+        // check for duplicate ActionUCA definition
+        this.checkActionUcasForDuplicates(model, accept);
+        // check for duplicate rule definition
+        this.checkRulesForDuplicates(model, accept);
+    }
+
+    /**
+     * Validates that at most one ActionUCA is defined for a control action.
+     * @param model The model containing the UCAs.
+     * @param accept 
+     */
+    checkActionUcasForDuplicates(model: Model, accept: ValidationAcceptor): void {
+        const referencedCommand: Set<string> = new Set<string>();
+        for (const actionUca of model.allUCAs) {
+            const action = actionUca.system.$refText + "." + actionUca.action.$refText;
+            if (referencedCommand.has(action)) {
+                accept('warning', 'This action is already covered by UCAs', { node: actionUca, property: 'action' });
+            } else {
+                referencedCommand.add(action);
+            }
+        }
+    }
+
+    /**
+     * Validates that at most one UCA rule is defined for a control action and type.
+     * @param model The model containing the rules.
+     * @param accept 
+     */
+    checkRulesForDuplicates(model: Model, accept: ValidationAcceptor): void {
+        const actionTypePairs = new Map<string, string[]>();
+        for (const rule of model.rules) {
+            const action = rule.system.$refText + "." + rule.action.$refText;
+            const type = rule.type;
+            if (actionTypePairs.has(action)) {
+                const definedTypes = actionTypePairs.get(action);
+                if (definedTypes?.includes(type)) {
+                accept('warning', 'This UCA type is already covered by another rule for the stated action', { node: rule, property: 'type' });
+                } else {
+                    definedTypes?.push(type);
+                }
+            } else {
+                actionTypePairs.set(action, [type]);
+            }
+        }
     }
 
     /**
