@@ -36,5 +36,5 @@ export class StpaSprottyStarter extends SprottyLspEditStarter {
     }
 }
 
-new StpaSprottyStarter();
+new StpaSprottyStarter().start();
 

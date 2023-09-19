@@ -12,7 +12,7 @@
         "url": "https://github.com/kieler/stpa"
     },
     "engines": {
-        "vscode": "^1.46.0"
+        "vscode": "^1.80.0"
     },
     "categories": [
         "Programming Languages"
@@ -163,6 +163,16 @@
                 "category": "STPA ID Enforcement"
             },
             {
+                "command": "pasta.SBM.generation",
+                "title": "Generate Safe Behavioral Model (SBM)",
+                "category": "STPA SBM"
+            },
+            {
+                "command": "pasta.md.creation",
+                "title": "Create a Markdown file",
+                "category": "STPA PDF Creation"
+            },
+            {
                 "command": "pasta.generate.ftaCutSets",
                 "title": "Generate the cut sets",
                 "category": "Cut Sets"
@@ -220,6 +230,14 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
+                    "command": "pasta.SBM.generation",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "pasta.md.creation",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
                     "command": "pasta.generate.ftaCutSets",
                     "when": "editorLangId == 'fta'"
                 },
@@ -246,6 +264,16 @@
                 {
                     "submenu": "pasta.generate",
                     "group": "generate"
+                },
+                {
+                    "command": "pasta.SBM.generation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "stpa"
+                },
+                {
+                    "command": "pasta.md.creation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "stpa"
                 }
             ],
             "pasta.checks": [
@@ -380,31 +408,32 @@
     ],
     "main": "./pack/extension",
     "dependencies": {
-        "langium-sprotty": "^1.0.0",
-        "sprotty-elk": "^0.12.0",
+        "langium": "^1.2.0",
+        "langium-sprotty": "^1.2.0",
+        "sprotty-elk": "^0.13.0",
         "vscode-languageserver": "^8.0.2",
         "vscode-languageclient": "^8.0.2",
         "reflect-metadata": "^0.1.13",
         "feather-icons": "^4.28.0",
-        "sprotty": "^0.12.0",
-        "sprotty-vscode-webview": "^0.4.0",
-        "@kieler/table-webview": "^0.0.1",
-        "snabbdom": "^3.5.1"
+        "sprotty-vscode-webview": "^0.5.0",
+        "@kieler/table-webview": "^0.0.3",
+        "snabbdom": "^3.5.1",
+        "dayjs": "^1.11.8"
     },
     "devDependencies": {
         "@types/node": "^12.12.6",
-        "@types/vscode": "1.46.0",
+        "@types/vscode": "^1.80.0",
         "@types/feather-icons": "^4.7.0",
         "rimraf": "^3.0.2",
         "source-map-loader": "^3.0.0",
-        "sprotty-vscode": "^0.4.0",
+        "sprotty-vscode": "^0.5.0",
         "ts-loader": "^9.4.2",
         "typescript": "^4.9.3",
         "webpack": "^5.75.0",
         "webpack-cli": "^5.0.1",
         "css-loader": "^6.7.2",
         "file-loader": "^6.2.0",
-        "langium-cli": "^1.0.0",
+        "langium-cli": "^1.2.1",
         "style-loader": "^3.3.1",
         "vsce": "^2.15.0",
         "ovsx": "^0.6.0"
@@ -415,7 +444,7 @@
         "langium:generate": "langium generate",
         "langium:watch": "langium generate --watch",
         "lint": "eslint .",
-        "build": "yarn run langium:generate && webpack --mode production",
+        "build": "yarn run langium:generate && webpack --mode development",
         "watch": "webpack --watch",
         "package": "vsce package --yarn -o pasta.vsix",
         "predistribute": "yarn run package",
