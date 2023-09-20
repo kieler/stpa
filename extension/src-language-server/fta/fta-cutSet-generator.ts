@@ -17,7 +17,7 @@
 
 import { AstNode } from 'langium';
 import { IdCache } from 'langium-sprotty';
-import { isAND, isComponent, isCondition, isGate, isInhibitGate, isKNGate, isOR, isTopEvent } from '../generated/ast';
+import { TopEvent, isAND, isComponent, isCondition, isGate, isInhibitGate, isKNGate, isOR, isTopEvent } from '../generated/ast';
 
 
 export class CutSetGenerator{
@@ -53,7 +53,6 @@ export class CutSetGenerator{
                 return false;
             }
         }
-
         return true;
     }
 
@@ -71,17 +70,18 @@ export class CutSetGenerator{
         //In the evaluation we check if the child has children too and do the same recursively until the children are components.
         //Depending on the type of the node process the results of the children differently.
 
-
         //When there is no gate, return the component
-        const startingNode = this.getChildOfTopEvent(allNodes);
-        if(isComponent(startingNode)){
-            return [[startingNode]];
+        const startNode = this.getChildOfTopEvent(allNodes);
+        if (startNode) {
+            if(isComponent(startNode)){
+                return [[startNode]];
+            }
+            //Evaluate the child of the top event and recursively the entire Fault Tree.
+            const cutSets = this.evaluate(startNode, allNodes ,idCache);
+            return cutSets;
+        } else {
+            return [];
         }
-        //Evaluate the child of the top event and recursively the entire Fault Tree.
-        const cutSets = this.evaluate(startingNode, allNodes ,idCache);
-        
-        return cutSets;
-
     }
 
     /**
@@ -260,21 +260,11 @@ export class CutSetGenerator{
      * @param allNodes All nodes in the graph.
      * @returns the child of the topevent.
      */
-    getChildOfTopEvent(allNodes:AstNode[]): AstNode{
-        let child: AstNode = {} as AstNode;
-
-        for(const node of allNodes){
-            if(isTopEvent(node)){ 
-                for(const ref of node.children){
-                    if(ref?.ref){
-                        // There is always only one child of the top event.
-                        child = ref.ref; 
-                    }
-                }
-            }       
+    getChildOfTopEvent(allNodes:AstNode[]): AstNode | undefined {
+        const topEventChildren = (allNodes.find(node => isTopEvent(node)) as TopEvent).children;
+        if (topEventChildren.length !== 0) {
+            return topEventChildren[0].ref;
         }
-        return child;
-
     }
 
     /**
@@ -286,15 +276,12 @@ export class CutSetGenerator{
      */
     concatAllLists(a:AstNode[][], b:AstNode[][], idCache:IdCache<AstNode>):AstNode[][]{
         const result: AstNode[][] = [];
-        
-
         if(a.length === 0){
             return b;
         }
         if(b.length === 0){
             return a;
         }
-        
         for (const innerA of a) {
             for (const innerB of b) {
                 //Add only unique sets
@@ -303,13 +290,9 @@ export class CutSetGenerator{
                 if(this.indexOfArray(newSet, result, idCache) === -1){
                     result.push(newSet);
                 }
-                
-
             }
         }
-        
         return result;
-        
     }
 
     /**
@@ -330,10 +313,7 @@ export class CutSetGenerator{
         };
         const sortA = a.sort(sort);
         const sortB = b.sort(sort);
-        
-
         return a.length === b.length && sortA.every((e,i) => e === sortB[i]); 
-        
     }
 
     /**

@@ -177,14 +177,14 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
             const cutSets:string = await languageClient.sendRequest('generate/getCutSets');      
             //Send cut sets to webview to display them in a dropdown menu.
             dispatchCutSetsToWebview(manager, cutSets);        
-            createOutputChannel(cutSets, "All cut sets"); 
+            createOutputChannel(cutSets, "FTA Cut Sets"); 
         })
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + '.generate.ftaMinimalCutSets', async () =>{
             const minimalCutSets:string = await languageClient.sendRequest('generate/getMinimalCutSets');
             dispatchCutSetsToWebview(manager, minimalCutSets);
-            createOutputChannel(minimalCutSets, "All minimal cut sets");         
+            createOutputChannel(minimalCutSets, "FTA Cut Sets");         
         })
     ); 
 }
