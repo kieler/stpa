@@ -198,13 +198,12 @@ function dispatchCutSetsToWebview(manager: StpaLspVscodeExtension, cutSets:strin
     cutSets = cutSets.slice(1,-2);
     const cutSetArray = cutSets.split(",\n");
 
-    const cutSetDropDownList: { value: any; }[] = [];
-        for(const set of cutSetArray){
-            cutSetDropDownList.push({value: set});
-        }
-        manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.diagramType === 'fta')?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
-        // manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.uri.endsWith('.fta'))?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
+    const cutSetsList: { value: any; }[] = [];
+    for(const set of cutSetArray){
+        cutSetsList.push({value: set});
     }
+    manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.diagramType === 'fta')?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetsList } as SendCutSetAction);
+}
 
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {
     const serverModule = context.asAbsolutePath(path.join('pack', 'language-server'));

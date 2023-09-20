@@ -31,33 +31,34 @@ import {
 
 export class CutSetGenerator {
     /**
-     * Takes the Fault Tree and returns a two-dimensional array of AstNodes where every inner list resembles a minimal cut set.
-     * @param allNodes All Nodes in the graph.
-     * @param idCache The idCache of the generator context from the current graph.
+     * Takes the Fault Tree and returns a two-dimensional array of AstNodes where every inner list resembles a minimal
+     * cut set.
+     * @param allNodes All Nodes in the fault tree.
+     * @param idCache The idCache of the generator context from the corresponding graph.
      * @returns A list of lists that that contains every minimal cut set of the given Fault Tree.
      */
     determineMinimalCutSet(allNodes: AstNode[], idCache: IdCache<AstNode>): AstNode[][] {
-        const bdd = this.generateCutSets(allNodes, idCache);
+        // TODO: add minimal flag (could reduce computation cost)
+        const allCutSets = this.generateCutSetsForFT(allNodes, idCache);
 
-        //Cut sets are minimal if, when any basic event is removed from the set, the remaining events collectively are no longer a cut set.
-        //Check every innerList
-        //If inner list contains another array from the bdd array, remove innerList because it cant be a minimal cut set
-        const minimalCutSet = bdd.filter((innerList) => {
-            return this.checkIfMinimalCutSet(innerList, bdd); //if this condition is true then the innerList is a minimal cut set
+        // Cut sets are minimal if removing one element destroys the cut set
+        // If an inner list contains another array from the bdd array, remove it since it is not minimal
+        const minimalCutSet = allCutSets.filter((cutSet) => {
+            return this.checkIfMinimalCutSet(cutSet, allCutSets);
         });
 
         return minimalCutSet;
     }
 
     /**
-     * Takes a list and all cut sets and checks if the given list is a minimal cut set.
-     * @param innerList The list we want to check.
-     * @param bdd All Cut Sets of the Fault Tree
-     * @returns True if the given list is a minimal cut set or false if is not.
+     * Checks whether the given list {@code innerList} is a minimal cut set.
+     * @param cutSet The list to check.
+     * @param allCutSets All Cut Sets of the Fault Tree.
+     * @returns True if the given list is a minimal cut set.
      */
-    checkIfMinimalCutSet(innerList: AstNode[], bdd: AstNode[][]): boolean {
-        for (const list of bdd) {
-            if (list.every((e) => innerList.includes(e)) && innerList !== list) {
+    protected checkIfMinimalCutSet(cutSet: AstNode[], allCutSets: AstNode[][]): boolean {
+        for (const otherCutSet of allCutSets) {
+            if (otherCutSet.every((element) => cutSet.includes(element)) && cutSet !== otherCutSet) {
                 return false;
             }
         }
@@ -65,83 +66,80 @@ export class CutSetGenerator {
     }
 
     /**
-     * Takes the Fault Tree and returns a two-dimensional array of AstNodes where every inner list resembles a cut set.
-     * @param allNodes All Nodes in the graph.
-     * @param idCache The idCache of the generator context from the current graph.
-     * @returns A list of lists that that contains every cut set of the given Fault Tree.
+     * Determines all cut sets of a fault tree.
+     * @param allNodes All nodes of the fault tree.
+     * @param idCache The idCache of the generator context from the corresponding graph.
+     * @returns A list of lists that contains every cut set of the given Fault Tree.
      */
-    generateCutSets(allNodes: AstNode[], idCache: IdCache<AstNode>): AstNode[][] {
-        //Idea:
-        //Start from the top event.
-        //Get the only child of top event (will always be only one) as our starting node.
-        //Calculate all children of the node and evaluate them.
-        //In the evaluation we check if the child has children too and do the same recursively until the children are components.
-        //Depending on the type of the node process the results of the children differently.
+    generateCutSetsForFT(allNodes: AstNode[], idCache: IdCache<AstNode>): AstNode[][] {
+        /*  Idea:
+            Start from the top event.
+            Get the only child of top event (will always be only one) as our starting node.
+            Calculate all children of the node and evaluate them.
+            In the evaluation we check if the child has children too and do the same recursively until 
+            the children are components.
+            Depending on the type of the node process the results of the children differently. */
 
-        //When there is no gate, return the component
         const startNode = this.getChildOfTopEvent(allNodes);
         if (startNode) {
+            // When the start not is not a gate, it is the only cut set
             if (isComponent(startNode)) {
                 return [[startNode]];
             }
-            //Evaluate the child of the top event and recursively the entire Fault Tree.
-            const cutSets = this.evaluate(startNode, allNodes, idCache);
-            return cutSets;
-        } else {
-            return [];
+            // determine the cut sets of the Fault Tree
+            return this.determineCutSetsForGate(startNode, allNodes, idCache);
         }
+        return [];
     }
 
     /**
-     * Takes a single node and returns it evaluation depending on the node type and number of children. This function is called recursively for all children.
-     * @param node The node we want to evaluate.
-     * @param allNodes All Nodes in the graph.
-     * @param idCache The idCache of the generator context from the current graph.
-     * @returns A list of lists that is the result of evaluating the given node.
+     * Determines the cut sets for the (sub) fault tree that has {@code gate} as the top node.
+     * @param gate The top node of the (sub) fault tree for which the cut sets should be determined.
+     * @param allNodes All nodes of the fault tree.
+     * @param idCache The idCache of the generator context from the corresponding graph.
+     * @returns the determined cut sets for the (sub) fault tree as a list of lists.
      */
-    evaluate(node: AstNode, allNodes: AstNode[], idCache: IdCache<AstNode>): AstNode[][] {
+    protected determineCutSetsForGate(gate: AstNode, allNodes: AstNode[], idCache: IdCache<AstNode>): AstNode[][] {
         let result: AstNode[][] = [];
 
-        // we start with the top-most gate(child of topevent) and get all its children.
-        const children = this.getAllChildrenOfNode(node);
-        if (children.length === 0) {
+        const children = this.getChildrenOfNode(gate);
+        // TODO: return list containing only the gate, when it is not a gate
+        if (children.length === 0 || !isGate(gate)) {
             return result;
         }
 
-        //if the node is an and/inhibit-gate we want to evaluate all children and concatenate all inner lists of one child with another.
-        if (isGate(node) && (isAND(node.type) || isInhibitGate(node.type))) {
+        if (isAND(gate.type) || isInhibitGate(gate.type)) {
+            // concatenate each cut set of a child with every cut set of the other children
             for (const child of children) {
                 if (isComponent(child) || isCondition(child)) {
-                    result = this.concatAllLists([[child]], result, idCache);
+                    result = this.concatInnerListsWithEachOther([[child]], result, idCache);
                 } else {
-                    result = this.concatAllLists(this.evaluate(child, allNodes, idCache), result, idCache);
+                    result = this.concatInnerListsWithEachOther(
+                        this.determineCutSetsForGate(child, allNodes, idCache),
+                        result,
+                        idCache
+                    );
                 }
             }
-            //if the node is an or-gate we want to evaluate all children and add every single inner list to the result.
-        } else if (isGate(node) && isOR(node.type)) {
+        } else if (isOR(gate.type)) {
+            // add the cut sets of each child to the result
             for (const child of children) {
                 if (isComponent(child)) {
-                    const orList = [child];
-                    result.push(orList);
+                    result.push([child]);
                 } else {
-                    //push every inner list of the child gate.
-                    for (const list of this.evaluate(child, allNodes, idCache)) {
-                        result.push(list);
-                    }
+                    result.push(...this.determineCutSetsForGate(child, allNodes, idCache));
                 }
             }
+        } else if (isKNGate(gate.type)) {
+            // TODO: inspect
+            const k = gate.type.k;
+            const n = gate.type.children.length;
 
-            //if the node is a kN-gate we want to get every combinations of the children with length k and after that evaluate the gates in the list.
-        } else if (isGate(node) && isKNGate(node.type)) {
-            const k = node.type.k as number;
-            const n = node.type.children.length as number;
-
-            //Example: With Children:[M1,M2,G1] and k=2 -> [[M1,M2],[M1,G1],[M2,G1]] .
+            // determine every combination of the children with length k or greater
+            // Example: children = [M1, M2, G1] and k = 2 -> [[M1, M2], [M1, G1], [M2, G1], [M1, M2, G1]]
             const combinations: AstNode[][] = [];
             for (let i = k; i <= n; i++) {
-                for (const comb of this.getAllCombinations(children, i)) {
-                    combinations.push(comb);
-                }
+                combinations.push(...this.createAllCombinations(children, i));
             }
 
             //Now we want to evaluate G1 from the example above (e.g evaluation(G1) = [[C]]).
@@ -149,13 +147,16 @@ export class CutSetGenerator {
             for (const comb of combinations) {
                 if (
                     comb.some(
-                        (e) => isGate(e) && (isAND(e.type) || isInhibitGate(e.type) || isOR(e.type) || isKNGate(e.type))
+                        (element) =>
+                            isGate(element) &&
+                            (isAND(element.type) ||
+                                isInhibitGate(element.type) ||
+                                isOR(element.type) ||
+                                isKNGate(element.type))
                     )
                 ) {
                     const evaluatedLists = this.evaluateGateInCombinationList(comb, allNodes, idCache);
-                    for (const list of evaluatedLists) {
-                        result.push(list);
-                    }
+                    result.push(...evaluatedLists);
                 } else {
                     result.push(comb);
                 }
@@ -165,6 +166,7 @@ export class CutSetGenerator {
         return result;
     }
 
+    // TODO: inspect
     /**
      * Takes a list of components, conditions and gates and then removes the gates and inserts its evaluation in the list. This can result in multiple lists.
      * @param innerList The list we want to evaluate.
@@ -172,23 +174,28 @@ export class CutSetGenerator {
      * @param idCache The idCache of the generator context from the current graph.
      * @returns A list of lists that is the result of inserting the evaluation of the gates in the given list.
      */
-    evaluateGateInCombinationList(innerList: AstNode[], allNodes: AstNode[], idCache: IdCache<AstNode>): AstNode[][] {
+    protected evaluateGateInCombinationList(
+        innerList: AstNode[],
+        allNodes: AstNode[],
+        idCache: IdCache<AstNode>
+    ): AstNode[][] {
         let result: AstNode[][] = [];
         const restList: AstNode[] = innerList;
 
         for (let i = 0; i < restList.length; i++) {
             const element = restList[i];
-            //when the element is a gate.
-            if (
-                isGate(element) &&
-                (isAND(element.type) || isInhibitGate(element.type) || isOR(element.type) || isKNGate(element.type))
-            ) {
+            // when the element is a gate.
+            if (isGate(element)) {
                 //cut out the gate from the rest list.
                 const index = restList.indexOf(element);
                 restList.splice(index, 1);
                 i -= 1;
                 //and push the evaluation of the gate into the result list.
-                const tempLists = this.concatAllLists(this.evaluate(element, allNodes, idCache), result, idCache);
+                const tempLists = this.concatInnerListsWithEachOther(
+                    this.determineCutSetsForGate(element, allNodes, idCache),
+                    result,
+                    idCache
+                );
                 result = [];
                 for (const list of tempLists) {
                     result.push(list);
@@ -197,19 +204,19 @@ export class CutSetGenerator {
         }
         //concatenate every element of the rest list with the result (should only be components/conditions).
         for (const list of restList) {
-            result = this.concatAllLists([[list]], result, idCache);
+            result = this.concatInnerListsWithEachOther([[list]], result, idCache);
         }
 
         return result;
     }
 
     /**
-     * Gets all combinations of the elements in the given list with length k.
-     * @param nodes The list of nodes we want the combinations of.
-     * @param k The number of elements we want in an innerList.
-     * @returns the combinations of the elements in the given list with length k.
+     * Create all combinations with length {@code k} of the given {@code nodes}.
+     * @param nodes The list of nodes for which all combinations should be created.
+     * @param k The number of elements in a combination.
+     * @returns all combinations with length {@code k} of the given {@ode ndoes}.
      */
-    getAllCombinations(nodes: AstNode[], k: number): AstNode[][] {
+    protected createAllCombinations(nodes: AstNode[], k: number): AstNode[][] {
         const combinations: AstNode[][] = [];
 
         if (k > nodes.length || k <= 0) {
@@ -219,17 +226,14 @@ export class CutSetGenerator {
             return [nodes];
         }
         if (k === 1) {
-            for (let i = 0; i < nodes.length; i++) {
-                combinations.push([nodes[i]]);
-            }
+            nodes.forEach(node => combinations.push([node]));
         }
 
         for (let i = 0; i < nodes.length; i++) {
-            const currElement: AstNode = nodes[i];
-            const restOfList = nodes.slice(i + 1);
-            for (const subComps of this.getAllCombinations(restOfList, k - 1)) {
-                subComps.unshift(currElement);
-                combinations.push(subComps);
+            const currentNode: AstNode = nodes[i];
+            for (const subElements of this.createAllCombinations(nodes.slice(i + 1), k - 1)) {
+                subElements.unshift(currentNode);
+                combinations.push(subElements);
             }
         }
 
@@ -237,32 +241,29 @@ export class CutSetGenerator {
     }
 
     /**
-     * Take an AstNode and return all its children(just the next hierarchy level).
-     * @param parentNode The node we want the children of.
-     * @returns all children of the given parentNode.
+     * Determines all the children of {@code node}.
+     * @param node The node for which the children should be determined.
+     * @returns all children of the given {@code node}.
      */
-    getAllChildrenOfNode(parentNode: AstNode): AstNode[] {
+    protected getChildrenOfNode(node: AstNode): AstNode[] {
         const children: AstNode[] = [];
-        if (isComponent(parentNode) || isCondition(parentNode)) {
+        if (isComponent(node) || isCondition(node)) {
+            // node has no children
             return children;
         }
 
-        if (
-            isGate(parentNode) &&
-            (isAND(parentNode.type) ||
-                isOR(parentNode.type) ||
-                isInhibitGate(parentNode.type) ||
-                isKNGate(parentNode.type))
-        ) {
-            for (const ref of parentNode.type.children) {
-                if (ref?.ref) {
-                    children.push(ref.ref);
+        if (isGate(node)) {
+            // add children of the gate
+            for (const childRef of node.type.children) {
+                if (childRef.ref) {
+                    children.push(childRef.ref);
                 }
             }
-            if (isInhibitGate(parentNode.type)) {
-                for (const ref of parentNode.type.condition) {
-                    if (ref?.ref) {
-                        children.push(ref.ref);
+            // add condition of inhibit gate
+            if (isInhibitGate(node.type)) {
+                for (const childRef of node.type.condition) {
+                    if (childRef?.ref) {
+                        children.push(childRef.ref);
                     }
                 }
             }
@@ -271,11 +272,11 @@ export class CutSetGenerator {
     }
 
     /**
-     * Given all nodes this method returns the first and only child of the topevent.
-     * @param allNodes All nodes in the graph.
-     * @returns the child of the topevent.
+     * Determines the child of the top event.
+     * @param allNodes All nodes in the fault tree.
+     * @returns the child of the top event.
      */
-    getChildOfTopEvent(allNodes: AstNode[]): AstNode | undefined {
+    protected getChildOfTopEvent(allNodes: AstNode[]): AstNode | undefined {
         const topEventChildren = (allNodes.find((node) => isTopEvent(node)) as TopEvent).children;
         if (topEventChildren.length !== 0) {
             return topEventChildren[0].ref;
@@ -283,25 +284,33 @@ export class CutSetGenerator {
     }
 
     /**
-     * Concatenates every inner List of two two-dimensional arrays .
-     * @param a The first two-dimensional AstNode array.
-     * @param b The second two-dimensional AstNode array.
-     * @param idCache The idCache of the generator context from the current graph.
-     * @returns a two-dimensional array of type AstNode where every innerList of both arrays is concatenated.
+     * Concatenates every inner List of two two-dimensional arrays with each other. 
+     * E.g. [X1, X2] and [Y1, Y2] result in [[X1, Y1], [X1, Y2], [X2, Y1], [X2, Y2]].
+     * @param firstAllCutSets The first two-dimensional array.
+     * @param secondAllCutSets The second two-dimensional array.
+     * @param idCache The idCache of the generator context from the corresponding graph.
+     * @returns a two-dimensional array where every innerList of both arrays is concatenated with each other.
      */
-    concatAllLists(a: AstNode[][], b: AstNode[][], idCache: IdCache<AstNode>): AstNode[][] {
+    protected concatInnerListsWithEachOther(
+        firstAllCutSets: AstNode[][],
+        secondAllCutSets: AstNode[][],
+        idCache: IdCache<AstNode>
+    ): AstNode[][] {
         const result: AstNode[][] = [];
-        if (a.length === 0) {
-            return b;
+        // if one array is empty, return the other
+        if (firstAllCutSets.length === 0) {
+            return secondAllCutSets;
         }
-        if (b.length === 0) {
-            return a;
+        if (secondAllCutSets.length === 0) {
+            return firstAllCutSets;
         }
-        for (const innerA of a) {
-            for (const innerB of b) {
-                //Add only unique sets
-                let newSet = innerA.concat(innerB);
-                newSet = newSet.filter((e, i) => newSet.indexOf(e) === i);
+        // concatenate arrays
+        // TODO: replace array with set
+        for (const firstCutSet of firstAllCutSets) {
+            for (const secondCutSet of secondAllCutSets) {
+                // add only unique sets
+                let newSet = firstCutSet.concat(secondCutSet);
+                newSet = newSet.filter((element, index) => newSet.indexOf(element) === index);
                 if (this.indexOfArray(newSet, result, idCache) === -1) {
                     result.push(newSet);
                 }
@@ -310,14 +319,15 @@ export class CutSetGenerator {
         return result;
     }
 
+    // TODO: inspect / needed?
     /**
-     * Checks if array a and b are equal by sorting them and comparing their values.
-     * @param a The first array we want to compare.
-     * @param b The second array we want to compaare.
-     * @param idCache The idCache of the generator context from the current graph.
-     * @returns True if they are equal and false if not.
+     * Checks whether two arrays are equal by sorting them and comparing their values.
+     * @param first The first array to compare.
+     * @param second The second array to compaare.
+     * @param idCache The idCache of the generator context from the corresponding graph.
+     * @returns True if the arrays are equal and false otherwise.
      */
-    arrayEquals(a: AstNode[], b: AstNode[], idCache: IdCache<AstNode>): boolean {
+    protected arrayEquals(first: AstNode[], second: AstNode[], idCache: IdCache<AstNode>): boolean {
         const sort = (x: AstNode, y: AstNode): number => {
             const idX = idCache.getId(x);
             const idY = idCache.getId(y);
@@ -326,11 +336,12 @@ export class CutSetGenerator {
             }
             return 0;
         };
-        const sortA = a.sort(sort);
-        const sortB = b.sort(sort);
-        return a.length === b.length && sortA.every((e, i) => e === sortB[i]);
+        const sortA = first.sort(sort);
+        const sortB = second.sort(sort);
+        return first.length === second.length && sortA.every((e, i) => e === sortB[i]);
     }
 
+    // TODO: inspect / needed?
     /**
      * Gets the index of a list if it's contained in a two-dimensional list of AstNodes or -1 otherwise.
      * @param a The list we want the index of.
@@ -338,7 +349,7 @@ export class CutSetGenerator {
      * @param idCache The idCache of the generator context from the current graph.
      * @returns the index of the list.
      */
-    indexOfArray(a: AstNode[], b: AstNode[][], idCache: IdCache<AstNode>): number {
+    protected indexOfArray(a: AstNode[], b: AstNode[][], idCache: IdCache<AstNode>): number {
         let i = 0;
         for (const list of b) {
             if (this.arrayEquals(a, list, idCache)) {
