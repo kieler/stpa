@@ -15,30 +15,40 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdge, SNode, connectableFeature, fadeFeature, hoverFeedbackFeature, layoutContainerFeature, popupFeature, selectFeature } from "sprotty";
-
-
+import {
+    SEdge,
+    SNode,
+    connectableFeature,
+    fadeFeature,
+    hoverFeedbackFeature,
+    layoutContainerFeature,
+    popupFeature,
+    selectFeature,
+} from "sprotty";
 
 // The types of diagram elements
-export const FTA_NODE_TYPE = 'node:fta';
-export const TREE_TYPE = 'node:tree';
-export const FTA_EDGE_TYPE = 'edge:fta';
-
-
+export const FTA_NODE_TYPE = "node:fta";
+export const TREE_TYPE = "node:tree";
+export const FTA_EDGE_TYPE = "edge:fta";
 
 /**
  * Node representing a FTA component.
  */
-export class FTANode extends SNode{
-    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature, hoverFeedbackFeature, popupFeature];
+export class FTANode extends SNode {
+    static readonly DEFAULT_FEATURES = [
+        connectableFeature,
+        selectFeature,
+        layoutContainerFeature,
+        fadeFeature,
+        hoverFeedbackFeature,
+        popupFeature,
+    ];
 
     nodeType: FTNodeType = FTNodeType.UNDEFINED;
     description: string = "";
     highlight?: boolean;
     k?: number;
     n?: number;
-
 }
 
 /**
@@ -47,7 +57,6 @@ export class FTANode extends SNode{
 export class FTAEdge extends SEdge {
     highlight?: boolean;
 }
-
 
 /**
  * The different types of nodes of FTA.
@@ -60,5 +69,5 @@ export enum FTNodeType {
     OR,
     KN,
     INHIBIT,
-    UNDEFINED
+    UNDEFINED,
 }

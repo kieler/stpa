@@ -18,10 +18,8 @@
 import { SynthesisOptions } from "../synthesis-options";
 
 export class FtaSynthesisOptions extends SynthesisOptions {
-
     constructor() {
         super();
         // this.options = [];
     }
-
 }

@@ -16,64 +16,61 @@
  */
 
 import { injectable } from "inversify";
-import { ICommand, IActionHandlerInitializer, ActionHandlerRegistry } from "sprotty";
+import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { SendCutSetAction } from "./actions";
-import { DropDownOption, TransformationOptionType } from './option-models';
+import { DropDownOption, TransformationOptionType } from "./option-models";
 
-
-export class DropDownMenuOption implements DropDownOption{
-    static readonly ID: string = 'cut-sets';
-    static readonly NAME: string = 'Cut Sets';
+export class DropDownMenuOption implements DropDownOption {
+    static readonly ID: string = "cut-sets";
+    static readonly NAME: string = "Cut Sets";
     readonly id: string = DropDownMenuOption.ID;
-    readonly currentId:string = DropDownMenuOption.ID;
+    readonly currentId: string = DropDownMenuOption.ID;
     readonly name: string = DropDownMenuOption.NAME;
     readonly type: TransformationOptionType = TransformationOptionType.DROPDOWN;
-    values: { displayName: string; id: string }[] = [{displayName: "---", id: "---"}];
-    availableValues: { displayName: string; id: string }[] = [{displayName: "---", id: "---"}];
-    readonly initialValue: { displayName: string; id: string } = {displayName: "---", id: "---"};
-    currentValue = {displayName: "---", id: "---"};
+    values: { displayName: string; id: string }[] = [{ displayName: "---", id: "---" }];
+    availableValues: { displayName: string; id: string }[] = [{ displayName: "---", id: "---" }];
+    readonly initialValue: { displayName: string; id: string } = { displayName: "---", id: "---" };
+    currentValue = { displayName: "---", id: "---" };
 }
-
 
 /** {@link Registry} that stores and updates different render options. */
 @injectable()
-export class CutSetsRegistry extends Registry{
-
+export class CutSetsRegistry extends Registry {
     private _options: Map<string, DropDownOption> = new Map();
 
-    handle(action: Action): void | Action | ICommand{
-        if(SendCutSetAction.isThisAction(action)){
+    handle(action: Action): void | Action | ICommand {
+        if (SendCutSetAction.isThisAction(action)) {
             const dropDownOption = new DropDownMenuOption();
-            for(const set of action.cutSets){
-                dropDownOption.availableValues.push({displayName: set.value , id: set.value});
+            for (const set of action.cutSets) {
+                dropDownOption.availableValues.push({ displayName: set.value, id: set.value });
             }
 
-            this._options.set('cut-sets', dropDownOption);
+            this._options.set("cut-sets", dropDownOption);
             this.notifyListeners();
         }
         return UpdateModelAction.create([], { animate: false, cause: action });
     }
 
-    get allOptions():DropDownOption[]{
+    get allOptions(): DropDownOption[] {
         return Array.from(this._options.values());
     }
 
-    getCurrentValue():any{
+    getCurrentValue(): any {
         //if the cut sets were not requested yet, there is nothing to highlight
-        if(this._options.get('cut-sets')?.availableValues.length === 1){
+        if (this._options.get("cut-sets")?.availableValues.length === 1) {
             return undefined;
         }
-        const selectedCutSet:{ displayName: string; id: string } = this._options.get('cut-sets')?.currentValue;
-        if(selectedCutSet){
+        const selectedCutSet: { displayName: string; id: string } = this._options.get("cut-sets")?.currentValue;
+        if (selectedCutSet) {
             //slice the brackets at the start and at the end.
-            const selected = selectedCutSet.displayName.slice(1,-1);
-            if(selected === '-'){
-                return '-';
-            }else{
+            const selected = selectedCutSet.displayName.slice(1, -1);
+            if (selected === "-") {
+                return "-";
+            } else {
                 return selected.split(",");
             }
-        }      
+        }
     }
 }

@@ -24,7 +24,6 @@ import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTNodeType } from './fta-model';
 import { CutSetsRegistry } from './options/cut-set-registry';
 import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
 
-
 @injectable()
 export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
 
@@ -36,18 +35,18 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
             path += ` L ${p.x},${p.y}`;
         }
 
-        if((edge.target as FTANode).highlight === true){
+        if ((edge.target as FTANode).highlight === true) {
             (edge as FTAEdge).highlight = true;
-        }else{
+        } else {
             (edge as FTAEdge).highlight = false;
         }
 
         // if an FTANode is selected, the components not connected to it should fade out
-        const hidden = edge.type == FTA_EDGE_TYPE && !(edge as FTAEdge).highlight;
- 
+        const hidden = edge.type === FTA_EDGE_TYPE && !(edge as FTAEdge).highlight;
+
         return <path class-fta-edge={true} class-fta-hidden={hidden} d={path} />;
     }
-    
+
 }
 
 
@@ -55,10 +54,8 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
 export class FTANodeView extends RectangularNodeView {
 
     @inject(DISymbol.CutSetsRegistry) cutSetsRegistry: CutSetsRegistry;
-    
+
     render(node: FTANode, context: RenderingContext): VNode {
-
-
         // create the element based on the type of the node
         let element: VNode;
         switch (node.nodeType) {
@@ -85,39 +82,39 @@ export class FTANodeView extends RectangularNodeView {
                 break;
             default:
                 element = renderRectangle(node);
-                break;   
+                break;
         }
 
         //highlight every node that is in the selected cut set or on the path to the top event.
         let set = this.cutSetsRegistry.getCurrentValue();
         let onlyInCutSet = false;
-        if(set !== undefined){
+        if (set !== undefined) {
             //highlight all when the empty cut set is selected
-            if(set === '-' ){
+            if (set === '-') {
                 node.highlight = true;
-            }else{
+            } else {
                 //unhighlight every node first and then only highlight the correct ones.
                 node.highlight = false;
-                if(node.nodeType === FTNodeType.COMPONENT || node.nodeType === FTNodeType.CONDITION){
+                if (node.nodeType === FTNodeType.COMPONENT || node.nodeType === FTNodeType.CONDITION) {
                     //node is component or condition and in the selected cut set.
-                    if(set.includes(node.id)){
+                    if (set.includes(node.id)) {
                         node.highlight = true;
                         onlyInCutSet = true;
 
-                    }else{
+                    } else {
                         //all other components and conditions are not highlighted.
-                        node.highlight = false;   
-                        onlyInCutSet= false;
+                        node.highlight = false;
+                        onlyInCutSet = false;
                     }
-                }else{
+                } else {
                     //check if a gate should be highlighted
-                    if(this.checkIfHighlighted(node, set) === true){
+                    if (this.checkIfHighlighted(node, set) === true) {
                         node.highlight = true;
-                    }else{
+                    } else {
                         node.highlight = false;
                     }
                 }
-            }            
+            }
         }
 
         //if an FTANode is selected, the components not connected to it should fade out
@@ -139,15 +136,15 @@ export class FTANodeView extends RectangularNodeView {
      * @param set The set of all highlighted nodes.
      * @returns True if the node is connected to a node from the set or false otherwise.
      */
-    checkIfHighlighted(node: FTANode, set: any):boolean{
-        for(const edge of node.outgoingEdges){
+    checkIfHighlighted(node: FTANode, set: any): boolean {
+        for (const edge of node.outgoingEdges) {
             let target = (edge.target as FTANode);
-            if((target.nodeType === FTNodeType.COMPONENT || target.nodeType === FTNodeType.CONDITION)){
-                if(set.includes(target.id)){
+            if ((target.nodeType === FTNodeType.COMPONENT || target.nodeType === FTNodeType.CONDITION)) {
+                if (set.includes(target.id)) {
                     return true;
                 }
-            }else{
-                if(this.checkIfHighlighted(target, set) === true){
+            } else {
+                if (this.checkIfHighlighted(target, set) === true) {
                     return true;
                 }
             }
@@ -157,8 +154,7 @@ export class FTANodeView extends RectangularNodeView {
 }
 
 @injectable()
-export class FTAGraphView extends RectangularNodeView{
-
+export class FTAGraphView extends RectangularNodeView {
 
     render(node: SNode, context: RenderingContext): VNode {
 

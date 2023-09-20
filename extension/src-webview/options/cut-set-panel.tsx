@@ -16,26 +16,23 @@
  */
 
 /** @jsx html */
-import { SidebarPanel } from "../sidebar";
-import { html } from "sprotty"; 
-import { DISymbol } from "../di.symbols";
 import { inject, injectable, postConstruct } from "inversify";
 import { VNode } from "snabbdom";
+import { html } from "sprotty";
+import { DISymbol } from "../di.symbols";
 import { FeatherIcon } from '../feather-icons-snabbdom/feather-icons-snabbdom';
+import { SidebarPanel } from "../sidebar";
 import { CutSetsRegistry } from "./cut-set-registry";
 import { OptionsRenderer } from "./options-renderer";
 
 @injectable()
-export class CutSetPanel extends SidebarPanel{
-
+export class CutSetPanel extends SidebarPanel {
 
     @inject(DISymbol.CutSetsRegistry) private cutSetsRegistry: CutSetsRegistry;
     @inject(DISymbol.OptionsRenderer) private optionsRenderer: OptionsRenderer;
 
-
-
     @postConstruct()
-    init():void{
+    init(): void {
         this.cutSetsRegistry.onChange(() => this.update());
     }
     get id(): string {
@@ -60,6 +57,6 @@ export class CutSetPanel extends SidebarPanel{
     }
 
     get icon(): VNode {
-        return <FeatherIcon iconId={"edit-2"}/>;
+        return <FeatherIcon iconId={"edit-2"} />;
     }
 }

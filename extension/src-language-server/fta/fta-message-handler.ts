@@ -17,29 +17,26 @@
 
 import { Connection } from "vscode-languageserver";
 import { FtaDiagramGenerator } from "./fta-diagram-generator";
-import { FtaServices } from './fta-module';
-import { cutSetToString, minimalCutSetToString } from './fta-utils';
-
+import { FtaServices } from "./fta-module";
+import { cutSetToString, minimalCutSetToString } from "./fta-utils";
 
 /**
  * Adds handlers for notifications regarding fta.
- * @param connection 
- * @param ftaServices 
+ * @param connection
+ * @param ftaServices
  */
 export function addFTANotificationHandler(connection: Connection, ftaServices: FtaServices): void {
     addCutSetsHandler(connection, ftaServices);
-
 }
-
 
 /**
  * Adds handlers for requests regarding the cut sets.
- * @param connection 
- * @param ftaServices 
+ * @param connection
+ * @param ftaServices
  */
-function addCutSetsHandler(connection: Connection, ftaServices: FtaServices):void{
-    connection.onRequest('generate/getCutSets', () =>{
-        const diagramGenerator = (ftaServices.diagram.DiagramGenerator) as FtaDiagramGenerator;
+function addCutSetsHandler(connection: Connection, ftaServices: FtaServices): void {
+    connection.onRequest("generate/getCutSets", () => {
+        const diagramGenerator = ftaServices.diagram.DiagramGenerator as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
         const idCache = diagramGenerator.getCache();
 
@@ -47,17 +44,16 @@ function addCutSetsHandler(connection: Connection, ftaServices: FtaServices):voi
         const cutSetsToString = cutSetToString(cutSets, idCache);
 
         return cutSetsToString;
-    }); 
+    });
 
-    connection.onRequest('generate/getMinimalCutSets', () =>{
-        const diagramGenerator = (ftaServices.diagram.DiagramGenerator) as FtaDiagramGenerator;
+    connection.onRequest("generate/getMinimalCutSets", () => {
+        const diagramGenerator = ftaServices.diagram.DiagramGenerator as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
         const idCache = diagramGenerator.getCache();
-        
+
         const minimalCutSets = ftaServices.bdd.Bdd.determineMinimalCutSet(nodes, idCache);
         const minCutSetToString = minimalCutSetToString(minimalCutSets, idCache);
-        
+
         return minCutSetToString;
     });
 }
-

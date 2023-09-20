@@ -15,21 +15,29 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode } from 'langium';
-import { GeneratorContext, IdCache, LangiumDiagramGenerator } from 'langium-sprotty';
-import { SLabel, SModelElement, SModelRoot } from 'sprotty-protocol';
-import { Component, Condition, Gate, ModelFTA, TopEvent, isComponent, isCondition, isGate, isKNGate } from '../generated/ast';
-import { FTAEdge, FTANode } from './fta-interfaces';
-import { FTA_EDGE_TYPE, FTA_NODE_TYPE, TREE_TYPE } from './fta-model';
-import { FtaServices } from './fta-module';
-import { getAllGateTypes, getFTNodeType, getTargets } from './fta-utils';
+import { AstNode } from "langium";
+import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-sprotty";
+import { SLabel, SModelElement, SModelRoot } from "sprotty-protocol";
+import {
+    Component,
+    Condition,
+    Gate,
+    ModelFTA,
+    TopEvent,
+    isComponent,
+    isCondition,
+    isGate,
+    isKNGate,
+} from "../generated/ast";
+import { FTAEdge, FTANode } from "./fta-interfaces";
+import { FTA_EDGE_TYPE, FTA_NODE_TYPE, TREE_TYPE } from "./fta-model";
+import { FtaServices } from "./fta-module";
+import { getAllGateTypes, getFTNodeType, getTargets } from "./fta-utils";
 
-
-export class FtaDiagramGenerator extends LangiumDiagramGenerator{
-
-    allNodes:AstNode[];
+export class FtaDiagramGenerator extends LangiumDiagramGenerator {
+    allNodes: AstNode[];
     idCache: IdCache<AstNode>;
-    constructor(services: FtaServices){
+    constructor(services: FtaServices) {
         super(services);
     }
 
@@ -43,8 +51,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         const model: ModelFTA = document.parseResult.value;
         //set filter for later maybe
 
-
-        let ftaChildren: SModelElement[] = model.components?.map(comps => this.generateFTANode(comps, args));
+        let ftaChildren: SModelElement[] = model.components?.map((comps) => this.generateFTANode(comps, args));
 
         //returns a Map with the gate types as the key and all instances of that type as the value.
         const allGates: Map<string, AstNode[]> = getAllGateTypes(model.gates);
@@ -52,62 +59,58 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
         //first create the ftaNode for the topevent, conditions and all gates
         ftaChildren = ftaChildren.concat([
             this.generateFTANode(model.topEvent, args),
-            ...model.conditions?.map(cond => this.generateFTANode(cond,args)).flat(1)
+            ...model.conditions?.map((cond) => this.generateFTANode(cond, args)).flat(1),
         ]);
-        
-        allGates.forEach((value:AstNode[]) => {
+
+        allGates.forEach((value: AstNode[]) => {
             ftaChildren = ftaChildren.concat([
-                ...value?.map(gates => this.generateFTANode(gates as Gate,args)).flat(1), 
+                ...value?.map((gates) => this.generateFTANode(gates as Gate, args)).flat(1),
             ]);
         });
 
         //after that create the edges of the gates and the top event
-        allGates.forEach((value:AstNode[]) => {
+        allGates.forEach((value: AstNode[]) => {
             ftaChildren = ftaChildren.concat([
-                ...value?.map(gates => this.generateEdgesForFTANode(gates,args)).flat(1), 
+                ...value?.map((gates) => this.generateEdgesForFTANode(gates, args)).flat(1),
             ]);
         });
 
-        ftaChildren = ftaChildren.concat([...this.generateEdgesForFTANode(model.topEvent, args),]);
-
-
+        ftaChildren = ftaChildren.concat([...this.generateEdgesForFTANode(model.topEvent, args)]);
 
         this.allNodes = model.components;
         this.allNodes = this.allNodes.concat(model.topEvent, ...model.conditions);
-        allGates.forEach((value:AstNode[]) => {
+        allGates.forEach((value: AstNode[]) => {
             this.allNodes = this.allNodes.concat(...value);
         });
 
         this.idCache = args.idCache;
-        
-             
+
         return {
-            type: 'graph',
-            id: 'root',
+            type: "graph",
+            id: "root",
             children: [
                 {
                     type: TREE_TYPE,
-                    id: 'faultTree',
-                    children: ftaChildren
-                }
-            ]
+                    id: "faultTree",
+                    children: ftaChildren,
+                },
+            ],
         };
-        
     }
-    
+
     /**
      * Getter method for every FTANode in the Fault Tree.
      * @returns every FTANode in the Fault Tree.
      */
-    public getNodes():AstNode[]{
+    public getNodes(): AstNode[] {
         return this.allNodes;
     }
-    
+
     /**
      * Getter method for the idCache to get the ids for every node.
      * @returns the idCache of generator context.
      */
-    public getCache():IdCache<AstNode>{
+    public getCache(): IdCache<AstNode> {
         return this.idCache;
     }
 
@@ -127,12 +130,11 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
             const targetId = idCache.getId(target);
             const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
             if (sourceId && targetId) {
-                const e = this.generateFTAEdge(edgeId, sourceId, targetId, '', args);
+                const e = this.generateFTAEdge(edgeId, sourceId, targetId, "", args);
                 elements.push(e);
             }
         }
         return elements;
-        
     }
 
     /**
@@ -144,15 +146,21 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
      * @param param4 GeneratorContext of the FTA model.
      * @returns an FTAEdge.
      */
-    private generateFTAEdge(edgeId: string, sourceId: string, targetId: string, label: string, { idCache }: GeneratorContext<ModelFTA>): FTAEdge {
+    private generateFTAEdge(
+        edgeId: string,
+        sourceId: string,
+        targetId: string,
+        label: string,
+        { idCache }: GeneratorContext<ModelFTA>
+    ): FTAEdge {
         let children: SModelElement[] = [];
-        if (label !== '') {
+        if (label !== "") {
             children = [
                 <SLabel>{
-                    type: 'label:xref',
-                    id: idCache.uniqueId(edgeId + '.label'),
-                    text: label
-                }
+                    type: "label:xref",
+                    id: idCache.uniqueId(edgeId + ".label"),
+                    text: label,
+                },
             ];
         }
         return {
@@ -173,24 +181,23 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
      */
     private generateFTANode(node: TopEvent | Gate | Component | Condition, args: GeneratorContext<ModelFTA>): FTANode {
         const idCache = args.idCache;
-        
+
         const nodeId = idCache.uniqueId(node.name, node);
 
         const children: SModelElement[] = [
             <SLabel>{
-                type: 'label',
-                id: idCache.uniqueId(nodeId + '.label'),
-                text: node.name
-            }
+                type: "label",
+                id: idCache.uniqueId(nodeId + ".label"),
+                text: node.name,
+            },
         ];
 
         let desc = "";
-        if(isComponent(node) || isCondition(node)){
+        if (isComponent(node) || isCondition(node)) {
             desc = node.description;
         }
 
-
-        if(isGate(node) && isKNGate(node.type)){
+        if (isGate(node) && isKNGate(node.type)) {
             return {
                 type: FTA_NODE_TYPE,
                 id: nodeId,
@@ -200,15 +207,15 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
                 highlight: true,
                 k: node.type.k,
                 n: node.type.children.length,
-                layout: 'stack',
+                layout: "stack",
                 layoutOptions: {
                     paddingTop: 10.0,
                     paddingBottom: 10.0,
                     paddngLeft: 10.0,
-                    paddingRight: 10.0
-                }
+                    paddingRight: 10.0,
+                },
             };
-        }else{
+        } else {
             return {
                 type: FTA_NODE_TYPE,
                 id: nodeId,
@@ -216,15 +223,14 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator{
                 description: desc,
                 children: children,
                 highlight: true,
-                layout: 'stack',
+                layout: "stack",
                 layoutOptions: {
                     paddingTop: 10.0,
                     paddingBottom: 10.0,
                     paddngLeft: 10.0,
-                    paddingRight: 10.0
-                }
+                    paddingRight: 10.0,
+                },
             };
         }
-        
     }
 }

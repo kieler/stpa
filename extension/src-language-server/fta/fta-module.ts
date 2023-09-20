@@ -15,16 +15,21 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import ElkConstructor from 'elkjs/lib/elk.bundled';
-import { Module, PartialLangiumServices } from 'langium';
-import { LangiumSprottyServices, SprottyDiagramServices } from 'langium-sprotty';
-import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import { CutSetGenerator } from './fta-cutSet-generator';
-import { FtaDiagramGenerator } from './fta-diagram-generator';
-import { FtaLayoutConfigurator } from './fta-layout-config';
-import { FtaValidationRegistry, FtaValidator } from './fta-validator';
-import { FtaSynthesisOptions } from './synthesis-options';
-
+import ElkConstructor from "elkjs/lib/elk.bundled";
+import { Module, PartialLangiumServices } from "langium";
+import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty";
+import {
+    DefaultElementFilter,
+    ElkFactory,
+    ElkLayoutEngine,
+    IElementFilter,
+    ILayoutConfigurator,
+} from "sprotty-elk/lib/elk-layout";
+import { CutSetGenerator } from "./fta-cutSet-generator";
+import { FtaDiagramGenerator } from "./fta-diagram-generator";
+import { FtaLayoutConfigurator } from "./fta-layout-config";
+import { FtaValidationRegistry, FtaValidator } from "./fta-validator";
+import { FtaSynthesisOptions } from "./synthesis-options";
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -32,18 +37,18 @@ import { FtaSynthesisOptions } from './synthesis-options';
 export type FtaAddedServices = {
     validation: {
         FtaValidator: FtaValidator;
-    },
+    };
     layout: {
-        ElkFactory: ElkFactory,
-        ElementFilter: IElementFilter,
+        ElkFactory: ElkFactory;
+        ElementFilter: IElementFilter;
         LayoutConfigurator: ILayoutConfigurator;
-    },
+    };
     options: {
         SynthesisOptions: FtaSynthesisOptions;
     };
     bdd: {
-        Bdd: CutSetGenerator
-    }
+        Bdd: CutSetGenerator;
+    };
 };
 
 /**
@@ -57,24 +62,29 @@ export type FtaServices = LangiumSprottyServices & FtaAddedServices;
  * declared custom services. The Langium defaults can be partially specified to override only
  * selected services, while the custom services must be fully specified.
  */
-export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiagramServices &FtaAddedServices> = {
+export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiagramServices & FtaAddedServices> = {
     diagram: {
-        DiagramGenerator: services => new FtaDiagramGenerator(services), 
-        ModelLayoutEngine: services => new ElkLayoutEngine(services.layout.ElkFactory, services.layout.ElementFilter, services.layout.LayoutConfigurator) as any
+        DiagramGenerator: (services) => new FtaDiagramGenerator(services),
+        ModelLayoutEngine: (services) =>
+            new ElkLayoutEngine(
+                services.layout.ElkFactory,
+                services.layout.ElementFilter,
+                services.layout.LayoutConfigurator
+            ) as any,
     },
     validation: {
-        ValidationRegistry: services => new FtaValidationRegistry(services),
-        FtaValidator: () => new FtaValidator()
+        ValidationRegistry: (services) => new FtaValidationRegistry(services),
+        FtaValidator: () => new FtaValidator(),
     },
     layout: {
-        ElkFactory: () => () => new ElkConstructor({ algorithms: ['layered'] }),
-        ElementFilter: () => new DefaultElementFilter,
-        LayoutConfigurator: () => new FtaLayoutConfigurator
+        ElkFactory: () => () => new ElkConstructor({ algorithms: ["layered"] }),
+        ElementFilter: () => new DefaultElementFilter(),
+        LayoutConfigurator: () => new FtaLayoutConfigurator(),
     },
     options: {
         SynthesisOptions: () => new FtaSynthesisOptions(),
     },
-    bdd:{
-        Bdd: () => new CutSetGenerator()
-    }
+    bdd: {
+        Bdd: () => new CutSetGenerator(),
+    },
 };

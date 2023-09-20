@@ -1,4 +1,3 @@
-
 /*
  * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
  *
@@ -17,10 +16,9 @@
  */
 
 //diagram elements
-export const FTA_NODE_TYPE = 'node:fta';
-export const FTA_EDGE_TYPE = 'edge:fta';
-export const TREE_TYPE = 'node:tree';
-
+export const FTA_NODE_TYPE = "node:fta";
+export const FTA_EDGE_TYPE = "edge:fta";
+export const TREE_TYPE = "node:tree";
 
 /**
  * The different types of nodes of FTA.
@@ -33,5 +31,5 @@ export enum FTNodeType {
     OR,
     KN,
     INHIBIT,
-    UNDEFINED
+    UNDEFINED,
 }
