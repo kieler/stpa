@@ -50,21 +50,21 @@ import {
     setSafetyRequirementGraphOptions,
     setScenarioWithFilteredUCAGraphOptions,
     setScenarioWithNoUCAGraphOptions,
-    setSystemConstraintGraphOptions
+    setSystemConstraintGraphOptions,
 } from "../result-report/svg-generator";
 import { StpaSynthesisOptions, filteringUCAsID } from "./synthesis-options";
 
 export class StpaDiagramServer extends DiagramServer {
-    protected stpaOptions: StpaSynthesisOptions;
+    protected stpaOptions: StpaSynthesisOptions | undefined;
     clientId: string;
     protected connection: Connection | undefined;
 
     constructor(
         dispatch: <A extends Action>(action: A) => Promise<void>,
         services: DiagramServices,
-        synthesisOptions: StpaSynthesisOptions,
         clientId: string,
-        connection: Connection | undefined
+        connection: Connection | undefined,
+        synthesisOptions?: StpaSynthesisOptions
     ) {
         super(dispatch, services);
         this.stpaOptions = synthesisOptions;
@@ -100,59 +100,61 @@ export class StpaDiagramServer extends DiagramServer {
      * @returns
      */
     async handleGenerateSVGDiagrams(action: GenerateSVGsAction): Promise<void> {
-        diagramSizes = {};
-        const setSynthesisOption = {
-            kind: SetSynthesisOptionsAction.KIND,
-            options: this.stpaOptions.getSynthesisOptions().map((option) => option.synthesisOption),
-        } as SetSynthesisOptionsAction;
-        // save current option values
-        saveOptions(this.stpaOptions);
-        // control structure svg
-        setControlStructureOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, CONTROL_STRUCTURE_PATH);
-        // hazard graph svg
-        setHazardGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, HAZARD_PATH);
-        // system constraint graph svg
-        setSystemConstraintGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, SYSTEM_CONSTRAINT_PATH);
-        // responsibility graph svg
-        setResponsibilityGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, RESPONSIBILITY_PATH);
+        if (this.stpaOptions) {
+            diagramSizes = {};
+            const setSynthesisOption = {
+                kind: SetSynthesisOptionsAction.KIND,
+                options: this.stpaOptions.getSynthesisOptions().map((option) => option.synthesisOption),
+            } as SetSynthesisOptionsAction;
+            // save current option values
+            saveOptions(this.stpaOptions);
+            // control structure svg
+            setControlStructureOptions(this.stpaOptions);
+            await this.createSVG(setSynthesisOption, action.uri, CONTROL_STRUCTURE_PATH);
+            // hazard graph svg
+            setHazardGraphOptions(this.stpaOptions);
+            await this.createSVG(setSynthesisOption, action.uri, HAZARD_PATH);
+            // system constraint graph svg
+            setSystemConstraintGraphOptions(this.stpaOptions);
+            await this.createSVG(setSynthesisOption, action.uri, SYSTEM_CONSTRAINT_PATH);
+            // responsibility graph svg
+            setResponsibilityGraphOptions(this.stpaOptions);
+            await this.createSVG(setSynthesisOption, action.uri, RESPONSIBILITY_PATH);
 
-        // filtered uca graph svg
-        const filteringUcaOption = this.stpaOptions
-            .getSynthesisOptions()
-            .find((option) => option.synthesisOption.id === filteringUCAsID);
-        for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
-            setFilteredUcaGraphOptions(this.stpaOptions, value.id);
-            await this.createSVG(setSynthesisOption, action.uri, FILTERED_UCA_PATH(value.id));
+            // filtered uca graph svg
+            const filteringUcaOption = this.stpaOptions
+                .getSynthesisOptions()
+                .find((option) => option.synthesisOption.id === filteringUCAsID);
+            for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
+                setFilteredUcaGraphOptions(this.stpaOptions, value.id);
+                await this.createSVG(setSynthesisOption, action.uri, FILTERED_UCA_PATH(value.id));
+            }
+
+            // filtered controller constraint graph svg
+            for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
+                setControllerConstraintWithFilteredUcaGraphOptions(this.stpaOptions, value.id);
+                await this.createSVG(setSynthesisOption, action.uri, FILTERED_CONTROLLER_CONSTRAINT_PATH(value.id));
+            }
+
+            // filtered scenario graph svg
+            for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
+                setScenarioWithFilteredUCAGraphOptions(this.stpaOptions, value.id);
+                await this.createSVG(setSynthesisOption, action.uri, FILTERED_SCENARIO_PATH(value.id));
+            }
+            // scenario with hazard svg graph
+            setScenarioWithNoUCAGraphOptions(this.stpaOptions);
+            await this.createSVG(setSynthesisOption, action.uri, SCENARIO_WITH_HAZARDS_PATH);
+
+            // safety requirement svg graph
+            setSafetyRequirementGraphOptions(this.stpaOptions);
+            await this.createSVG(setSynthesisOption, action.uri, SAFETY_REQUIREMENT_PATH);
+            // complete graph svg
+            setRelationshipGraphOptions(this.stpaOptions);
+            await this.createSVG(setSynthesisOption, action.uri, COMPLETE_GRAPH_PATH);
+            // reset options
+            resetOptions(this.stpaOptions);
+            await this.handleSetSynthesisOption(setSynthesisOption);
         }
-
-        // filtered controller constraint graph svg
-        for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
-            setControllerConstraintWithFilteredUcaGraphOptions(this.stpaOptions, value.id);
-            await this.createSVG(setSynthesisOption, action.uri, FILTERED_CONTROLLER_CONSTRAINT_PATH(value.id));
-        }
-
-        // filtered scenario graph svg
-        for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
-            setScenarioWithFilteredUCAGraphOptions(this.stpaOptions, value.id);
-            await this.createSVG(setSynthesisOption, action.uri, FILTERED_SCENARIO_PATH(value.id));
-        }
-        // scenario with hazard svg graph
-        setScenarioWithNoUCAGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, SCENARIO_WITH_HAZARDS_PATH);
-
-        // safety requirement svg graph
-        setSafetyRequirementGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, SAFETY_REQUIREMENT_PATH);
-        // complete graph svg
-        setRelationshipGraphOptions(this.stpaOptions);
-        await this.createSVG(setSynthesisOption, action.uri, COMPLETE_GRAPH_PATH);
-        // reset options
-        resetOptions(this.stpaOptions);
-        await this.handleSetSynthesisOption(setSynthesisOption);
 
         return Promise.resolve();
     }
@@ -178,25 +180,27 @@ export class StpaDiagramServer extends DiagramServer {
     }
 
     protected async handleSetSynthesisOption(action: SetSynthesisOptionsAction): Promise<void> {
-        for (const option of action.options) {
-            const opt = this.stpaOptions
-                .getSynthesisOptions()
-                .find((synOpt) => synOpt.synthesisOption.id === option.id);
-            if (opt) {
-                opt.currentValue = option.currentValue;
-                opt.synthesisOption.currentValue = option.currentValue;
-                // for dropdown menu options more must be done
-                if ((opt.synthesisOption as DropDownOption).currentId) {
-                    (opt.synthesisOption as DropDownOption).currentId = option.currentValue;
-                    this.dispatch({
-                        kind: UpdateOptionsAction.KIND,
-                        valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(),
-                        clientId: this.clientId,
-                    });
+        if (this.stpaOptions) {
+            for (const option of action.options) {
+                const opt = this.stpaOptions
+                    .getSynthesisOptions()
+                    .find((synOpt) => synOpt.synthesisOption.id === option.id);
+                if (opt) {
+                    opt.currentValue = option.currentValue;
+                    opt.synthesisOption.currentValue = option.currentValue;
+                    // for dropdown menu options more must be done
+                    if ((opt.synthesisOption as DropDownOption).currentId) {
+                        (opt.synthesisOption as DropDownOption).currentId = option.currentValue;
+                        this.dispatch({
+                            kind: UpdateOptionsAction.KIND,
+                            valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(),
+                            clientId: this.clientId,
+                        });
+                    }
                 }
             }
+            await this.updateView(this.state.options);
         }
-        await this.updateView(this.state.options);
         return Promise.resolve();
     }
 
@@ -213,7 +217,7 @@ export class StpaDiagramServer extends DiagramServer {
             // ensures the the filterUCA option is correct
             this.dispatch({
                 kind: UpdateOptionsAction.KIND,
-                valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(),
+                valuedSynthesisOptions: this.stpaOptions?.getSynthesisOptions() ?? [],
                 clientId: this.clientId,
             });
         } catch (err) {
@@ -226,7 +230,7 @@ export class StpaDiagramServer extends DiagramServer {
         await super.handleRequestModel(action);
         this.dispatch({
             kind: UpdateOptionsAction.KIND,
-            valuedSynthesisOptions: this.stpaOptions.getSynthesisOptions(),
+            valuedSynthesisOptions: this.stpaOptions?.getSynthesisOptions() ?? [],
             clientId: this.clientId,
         });
     }

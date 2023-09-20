@@ -141,9 +141,9 @@ export const stpaDiagramServerFactory = (
                 connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
             },
             language.diagram,
-            language.options.StpaSynthesisOptions,
             clientId,
-            connection
+            connection,
+            language.options.StpaSynthesisOptions
         );
     };
 };

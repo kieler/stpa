@@ -21,7 +21,7 @@ import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyS
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
 import { DiagramOptions } from 'sprotty-protocol';
 import { URI } from 'vscode-uri';
-import { StpaDiagramServer } from '../stpa/stpa-diagramServer';
+import { StpaDiagramServer } from '../stpa/diagram/stpa-diagramServer';
 import { CutSetGenerator } from './fta-cutSet-generator';
 import { FtaDiagramGenerator } from './fta-diagram-generator';
 import { FtaLayoutConfigurator } from './fta-layout-config';
@@ -90,7 +90,10 @@ export const ftaDiagramServerFactory =
             }
             return new StpaDiagramServer(async action => {
                 connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
-            }, language.diagram, clientId);
+            },
+            language.diagram,
+            clientId,
+            connection);
         };
     };
 /**

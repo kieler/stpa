@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext): void {
             extensionUri: context.extensionUri,
             defaultDiagramType: 'stpa',
             languageClient,
-            supportedFileExtensions: ['.stpa'],
+            supportedFileExtensions: ['.stpa', '.fta'],
             singleton: true,
             messenger: new Messenger({ ignoreHiddenViews: false })
         }, 'pasta');

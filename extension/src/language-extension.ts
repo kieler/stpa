@@ -20,22 +20,11 @@ import { createFileUri } from "sprotty-vscode";
 import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
 import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
-import { GenerateSVGsAction } from "./actions";
+import { GenerateSVGsAction, SendCutSetAction } from "./actions";
 import { ContextTablePanel } from "./context-table-panel";
 import { StpaFormattingEditProvider } from "./stpa-formatter";
 import { applyTextEdits, collectOptions, createFile } from "./utils";
 import { StpaLspWebview } from "./wview";
-import * as path from 'path';
-import { ActionMessage, JsonMap, SelectAction } from 'sprotty-protocol';
-import { SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
-import { LspLabelEditActionHandler, SprottyLspEditVscodeExtension, WorkspaceEditActionHandler } from "sprotty-vscode/lib/lsp/editing";
-import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
-import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
-import { SendCutSetAction, UpdateViewAction } from './actions';
-import { ContextTablePanel } from './context-table-panel';
-import { StpaFormattingEditProvider } from './stpa-formatter';
-import { StpaLspWebview } from './wview';
 
 export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     protected extensionPrefix: string;
