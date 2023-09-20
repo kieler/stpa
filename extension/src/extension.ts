@@ -23,11 +23,12 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 import { Messenger } from 'vscode-messenger';
 import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
-import { createQuickPickForWorkspaceOptions } from './utils';
+import { createOutputChannel, createQuickPickForWorkspaceOptions } from './utils';
 import { createSTPAResultMarkdownFile } from './report/md-export';
 import { LTLFormula } from './sbm/utils';
 import { createSBMs } from './sbm/sbm-generation';
 import { StpaResult } from './report/utils';
+import { SendCutSetAction } from './actions';
 
 let languageClient: LanguageClient;
 
@@ -51,9 +52,9 @@ export function activate(context: vscode.ExtensionContext): void {
             singleton: true,
             messenger: new Messenger({ ignoreHiddenViews: false })
         }, 'pasta');
-        registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: 'stpa' });
+        registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
         registerTextEditorSync(webviewPanelManager, context);
-        registerSTPACommands(webviewPanelManager, context, { extensionPrefix: 'stpa' });
+        registerSTPACommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
     }
 
     if (diagramMode === 'editor') {
@@ -170,66 +171,41 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
             return formulas;
         }
     ));
-    // TODO
-        //commands for computing and displaying the (minimal) cut sets of the fault tree.
-        // this.context.subscriptions.push(
-        //     vscode.commands.registerCommand(this.extensionPrefix + '.generate.ftaCutSets', async () =>{ 
-        //         const cutSets:string = await this.languageClient.sendRequest('generate/getCutSets');      
-                
-        //         //Send cut sets to webview to display them in a dropdown menu.
-        //         this.dispatchCutSetsToWebview(cutSets);        
 
-        //         this.createOutputChannel(cutSets, "All cut sets"); 
-        //     })
-        // );
-        // this.context.subscriptions.push(
-        //     vscode.commands.registerCommand(this.extensionPrefix + '.generate.ftaMinimalCutSets', async () =>{
-        //         const minimalCutSets:string = await this.languageClient.sendRequest('generate/getMinimalCutSets');
-
-        //         this.dispatchCutSetsToWebview(minimalCutSets);
-
-        //         this.createOutputChannel(minimalCutSets, "All minimal cut sets");         
-        //     })
-        // );   
+    // commands for computing and displaying the (minimal) cut sets of the fault tree.
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + '.generate.ftaCutSets', async () =>{ 
+            const cutSets:string = await languageClient.sendRequest('generate/getCutSets');      
+            //Send cut sets to webview to display them in a dropdown menu.
+            dispatchCutSetsToWebview(manager, cutSets);        
+            createOutputChannel(cutSets, "All cut sets"); 
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + '.generate.ftaMinimalCutSets', async () =>{
+            const minimalCutSets:string = await languageClient.sendRequest('generate/getMinimalCutSets');
+            dispatchCutSetsToWebview(manager, minimalCutSets);
+            createOutputChannel(minimalCutSets, "All minimal cut sets");         
+        })
+    ); 
 }
 
-// protected getDiagramType(commandArgs: any[]): string | undefined {
-//     if (commandArgs.length === 0
-//         || commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
-//         return 'stpa-diagram';
-//     }
-//     if(commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.fta')){
-//         return 'fta-diagram';
-//     }
-//         return undefined;
-// }
+/**
+     * Sends the cut sets to webview as a SendCutSetAction so that they can be displayed in a dropdown menu.
+     * @param cutSets The (minimal) cut sets of the current Fault Tree.
+     */
+function dispatchCutSetsToWebview(manager: StpaLspVscodeExtension, cutSets:string):void{
+    cutSets = cutSets.substring(cutSets.indexOf("["));
+    cutSets = cutSets.slice(1,-2);
+    const cutSetArray = cutSets.split(",\n");
 
-// /**
-//      * Sends the cut sets to webview as a SendCutSetAction so that they can be displayed in a dropdown menu.
-//      * @param cutSets The (minimal) cut sets of the current Fault Tree.
-//      */
-// protected dispatchCutSetsToWebview(cutSets:string):void{
-//     cutSets = cutSets.substring(cutSets.indexOf("["));
-//     cutSets = cutSets.slice(1,-2);
-//     const cutSetArray = cutSets.split(",\n");
-
-//     const cutSetDropDownList: { value: any; }[] = [];
-//         for(const set of cutSetArray){
-//             cutSetDropDownList.push({value: set});
-//         }
-//     this.singleton?.dispatch({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
-// }
-
-// /**
-//  * Creates an output channel with the given name and prints the given cut sets. 
-//  * @param cutSets The cut sets to print.
-//  * @param channelName The name of the channel.
-//  */
-// protected createOutputChannel(cutSets:string, channelName:string):void{
-//     const outputCutSets = vscode.window.createOutputChannel(channelName);
-//     outputCutSets.append(cutSets);
-//     outputCutSets.show();
-// }
+    const cutSetDropDownList: { value: any; }[] = [];
+        for(const set of cutSetArray){
+            cutSetDropDownList.push({value: set});
+        }
+        // manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.diagramType === 'fta')?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
+        manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.uri.endsWith('.fta'))?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
+    }
 
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {
     const serverModule = context.asAbsolutePath(path.join('pack', 'language-server'));

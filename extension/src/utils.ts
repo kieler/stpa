@@ -113,3 +113,14 @@ export class UCA_TYPE {
     static CONTINUOUS = "continuous-problem";
     static UNDEFINED = "undefined";
 }
+
+/**
+ * Creates an output channel with the given name and prints the given cut sets. 
+ * @param cutSets The cut sets to print.
+ * @param channelName The name of the channel.
+ */
+export function createOutputChannel(cutSets:string, channelName:string):void{
+    const outputCutSets = vscode.window.createOutputChannel(channelName);
+    outputCutSets.append(cutSets);
+    outputCutSets.show();
+}

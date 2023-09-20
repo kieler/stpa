@@ -16,7 +16,7 @@
  */
 
 import { injectable } from "inversify";
-import { ICommand } from "sprotty";
+import { ICommand, IActionHandlerInitializer, ActionHandlerRegistry } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { SendCutSetAction } from "./actions";
@@ -42,11 +42,6 @@ export class DropDownMenuOption implements DropDownOption{
 export class CutSetsRegistry extends Registry{
 
     private _options: Map<string, DropDownOption> = new Map();
-
-    constructor(){
-        super();
-    }
-
 
     handle(action: Action): void | Action | ICommand{
         if(SendCutSetAction.isThisAction(action)){

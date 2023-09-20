@@ -20,7 +20,7 @@ import { createFileUri } from "sprotty-vscode";
 import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
 import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
-import { GenerateSVGsAction, SendCutSetAction } from "./actions";
+import { GenerateSVGsAction } from "./actions";
 import { ContextTablePanel } from "./context-table-panel";
 import { StpaFormattingEditProvider } from "./stpa-formatter";
 import { applyTextEdits, collectOptions, createFile } from "./utils";
