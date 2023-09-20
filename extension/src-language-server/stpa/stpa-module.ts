@@ -17,20 +17,12 @@
 
 import ElkConstructor from "elkjs/lib/elk.bundled";
 import {
-    createDefaultModule,
-    createDefaultSharedModule,
-    DefaultSharedModuleContext,
-    inject,
     Module,
-    PartialLangiumServices,
+    PartialLangiumServices
 } from "langium";
 import {
-    DefaultDiagramServerManager,
-    DiagramActionNotification,
     LangiumSprottyServices,
-    LangiumSprottySharedServices,
-    SprottyDiagramServices,
-    SprottySharedServices,
+    SprottyDiagramServices
 } from "langium-sprotty";
 import {
     DefaultElementFilter,
@@ -39,15 +31,11 @@ import {
     IElementFilter,
     ILayoutConfigurator,
 } from "sprotty-elk/lib/elk-layout";
-import { DiagramOptions } from "sprotty-protocol";
-import { URI } from "vscode-uri";
-import { StpaGeneratedModule, StpaGeneratedSharedModule } from "../generated/module";
+import { IDEnforcer } from "./ID-enforcer";
 import { ContextTableProvider } from "./contextTable/context-dataProvider";
 import { StpaDiagramGenerator } from "./diagram/diagram-generator";
 import { StpaLayoutConfigurator } from "./diagram/layout-config";
-import { StpaDiagramServer } from "./diagram/stpa-diagramServer";
 import { StpaSynthesisOptions } from "./diagram/synthesis-options";
-import { IDEnforcer } from "./ID-enforcer";
 import { StpaScopeProvider } from "./stpa-scopeProvider";
 import { StpaValidationRegistry, StpaValidator } from "./stpa-validator";
 
@@ -67,7 +55,7 @@ export type StpaAddedServices = {
         LayoutConfigurator: ILayoutConfigurator;
     };
     options: {
-        StpaSynthesisOptions: StpaSynthesisOptions;
+        SynthesisOptions: StpaSynthesisOptions;
     };
     contextTable: {
         ContextTableProvider: ContextTableProvider;
@@ -112,48 +100,12 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
         LayoutConfigurator: () => new StpaLayoutConfigurator(),
     },
     options: {
-        StpaSynthesisOptions: () => new StpaSynthesisOptions(),
+        SynthesisOptions: () => new StpaSynthesisOptions(),
     },
     contextTable: {
         ContextTableProvider: (services) => new ContextTableProvider(services),
     },
     utility: {
         IDEnforcer: (services) => new IDEnforcer(services),
-    },
-};
-
-export const stpaDiagramServerFactory = (
-    services: LangiumSprottySharedServices
-): ((clientId: string, options?: DiagramOptions) => StpaDiagramServer) => {
-    const connection = services.lsp.Connection;
-    const serviceRegistry = services.ServiceRegistry;
-    return (clientId, options) => {
-        const sourceUri = options?.sourceUri;
-        if (!sourceUri) {
-            throw new Error("Missing 'sourceUri' option in request.");
-        }
-        const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as StpaServices;
-        if (!language.diagram) {
-            throw new Error(`The '${language.LanguageMetaData.languageId}' language does not support diagrams.`);
-        }
-        return new StpaDiagramServer(
-            async (action) => {
-                connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
-            },
-            language.diagram,
-            clientId,
-            connection,
-            language.options.StpaSynthesisOptions
-        );
-    };
-};
-
-/**
- * instead of the default diagram server the stpa-diagram server is sued
- */
-export const StpaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
-    diagram: {
-        diagramServerFactory: stpaDiagramServerFactory,
-        DiagramServerManager: (services) => new DefaultDiagramServerManager(services),
     },
 };

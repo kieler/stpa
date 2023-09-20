@@ -17,15 +17,13 @@
 
 import ElkConstructor from 'elkjs/lib/elk.bundled';
 import { Module, PartialLangiumServices } from 'langium';
-import { DefaultDiagramServerManager, DiagramActionNotification, LangiumSprottyServices, LangiumSprottySharedServices, SprottyDiagramServices, SprottySharedServices } from 'langium-sprotty';
+import { LangiumSprottyServices, SprottyDiagramServices } from 'langium-sprotty';
 import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import { DiagramOptions } from 'sprotty-protocol';
-import { URI } from 'vscode-uri';
-import { StpaDiagramServer } from '../stpa/diagram/stpa-diagramServer';
 import { CutSetGenerator } from './fta-cutSet-generator';
 import { FtaDiagramGenerator } from './fta-diagram-generator';
 import { FtaLayoutConfigurator } from './fta-layout-config';
 import { FtaValidationRegistry, FtaValidator } from './fta-validator';
+import { FtaSynthesisOptions } from './synthesis-options';
 
 
 /**
@@ -40,6 +38,9 @@ export type FtaAddedServices = {
         ElementFilter: IElementFilter,
         LayoutConfigurator: ILayoutConfigurator;
     },
+    options: {
+        SynthesisOptions: FtaSynthesisOptions;
+    };
     bdd: {
         Bdd: CutSetGenerator
     }
@@ -70,40 +71,10 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
         ElementFilter: () => new DefaultElementFilter,
         LayoutConfigurator: () => new FtaLayoutConfigurator
     },
+    options: {
+        SynthesisOptions: () => new FtaSynthesisOptions(),
+    },
     bdd:{
         Bdd: () => new CutSetGenerator()
     }
 };
-
-export const ftaDiagramServerFactory =
-    (services: LangiumSprottySharedServices): ((clientId: string, options?: DiagramOptions) => StpaDiagramServer) => {
-        const connection = services.lsp.Connection;
-        const serviceRegistry = services.ServiceRegistry;
-        return (clientId, options) => {
-            const sourceUri = options?.sourceUri;
-            if (!sourceUri) {
-                throw new Error("Missing 'sourceUri' option in request.");
-            }
-            const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as FtaServices;
-            if (!language.diagram) {
-                throw new Error(`The '${language.LanguageMetaData.languageId}' language does not support diagrams.`);
-            }
-            return new StpaDiagramServer(async action => {
-                connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
-            },
-            language.diagram,
-            clientId,
-            connection);
-        };
-    };
-/**
- * instead of the default diagram server the fta-diagram server is used
- */
-export const FtaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
-    diagram: {
-        diagramServerFactory: ftaDiagramServerFactory,
-        DiagramServerManager: services => new DefaultDiagramServerManager(services)
-    }
-};
-
-

@@ -22,6 +22,7 @@ import {
     TransformationOptionType,
     ValuedSynthesisOption,
 } from "../../options/option-models";
+import { SynthesisOptions } from "../../synthesis-options";
 
 const hierarchyID = "hierarchy";
 const modelOrderID = "modelOrder";
@@ -397,10 +398,10 @@ export enum showLabelsValue {
     AUTOMATIC,
 }
 
-export class StpaSynthesisOptions {
-    private options: ValuedSynthesisOption[];
+export class StpaSynthesisOptions extends SynthesisOptions {
 
     constructor() {
+        super();
         this.options = [
             layoutCategoryOption,
             filterCategoryOption,
@@ -421,10 +422,6 @@ export class StpaSynthesisOptions {
             showControlStructureOption,
             showRelationshipGraphOption,
         ];
-    }
-
-    getSynthesisOptions(): ValuedSynthesisOption[] {
-        return this.options;
     }
 
     getModelOrder(): boolean {

@@ -46,7 +46,6 @@ export function activate(context: vscode.ExtensionContext): void {
         // Set up webview panel manager for freestyle webviews
         const webviewPanelManager = new StpaLspVscodeExtension({
             extensionUri: context.extensionUri,
-            defaultDiagramType: 'stpa',
             languageClient,
             supportedFileExtensions: ['.stpa', '.fta'],
             singleton: true,
@@ -203,8 +202,8 @@ function dispatchCutSetsToWebview(manager: StpaLspVscodeExtension, cutSets:strin
         for(const set of cutSetArray){
             cutSetDropDownList.push({value: set});
         }
-        // manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.diagramType === 'fta')?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
-        manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.uri.endsWith('.fta'))?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
+        manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.diagramType === 'fta')?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
+        // manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.uri.endsWith('.fta'))?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetDropDownList } as SendCutSetAction);
     }
 
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {

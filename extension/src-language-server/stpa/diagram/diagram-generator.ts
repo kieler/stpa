@@ -59,7 +59,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
     constructor(services: StpaServices) {
         super(services);
-        this.options = services.options.StpaSynthesisOptions;
+        this.options = services.options.SynthesisOptions;
     }
 
     /**

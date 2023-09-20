@@ -15,12 +15,19 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject } from 'langium';
-import { LangiumSprottySharedServices } from 'langium-sprotty';
-import { StpaGeneratedModule, StpaGeneratedSharedModule, FtaGeneratedModule} from './generated/module';
-import { StpaServices, StpaSprottySharedModule, STPAModule } from './stpa/stpa-module';
-import{FtaModule, FtaSprottySharedModule, FtaServices} from './fta/fta-module';
-
+import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module } from "langium";
+import {
+    DefaultDiagramServerManager,
+    DiagramActionNotification,
+    LangiumSprottySharedServices,
+    SprottySharedServices
+} from "langium-sprotty";
+import { DiagramOptions } from "sprotty-protocol";
+import { URI } from "vscode-uri";
+import { PastaDiagramServer } from "./diagram-server";
+import { FtaModule, FtaServices } from "./fta/fta-module";
+import { FtaGeneratedModule, PastaGeneratedSharedModule, StpaGeneratedModule } from "./generated/module";
+import { STPAModule, StpaServices } from "./stpa/stpa-module";
 
 /**
  * Create the full set of services required by Langium.
@@ -37,24 +44,55 @@ import{FtaModule, FtaSprottySharedModule, FtaServices} from './fta/fta-module';
  * @param context Optional module context with the LSP connection
  * @returns An object wrapping the shared services and the language-specific services
  */
-export function createServices(context: DefaultSharedModuleContext): { shared: LangiumSprottySharedServices, stpa: StpaServices, fta:FtaServices; } {
+export function createServices(context: DefaultSharedModuleContext): {
+    shared: LangiumSprottySharedServices;
+    stpa: StpaServices;
+    fta: FtaServices;
+} {
     const shared = inject(
         createDefaultSharedModule(context),
-        StpaGeneratedSharedModule,
-        StpaSprottySharedModule,
-        FtaSprottySharedModule
+        PastaGeneratedSharedModule,
+        PastaSprottySharedModule
     );
-    const stpa = inject(
-        createDefaultModule({ shared }),
-        StpaGeneratedModule,
-        STPAModule
-    );
-    const fta = inject(
-        createDefaultModule({ shared }),
-        FtaGeneratedModule,
-        FtaModule
-    );
+    const stpa = inject(createDefaultModule({ shared }), StpaGeneratedModule, STPAModule);
+    const fta = inject(createDefaultModule({ shared }), FtaGeneratedModule, FtaModule);
     shared.ServiceRegistry.register(stpa);
     shared.ServiceRegistry.register(fta);
-    return { shared,stpa, fta};
+    return { shared, stpa, fta };
 }
+
+const pastaDiagramServerFactory = (
+    services: LangiumSprottySharedServices
+): ((clientId: string, options?: DiagramOptions) => PastaDiagramServer) => {
+    const connection = services.lsp.Connection;
+    const serviceRegistry = services.ServiceRegistry;
+    return (clientId, options) => {
+        const sourceUri = options?.sourceUri;
+        if (!sourceUri) {
+            throw new Error("Missing 'sourceUri' option in request.");
+        }
+        const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as (StpaServices | FtaServices);
+        if (!language.diagram) {
+            throw new Error(`The '${language.LanguageMetaData.languageId}' language does not support diagrams.`);
+        }
+        return new PastaDiagramServer(
+            async (action) => {
+                connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
+            },
+            language.diagram,
+            clientId,
+            connection,
+            language.options.SynthesisOptions
+        );
+    };
+};
+
+/**
+ * instead of the default diagram server the stpa-diagram server is sued
+ */
+const PastaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
+    diagram: {
+        diagramServerFactory: pastaDiagramServerFactory,
+        DiagramServerManager: (services) => new DefaultDiagramServerManager(services),
+    },
+};

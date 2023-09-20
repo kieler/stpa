@@ -26,7 +26,7 @@ import {
     Model,
     Node,
     Responsibility,
-    StpaAstType,
+    PastaAstType,
     SystemConstraint,
     isModel,
 } from "../generated/ast";
@@ -40,7 +40,7 @@ export class StpaValidationRegistry extends ValidationRegistry {
     constructor(services: StpaServices) {
         super(services);
         const validator = services.validation.StpaValidator;
-        const checks: ValidationChecks<StpaAstType> = {
+        const checks: ValidationChecks<PastaAstType> = {
             Model: validator.checkModel,
             Hazard: validator.checkHazard,
             SystemConstraint: validator.checkSystemConstraint,

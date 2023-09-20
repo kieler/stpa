@@ -16,7 +16,7 @@
  */
 
 import { ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
-import { ModelFTA, StpaAstType } from '../generated/ast';
+import { ModelFTA, PastaAstType } from '../generated/ast';
 import type { FtaServices } from './fta-module';
 
 /**
@@ -26,7 +26,7 @@ export class FtaValidationRegistry extends ValidationRegistry {
     constructor(services: FtaServices) {
         super(services);
         const validator = services.validation.FtaValidator;
-        const checks: ValidationChecks<StpaAstType> = {
+        const checks: ValidationChecks<PastaAstType> = {
             ModelFTA: validator.checkModel,
         };
         this.register(checks, validator);
