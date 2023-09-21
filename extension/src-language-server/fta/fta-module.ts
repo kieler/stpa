@@ -25,14 +25,13 @@ import {
     IElementFilter,
     ILayoutConfigurator,
 } from "sprotty-elk/lib/elk-layout";
-import { CutSetGenerator } from "./fta-cutSet-generator";
-import { FtaDiagramGenerator } from "./fta-diagram-generator";
-import { FtaLayoutConfigurator } from "./fta-layout-config";
+import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator";
+import { FtaLayoutConfigurator } from "./diagram/fta-layout-config";
 import { FtaValidationRegistry, FtaValidator } from "./fta-validator";
 import { FtaSynthesisOptions } from "./synthesis-options";
 
 /**
- * Declaration of custom services - add your own service classes here.
+ * Declaration of custom services.
  */
 export type FtaAddedServices = {
     validation: {
@@ -45,9 +44,6 @@ export type FtaAddedServices = {
     };
     options: {
         SynthesisOptions: FtaSynthesisOptions;
-    };
-    bdd: {
-        Bdd: CutSetGenerator;
     };
 };
 
@@ -83,8 +79,5 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
     },
     options: {
         SynthesisOptions: () => new FtaSynthesisOptions(),
-    },
-    bdd: {
-        Bdd: () => new CutSetGenerator(),
     },
 };

@@ -26,13 +26,12 @@ import {
     selectFeature,
 } from "sprotty";
 
-// The types of diagram elements
+/* fault tree element types */
 export const FTA_NODE_TYPE = "node:fta";
-export const TREE_TYPE = "node:tree";
 export const FTA_EDGE_TYPE = "edge:fta";
 
 /**
- * Node representing a FTA component.
+ * Node of a fault tree.
  */
 export class FTANode extends SNode {
     static readonly DEFAULT_FEATURES = [
@@ -52,14 +51,14 @@ export class FTANode extends SNode {
 }
 
 /**
- * Edge representing an edge in the fault tree.
+ * Edge of a fault tree.
  */
 export class FTAEdge extends SEdge {
     highlight?: boolean;
 }
 
 /**
- * The different types of nodes of FTA.
+ * Types of fault tree nodes.
  */
 export enum FTNodeType {
     TOPEVENT,

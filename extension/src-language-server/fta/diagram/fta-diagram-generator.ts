@@ -28,11 +28,11 @@ import {
     isCondition,
     isGate,
     isKNGate,
-} from "../generated/ast";
+} from "../../generated/ast";
 import { FTAEdge, FTANode } from "./fta-interfaces";
-import { FTA_EDGE_TYPE, FTA_NODE_TYPE, TREE_TYPE } from "./fta-model";
-import { FtaServices } from "./fta-module";
-import { getAllGateTypes, getFTNodeType, getTargets } from "./fta-utils";
+import { FTA_EDGE_TYPE, FTA_NODE_TYPE } from "./fta-model";
+import { FtaServices } from "../fta-module";
+import { getAllGateTypes, getFTNodeType, getTargets } from "./utils";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     allNodes: AstNode[];
@@ -88,13 +88,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         return {
             type: "graph",
             id: "root",
-            children: [
-                {
-                    type: TREE_TYPE,
-                    id: "faultTree",
-                    children: ftaChildren,
-                },
-            ],
+            children: ftaChildren
         };
     }
 

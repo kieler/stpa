@@ -16,9 +16,10 @@
  */
 
 import { Connection } from "vscode-languageserver";
-import { FtaDiagramGenerator } from "./fta-diagram-generator";
+import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator";
 import { FtaServices } from "./fta-module";
-import { cutSetToString, minimalCutSetToString } from "./fta-utils";
+import { cutSetsToString } from "./utils";
+import { determineMinimalCutSet, generateCutSetsForFT } from "./analysis/fta-cutSet-calculator";
 
 /**
  * Adds handlers for notifications regarding fta.
@@ -38,21 +39,19 @@ function addCutSetsHandler(connection: Connection, ftaServices: FtaServices): vo
     connection.onRequest("generate/getCutSets", () => {
         const diagramGenerator = ftaServices.diagram.DiagramGenerator as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
-        const idCache = diagramGenerator.getCache();
 
-        const cutSets = ftaServices.bdd.Bdd.generateCutSetsForFT(nodes, idCache);
-        const cutSetsToString = cutSetToString(cutSets, idCache);
+        const cutSets = generateCutSetsForFT(nodes);
+        const cutSetText = cutSetsToString(cutSets);
 
-        return cutSetsToString;
+        return cutSetText;
     });
 
     connection.onRequest("generate/getMinimalCutSets", () => {
         const diagramGenerator = ftaServices.diagram.DiagramGenerator as FtaDiagramGenerator;
         const nodes = diagramGenerator.getNodes();
-        const idCache = diagramGenerator.getCache();
 
-        const minimalCutSets = ftaServices.bdd.Bdd.determineMinimalCutSet(nodes, idCache);
-        const minCutSetToString = minimalCutSetToString(minimalCutSets, idCache);
+        const minimalCutSets = determineMinimalCutSet(nodes);
+        const minCutSetToString = cutSetsToString(minimalCutSets, true);
 
         return minCutSetToString;
     });

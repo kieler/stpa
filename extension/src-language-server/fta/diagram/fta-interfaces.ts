@@ -15,21 +15,23 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-//diagram elements
-export const FTA_NODE_TYPE = "node:fta";
-export const FTA_EDGE_TYPE = "edge:fta";
-export const TREE_TYPE = "node:tree";
+import { SEdge, SNode } from "sprotty-protocol";
+import { FTNodeType } from "./fta-model";
 
 /**
- * The different types of nodes of FTA.
+ * Node of a fault tree.
  */
-export enum FTNodeType {
-    TOPEVENT,
-    COMPONENT,
-    CONDITION,
-    AND,
-    OR,
-    KN,
-    INHIBIT,
-    UNDEFINED,
+export interface FTANode extends SNode {
+    nodeType: FTNodeType;
+    description: string;
+    highlight?: boolean;
+    k?: number;
+    n?: number;
+}
+
+/**
+ * Edge of a fault tree.
+ */
+export interface FTAEdge extends SEdge {
+    highlight?: boolean;
 }
