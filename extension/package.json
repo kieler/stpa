@@ -115,40 +115,40 @@
             {
                 "command": "pasta.diagram.fit",
                 "title": "Fit to Screen",
-                "category": "STPA Diagram"
+                "category": "PASTA Diagram"
             },
             {
                 "command": "pasta.diagram.center",
                 "title": "Center selection",
-                "category": "STPA Diagram"
+                "category": "PASTA Diagram"
             },
             {
                 "command": "pasta.diagram.delete",
                 "title": "Delete selected element",
-                "category": "STPA Diagram"
+                "category": "PASTA Diagram"
             },
             {
                 "command": "pasta.diagram.export",
                 "title": "Export diagram to SVG",
-                "category": "STPA Diagram"
+                "category": "PASTA Diagram"
             },
             {
-                "command": "pasta.checks.setCheckResponsibilitiesForConstraints",
+                "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",
                 "title": "Set the responsibilities for constraints check",
                 "category": "STPA Checks"
             },
             {
-                "command": "pasta.checks.checkConstraintsForUCAs",
+                "command": "pasta.stpa.checks.checkConstraintsForUCAs",
                 "title": "Set the constraints for UCA check",
                 "category": "STPA Checks"
             },
             {
-                "command": "pasta.checks.checkScenariosForUCAs",
+                "command": "pasta.stpa.checks.checkScenariosForUCAs",
                 "title": "Set the scenarios for UCA check",
                 "category": "STPA Checks"
             },
             {
-                "command": "pasta.checks.checkSafetyRequirementsForUCAs",
+                "command": "pasta.stpa.checks.checkSafetyRequirementsForUCAs",
                 "title": "Set the safety requirements for UCA check",
                 "category": "STPA Checks"
             },
@@ -163,22 +163,22 @@
                 "category": "STPA ID Enforcement"
             },
             {
-                "command": "pasta.SBM.generation",
+                "command": "pasta.stpa.SBM.generation",
                 "title": "Generate Safe Behavioral Model (SBM)",
                 "category": "STPA SBM"
             },
             {
-                "command": "pasta.md.creation",
+                "command": "pasta.stpa.md.creation",
                 "title": "Create a Markdown file",
                 "category": "STPA PDF Creation"
             },
             {
-                "command": "pasta.generate.ftaCutSets",
+                "command": "pasta.fta.cutSets",
                 "title": "Generate the cut sets",
                 "category": "Cut Sets"
             },
             {
-                "command": "pasta.generate.ftaMinimalCutSets",
+                "command": "pasta.fta.minimalCutSets",
                 "title": "Generate the minimal cut sets",
                 "category": "Cut Sets"
             }
@@ -199,50 +199,50 @@
                 },
                 {
                     "command": "pasta.diagram.fit",
-                    "when": "stpa-diagram-focused"
+                    "when": "pasta-diagram-focused"
                 },
                 {
                     "command": "pasta.diagram.center",
-                    "when": "stpa-diagram-focused"
+                    "when": "pasta-diagram-focused"
                 },
                 {
                     "command": "pasta.diagram.delete",
-                    "when": "stpa-diagram-focused"
+                    "when": "pasta-diagram-focused"
                 },
                 {
                     "command": "pasta.diagram.export",
-                    "when": "stpa-diagram-focused"
+                    "when": "pasta-diagram-focused"
                 },
                 {
-                    "command": "pasta.checks.setCheckResponsibilitiesForConstraints",
+                    "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.checks.checkConstraintsForUCAs",
+                    "command": "pasta.stpa.checks.checkConstraintsForUCAs",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.checks.checkScenariosForUCAs",
+                    "command": "pasta.stpa.checks.checkScenariosForUCAs",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.checks.checkSafetyRequirementsForUCAs",
+                    "command": "pasta.stpa.checks.checkSafetyRequirementsForUCAs",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.SBM.generation",
+                    "command": "pasta.stpa.SBM.generation",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.md.creation",
+                    "command": "pasta.stpa.md.creation",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.generate.ftaCutSets",
+                    "command": "pasta.fta.cutSets",
                     "when": "editorLangId == 'fta'"
                 },
                 {
-                    "command": "pasta.generate.ftaMinimalCutSets",
+                    "command": "pasta.fta.minimalCutSets",
                     "when": "editorLangId == 'fta'"
                 }
             ],
@@ -258,7 +258,7 @@
                     "group": "navigation"
                 },
                 {
-                    "submenu": "pasta.checks",
+                    "submenu": "pasta.stpa.checks",
                     "group": "checks"
                 },
                 {
@@ -266,46 +266,46 @@
                     "group": "generate"
                 },
                 {
-                    "command": "pasta.SBM.generation",
+                    "command": "pasta.stpa.SBM.generation",
                     "when": "editorLangId == 'stpa'",
                     "group": "stpa"
                 },
                 {
-                    "command": "pasta.md.creation",
+                    "command": "pasta.stpa.md.creation",
                     "when": "editorLangId == 'stpa'",
                     "group": "stpa"
                 }
             ],
-            "pasta.checks": [
+            "pasta.stpa.checks": [
                 {
-                    "command": "pasta.checks.setCheckResponsibilitiesForConstraints",
+                    "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",
                     "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.checks.checkConstraintsForUCAs",
+                    "command": "pasta.stpa.checks.checkConstraintsForUCAs",
                     "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.checks.checkScenariosForUCAs",
+                    "command": "pasta.stpa.checks.checkScenariosForUCAs",
                     "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.checks.checkSafetyRequirementsForUCAs",
+                    "command": "pasta.stpa.checks.checkSafetyRequirementsForUCAs",
                     "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }
             ],
             "pasta.generate": [
                 {
-                    "command": "pasta.generate.ftaCutSets",
+                    "command": "pasta.fta.cutSets",
                     "when": "editorLangId == 'fta'",
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.generate.ftaMinimalCutSets",
+                    "command": "pasta.fta.minimalCutSets",
                     "when": "editorLangId == 'fta'",
                     "group": "navigation"
                 }
@@ -334,12 +334,12 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.generate.ftaCutSets",
+                    "command": "pasta.fta.cutSets",
                     "when": "resourceExtname == '.fta'",
                     "group": "navigation"
                 },
                 {
-                    "command": "pasta.generate.ftaMinimalCutSets",
+                    "command": "pasta.fta.minimalCutSets",
                     "when": "resourceExtname == '.fta'",
                     "group": "navigation"
                 }
@@ -347,7 +347,7 @@
         },
         "submenus": [
             {
-                "id": "pasta.checks",
+                "id": "pasta.stpa.checks",
                 "label": "Validation Checks"
             },
             {
@@ -360,25 +360,25 @@
                 "key": "alt+f",
                 "mac": "alt+f",
                 "command": "pasta.diagram.fit",
-                "when": "stpa-diagram-focused"
+                "when": "pasta-diagram-focused"
             },
             {
                 "key": "alt+c",
                 "mac": "alt+c",
                 "command": "pasta.diagram.center",
-                "when": "stpa-diagram-focused"
+                "when": "pasta-diagram-focused"
             },
             {
                 "key": "alt+e",
                 "mac": "alt+e",
                 "command": "pasta.diagram.export",
-                "when": "stpa-diagram-focused"
+                "when": "pasta-diagram-focused"
             },
             {
                 "key": "delete",
                 "mac": "delete",
                 "command": "pasta.diagram.delete",
-                "when": "stpa-diagram-focused"
+                "when": "pasta-diagram-focused"
             },
             {
                 "key": "ctrl+z",

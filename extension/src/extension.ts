@@ -109,22 +109,22 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
     );
     // commands for toggling the provided validation checks
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async () => {
+        vscode.commands.registerCommand(options.extensionPrefix + '.stpa.checks.setCheckResponsibilitiesForConstraints', async () => {
             createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints");
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.checks.checkConstraintsForUCAs', async () => {
+        vscode.commands.registerCommand(options.extensionPrefix + '.stpa.checks.checkConstraintsForUCAs', async () => {
             createQuickPickForWorkspaceOptions("checkConstraintsForUCAs");
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.checks.checkScenariosForUCAs', async () => {
+        vscode.commands.registerCommand(options.extensionPrefix + '.stpa.checks.checkScenariosForUCAs', async () => {
             createQuickPickForWorkspaceOptions("checkScenariosForUCAs");
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async () => {
+        vscode.commands.registerCommand(options.extensionPrefix + '.stpa.checks.checkSafetyRequirementsForUCAs', async () => {
             createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
         })
     );
@@ -143,14 +143,14 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
 
     // command for creating a pdf
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.md.creation', async (uri: vscode.Uri) => {
+        vscode.commands.registerCommand(options.extensionPrefix + '.stpa.md.creation', async (uri: vscode.Uri) => {
             const data: StpaResult = await languageClient.sendRequest('result/getData', uri.toString());
             await createSTPAResultMarkdownFile(data, manager);
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.SBM.generation', async (uri: vscode.Uri) => {
+        vscode.commands.registerCommand(options.extensionPrefix + '.stpa.SBM.generation', async (uri: vscode.Uri) => {
             await manager.lsReady;
             const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest('verification/generateLTL', uri.path);
             // controlAction names are just the action without the controller as prefix
@@ -173,7 +173,7 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
 
     // commands for computing and displaying the (minimal) cut sets of the fault tree.
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.generate.ftaCutSets', async () =>{ 
+        vscode.commands.registerCommand(options.extensionPrefix + '.fta.cutSets', async () =>{ 
             const cutSets:string = await languageClient.sendRequest('generate/getCutSets');      
             //Send cut sets to webview to display them in a dropdown menu.
             dispatchCutSetsToWebview(manager, cutSets);        
@@ -181,7 +181,7 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.generate.ftaMinimalCutSets', async () =>{
+        vscode.commands.registerCommand(options.extensionPrefix + '.fta.minimalCutSets', async () =>{
             const minimalCutSets:string = await languageClient.sendRequest('generate/getMinimalCutSets');
             dispatchCutSetsToWebview(manager, minimalCutSets);
             createOutputChannel(minimalCutSets, "FTA Cut Sets");         

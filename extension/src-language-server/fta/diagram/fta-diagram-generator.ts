@@ -16,7 +16,7 @@
  */
 
 import { AstNode } from "langium";
-import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-sprotty";
+import { GeneratorContext, LangiumDiagramGenerator } from "langium-sprotty";
 import { SLabel, SModelElement, SModelRoot } from "sprotty-protocol";
 import {
     Component,
@@ -29,14 +29,13 @@ import {
     isGate,
     isKNGate,
 } from "../../generated/ast";
+import { FtaServices } from "../fta-module";
 import { FTAEdge, FTANode } from "./fta-interfaces";
 import { FTA_EDGE_TYPE, FTA_NODE_TYPE } from "./fta-model";
-import { FtaServices } from "../fta-module";
 import { getAllGateTypes, getFTNodeType, getTargets } from "./utils";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     allNodes: AstNode[];
-    idCache: IdCache<AstNode>;
     constructor(services: FtaServices) {
         super(services);
     }
@@ -83,8 +82,6 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             this.allNodes = this.allNodes.concat(...value);
         });
 
-        this.idCache = args.idCache;
-
         return {
             type: "graph",
             id: "root",
@@ -98,14 +95,6 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      */
     public getNodes(): AstNode[] {
         return this.allNodes;
-    }
-
-    /**
-     * Getter method for the idCache to get the ids for every node.
-     * @returns the idCache of generator context.
-     */
-    public getCache(): IdCache<AstNode> {
-        return this.idCache;
     }
 
     /**

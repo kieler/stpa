@@ -40,8 +40,8 @@ import {
 import { SvgCommand } from "./actions";
 import { SvgPostprocessor } from "./exportPostProcessor";
 import { CustomSvgExporter } from "./exporter";
-import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTA_NODE_TYPE } from './fta-model';
-import { FTAGraphView, FTANodeView, PolylineArrowEdgeViewFTA } from './fta-views';
+import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTA_NODE_TYPE } from "./fta-model";
+import { FTANodeView, PolylineArrowEdgeViewFTA } from "./fta-views";
 import { StpaModelViewer } from "./model-viewer";
 import { optionsModule } from "./options/options-module";
 import { sidebarModule } from "./sidebar";
@@ -98,9 +98,9 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);
-    configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
-    configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
-    
+    configureModelElement(context, "html", HtmlRoot, HtmlRootView);
+    configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
+
     //FTA
     configureModelElement(context, FTA_EDGE_TYPE, FTAEdge, PolylineArrowEdgeViewFTA);
     configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
