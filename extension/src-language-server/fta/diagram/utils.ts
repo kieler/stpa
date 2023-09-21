@@ -31,13 +31,13 @@ export function getFTNodeType(node: AstNode): FTNodeType {
         return FTNodeType.COMPONENT;
     } else if (isCondition(node)) {
         return FTNodeType.CONDITION;
-    } else if (isGate(node) && isAND(node.type)) {
+    } else if (isAND(node)) {
         return FTNodeType.AND;
-    } else if (isGate(node) && isOR(node.type)) {
+    } else if (isOR(node)) {
         return FTNodeType.OR;
-    } else if (isGate(node) && isKNGate(node.type)) {
+    } else if (isKNGate(node)) {
         return FTNodeType.KN;
-    } else if (isGate(node) && isInhibitGate(node.type)) {
+    } else if (isInhibitGate(node)) {
         return FTNodeType.INHIBIT;
     }
     return FTNodeType.UNDEFINED;
@@ -58,13 +58,13 @@ export function getTargets(node: AstNode): AstNode[] {
             }
         }
     } else if (isGate(node)) {
-        for (const ref of node.type.children) {
+        for (const ref of node.children) {
             if (ref?.ref) {
                 targets.push(ref.ref);
             }
         }
-        if (isInhibitGate(node.type)) {
-            for (const ref of node.type.condition) {
+        if (isInhibitGate(node)) {
+            for (const ref of node.condition) {
                 if (ref?.ref) {
                     targets.push(ref.ref);
                 }
@@ -89,13 +89,13 @@ export function getAllGateTypes(gates: Gate[]): Map<string, AstNode[]> {
     const inhibGates: AstNode[] = [];
 
     for (const gate of gates) {
-        if (isAND(gate.type)) {
+        if (isAND(gate)) {
             andGates.push(gate);
-        } else if (isOR(gate.type)) {
+        } else if (isOR(gate)) {
             orGates.push(gate);
-        } else if (isKNGate(gate.type)) {
+        } else if (isKNGate(gate)) {
             kNGates.push(gate);
-        } else if (isInhibitGate(gate.type)) {
+        } else if (isInhibitGate(gate)) {
             inhibGates.push(gate);
         }
     }

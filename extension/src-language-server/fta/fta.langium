@@ -13,7 +13,7 @@ Condition:
     name=ID description=STRING;
 
 Gate:
-    name=ID "=" type=(AND|OR|KNGate|InhibitGate);
+    AND|OR|KNGate|InhibitGate;
 
 TopEvent:
     name=STRING "=" children+=[Children:ID];
@@ -22,16 +22,16 @@ Children:
     Gate | Component;
 
 AND:
-    children+=[Children:ID] ('and' children+=[Children:ID])+;
+    name=ID "=" children+=[Children:ID] ('and' children+=[Children:ID])+;
 
 OR:
-    children+=[Children:ID] ('or' children+=[Children:ID])+;
+    name=ID "=" children+=[Children:ID] ('or' children+=[Children:ID])+;
 
 KNGate:
-    k=INT 'of' children+=[Children:ID] (',' children+=[Children:ID])+;
+    name=ID "=" k=INT 'of' children+=[Children:ID] (',' children+=[Children:ID])+;
 
 InhibitGate:
-    condition+=[Condition:ID] 'inhibits' children+=[Children:ID];
+    name=ID "=" condition+=[Condition:ID] 'inhibits' children+=[Children:ID];
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;

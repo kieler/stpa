@@ -26,8 +26,7 @@ import {
     TopEvent,
     isComponent,
     isCondition,
-    isGate,
-    isKNGate,
+    isKNGate
 } from "../../generated/ast";
 import { FtaServices } from "../fta-module";
 import { FTAEdge, FTANode } from "./fta-interfaces";
@@ -180,7 +179,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             desc = node.description;
         }
 
-        if (isGate(node) && isKNGate(node.type)) {
+        if (isKNGate(node)) {
             return {
                 type: FTA_NODE_TYPE,
                 id: nodeId,
@@ -188,8 +187,8 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
                 description: desc,
                 children: children,
                 highlight: true,
-                k: node.type.k,
-                n: node.type.children.length,
+                k: node.k,
+                n: node.children.length,
                 layout: "stack",
                 layoutOptions: {
                     paddingTop: 10.0,

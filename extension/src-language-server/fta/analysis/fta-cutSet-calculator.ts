@@ -108,19 +108,19 @@ function determineCutSetsForGate(startNode: AstNode, allNodes: AstNode[]): Set<n
         return result;
     }
 
-    if (isAND(startNode.type) || isInhibitGate(startNode.type)) {
+    if (isAND(startNode) || isInhibitGate(startNode)) {
         // concatenate each cut set of a child with every cut set of the other children
         for (const child of children) {
             result = concatInnerListsWithEachOther(determineCutSetsForGate(child, allNodes), result);
         }
-    } else if (isOR(startNode.type)) {
+    } else if (isOR(startNode)) {
         // add the cut sets of each child to the result
         for (const child of children) {
             result.push(...determineCutSetsForGate(child, allNodes));
         }
-    } else if (isKNGate(startNode.type)) {
-        const k = startNode.type.k;
-        const n = startNode.type.children.length;
+    } else if (isKNGate(startNode)) {
+        const k = startNode.k;
+        const n = startNode.children.length;
 
         // determine every combination (with length k or greater) of the children
         // Example: children = [M1, M2, G1] and k = 2 -> [[M1, M2], [M1, G1], [M2, G1], [M1, M2, G1]]
@@ -190,14 +190,14 @@ function getChildrenOfNode(node: AstNode): namedFtaElement[] {
 
     if (isGate(node)) {
         // add children of the gate
-        for (const childRef of node.type.children) {
+        for (const childRef of node.children) {
             if (childRef.ref) {
                 children.push(childRef.ref);
             }
         }
         // add condition of inhibit gate
-        if (isInhibitGate(node.type)) {
-            for (const childRef of node.type.condition) {
+        if (isInhibitGate(node)) {
+            for (const childRef of node.condition) {
                 if (childRef?.ref) {
                     children.push(childRef.ref);
                 }
