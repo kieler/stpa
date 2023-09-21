@@ -130,66 +130,28 @@ export class CutSetGenerator {
                 result.push(...this.determineCutSetsForGate(child, allNodes, idCache));
             }
         } else if (isKNGate(startNode.type)) {
-            // TODO: inspect
             const k = startNode.type.k;
             const n = startNode.type.children.length;
 
-            // determine every combination of the children with length k or greater
+            // determine every combination (with length k or greater) of the children
             // Example: children = [M1, M2, G1] and k = 2 -> [[M1, M2], [M1, G1], [M2, G1], [M1, M2, G1]]
             const combinations: AstNode[][] = [];
             for (let i = k; i <= n; i++) {
                 combinations.push(...this.createAllCombinations(children, i));
             }
-            const setCombinations: Set<AstNode>[] = [];
-            combinations.forEach(combination => setCombinations.push(new Set(combination)));
 
-            //Now we want to evaluate G1 from the example above (e.g evaluation(G1) = [[C]]).
-            //Our result list should look like this -> [[M1,M2], [M1,C], [M2,C]].
-            for (let i=0; i < combinations.length; i++) {
-                const comb = combinations[i];
-                if (comb.some((element) => isGate(element))) {
-                    const evaluatedLists = this.evaluateGateInCombinationList(setCombinations[i], allNodes, idCache);
-                    result.push(...evaluatedLists);
-                } else {
-                    result.push(setCombinations[i]);
+            // determine the cut sets for each combination 
+            // (treat each combination the same way as an AND gate with the combination as its children)
+            for (const combination of combinations) {
+                let intermediateResult: Set<AstNode>[] = [];
+                for (const element of combination) {
+                    intermediateResult = this.concatInnerListsWithEachOther(
+                        this.determineCutSetsForGate(element, allNodes, idCache),
+                        intermediateResult
+                    );
                 }
+                result.push(...intermediateResult);
             }
-        }
-
-        return result;
-    }
-
-    // TODO: inspect
-    /**
-     * Takes a list of components, conditions and gates and then removes the gates and inserts its evaluation in the list. This can result in multiple lists.
-     * @param innerList The list we want to evaluate.
-     * @param allNodes All Nodes in the graph.
-     * @param idCache The idCache of the generator context from the current graph.
-     * @returns A list of lists that is the result of inserting the evaluation of the gates in the given list.
-     */
-    protected evaluateGateInCombinationList(
-        innerList: Set<AstNode>,
-        allNodes: AstNode[],
-        idCache: IdCache<AstNode>
-    ): Set<AstNode>[] {
-        let result: Set<AstNode>[] = [];
-        const restList= innerList;
-
-        for (const element of restList) {
-            if (isGate(element)) {
-                // cut out the gate from the rest list.
-                restList.delete(element);
-                //and push the evaluation of the gate into the result list.
-                const tempLists = this.concatInnerListsWithEachOther(
-                    this.determineCutSetsForGate(element, allNodes, idCache),
-                    result
-                );
-                result = [...tempLists];
-            }
-        }
-        //concatenate every element of the rest list with the result (should only be components/conditions).
-        for (const list of restList) {
-            result = this.concatInnerListsWithEachOther([new Set<AstNode>([list])], result);
         }
 
         return result;
@@ -302,6 +264,4 @@ export class CutSetGenerator {
 }
 
 /** Checks whether two sets of AstNodes are equal */
-const eqSet = (xs: Set<AstNode>, ys: Set<AstNode>): boolean =>
-    xs.size === ys.size &&
-    [...xs].every((x) => ys.has(x));
+const eqSet = (xs: Set<AstNode>, ys: Set<AstNode>): boolean => xs.size === ys.size && [...xs].every((x) => ys.has(x));
