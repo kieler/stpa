@@ -97,7 +97,7 @@ export class FTANodeView extends RectangularNodeView {
                 node.highlight = false;
                 if (node.nodeType === FTNodeType.COMPONENT || node.nodeType === FTNodeType.CONDITION) {
                     //node is component or condition and in the selected cut set.
-                    if (set.includes(node.id)) {
+                    if (set.includes(node.name)) {
                         node.highlight = true;
                         onlyInCutSet = true;
 
@@ -140,7 +140,7 @@ export class FTANodeView extends RectangularNodeView {
         for (const edge of node.outgoingEdges) {
             let target = (edge.target as FTANode);
             if ((target.nodeType === FTNodeType.COMPONENT || target.nodeType === FTNodeType.CONDITION)) {
-                if (set.includes(target.id)) {
+                if (set.includes(target.name)) {
                     return true;
                 }
             } else {

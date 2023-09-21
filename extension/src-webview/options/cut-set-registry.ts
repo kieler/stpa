@@ -69,7 +69,7 @@ export class CutSetsRegistry extends Registry {
             if (selected === "-") {
                 return "-";
             } else {
-                return selected.split(",");
+                return selected.split(", ");
             }
         }
     }

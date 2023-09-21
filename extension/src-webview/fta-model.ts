@@ -43,6 +43,7 @@ export class FTANode extends SNode {
         popupFeature,
     ];
 
+    name: string;
     nodeType: FTNodeType = FTNodeType.UNDEFINED;
     description: string = "";
     highlight?: boolean;

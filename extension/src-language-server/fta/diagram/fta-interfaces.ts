@@ -22,6 +22,7 @@ import { FTNodeType } from "./fta-model";
  * Node of a fault tree.
  */
 export interface FTANode extends SNode {
+    name: string;
     nodeType: FTNodeType;
     description: string;
     highlight?: boolean;

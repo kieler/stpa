@@ -16,25 +16,17 @@
  */
 
 import { AstNode } from "langium";
-import { GeneratorContext, LangiumDiagramGenerator } from "langium-sprotty";
+import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-sprotty";
 import { SLabel, SModelElement, SModelRoot } from "sprotty-protocol";
-import {
-    Component,
-    Condition,
-    Gate,
-    ModelFTA,
-    TopEvent,
-    isComponent,
-    isCondition,
-    isKNGate
-} from "../../generated/ast";
+import { ModelFTA, isComponent, isCondition, isKNGate } from "../../generated/ast";
 import { FtaServices } from "../fta-module";
+import { namedFtaElement } from "../utils";
 import { FTAEdge, FTANode } from "./fta-interfaces";
 import { FTA_EDGE_TYPE, FTA_NODE_TYPE } from "./fta-model";
-import { getAllGateTypes, getFTNodeType, getTargets } from "./utils";
+import { getFTNodeType, getTargets } from "./utils";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
-    allNodes: AstNode[];
+    protected allNodes: AstNode[];
     constructor(services: FtaServices) {
         super(services);
     }
@@ -46,73 +38,55 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      */
     protected generateRoot(args: GeneratorContext<ModelFTA>): SModelRoot {
         const { document } = args;
-        const model: ModelFTA = document.parseResult.value;
-        //set filter for later maybe
+        const model = document.parseResult.value;
+        const idCache = args.idCache;
 
-        let ftaChildren: SModelElement[] = model.components?.map((comps) => this.generateFTANode(comps, args));
+        const ftaChildren: SModelElement[] = [
+            // create nodes for top event, components, conditions, and gates
+            this.generateFTNode(model.topEvent, idCache),
+            ...model.components.map((component) => this.generateFTNode(component, idCache)),
+            ...model.conditions.map((condition) => this.generateFTNode(condition, idCache)),
+            ...model.gates.map((gate) => this.generateFTNode(gate, idCache)),
+            // create edges for the gates and the top event
+            ...model.gates.map((gate) => this.generateEdges(gate, idCache)).flat(1),
+            ...this.generateEdges(model.topEvent, idCache),
+        ];
 
-        //returns a Map with the gate types as the key and all instances of that type as the value.
-        const allGates: Map<string, AstNode[]> = getAllGateTypes(model.gates);
-
-        //first create the ftaNode for the topevent, conditions and all gates
-        ftaChildren = ftaChildren.concat([
-            this.generateFTANode(model.topEvent, args),
-            ...model.conditions?.map((cond) => this.generateFTANode(cond, args)).flat(1),
-        ]);
-
-        allGates.forEach((value: AstNode[]) => {
-            ftaChildren = ftaChildren.concat([
-                ...value?.map((gates) => this.generateFTANode(gates as Gate, args)).flat(1),
-            ]);
-        });
-
-        //after that create the edges of the gates and the top event
-        allGates.forEach((value: AstNode[]) => {
-            ftaChildren = ftaChildren.concat([
-                ...value?.map((gates) => this.generateEdgesForFTANode(gates, args)).flat(1),
-            ]);
-        });
-
-        ftaChildren = ftaChildren.concat([...this.generateEdgesForFTANode(model.topEvent, args)]);
-
-        this.allNodes = model.components;
-        this.allNodes = this.allNodes.concat(model.topEvent, ...model.conditions);
-        allGates.forEach((value: AstNode[]) => {
-            this.allNodes = this.allNodes.concat(...value);
-        });
+        // TODO: needed? -> look for a better way to access them for the cut set calculator
+        // save all nodes
+        this.allNodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
 
         return {
             type: "graph",
             id: "root",
-            children: ftaChildren
+            children: ftaChildren,
         };
     }
 
     /**
-     * Getter method for every FTANode in the Fault Tree.
-     * @returns every FTANode in the Fault Tree.
+     * Getterfor all nodes of the fault tree.
+     * @returns all nodes in the fault tree.
      */
     public getNodes(): AstNode[] {
         return this.allNodes;
     }
 
     /**
-     * Generates the edges for {@code node}.
+     * Generates the edges for the given {@code node}.
      * @param node FTA component for which the edges should be created.
-     * @param args GeneratorContext of the FTA model.
-     * @returns edges representing the references {@code node} contains.
+     * @param idCache The ID cache of the FTA model.
+     * @returns edges representing the references the given {@code node} contains.
      */
-    private generateEdgesForFTANode(node: AstNode, args: GeneratorContext<ModelFTA>): SModelElement[] {
-        const idCache = args.idCache;
+    private generateEdges(node: AstNode, idCache: IdCache<AstNode>): SModelElement[] {
         const elements: SModelElement[] = [];
         const sourceId = idCache.getId(node);
         // for every reference an edge is created
         const targets = getTargets(node);
         for (const target of targets) {
             const targetId = idCache.getId(target);
-            const edgeId = idCache.uniqueId(`${sourceId}:-:${targetId}`, undefined);
+            const edgeId = idCache.uniqueId(`${sourceId}_${targetId}`, undefined);
             if (sourceId && targetId) {
-                const e = this.generateFTAEdge(edgeId, sourceId, targetId, "", args);
+                const e = this.generateFTEdge(edgeId, sourceId, targetId, idCache);
                 elements.push(e);
             }
         }
@@ -124,27 +98,18 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @param edgeId The ID of the edge that should be created.
      * @param sourceId The ID of the source of the edge.
      * @param targetId The ID of the target of the edge.
+     * @param idCache The ID cache of the FTA model.
      * @param label The label of the edge.
-     * @param param4 GeneratorContext of the FTA model.
      * @returns an FTAEdge.
      */
-    private generateFTAEdge(
+    private generateFTEdge(
         edgeId: string,
         sourceId: string,
         targetId: string,
-        label: string,
-        { idCache }: GeneratorContext<ModelFTA>
+        idCache: IdCache<AstNode>,
+        label?: string
     ): FTAEdge {
-        let children: SModelElement[] = [];
-        if (label !== "") {
-            children = [
-                <SLabel>{
-                    type: "label:xref",
-                    id: idCache.uniqueId(edgeId + ".label"),
-                    text: label,
-                },
-            ];
-        }
+        const children = label ? this.createEdgeLabel(label, edgeId, idCache): [];
         return {
             type: FTA_EDGE_TYPE,
             id: edgeId,
@@ -158,61 +123,69 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     /**
      * Generates a single FTANode for the given {@code node}.
      * @param node The FTA component the node should be created for.
-     * @param args GeneratorContext of the FTA model.
+     * @param idCache The ID cache of the FTA model.
      * @returns a FTANode representing {@code node}.
      */
-    private generateFTANode(node: TopEvent | Gate | Component | Condition, args: GeneratorContext<ModelFTA>): FTANode {
-        const idCache = args.idCache;
-
+    private generateFTNode(node: namedFtaElement, idCache: IdCache<AstNode>): FTANode {
         const nodeId = idCache.uniqueId(node.name, node);
+        const children: SModelElement[] = this.createNodeLabel(node.name, nodeId, idCache);
+        const description = isComponent(node) || isCondition(node) ? node.description : "";
 
-        const children: SModelElement[] = [
-            <SLabel>{
-                type: "label",
-                id: idCache.uniqueId(nodeId + ".label"),
-                text: node.name,
+        const ftNode = {
+            type: FTA_NODE_TYPE,
+            id: nodeId,
+            name: node.name,
+            nodeType: getFTNodeType(node),
+            description: description,
+            children: children,
+            highlight: true,
+            layout: "stack",
+            layoutOptions: {
+                paddingTop: 10.0,
+                paddingBottom: 10.0,
+                paddngLeft: 10.0,
+                paddingRight: 10.0,
             },
-        ];
-
-        let desc = "";
-        if (isComponent(node) || isCondition(node)) {
-            desc = node.description;
-        }
+        } as FTANode;
 
         if (isKNGate(node)) {
-            return {
-                type: FTA_NODE_TYPE,
-                id: nodeId,
-                nodeType: getFTNodeType(node),
-                description: desc,
-                children: children,
-                highlight: true,
-                k: node.k,
-                n: node.children.length,
-                layout: "stack",
-                layoutOptions: {
-                    paddingTop: 10.0,
-                    paddingBottom: 10.0,
-                    paddngLeft: 10.0,
-                    paddingRight: 10.0,
-                },
-            };
-        } else {
-            return {
-                type: FTA_NODE_TYPE,
-                id: nodeId,
-                nodeType: getFTNodeType(node),
-                description: desc,
-                children: children,
-                highlight: true,
-                layout: "stack",
-                layoutOptions: {
-                    paddingTop: 10.0,
-                    paddingBottom: 10.0,
-                    paddngLeft: 10.0,
-                    paddingRight: 10.0,
-                },
-            };
+            ftNode.k = node.k;
+            ftNode.n = node.children.length;
         }
+        return ftNode;
+    }
+
+    /**
+     * Generates SLabel element for the given {@code label} of a node.
+     * @param label Label to translate to SLabel element.
+     * @param id The ID of the element for which the label should be generated.
+     * @param idCache The ID cache of the FTA model.
+     * @returns SLabel element representing {@code label}.
+     */
+    protected createNodeLabel(label: string, id: string, idCache: IdCache<AstNode>): SLabel[] {
+        return [
+            <SLabel>{
+                type: "label",
+                id: idCache.uniqueId(id + ".label"),
+                text: label,
+            },
+        ];
+    }
+
+    /**
+     * Generates SLabel element for the given {@code label} of an edge.
+     * @param label Label to translate to SLabel element.
+     * @param id The ID of the element for which the label should be generated.
+     * @param idCache The ID cache of the FTA model.
+     * @returns SLabel element representing {@code label}.
+     */
+    protected createEdgeLabel(label: string, id: string, idCache: IdCache<AstNode>): SLabel[] {
+        return [
+            <SLabel>{
+                type: "label:xref",
+                id: idCache.uniqueId(id + ".label"),
+                text: label,
+            },
+        ];
     }
 }

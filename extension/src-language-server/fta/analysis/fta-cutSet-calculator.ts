@@ -40,7 +40,7 @@ export function determineMinimalCutSet(allNodes: AstNode[]): Set<namedFtaElement
 
     // Cut sets are minimal if removing one element destroys the cut set
     // If cut set contains another cut set from the array, remove it since it is not minimal
-    const minimalCutSet = allCutSets.filter((cutSet) => checkIfMinimalCutSet(cutSet, allCutSets));
+    const minimalCutSet = allCutSets.filter((cutSet) => checkMinimalCutSet(cutSet, allCutSets));
 
     return minimalCutSet;
 }
@@ -51,7 +51,7 @@ export function determineMinimalCutSet(allNodes: AstNode[]): Set<namedFtaElement
  * @param allCutSets All Cut Sets of the Fault Tree.
  * @returns True if the given set is a minimal cut set.
  */
-function checkIfMinimalCutSet(cutSet: Set<namedFtaElement>, allCutSets: Set<namedFtaElement>[]): boolean {
+function checkMinimalCutSet(cutSet: Set<namedFtaElement>, allCutSets: Set<namedFtaElement>[]): boolean {
     for (const otherCutSet of allCutSets) {
         let contained = true;
         otherCutSet.forEach((element) => {

@@ -16,7 +16,16 @@
  */
 
 import { AstNode } from "langium";
-import { isTopEvent, isComponent, isCondition, isGate, isAND, isOR, isKNGate, isInhibitGate, Gate } from "../../generated/ast";
+import {
+    isAND,
+    isComponent,
+    isCondition,
+    isGate,
+    isInhibitGate,
+    isKNGate,
+    isOR,
+    isTopEvent,
+} from "../../generated/ast";
 import { FTNodeType } from "./fta-model";
 
 /**
@@ -42,7 +51,6 @@ export function getFTNodeType(node: AstNode): FTNodeType {
     }
     return FTNodeType.UNDEFINED;
 }
-
 
 /**
  * Getter for the references contained in {@code node}.
@@ -72,37 +80,4 @@ export function getTargets(node: AstNode): AstNode[] {
         }
     }
     return targets;
-}
-
-
-
-/** Sorts every gate with its type and puts them into a two dimensional array
- * @param gates Every gate within the FTAModel
- * @returns A two dimensional array with every gate sorted into the respective category of And, Or, KN, Inhibit-Gate
- */
-export function getAllGateTypes(gates: Gate[]): Map<string, AstNode[]> {
-    const allGates: Map<string, AstNode[]> = new Map();
-
-    const andGates: AstNode[] = [];
-    const orGates: AstNode[] = [];
-    const kNGates: AstNode[] = [];
-    const inhibGates: AstNode[] = [];
-
-    for (const gate of gates) {
-        if (isAND(gate)) {
-            andGates.push(gate);
-        } else if (isOR(gate)) {
-            orGates.push(gate);
-        } else if (isKNGate(gate)) {
-            kNGates.push(gate);
-        } else if (isInhibitGate(gate)) {
-            inhibGates.push(gate);
-        }
-    }
-
-    allGates.set("AND", andGates);
-    allGates.set("OR", orGates);
-    allGates.set("KNGate", kNGates);
-    allGates.set("InhibitGate", inhibGates);
-    return allGates;
 }
