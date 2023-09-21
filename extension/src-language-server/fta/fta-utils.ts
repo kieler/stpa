@@ -121,7 +121,7 @@ export function getAllGateTypes(gates: Gate[]): Map<string, AstNode[]> {
  * @param idCache The idCache of the generator context from the current graph.
  * @returns a string that contains every cut set.
  */
-export function cutSetToString(cutSets: AstNode[][], idCache: IdCache<AstNode>): string {
+export function cutSetToString(cutSets: Set<AstNode>[], idCache: IdCache<AstNode>): string {
     const result = "The resulting " + cutSets.length + " cut sets are: \n";
     return setToString(cutSets, idCache, result);
 }
@@ -132,7 +132,7 @@ export function cutSetToString(cutSets: AstNode[][], idCache: IdCache<AstNode>):
  * @param idCache The idCache of the generator context from the current graph.
  * @returns a string that contains every minimal cut set.
  */
-export function minimalCutSetToString(minimalCutSets: AstNode[][], idCache: IdCache<AstNode>): string {
+export function minimalCutSetToString(minimalCutSets: Set<AstNode>[], idCache: IdCache<AstNode>): string {
     const result = "The resulting " + minimalCutSets.length + " minimal cut sets are: \n";
     return setToString(minimalCutSets, idCache, result);
 }
@@ -142,24 +142,26 @@ export function minimalCutSetToString(minimalCutSets: AstNode[][], idCache: IdCa
  * @param cutSets The (minimal) cut sets of the current Fault Tree.
  * @returns A string that resembles the cut sets.
  */
-export function setToString(cutSets: AstNode[][], idCache: IdCache<AstNode>, result: string): string {
+export function setToString(cutSets: Set<AstNode>[], idCache: IdCache<AstNode>, result: string): string {
     result += "[";
 
     for (const set of cutSets) {
         result += "[";
-        for (const element of set) {
-            if (set.indexOf(element) === set.length - 1) {
-                result += idCache.getId(element);
-            } else {
-                result = result + idCache.getId(element) + ",";
-            }
-        }
+        set.forEach(element => result+=idCache.getId(element)+", ");
+        // for (const element of set) {
+        //     if (set.indexOf(element) === set.length - 1) {
+        //         result += idCache.getId(element);
+        //     } else {
+        //         result = result + idCache.getId(element) + ",";
+        //     }
+        // }
         result += "]";
-        if (cutSets.indexOf(set) === cutSets.length - 1) {
-            result += "]\n";
-        } else {
-            result += ",\n";
-        }
+        result += "\n";
+        // if (cutSets.indexOf(set) === cutSets.length - 1) {
+        //     result += "]\n";
+        // } else {
+        //     result += ",\n";
+        // }
     }
 
     return result;
