@@ -40,7 +40,7 @@ function addCutSetsHandler(connection: Connection, ftaServices: FtaServices): vo
         const nodes = diagramGenerator.getNodes();
         const idCache = diagramGenerator.getCache();
 
-        const cutSets = ftaServices.bdd.Bdd.generateCutSets(nodes, idCache);
+        const cutSets = ftaServices.bdd.Bdd.generateCutSetsForFT(nodes, idCache);
         const cutSetsToString = cutSetToString(cutSets, idCache);
 
         return cutSetsToString;
