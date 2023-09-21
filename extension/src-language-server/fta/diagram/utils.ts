@@ -29,9 +29,9 @@ import {
 import { FTNodeType } from "./fta-model";
 
 /**
- * Getter for the type of a FTA component.
- * @param node AstNode which type should be determined.
- * @returns the type of {@code node}.
+ * Determines the type of the given {@code node}.
+ * @param node AstNode, which type should be determined.
+ * @returns the type of the given {@code node}.
  */
 export function getFTNodeType(node: AstNode): FTNodeType {
     if (isTopEvent(node)) {
@@ -53,29 +53,25 @@ export function getFTNodeType(node: AstNode): FTNodeType {
 }
 
 /**
- * Getter for the references contained in {@code node}.
- * @param node The AstNode we want the children of.
- * @returns The objects {@code node} is traceable to.
+ * Collects the references contained in {@code node}.
+ * @param node The AstNode we want the the references from.
+ * @returns The elements the given {@code node} is traceable to.
  */
 export function getTargets(node: AstNode): AstNode[] {
     const targets: AstNode[] = [];
-    if (isTopEvent(node)) {
-        for (const ref of node.children) {
-            if (ref?.ref) {
-                targets.push(ref.ref);
+    // only the top event and gates have children
+    if (isTopEvent(node) || isGate(node)) {
+        for (const child of node.children) {
+            if (child.ref) {
+                targets.push(child.ref);
             }
         }
-    } else if (isGate(node)) {
-        for (const ref of node.children) {
-            if (ref?.ref) {
-                targets.push(ref.ref);
-            }
-        }
-        if (isInhibitGate(node)) {
-            for (const ref of node.condition) {
-                if (ref?.ref) {
-                    targets.push(ref.ref);
-                }
+    }
+    // inhibit gate has an additional child
+    if (isInhibitGate(node)) {
+        for (const child of node.condition) {
+            if (child.ref) {
+                targets.push(child.ref);
             }
         }
     }

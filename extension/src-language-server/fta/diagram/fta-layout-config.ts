@@ -20,23 +20,16 @@ import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout";
 import { SGraph, SModelIndex, SNode } from "sprotty-protocol";
 
 export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
-    
     protected graphOptions(sgraph: SGraph, index: SModelIndex): LayoutOptions {
-        //options for the entire graph.
         return {
-            "org.eclipse.elk.spacing.nodeNode": "30.0",
             "org.eclipse.elk.direction": "DOWN",
+            "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
         };
     }
 
     protected nodeOptions(snode: SNode, index: SModelIndex): LayoutOptions | undefined {
-        //options for the nodes.
         return {
             "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
-
-            //'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
-            "org.eclipse.elk.direction": "DOWN",
-            "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
         };
     }
 }
