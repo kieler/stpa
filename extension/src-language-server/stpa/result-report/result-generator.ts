@@ -28,7 +28,7 @@ import {
     SystemConstraint,
     UCA
 } from "../../generated/ast";
-import { getModel } from "../../utils";
+import { getSTPAModel } from "../../utils";
 import { StpaComponent, StpaResult, UCA_TYPE } from "../utils";
 
 /**
@@ -40,7 +40,7 @@ import { StpaComponent, StpaResult, UCA_TYPE } from "../utils";
 export async function createResultData(uri: string, shared: LangiumSprottySharedServices): Promise<StpaResult> {
     const result: StpaResult = new StpaResult();
     // get the current model
-    const model = await getModel(uri, shared);
+    const model = await getSTPAModel(uri, shared);
 
     // losses
     const resultLosses: { id: string; description: string }[] = [];

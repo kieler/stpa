@@ -15,19 +15,24 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection } from "vscode-languageserver";
-import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator";
+import { getFTAModel } from "../utils";
+import { determineMinimalCutSet, generateCutSetsForFT } from "./analysis/fta-cutSet-calculator";
 import { FtaServices } from "./fta-module";
 import { cutSetsToString } from "./utils";
-import { determineMinimalCutSet, generateCutSetsForFT } from "./analysis/fta-cutSet-calculator";
 
 /**
  * Adds handlers for notifications regarding fta.
  * @param connection
  * @param ftaServices
  */
-export function addFTANotificationHandler(connection: Connection, ftaServices: FtaServices): void {
-    addCutSetsHandler(connection, ftaServices);
+export function addFTANotificationHandler(
+    connection: Connection,
+    ftaServices: FtaServices,
+    sharedServices: LangiumSprottySharedServices
+): void {
+    addCutSetsHandler(connection, sharedServices);
 }
 
 /**
@@ -35,24 +40,18 @@ export function addFTANotificationHandler(connection: Connection, ftaServices: F
  * @param connection
  * @param ftaServices
  */
-function addCutSetsHandler(connection: Connection, ftaServices: FtaServices): void {
-    connection.onRequest("generate/getCutSets", () => {
-        const diagramGenerator = ftaServices.diagram.DiagramGenerator as FtaDiagramGenerator;
-        const nodes = diagramGenerator.getNodes();
-
+function addCutSetsHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    connection.onRequest("generate/getCutSets", async (uri: string) => {
+        const model = await getFTAModel(uri, sharedServices);
+        const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
         const cutSets = generateCutSetsForFT(nodes);
-        const cutSetText = cutSetsToString(cutSets);
-
-        return cutSetText;
+        return cutSetsToString(cutSets);
     });
 
-    connection.onRequest("generate/getMinimalCutSets", () => {
-        const diagramGenerator = ftaServices.diagram.DiagramGenerator as FtaDiagramGenerator;
-        const nodes = diagramGenerator.getNodes();
-
+    connection.onRequest("generate/getMinimalCutSets", async (uri: string) => {
+        const model = await getFTAModel(uri, sharedServices);
+        const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
         const minimalCutSets = determineMinimalCutSet(nodes);
-        const minCutSetToString = cutSetsToString(minimalCutSets, true);
-
-        return minCutSetToString;
+        return cutSetsToString(minimalCutSets, true);
     });
 }

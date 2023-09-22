@@ -15,31 +15,31 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { startLanguageServer } from 'langium';
-import { NodeFileSystem } from 'langium/node';
-import { addDiagramHandler } from 'langium-sprotty';
-import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
-import { addSTPANotificationHandler } from './stpa/message-handler';
-import { addNotificationHandler } from './handler';
-import { createServices } from './module';
-import { addFTANotificationHandler } from './fta/fta-message-handler';
+import { startLanguageServer } from "langium";
+import { addDiagramHandler } from "langium-sprotty";
+import { NodeFileSystem } from "langium/node";
+import { createConnection, ProposedFeatures } from "vscode-languageserver/node";
+import { addFTANotificationHandler } from "./fta/fta-message-handler";
+import { addNotificationHandler } from "./handler";
+import { createServices } from "./module";
+import { addSTPANotificationHandler } from "./stpa/message-handler";
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
 
 // Inject the language services
-const { shared, stpa, fta} = createServices({ connection, ...NodeFileSystem });
+const { shared, stpa, fta } = createServices({ connection, ...NodeFileSystem });
 
 // Start the language server with the language-specific services
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
 
 addSTPANotificationHandler(connection, stpa, shared);
-addFTANotificationHandler(connection, fta);
+addFTANotificationHandler(connection, fta, shared);
 addNotificationHandler(connection, shared);
 
 // handle configuration changes for the validation checks
-connection.onNotification('configuration', options => {
+connection.onNotification("configuration", (options) => {
     for (const option of options) {
         switch (option.id) {
             case "checkResponsibilitiesForConstraints":
@@ -58,4 +58,4 @@ connection.onNotification('configuration', options => {
     }
 });
 
-connection.onInitialized(() => connection.sendNotification('ready'));
+connection.onInitialized(() => connection.sendNotification("ready"));

@@ -26,7 +26,6 @@ import { FTA_EDGE_TYPE, FTA_NODE_TYPE } from "./fta-model";
 import { getFTNodeType, getTargets } from "./utils";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
-    protected allNodes: AstNode[];
     constructor(services: FtaServices) {
         super(services);
     }
@@ -52,23 +51,11 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             ...this.generateEdges(model.topEvent, idCache),
         ];
 
-        // TODO: needed? -> look for a better way to access them for the cut set calculator
-        // save all nodes
-        this.allNodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
-
         return {
             type: "graph",
             id: "root",
             children: ftaChildren,
         };
-    }
-
-    /**
-     * Getterfor all nodes of the fault tree.
-     * @returns all nodes in the fault tree.
-     */
-    public getNodes(): AstNode[] {
-        return this.allNodes;
     }
 
     /**

@@ -18,7 +18,9 @@
 import { LangiumDocument, LangiumSharedServices } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { URI } from 'vscode-uri';
-import { Model } from './generated/ast';
+import { Model, ModelFTA } from './generated/ast';
+
+// TODO: merge the functions into one?
 
 /**
  * Determines the model for {@code uri}.
@@ -26,7 +28,7 @@ import { Model } from './generated/ast';
  * @param shared The shared service.
  * @returns the model for the given uri.
  */
-export async function getModel(uri: string, shared: LangiumSprottySharedServices | LangiumSharedServices): Promise<Model> {
+export async function getSTPAModel(uri: string, shared: LangiumSprottySharedServices | LangiumSharedServices): Promise<Model> {
     const textDocuments = shared.workspace.LangiumDocuments;
     const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<Model>;
     let currentModel = currentDoc.parseResult.value;
@@ -37,4 +39,16 @@ export async function getModel(uri: string, shared: LangiumSprottySharedServices
         currentModel = currentDoc.parseResult.value;
     }
     return currentModel;
+}
+
+/**
+ * Determines the model for {@code uri}.
+ * @param uri The URI for which the model is desired.
+ * @param shared The shared service.
+ * @returns the model for the given uri.
+ */
+export async function getFTAModel(uri: string, shared: LangiumSprottySharedServices | LangiumSharedServices): Promise<ModelFTA> {
+    const textDocuments = shared.workspace.LangiumDocuments;
+    const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri)) as LangiumDocument<ModelFTA>;
+    return currentDoc.parseResult.value;
 }

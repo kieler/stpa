@@ -173,16 +173,16 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
 
     // commands for computing and displaying the (minimal) cut sets of the fault tree.
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.fta.cutSets', async () =>{ 
-            const cutSets:string = await languageClient.sendRequest('generate/getCutSets');      
+        vscode.commands.registerCommand(options.extensionPrefix + '.fta.cutSets', async (uri: vscode.Uri) =>{ 
+            const cutSets:string = await languageClient.sendRequest('generate/getCutSets', uri.path);      
             //Send cut sets to webview to display them in a dropdown menu.
             dispatchCutSetsToWebview(manager, cutSets);        
             createOutputChannel(cutSets, "FTA Cut Sets"); 
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.fta.minimalCutSets', async () =>{
-            const minimalCutSets:string = await languageClient.sendRequest('generate/getMinimalCutSets');
+        vscode.commands.registerCommand(options.extensionPrefix + '.fta.minimalCutSets', async (uri: vscode.Uri) =>{
+            const minimalCutSets:string = await languageClient.sendRequest('generate/getMinimalCutSets', uri.path);
             dispatchCutSetsToWebview(manager, minimalCutSets);
             createOutputChannel(minimalCutSets, "FTA Cut Sets");         
         })

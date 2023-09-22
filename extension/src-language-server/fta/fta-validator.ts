@@ -20,7 +20,7 @@ import { ModelFTA, PastaAstType } from "../generated/ast";
 import type { FtaServices } from "./fta-module";
 
 /**
- * Registry for validation checks.
+ * Registry for FTA validation checks.
  */
 export class FtaValidationRegistry extends ValidationRegistry {
     constructor(services: FtaServices) {
@@ -43,35 +43,22 @@ export class FtaValidator {
      * @param accept
      */
     checkModel(model: ModelFTA, accept: ValidationAcceptor): void {
-        this.checkUniqueIdentifiers(model, accept);
+        this.checkIDsAreUnique(model, accept);
     }
 
     /**
-     * Prevent multiple components, conditions and gates from having the same identifier.
+     * Controls whether the ids of the elements in {@code model} are unique.
      * @param model The model to validate.
      * @param accept
      */
-    checkUniqueIdentifiers(model: ModelFTA, accept: ValidationAcceptor): void {
+    checkIDsAreUnique(model: ModelFTA, accept: ValidationAcceptor): void {
         const componentNames = new Set();
-        model.components.forEach((c) => {
-            if (componentNames.has(c.name)) {
-                accept("error", `Component has non-unique name '${c.name}'.`, { node: c, property: "name" });
+        const namedElements = [...model.components, ...model.conditions, ...model.gates];
+        for (const element of namedElements) {
+            if (componentNames.has(element.name)) {
+                accept("error", `All identifiers must be unique.`, { node: element, property: "name" });
             }
-            componentNames.add(c.name);
-        });
-        model.conditions.forEach((c) => {
-            if (componentNames.has(c.name)) {
-                accept("error", `Condition has non-unique name '${c.name}'.`, { node: c, property: "name" });
-            }
-            componentNames.add(c.name);
-        });
-
-        const gateNames = new Set();
-        model.gates.forEach((g) => {
-            if (gateNames.has(g.name) || componentNames.has(g.name)) {
-                accept("error", `Gate has non-unique name '${g.name}'.`, { node: g, property: "name" });
-            }
-            gateNames.add(g.name);
-        });
+            componentNames.add(element.name);
+        }
     }
 }
