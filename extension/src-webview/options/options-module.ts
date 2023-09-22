@@ -43,7 +43,6 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     bind(TYPES.IActionHandlerInitializer).toService(DISymbol.OptionsRegistry);
 
     bind(DISymbol.RenderOptionsRegistry).to(RenderOptionsRegistry).inSingletonScope();
-    
     bind(DISymbol.CutSetsRegistry).to(CutSetsRegistry).inSingletonScope();
 
     const ctx = { bind, isBound };

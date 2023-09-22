@@ -22,20 +22,24 @@ import { Registry } from "../base/registry";
 import { SendCutSetAction } from "./actions";
 import { DropDownOption, TransformationOptionType } from "./option-models";
 
+
+const noSelectedCutSet = { displayName: "---", id: "---" };
+
+// TODO: should be a synthesis option ??
 export class DropDownMenuOption implements DropDownOption {
-    static readonly ID: string = "cut-sets";
-    static readonly NAME: string = "Cut Sets";
-    readonly id: string = DropDownMenuOption.ID;
-    readonly currentId: string = DropDownMenuOption.ID;
-    readonly name: string = DropDownMenuOption.NAME;
-    readonly type: TransformationOptionType = TransformationOptionType.DROPDOWN;
-    values: { displayName: string; id: string }[] = [{ displayName: "---", id: "---" }];
-    availableValues: { displayName: string; id: string }[] = [{ displayName: "---", id: "---" }];
-    readonly initialValue: { displayName: string; id: string } = { displayName: "---", id: "---" };
-    currentValue = { displayName: "---", id: "---" };
+    static readonly ID = "cut-sets";
+    static readonly NAME = "Cut Sets";
+    readonly id = DropDownMenuOption.ID;
+    readonly currentId = DropDownMenuOption.ID;
+    readonly name = DropDownMenuOption.NAME;
+    readonly type = TransformationOptionType.DROPDOWN;
+    values = [noSelectedCutSet];
+    availableValues = [noSelectedCutSet];
+    readonly initialValue = noSelectedCutSet;
+    currentValue = noSelectedCutSet;
 }
 
-/** {@link Registry} that stores and updates different render options. */
+/** {@link Registry} that stores and updates cut set options. */
 @injectable()
 export class CutSetsRegistry extends Registry {
     private _options: Map<string, DropDownOption> = new Map();
@@ -44,7 +48,7 @@ export class CutSetsRegistry extends Registry {
         if (SendCutSetAction.isThisAction(action)) {
             const dropDownOption = new DropDownMenuOption();
             for (const set of action.cutSets) {
-                dropDownOption.availableValues.push({ displayName: set.value, id: set.value });
+                dropDownOption.availableValues.push({ displayName: set, id: set });
             }
 
             this._options.set("cut-sets", dropDownOption);
@@ -53,23 +57,24 @@ export class CutSetsRegistry extends Registry {
         return UpdateModelAction.create([], { animate: false, cause: action });
     }
 
-    get allOptions(): DropDownOption[] {
+    get allCutSets(): DropDownOption[] {
         return Array.from(this._options.values());
     }
 
-    getCurrentValue(): any {
-        //if the cut sets were not requested yet, there is nothing to highlight
+    getCurrentValue(): string[] | undefined {
+        // if the cut sets were not requested yet, there are no cut sets to display
         if (this._options.get("cut-sets")?.availableValues.length === 1) {
             return undefined;
         }
         const selectedCutSet: { displayName: string; id: string } = this._options.get("cut-sets")?.currentValue;
         if (selectedCutSet) {
-            //slice the brackets at the start and at the end.
+            // slice the brackets at the start and at the end.
             const selected = selectedCutSet.displayName.slice(1, -1);
             if (selected === "-") {
-                return "-";
+                return undefined;
             } else {
-                return selected.split(", ");
+                // determine the names in the cut set
+                return selected.split(",").map(element => element.trim());
             }
         }
     }

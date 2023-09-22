@@ -29,22 +29,25 @@ import { elementWithName } from "./stpa/utils";
 export function addNotificationHandler(connection: Connection, shared: LangiumSprottySharedServices): void {
     // diagram
     connection.onNotification("diagram/selected", async (msg: { label: string; uri: string }) => {
-        // get the current model
-        const model = await getSTPAModel(msg.uri, shared);
+        // TODO: implement for FTA
+        if (msg.uri.endsWith(".stpa")) {
+            // get the current model
+            const model = await getSTPAModel(msg.uri, shared);
 
-        // determine the range in the editor of the component identified by "label"
-        const range = getRangeOfNode(model, msg.label);
-        if (range) {
-            // notify extension to highlight the range in the editor
-            connection.sendNotification("editor/highlight", {
-                startLine: range.start.line,
-                startChar: range.start.character,
-                endLine: range.end.line,
-                endChar: range.end.character,
-                uri: msg.uri,
-            });
-        } else {
-            console.log("The selected UCA could not be found in the editor.");
+            // determine the range in the editor of the component identified by "label"
+            const range = getRangeOfNode(model, msg.label);
+            if (range) {
+                // notify extension to highlight the range in the editor
+                connection.sendNotification("editor/highlight", {
+                    startLine: range.start.line,
+                    startChar: range.start.character,
+                    endLine: range.end.line,
+                    endChar: range.end.character,
+                    uri: msg.uri,
+                });
+            } else {
+                console.log("The selected element could not be found in the editor.");
+            }
         }
     });
 }

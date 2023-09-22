@@ -25,6 +25,7 @@ import { SidebarPanel } from "../sidebar";
 import { CutSetsRegistry } from "./cut-set-registry";
 import { OptionsRenderer } from "./options-renderer";
 
+// TODO: extra panel needed? should not be shown for stpa diagrams
 @injectable()
 export class CutSetPanel extends SidebarPanel {
 
@@ -40,22 +41,23 @@ export class CutSetPanel extends SidebarPanel {
     }
 
     get title(): string {
-        return "Cut sets";
+        return "Cut Sets";
     }
 
     render(): VNode {
         return (
             <div>
                 <div class-options__section="true">
-                    <h5 class-options__heading="true">Cut sets</h5>
+                    <h5 class-options__heading="true">Cut Sets</h5>
                     {this.optionsRenderer.renderRenderOptions(
-                        this.cutSetsRegistry.allOptions
+                        this.cutSetsRegistry.allCutSets
                     )}
                 </div>
             </div>
         );
     }
 
+    // TODO: other icon?
     get icon(): VNode {
         return <FeatherIcon iconId={"edit-2"} />;
     }

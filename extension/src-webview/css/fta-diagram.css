@@ -15,30 +15,26 @@
  * SPDX-License-Identifier: EPL-2.0
  */
  
-@import "./fta-theme.css";
+@import "./theme.css";
 
 .vscode-dark .fta-node {
-    fill: var(--fta-dark-node);
-    stroke: var(--fta-light-node);
+    fill: var(--dark-node);
+    stroke: var(--light-node);
     stroke-width: 2;
 }
 
-
 .vscode-dark .fta-edge {
-    stroke: var(--fta-light-node);
+    stroke: var(--light-node);
 }
 
-
 .vscode-light .fta-node {
-    fill: var(--fta-light-node);
+    fill: var(--light-node);
     stroke: black;
     stroke-width: 2;
 }
 
-
 .vscode-light .fta-edge {
-    stroke: var(--fta-darker-node);
-    stroke-width: 2;
+    stroke: black;
 }
 
 .fta-text{
@@ -47,14 +43,6 @@
     font-size: 10px;
 }
 
-.fta-hidden {
-    opacity: 0.1;
-}
-
-.vscode-dark .fta-highlight-node{
-    stroke: var(--fta-highlight-node);
-}
-
-.vscode-light .fta-highlight-node{
-    stroke: var(--fta-highlight-node);
+.fta-highlight-node{
+    stroke: var(--highlight-node);
 }

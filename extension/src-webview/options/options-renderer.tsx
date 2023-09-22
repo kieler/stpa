@@ -208,12 +208,12 @@ export class OptionsRenderer {
                         <DropDownMenuOption
                             key={option.id}
                             id={option.id}
-                            currentId = {(option as DropDownOption).currentId}
+                            currentId={(option as DropDownOption).currentId}
                             name={option.name}
                             value={option.currentValue}
                             availableValues={(option as DropDownOption).availableValues}
                             description={option.description}
-                            onChange={this.setCurrentValueOnChange.bind(this,option)}
+                            onChange={this.setCurrentValueOnChange.bind(this, option)}
                         />
                     );
                 default:
@@ -227,8 +227,8 @@ export class OptionsRenderer {
         this.actionDispatcher.dispatch(SetRenderOptionAction.create(option.id, newValue));
     }
 
-    private setCurrentValueOnChange(option:RenderOption, newValue:any){
-        option.currentValue = {displayName: newValue, id: newValue}
+    private setCurrentValueOnChange(option: RenderOption, newValue: any): void {
+        option.currentValue = { displayName: newValue, id: newValue };
         this.actionDispatcher.dispatch(UpdateModelAction.create([], { animate: false }));
     }
 }

@@ -61,17 +61,17 @@ export namespace GenerateSVGsAction {
     }
 }
 
-
-
+// TODO: better type for cut sets
+/** Contains the cut sets for a fault tree */
 export interface SendCutSetAction extends Action {
     kind: typeof SendCutSetAction.KIND;
-    cutSets: { value: any; }[];
+    cutSets: string[];
 }
 
  export namespace SendCutSetAction {
-    export const KIND = "sendCutSet";
+    export const KIND = "sendCutSets";
 
-    export function create(cutSets: { value: any; }[]): SendCutSetAction {
+    export function create(cutSets: string[]): SendCutSetAction {
         return {
             kind: KIND,
             cutSets

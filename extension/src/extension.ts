@@ -189,18 +189,19 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
     ); 
 }
 
+// TODO: inspect
 /**
-     * Sends the cut sets to webview as a SendCutSetAction so that they can be displayed in a dropdown menu.
-     * @param cutSets The (minimal) cut sets of the current Fault Tree.
-     */
+ * Sends the cut sets to webview as a SendCutSetAction so that they can be displayed in a dropdown menu.
+ * @param cutSets The (minimal) cut sets of the current Fault Tree.
+ */
 function dispatchCutSetsToWebview(manager: StpaLspVscodeExtension, cutSets:string):void{
     cutSets = cutSets.substring(cutSets.indexOf("["));
     cutSets = cutSets.slice(1,-2);
     const cutSetArray = cutSets.split(",\n");
 
-    const cutSetsList: { value: any; }[] = [];
+    const cutSetsList: string[] = [];
     for(const set of cutSetArray){
-        cutSetsList.push({value: set});
+        cutSetsList.push(set);
     }
     manager.endpoints.find(endpoint => endpoint.diagramIdentifier?.diagramType === 'fta')?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetsList } as SendCutSetAction);
 }

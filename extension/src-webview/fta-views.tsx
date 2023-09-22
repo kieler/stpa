@@ -18,37 +18,30 @@
 /** @jsx svg */
 import { inject, injectable } from 'inversify';
 import { VNode } from "snabbdom";
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg } from 'sprotty';
+import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, svg } from 'sprotty';
 import { DISymbol } from "./di.symbols";
-import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTNodeType } from './fta-model';
+import { FTAEdge, FTANode, FTNodeType } from './fta-model';
 import { CutSetsRegistry } from './options/cut-set-registry';
 import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
+
+// TODO: combine with STPA methods ??
 
 @injectable()
 export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
 
-    protected renderLine(edge: SEdge, segments: Point[], context: RenderingContext): VNode {
+    protected renderLine(edge: FTAEdge, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
         let path = `M ${firstPoint.x},${firstPoint.y}`;
         for (let i = 1; i < segments.length; i++) {
             const p = segments[i];
             path += ` L ${p.x},${p.y}`;
         }
-
-        if ((edge.target as FTANode).highlight === true) {
-            (edge as FTAEdge).highlight = true;
-        } else {
-            (edge as FTAEdge).highlight = false;
-        }
-
         // if an FTANode is selected, the components not connected to it should fade out
-        const hidden = edge.type === FTA_EDGE_TYPE && !(edge as FTAEdge).highlight;
-
-        return <path class-fta-edge={true} class-fta-hidden={hidden} d={path} />;
+        edge.highlight = (edge.target as FTANode).highlight;
+        return <path class-fta-edge={true} class-greyed-out={!edge.highlight} d={path} />;
     }
 
 }
-
 
 @injectable()
 export class FTANodeView extends RectangularNodeView {
@@ -85,86 +78,60 @@ export class FTANodeView extends RectangularNodeView {
                 break;
         }
 
-        //highlight every node that is in the selected cut set or on the path to the top event.
-        let set = this.cutSetsRegistry.getCurrentValue();
-        let onlyInCutSet = false;
-        if (set !== undefined) {
-            //highlight all when the empty cut set is selected
-            if (set === '-') {
-                node.highlight = true;
-            } else {
-                //unhighlight every node first and then only highlight the correct ones.
-                node.highlight = false;
-                if (node.nodeType === FTNodeType.COMPONENT || node.nodeType === FTNodeType.CONDITION) {
-                    //node is component or condition and in the selected cut set.
-                    if (set.includes(node.name)) {
-                        node.highlight = true;
-                        onlyInCutSet = true;
-
-                    } else {
-                        //all other components and conditions are not highlighted.
-                        node.highlight = false;
-                        onlyInCutSet = false;
-                    }
-                } else {
-                    //check if a gate should be highlighted
-                    if (this.checkIfHighlighted(node, set) === true) {
-                        node.highlight = true;
-                    } else {
-                        node.highlight = false;
-                    }
-                }
+        // if a cut set is selected, highlight the nodes in it and the connected elements
+        const set = this.cutSetsRegistry.getCurrentValue();
+        let highlight = false;
+        if (set) {
+            switch (node.nodeType) {
+                case FTNodeType.COMPONENT:
+                case FTNodeType.CONDITION:
+                    // components and conditions should be highlighted when included in the selected cut set
+                    const included = set.includes(node.name);
+                    node.highlight = included;
+                    highlight = included;
+                    break;
+                default:
+                    // gates are hidden (greyed out) when not connected to shown elements
+                    node.highlight = this.connectedToShown(node, set);
+                    break;
             }
+        } else {
+            node.highlight = true;
         }
-
-        //if an FTANode is selected, the components not connected to it should fade out
-        const hidden = !node.highlight;
-
+        // TODO: replace highlight attribute with hidden
         return <g
             class-fta-node={true}
             class-mouseover={node.hoverFeedback}
-            class-fta-hidden={hidden}
-            class-fta-highlight-node={onlyInCutSet}>
-            <g class-node-selected={node.selected}>{element}</g>
+            class-greyed-out={!node.highlight}>
+            <g class-node-selected={node.selected} class-fta-highlight-node={highlight}>{element}</g>
             {context.renderChildren(node)}
         </g>;
     }
 
     /**
-     * Takes a node and checks if it is connected to a highlighted node.
-     * @param node The node we want to check.
+     * Checks whether the given {@code node} is connected to a highlighted node.
+     * @param node The node that should be checked.
      * @param set The set of all highlighted nodes.
-     * @returns True if the node is connected to a node from the set or false otherwise.
+     * @returns true if the node is connected to a node from the {@code set} or false otherwise.
      */
-    checkIfHighlighted(node: FTANode, set: any): boolean {
+    connectedToShown(node: FTANode, set: any): boolean {
+        // TODO: call this method only one time at the top node and highlight everything on the way that should be highlighted
         for (const edge of node.outgoingEdges) {
-            let target = (edge.target as FTANode);
-            if ((target.nodeType === FTNodeType.COMPONENT || target.nodeType === FTNodeType.CONDITION)) {
-                if (set.includes(target.name)) {
-                    return true;
-                }
-            } else {
-                if (this.checkIfHighlighted(target, set) === true) {
-                    return true;
-                }
+            const target = (edge.target as FTANode);
+            switch (target.nodeType) {
+                case FTNodeType.COMPONENT:
+                case FTNodeType.CONDITION:
+                    if (set.includes(target.name)) {
+                        return true;
+                    }
+                    break;
+                default:
+                    if (this.connectedToShown(target, set)) {
+                        return true;
+                    }
+                    break;
             }
         }
         return false;
-    }
-}
-
-@injectable()
-export class FTAGraphView extends RectangularNodeView {
-
-    render(node: SNode, context: RenderingContext): VNode {
-
-        return <g>
-            <rect
-                class-print-node={true}
-                class-mouseover={node.hoverFeedback}
-                x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
-            > </rect>
-            {context.renderChildren(node)}
-        </g>;
     }
 }

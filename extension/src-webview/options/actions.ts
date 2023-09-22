@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -129,16 +129,16 @@ export namespace SendConfigAction {
     }
 }
 
-
+/** Contains the cut sets for a fault tree */
 export interface SendCutSetAction extends Action {
     kind: typeof SendCutSetAction.KIND;
-    cutSets: { value: any; }[];
+    cutSets: string[];
 }
 
  export namespace SendCutSetAction {
-    export const KIND = "sendCutSet";
+    export const KIND = "sendCutSets";
 
-    export function create(cutSets: { value: any; }[]): SendCutSetAction {
+    export function create(cutSets: string[]): SendCutSetAction {
         return {
             kind: KIND,
             cutSets

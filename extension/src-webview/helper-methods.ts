@@ -18,7 +18,6 @@
 import { SEdge, SModelElement, SNode } from "sprotty";
 import { PortSide, STPAAspect, STPAEdge, STPANode, STPAPort, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, STPA_PORT_TYPE } from "./stpa-model";
 
-
 /**
  * Collects all children of the nodes in {@code nodes}.
  * @param nodes The nodes, which children should be selected.
@@ -249,4 +248,3 @@ export function flagSameAspect(selected: STPANode): STPANode[] {
     }
     return elements;
 }
-

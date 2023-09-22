@@ -68,7 +68,7 @@ import {
     PortView,
     STPAGraphView,
     STPANodeView,
-} from "./views";
+} from "./stpa-views";
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
@@ -87,21 +87,23 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
+    configureModelElement(context, "label", SLabel, SLabelView);
+    configureModelElement(context, "label:xref", SLabel, SLabelView);
+    configureModelElement(context, "html", HtmlRoot, HtmlRootView);
+    configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
+
+    // STPA
     configureModelElement(context, "graph", SGraph, STPAGraphView);
     configureModelElement(context, DUMMY_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
     configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
-    configureModelElement(context, "label", SLabel, SLabelView);
-    configureModelElement(context, "label:xref", SLabel, SLabelView);
     configureModelElement(context, STPA_EDGE_TYPE, STPAEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);
-    configureModelElement(context, "html", HtmlRoot, HtmlRootView);
-    configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
 
-    //FTA
+    // FTA
     configureModelElement(context, FTA_EDGE_TYPE, FTAEdge, PolylineArrowEdgeViewFTA);
     configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
 });
