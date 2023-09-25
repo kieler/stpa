@@ -22,13 +22,11 @@ import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, Renderi
 import { DISymbol } from './di.symbols';
 import { collectAllChildren } from './helper-methods';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from './options/render-options-registry';
-import { CSEdge, CS_EDGE_TYPE, CS_NODE_TYPE, EdgeType, PARENT_TYPE, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE } from './stpa-model';
+import { CSEdge, CS_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
-
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
-
 
 @injectable()
 export class PolylineArrowEdgeView extends PolylineEdgeView {

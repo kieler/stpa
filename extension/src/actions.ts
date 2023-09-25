@@ -61,7 +61,7 @@ export namespace GenerateSVGsAction {
     }
 }
 
-// TODO: better type for cut sets
+// TODO: better type for cut sets?
 /** Contains the cut sets for a fault tree */
 export interface SendCutSetAction extends Action {
     kind: typeof SendCutSetAction.KIND;

@@ -33,7 +33,6 @@ export class StpaLspWebview extends LspWebviewEndpoint {
                 case SelectAction.KIND:
                     this.handleSelectAction(message.action as SelectAction);
                     break;
-                
             }
         }
         return super.receiveAction(message);
@@ -75,5 +74,4 @@ export class StpaLspWebview extends LspWebviewEndpoint {
         const configOptions = vscode.workspace.getConfiguration("pasta");
         action.options.forEach((element) => configOptions.update(element.id, element.value));
     }
-
 }

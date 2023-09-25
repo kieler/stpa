@@ -115,12 +115,29 @@ export class UCA_TYPE {
 }
 
 /**
- * Creates an output channel with the given name and prints the given cut sets. 
+ * Creates an output channel with the given name and prints the given cut sets.
  * @param cutSets The cut sets to print.
  * @param channelName The name of the channel.
  */
-export function createOutputChannel(cutSets:string, channelName:string):void{
+export function createOutputChannel(cutSets: string[], channelName: string, minimal?: boolean): void {
+    const text = cutSetsToString(cutSets, minimal);
     const outputCutSets = vscode.window.createOutputChannel(channelName);
-    outputCutSets.append(cutSets);
+    outputCutSets.append(text);
     outputCutSets.show();
+}
+
+/**
+ * Translates the given {@code cutSets} to a string.
+ * @param cutSets The cut sets to translate.
+ * @param minimal Determines whether the given {@code cutSets} are minimal.
+ * @returns a string that contains every cut set.
+ */
+export function cutSetsToString(cutSets: string[], minimal?: boolean): string {
+    let text = `The resulting ${cutSets.length}`;
+    if (minimal) {
+        text += ` minimal`;
+    }
+    text += ` cut sets are:\n`;
+    text += `[${cutSets.join(",\n")}]`;
+    return text;
 }

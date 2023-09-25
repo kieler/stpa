@@ -100,8 +100,6 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         });
     }
 
-    
-
     /**
      * Notifies the language server that a textdocument has changed.
      * @param changeEvent The change in the text document.
@@ -116,7 +114,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         const changes = changeEvent.contentChanges;
         const uri = changeEvent.document.uri.toString();
         // TODO: ID enforcer for FTA
-        if (uri.endsWith('.stpa')){
+        if (uri.endsWith(".stpa")) {
             this.languageClient.sendNotification("editor/textChange", { changes: changes, uri: uri });
         }
     }

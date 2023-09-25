@@ -18,7 +18,7 @@
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection } from "vscode-languageserver";
 import { getFTAModel } from "../utils";
-import { determineMinimalCutSet, generateCutSetsForFT } from "./analysis/fta-cutSet-calculator";
+import { determineMinimalCutSets, determineCutSetsForFT } from "./analysis/fta-cutSet-calculator";
 import { FtaServices } from "./fta-module";
 import { cutSetsToString } from "./utils";
 
@@ -44,14 +44,13 @@ function addCutSetsHandler(connection: Connection, sharedServices: LangiumSprott
     connection.onRequest("generate/getCutSets", async (uri: string) => {
         const model = await getFTAModel(uri, sharedServices);
         const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
-        const cutSets = generateCutSetsForFT(nodes);
+        const cutSets = determineCutSetsForFT(nodes);
         return cutSetsToString(cutSets);
     });
-
     connection.onRequest("generate/getMinimalCutSets", async (uri: string) => {
         const model = await getFTAModel(uri, sharedServices);
         const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
-        const minimalCutSets = determineMinimalCutSet(nodes);
-        return cutSetsToString(minimalCutSets, true);
+        const minimalCutSets = determineMinimalCutSets(nodes);
+        return cutSetsToString(minimalCutSets);
     });
 }

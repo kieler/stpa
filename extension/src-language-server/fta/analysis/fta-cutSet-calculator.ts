@@ -34,9 +34,9 @@ import { namedFtaElement } from "../utils";
  * @param allNodes All nodes in the fault tree.
  * @returns the minimal cut sets for a fault tree.
  */
-export function determineMinimalCutSet(allNodes: AstNode[]): Set<namedFtaElement>[] {
+export function determineMinimalCutSets(allNodes: AstNode[]): Set<namedFtaElement>[] {
     // TODO: add minimal flag (could reduce computation cost)
-    const allCutSets = generateCutSetsForFT(allNodes);
+    const allCutSets = determineCutSetsForFT(allNodes);
 
     // Cut sets are minimal if removing one element destroys the cut set
     // If cut set contains another cut set from the array, remove it since it is not minimal
@@ -71,7 +71,7 @@ function checkMinimalCutSet(cutSet: Set<namedFtaElement>, allCutSets: Set<namedF
  * @param allNodes All nodes of the fault tree.
  * @returns the cut sets of the fault tree.
  */
-export function generateCutSetsForFT(allNodes: AstNode[]): Set<namedFtaElement>[] {
+export function determineCutSetsForFT(allNodes: AstNode[]): Set<namedFtaElement>[] {
     /*  Idea:
             Start from the top event.
             Get the only child of top event (will always be only one) as our starting node.

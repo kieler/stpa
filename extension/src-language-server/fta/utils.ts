@@ -20,17 +20,16 @@ import { Component, Condition, Gate, TopEvent } from "../generated/ast";
 export type namedFtaElement = Component | Condition | Gate | TopEvent;
 
 /**
- * Translates the given {@code cutSets} to a string.
- * @param cutSets The cut sets to translate.
- * @param minimal Determines whether the given {@code cutSets} are minimal.
- * @returns a string that contains every cut set.
+ * Translates the cut sets in the given {@code cutSets} to lists.
+ * @param cutSets The list containing the cut sets to translate.
+ * @returns a list containing the cut sets in {@code cutSets} as a list.
  */
-export function cutSetsToString(cutSets: Set<namedFtaElement>[], minimal?: boolean): string {
-    let text = `The resulting ${cutSets.length}`;
-    if (minimal) {
-        text += ` minimal`;
+export function cutSetsToString(cutSets: Set<namedFtaElement>[]): string[][] {
+    const result: string[][] = [];
+    for (const set of cutSets) {
+        const newSet: string[] = [];
+        set.forEach((element) => newSet.push(element.name));
+        result.push(newSet);
     }
-    text += ` cut sets are:\n`;
-    text += `[${cutSets.map((cutSet) => `[${[...cutSet].map((element) => element.name).join(", ")}]`).join(",\n")}]`;
-    return text;
+    return result;
 }
