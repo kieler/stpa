@@ -40,9 +40,9 @@ import {
 import { SvgCommand } from "./actions";
 import { SvgPostprocessor } from "./exportPostProcessor";
 import { CustomSvgExporter } from "./exporter";
-import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "./fta-model";
-import { FTAGraphView, FTANodeView, PolylineArrowEdgeViewFTA } from "./fta-views";
-import { StpaModelViewer } from "./model-viewer";
+import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "./fta/fta-model";
+import { FTAGraphView, FTANodeView, PolylineArrowEdgeViewFTA } from "./fta/fta-views";
+import { PastaModelViewer } from "./model-viewer";
 import { optionsModule } from "./options/options-module";
 import { sidebarModule } from "./sidebar";
 import {
@@ -59,8 +59,8 @@ import {
     STPA_INTERMEDIATE_EDGE_TYPE,
     STPA_NODE_TYPE,
     STPA_PORT_TYPE,
-} from "./stpa-model";
-import { StpaMouseListener } from "./stpa-mouselistener";
+} from "./stpa/stpa-model";
+import { StpaMouseListener } from "./stpa/stpa-mouselistener";
 import {
     CSNodeView,
     IntermediateEdgeView,
@@ -68,7 +68,7 @@ import {
     PortView,
     STPAGraphView,
     STPANodeView,
-} from "./stpa-views";
+} from "./stpa/stpa-views";
 
 const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
@@ -79,7 +79,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
         undoHistoryLimit: 50,
     });
     bind(TYPES.MouseListener).to(StpaMouseListener).inSingletonScope();
-    rebind(ModelViewer).to(StpaModelViewer).inSingletonScope();
+    rebind(ModelViewer).to(PastaModelViewer).inSingletonScope();
     rebind(TYPES.SvgExporter).to(CustomSvgExporter).inSingletonScope();
     bind(SvgPostprocessor).toSelf().inSingletonScope();
     bind(TYPES.HiddenVNodePostprocessor).toService(SvgPostprocessor);

@@ -19,10 +19,8 @@
 import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SGraph, SGraphView, svg } from 'sprotty';
+import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "../views-rendering";
 import { FTAEdge, FTANode, FTNodeType } from './fta-model';
-import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
-
-// TODO: combine with STPA methods ??
 
 @injectable()
 export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {

@@ -22,7 +22,7 @@ import { VscodeLspEditDiagramServer } from "sprotty-vscode-webview/lib/lsp/editi
 import { SvgAction } from "./actions";
 
 @injectable()
-export class StpaDiagramServer extends VscodeLspEditDiagramServer {
+export class PastaDiagramServer extends VscodeLspEditDiagramServer {
 
     protected sendMessage(message: ActionMessage): void {
         console.log("send to server: " + message.action.kind);

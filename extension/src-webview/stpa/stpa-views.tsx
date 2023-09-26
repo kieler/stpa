@@ -19,11 +19,11 @@
 import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SNode, SPort, svg, toDegrees } from 'sprotty';
-import { DISymbol } from './di.symbols';
+import { DISymbol } from '../di.symbols';
+import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
+import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from './options/render-options-registry';
 import { CSEdge, CS_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
-import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
