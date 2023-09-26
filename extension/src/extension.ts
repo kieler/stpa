@@ -191,12 +191,14 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".fta.cutSets", async (uri: vscode.Uri) => {
             const cutSets: string[] = await languageClient.sendRequest("generate/getCutSets", uri.path);
+            await manager.openDiagram(uri);
             handleCutSets(manager, cutSets, false);
         })
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".fta.minimalCutSets", async (uri: vscode.Uri) => {
             const minimalCutSets: string[] = await languageClient.sendRequest("generate/getMinimalCutSets", uri.path);
+            await manager.openDiagram(uri);
             handleCutSets(manager, minimalCutSets, true);
         })
     );
