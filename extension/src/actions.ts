@@ -60,25 +60,3 @@ export namespace GenerateSVGsAction {
         return action.kind === GenerateSVGsAction.KIND;
     }
 }
-
-// TODO: better type for cut sets?
-/** Contains the cut sets for a fault tree */
-export interface SendCutSetAction extends Action {
-    kind: typeof SendCutSetAction.KIND;
-    cutSets: string[];
-}
-
- export namespace SendCutSetAction {
-    export const KIND = "sendCutSets";
-
-    export function create(cutSets: string[]): SendCutSetAction {
-        return {
-            kind: KIND,
-            cutSets
-        };
-    }
-
-    export function isThisAction(action: Action): action is SendCutSetAction {
-        return action.kind === SendCutSetAction.KIND;
-    }
-} 

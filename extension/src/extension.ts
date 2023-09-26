@@ -21,7 +21,6 @@ import { LspSprottyEditorProvider, LspSprottyViewProvider } from 'sprotty-vscode
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { Messenger } from 'vscode-messenger';
-import { SendCutSetAction } from './actions';
 import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
 import { createSTPAResultMarkdownFile } from './report/md-export';

@@ -18,9 +18,7 @@
 import { ContainerModule } from "inversify";
 import { configureActionHandler, TYPES } from "sprotty";
 import { DISymbol } from "../di.symbols";
-import { ResetRenderOptionsAction, SendConfigAction, SendCutSetAction, SetRenderOptionAction } from "./actions";
-import { CutSetPanel } from "./cut-set-panel";
-import { CutSetsRegistry } from "./cut-set-registry";
+import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { GeneralPanel } from "./general-panel";
 import { OptionsPanel } from "./options-panel";
 import { OptionsRegistry } from "./options-registry";
@@ -35,19 +33,14 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     bind(OptionsPanel).toSelf().inSingletonScope();
     bind(DISymbol.SidebarPanel).toService(OptionsPanel);
 
-    bind(CutSetPanel).toSelf().inSingletonScope();
-    bind(DISymbol.SidebarPanel).toService(CutSetPanel);
-
     bind(DISymbol.OptionsRenderer).to(OptionsRenderer);
     bind(DISymbol.OptionsRegistry).to(OptionsRegistry).inSingletonScope();
     bind(TYPES.IActionHandlerInitializer).toService(DISymbol.OptionsRegistry);
 
     bind(DISymbol.RenderOptionsRegistry).to(RenderOptionsRegistry).inSingletonScope();
-    bind(DISymbol.CutSetsRegistry).to(CutSetsRegistry).inSingletonScope();
 
     const ctx = { bind, isBound };
     configureActionHandler(ctx, SetRenderOptionAction.KIND, DISymbol.RenderOptionsRegistry);
     configureActionHandler(ctx, ResetRenderOptionsAction.KIND, DISymbol.RenderOptionsRegistry);
     configureActionHandler(ctx, SendConfigAction.KIND, DISymbol.RenderOptionsRegistry);
-    configureActionHandler(ctx, SendCutSetAction.KIND, DISymbol.CutSetsRegistry);
 });
