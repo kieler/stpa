@@ -16,10 +16,11 @@
  */
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { Model } from "./generated/ast";
 import { Connection, Range } from "vscode-languageserver";
+import { Model, isModel, isModelFTA } from "./generated/ast";
+import { getRangeOfNodeSTPA } from "./stpa/utils";
 import { getModel } from "./utils";
-import { elementWithName } from "./stpa/utils";
+import { getRangeOfNodeFTA } from "./fta/utils";
 
 /**
  * Adds handler for notifications.
@@ -27,62 +28,29 @@ import { elementWithName } from "./stpa/utils";
  * @param shared Shared services containing the workspace.
  */
 export function addNotificationHandler(connection: Connection, shared: LangiumSprottySharedServices): void {
-    // diagram
+    // node selection in diagram
     connection.onNotification("diagram/selected", async (msg: { label: string; uri: string }) => {
-        // TODO: implement for FTA
-        if (msg.uri.endsWith(".stpa")) {
-            // get the current model
-            const model = await getModel(msg.uri, shared) as Model;
+        // get the current model
+        const model = (await getModel(msg.uri, shared)) as Model;
 
-            // determine the range in the editor of the component identified by "label"
-            const range = getRangeOfNode(model, msg.label);
-            if (range) {
-                // notify extension to highlight the range in the editor
-                connection.sendNotification("editor/highlight", {
-                    startLine: range.start.line,
-                    startChar: range.start.character,
-                    endLine: range.end.line,
-                    endChar: range.end.character,
-                    uri: msg.uri,
-                });
-            } else {
-                console.log("The selected element could not be found in the editor.");
-            }
+        let range: Range | undefined = undefined;
+        // determine the range in the editor of the component identified by "label"
+        if (isModel(model)) {
+            range = getRangeOfNodeSTPA(model, msg.label);
+        } else if (isModelFTA(model)) {
+            range = getRangeOfNodeFTA(model, msg.label);
+        }
+        if (range) {
+            // notify extension to highlight the range in the editor
+            connection.sendNotification("editor/highlight", {
+                startLine: range.start.line,
+                startChar: range.start.character,
+                endLine: range.end.line,
+                endChar: range.end.character,
+                uri: msg.uri,
+            });
+        } else {
+            console.log("The selected element could not be found in the editor.");
         }
     });
-}
-
-/**
- * Determines the range of the component identified by {@code label} in the editor,
- * @param model The current STPA model.
- * @param label The label of the searched component.
- * @returns The range of the component idenified by the label or undefined if no component was found.
- */
-function getRangeOfNode(model: Model, label: string): Range | undefined {
-    let range: Range | undefined = undefined;
-    const elements: elementWithName[] = [
-        ...model.losses,
-        ...model.hazards,
-        ...model.hazards.flatMap((hazard) => hazard.subComponents),
-        ...model.systemLevelConstraints,
-        ...model.systemLevelConstraints.flatMap((constraint) => constraint.subComponents),
-        ...model.responsibilities.flatMap((resp) => resp.responsiblitiesForOneSystem),
-        ...model.allUCAs.flatMap((ucas) =>
-            ucas.providingUcas.concat(ucas.notProvidingUcas, ucas.wrongTimingUcas, ucas.continousUcas)
-        ),
-        ...model.rules.flatMap((rule) => rule.contexts),
-        ...model.controllerConstraints,
-        ...model.scenarios,
-        ...model.safetyCons,
-    ];
-    if (model.controlStructure) {
-        elements.push(...model.controlStructure.nodes);
-    }
-    elements.forEach((component) => {
-        if (component.name === label) {
-            range = component.$cstNode?.range;
-            return;
-        }
-    });
-    return range;
 }

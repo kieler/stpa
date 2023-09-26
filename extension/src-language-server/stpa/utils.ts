@@ -17,15 +17,17 @@
 
 import { LangiumSharedServices } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
+import { Range } from "vscode-languageserver";
 import {
     Command,
-    ControllerConstraint,
     Context,
+    ControllerConstraint,
     Graph,
     Hazard,
     HazardList,
     Loss,
     LossScenario,
+    Model,
     Node,
     Responsibility,
     Rule,
@@ -33,7 +35,6 @@ import {
     SystemConstraint,
     UCA,
     Variable,
-    Model,
 } from "../generated/ast";
 import { getModel } from "../utils";
 
@@ -154,4 +155,39 @@ export class UCA_TYPE {
     static WRONG_TIME = "wrong-time";
     static CONTINUOUS = "continuous-problem";
     static UNDEFINED = "undefined";
+}
+
+/**
+ * Determines the range of the component identified by {@code label} in the editor,
+ * @param model The current STPA model.
+ * @param label The label of the searched component.
+ * @returns The range of the component idenified by the label or undefined if no component was found.
+ */
+export function getRangeOfNodeSTPA(model: Model, label: string): Range | undefined {
+    let range: Range | undefined = undefined;
+    const elements: elementWithName[] = [
+        ...model.losses,
+        ...model.hazards,
+        ...model.hazards.flatMap((hazard) => hazard.subComponents),
+        ...model.systemLevelConstraints,
+        ...model.systemLevelConstraints.flatMap((constraint) => constraint.subComponents),
+        ...model.responsibilities.flatMap((resp) => resp.responsiblitiesForOneSystem),
+        ...model.allUCAs.flatMap((ucas) =>
+            ucas.providingUcas.concat(ucas.notProvidingUcas, ucas.wrongTimingUcas, ucas.continousUcas)
+        ),
+        ...model.rules.flatMap((rule) => rule.contexts),
+        ...model.controllerConstraints,
+        ...model.scenarios,
+        ...model.safetyCons,
+    ];
+    if (model.controlStructure) {
+        elements.push(...model.controlStructure.nodes);
+    }
+    elements.forEach((component) => {
+        if (component.name === label) {
+            range = component.$cstNode?.range;
+            return;
+        }
+    });
+    return range;
 }

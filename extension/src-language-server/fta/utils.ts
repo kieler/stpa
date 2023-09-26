@@ -15,7 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Component, Condition, Gate, TopEvent } from "../generated/ast";
+import { Range } from "vscode-languageserver";
+import { Component, Condition, Gate, ModelFTA, TopEvent } from "../generated/ast";
 
 export type namedFtaElement = Component | Condition | Gate | TopEvent;
 
@@ -32,4 +33,27 @@ export function cutSetsToString(cutSets: Set<namedFtaElement>[]): string[] {
         result.push(`[${newSet.join(", ")}]`);
     }
     return result;
+}
+
+/**
+ * Determines the range of the component identified by {@code label} in the editor,
+ * @param model The current STPA model.
+ * @param label The label of the searched component.
+ * @returns The range of the component idenified by the label or undefined if no component was found.
+ */
+export function getRangeOfNodeFTA(model: ModelFTA, label: string): Range | undefined {
+    let range: Range | undefined = undefined;
+    const elements: namedFtaElement[] = [
+        model.topEvent,
+        ...model.components,
+        ...model.conditions,
+        ...model.gates
+    ];
+    elements.forEach((component) => {
+        if (component.name === label) {
+            range = component.$cstNode?.range;
+            return;
+        }
+    });
+    return range;
 }
