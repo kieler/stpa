@@ -26,6 +26,7 @@ import { cutSetsToString } from "./utils";
  * Adds handlers for notifications regarding fta.
  * @param connection
  * @param ftaServices
+ * @param sharedServices
  */
 export function addFTANotificationHandler(
     connection: Connection,
@@ -39,28 +40,42 @@ export function addFTANotificationHandler(
  * Adds handlers for requests regarding the cut sets.
  * @param connection
  * @param ftaServices
+ * @param sharedServices
  */
-function addCutSetsHandler(connection: Connection, ftaServices: FtaServices, sharedServices: LangiumSprottySharedServices): void {
+function addCutSetsHandler(
+    connection: Connection,
+    ftaServices: FtaServices,
+    sharedServices: LangiumSprottySharedServices
+): void {
     connection.onRequest("generate/getCutSets", async (uri: string) => {
-        const model = await getFTAModel(uri, sharedServices);
-        const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
-        const cutSets = determineCutSetsForFT(nodes);
-        const cutSetsString = cutSetsToString(cutSets);
-        const dropdownValues = cutSetsString.map((cutSet) => {
-            return { displayName: cutSet, id: cutSet };
-        });
-        ftaServices.options.SynthesisOptions.updateCutSetsOption(dropdownValues);
-        return cutSetsString;
+        return cutSetsRequested(uri, ftaServices, sharedServices, false);
     });
     connection.onRequest("generate/getMinimalCutSets", async (uri: string) => {
-        const model = await getFTAModel(uri, sharedServices);
-        const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
-        const minimalCutSets = determineMinimalCutSets(nodes);
-        const cutSetsString = cutSetsToString(minimalCutSets);
-        const dropdownValues = cutSetsString.map((cutSet) => {
-            return { displayName: cutSet, id: cutSet };
-        });
-        ftaServices.options.SynthesisOptions.updateCutSetsOption(dropdownValues);
-        return cutSetsString;
+        return cutSetsRequested(uri, ftaServices, sharedServices, true);
     });
+}
+
+/**
+ * Determines the (minimal) cut sets and return them as a list of strings.
+ * @param uri The uri of the model for which the cut sets should be determined.
+ * @param ftaServices
+ * @param sharedServices
+ * @param minimal Determines whether all cut sets or only the minimal cut sets should be determined.
+ * @returns the (minimal) cut sets of the model given by {@code uri} as list of strings.
+ */
+async function cutSetsRequested(
+    uri: string,
+    ftaServices: FtaServices,
+    sharedServices: LangiumSprottySharedServices,
+    minimal: boolean
+): Promise<string[]> {
+    const model = await getFTAModel(uri, sharedServices);
+    const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
+    const cutSets = minimal ? determineMinimalCutSets(nodes) : determineCutSetsForFT(nodes);
+    const cutSetsString = cutSetsToString(cutSets);
+    const dropdownValues = cutSetsString.map((cutSet) => {
+        return { displayName: cutSet, id: cutSet };
+    });
+    ftaServices.options.SynthesisOptions.updateCutSetsOption(dropdownValues);
+    return cutSetsString;
 }

@@ -50,13 +50,12 @@ export class FtaSynthesisOptions extends SynthesisOptions {
         const option = this.getOption(cutSetsID);
         if (option) {
             (option.synthesisOption as DropDownOption).availableValues = [noCutSet, ...values];
-            // if the last selected cut set is not available anymore,
-            // set the option to the first value of the new list
+            // if the last selected cut set is not available anymore, set the option to no cut set
             if (!values.find((val) => val.id === (option.synthesisOption as DropDownOption).currentId)) {
-                (option.synthesisOption as DropDownOption).currentId = values[0].id;
-                option.synthesisOption.currentValue = values[0].id;
-                option.synthesisOption.initialValue = values[0].id;
-                option.currentValue = values[0].id;
+                (option.synthesisOption as DropDownOption).currentId = noCutSet.id;
+                option.synthesisOption.currentValue = noCutSet.id;
+                option.synthesisOption.initialValue = noCutSet.id;
+                option.currentValue = noCutSet.id;
             }
         }
     }
