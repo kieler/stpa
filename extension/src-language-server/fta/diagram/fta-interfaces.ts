@@ -25,7 +25,8 @@ export interface FTANode extends SNode {
     name: string;
     nodeType: FTNodeType;
     description: string;
-    highlight?: boolean;
+    inCurrentSelectedCutSet?: boolean;
+    notConnectedToSelectedCutSet?: boolean;
     k?: number;
     n?: number;
 }
@@ -34,5 +35,5 @@ export interface FTANode extends SNode {
  * Edge of a fault tree.
  */
 export interface FTAEdge extends SEdge {
-    highlight?: boolean;
+    notConnectedToSelectedCutSet?: boolean;
 }

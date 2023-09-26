@@ -16,12 +16,10 @@
  */
 
 /** @jsx svg */
-import { inject, injectable } from 'inversify';
+import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, svg } from 'sprotty';
-import { DISymbol } from "./di.symbols";
+import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SGraph, SGraphView, svg } from 'sprotty';
 import { FTAEdge, FTANode, FTNodeType } from './fta-model';
-import { CutSetsRegistry } from './options/cut-set-registry';
 import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "./views-rendering";
 
 // TODO: combine with STPA methods ??
@@ -37,16 +35,13 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
             path += ` L ${p.x},${p.y}`;
         }
         // if an FTANode is selected, the components not connected to it should fade out
-        edge.highlight = (edge.target as FTANode).highlight;
-        return <path class-fta-edge={true} class-greyed-out={!edge.highlight} d={path} />;
+        return <path class-fta-edge={true} class-greyed-out={edge.notConnectedToSelectedCutSet} d={path} />;
     }
 
 }
 
 @injectable()
 export class FTANodeView extends RectangularNodeView {
-
-    @inject(DISymbol.CutSetsRegistry) cutSetsRegistry: CutSetsRegistry;
 
     render(node: FTANode, context: RenderingContext): VNode {
         // create the element based on the type of the node
@@ -78,60 +73,38 @@ export class FTANodeView extends RectangularNodeView {
                 break;
         }
 
-        // if a cut set is selected, highlight the nodes in it and the connected elements
-        const set = this.cutSetsRegistry.getCurrentValue();
-        let highlight = false;
-        if (set) {
-            switch (node.nodeType) {
-                case FTNodeType.COMPONENT:
-                case FTNodeType.CONDITION:
-                    // components and conditions should be highlighted when included in the selected cut set
-                    const included = set.includes(node.name);
-                    node.highlight = included;
-                    highlight = included;
-                    break;
-                default:
-                    // gates are hidden (greyed out) when not connected to shown elements
-                    node.highlight = this.connectedToShown(node, set);
-                    break;
-            }
-        } else {
-            node.highlight = true;
-        }
-        // TODO: replace highlight attribute with hidden
+        // if a cut set is selected, highlight the nodes in it and grey out not-connected elements
         return <g
             class-fta-node={true}
             class-mouseover={node.hoverFeedback}
-            class-greyed-out={!node.highlight}>
-            <g class-node-selected={node.selected} class-fta-highlight-node={highlight}>{element}</g>
+            class-greyed-out={node.notConnectedToSelectedCutSet}>
+            <g class-node-selected={node.selected} class-fta-highlight-node={node.inCurrentSelectedCutSet}>{element}</g>
             {context.renderChildren(node)}
         </g>;
     }
+}
 
-    /**
-     * Checks whether the given {@code node} is connected to a highlighted node.
-     * @param node The node that should be checked.
-     * @param set The set of all highlighted nodes.
-     * @returns true if the node is connected to a node from the {@code set} or false otherwise.
-     */
-    connectedToShown(node: FTANode, set: any): boolean {
-        // TODO: call this method only one time at the top node and highlight everything on the way that should be highlighted
+@injectable()
+export class FTAGraphView extends SGraphView {
+
+    render(model: Readonly<SGraph>, context: RenderingContext): VNode {
+        if (model.children.length !== 0) {
+            this.highlightConnectedToCutSet(model.children[0] as FTANode);
+        }
+
+        return super.render(model, context);
+    }
+
+    protected highlightConnectedToCutSet(node: FTANode): void {
         for (const edge of node.outgoingEdges) {
-            const target = (edge.target as FTANode);
-            switch (target.nodeType) {
-                case FTNodeType.COMPONENT:
-                case FTNodeType.CONDITION:
-                    if (set.includes(target.name)) {
-                        return true;
-                    }
-                    break;
-                default:
-                    if (this.connectedToShown(target, set)) {
-                        return true;
-                    }
-                    break;
+            (edge as FTAEdge).notConnectedToSelectedCutSet = true;
+            const target = edge.target as FTANode;
+            this.highlightConnectedToCutSet(target);
+            if (!target.notConnectedToSelectedCutSet) {
+                node.notConnectedToSelectedCutSet = false;
+                (edge as FTAEdge).notConnectedToSelectedCutSet = false;
             }
         }
-        return false;
     }
+
 }

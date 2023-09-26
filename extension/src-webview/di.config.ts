@@ -40,8 +40,8 @@ import {
 import { SvgCommand } from "./actions";
 import { SvgPostprocessor } from "./exportPostProcessor";
 import { CustomSvgExporter } from "./exporter";
-import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTA_NODE_TYPE } from "./fta-model";
-import { FTANodeView, PolylineArrowEdgeViewFTA } from "./fta-views";
+import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "./fta-model";
+import { FTAGraphView, FTANodeView, PolylineArrowEdgeViewFTA } from "./fta-views";
 import { StpaModelViewer } from "./model-viewer";
 import { optionsModule } from "./options/options-module";
 import { sidebarModule } from "./sidebar";
@@ -106,6 +106,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     // FTA
     configureModelElement(context, FTA_EDGE_TYPE, FTAEdge, PolylineArrowEdgeViewFTA);
     configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
+    configureModelElement(context, FTA_GRAPH_TYPE, SGraph, FTAGraphView);
 });
 
 export function createSTPADiagramContainer(widgetId: string): Container {

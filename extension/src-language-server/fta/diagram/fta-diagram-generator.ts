@@ -20,14 +20,17 @@ import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-spro
 import { SLabel, SModelElement, SModelRoot } from "sprotty-protocol";
 import { ModelFTA, isComponent, isCondition, isKNGate } from "../../generated/ast";
 import { FtaServices } from "../fta-module";
+import { FtaSynthesisOptions, noCutSet } from "../fta-synthesis-options";
 import { namedFtaElement } from "../utils";
 import { FTAEdge, FTANode } from "./fta-interfaces";
-import { FTA_EDGE_TYPE, FTA_NODE_TYPE } from "./fta-model";
+import { FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "./fta-model";
 import { getFTNodeType, getTargets } from "./utils";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
+    protected readonly options: FtaSynthesisOptions;
     constructor(services: FtaServices) {
         super(services);
+        this.options = services.options.SynthesisOptions;
     }
 
     /**
@@ -52,7 +55,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         ];
 
         return {
-            type: "graph",
+            type: FTA_GRAPH_TYPE,
             id: "root",
             children: ftaChildren,
         };
@@ -64,7 +67,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @param idCache The ID cache of the FTA model.
      * @returns edges representing the references the given {@code node} contains.
      */
-    private generateEdges(node: AstNode, idCache: IdCache<AstNode>): SModelElement[] {
+    protected generateEdges(node: AstNode, idCache: IdCache<AstNode>): SModelElement[] {
         const elements: SModelElement[] = [];
         const sourceId = idCache.getId(node);
         // for every reference an edge is created
@@ -89,21 +92,21 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @param label The label of the edge.
      * @returns an FTAEdge.
      */
-    private generateFTEdge(
+    protected generateFTEdge(
         edgeId: string,
         sourceId: string,
         targetId: string,
         idCache: IdCache<AstNode>,
         label?: string
     ): FTAEdge {
-        const children = label ? this.createEdgeLabel(label, edgeId, idCache): [];
+        const children = label ? this.createEdgeLabel(label, edgeId, idCache) : [];
         return {
             type: FTA_EDGE_TYPE,
             id: edgeId,
             sourceId: sourceId,
             targetId: targetId,
             children: children,
-            highlight: true,
+            notConnectedToSelectedCutSet: false,
         };
     }
 
@@ -113,10 +116,13 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @param idCache The ID cache of the FTA model.
      * @returns a FTANode representing {@code node}.
      */
-    private generateFTNode(node: namedFtaElement, idCache: IdCache<AstNode>): FTANode {
+    protected generateFTNode(node: namedFtaElement, idCache: IdCache<AstNode>): FTANode {
         const nodeId = idCache.uniqueId(node.name, node);
         const children: SModelElement[] = this.createNodeLabel(node.name, nodeId, idCache);
         const description = isComponent(node) || isCondition(node) ? node.description : "";
+        const set = this.options.getCutSet();
+        const includedInCutSet = set !== noCutSet.id ? set.includes(node.name) : false;
+        const notConnected = set !== noCutSet.id ? !includedInCutSet : false;
 
         const ftNode = {
             type: FTA_NODE_TYPE,
@@ -125,8 +131,9 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             nodeType: getFTNodeType(node),
             description: description,
             children: children,
-            highlight: true,
             layout: "stack",
+            inCurrentSelectedCutSet: includedInCutSet,
+            notConnectedToSelectedCutSet: notConnected,
             layoutOptions: {
                 paddingTop: 10.0,
                 paddingBottom: 10.0,

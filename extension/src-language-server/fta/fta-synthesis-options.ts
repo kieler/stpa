@@ -20,18 +20,20 @@ import { SynthesisOptions } from "../synthesis-options";
 
 const cutSetsID = "cutSets";
 
+export const noCutSet = { displayName: "---", id: "---" };
+
 const cutSets: ValuedSynthesisOption = {
     synthesisOption: {
         id: cutSetsID,
         name: "Highlight Cut Set",
         type: TransformationOptionType.DROPDOWN,
-        currentId: "---",
-        availableValues: [{ displayName: "---", id: "noCutSet" }],
-        initialValue: "---",
-        currentValue: "---",
+        currentId: noCutSet.id,
+        availableValues: [noCutSet],
+        initialValue: noCutSet.id,
+        currentValue: noCutSet.id,
         values: [],
     } as DropDownOption,
-    currentValue: "---",
+    currentValue: noCutSet.id,
 };
 
 export class FtaSynthesisOptions extends SynthesisOptions {
@@ -47,10 +49,7 @@ export class FtaSynthesisOptions extends SynthesisOptions {
     updateCutSetsOption(values: { displayName: string; id: string }[]): void {
         const option = this.getOption(cutSetsID);
         if (option) {
-            (option.synthesisOption as DropDownOption).availableValues = [
-                { displayName: "---", id: "noCutSet" },
-                ...values,
-            ];
+            (option.synthesisOption as DropDownOption).availableValues = [noCutSet, ...values];
             // if the last selected cut set is not available anymore,
             // set the option to the first value of the new list
             if (!values.find((val) => val.id === (option.synthesisOption as DropDownOption).currentId)) {
@@ -62,7 +61,7 @@ export class FtaSynthesisOptions extends SynthesisOptions {
         }
     }
 
-    setCutSets(value: string): void {
+    setCutSet(value: string): void {
         const option = this.options.find((option) => option.synthesisOption.id === cutSetsID);
         if (option) {
             option.currentValue = value;
@@ -71,7 +70,7 @@ export class FtaSynthesisOptions extends SynthesisOptions {
         }
     }
 
-    getCutSets(): string {
+    getCutSet(): string {
         return this.getOption(cutSetsID)?.currentValue;
     }
 }

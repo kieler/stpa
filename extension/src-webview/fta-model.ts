@@ -29,6 +29,7 @@ import {
 /* fault tree element types */
 export const FTA_NODE_TYPE = "node:fta";
 export const FTA_EDGE_TYPE = "edge:fta";
+export const FTA_GRAPH_TYPE = "graph:fta";
 
 /**
  * Node of a fault tree.
@@ -46,7 +47,8 @@ export class FTANode extends SNode {
     name: string;
     nodeType: FTNodeType = FTNodeType.UNDEFINED;
     description: string = "";
-    highlight?: boolean;
+    inCurrentSelectedCutSet?: boolean;
+    notConnectedToSelectedCutSet?: boolean;
     k?: number;
     n?: number;
 }
@@ -55,7 +57,7 @@ export class FTANode extends SNode {
  * Edge of a fault tree.
  */
 export class FTAEdge extends SEdge {
-    highlight?: boolean;
+    notConnectedToSelectedCutSet?: boolean;
 }
 
 /**
