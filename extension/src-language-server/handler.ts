@@ -18,7 +18,7 @@
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Model } from "./generated/ast";
 import { Connection, Range } from "vscode-languageserver";
-import { getSTPAModel } from "./utils";
+import { getModel } from "./utils";
 import { elementWithName } from "./stpa/utils";
 
 /**
@@ -32,7 +32,7 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
         // TODO: implement for FTA
         if (msg.uri.endsWith(".stpa")) {
             // get the current model
-            const model = await getSTPAModel(msg.uri, shared);
+            const model = await getModel(msg.uri, shared) as Model;
 
             // determine the range in the editor of the component identified by "label"
             const range = getRangeOfNode(model, msg.label);

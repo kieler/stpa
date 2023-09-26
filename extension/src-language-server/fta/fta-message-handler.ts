@@ -17,10 +17,11 @@
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection } from "vscode-languageserver";
-import { getFTAModel } from "../utils";
+import { getModel } from "../utils";
 import { determineMinimalCutSets, determineCutSetsForFT } from "./analysis/fta-cutSet-calculator";
 import { FtaServices } from "./fta-module";
 import { cutSetsToString } from "./utils";
+import { ModelFTA } from "../generated/ast";
 
 /**
  * Adds handlers for notifications regarding fta.
@@ -69,7 +70,7 @@ async function cutSetsRequested(
     sharedServices: LangiumSprottySharedServices,
     minimal: boolean
 ): Promise<string[]> {
-    const model = await getFTAModel(uri, sharedServices);
+    const model = (await getModel(uri, sharedServices)) as ModelFTA;
     const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
     const cutSets = minimal ? determineMinimalCutSets(nodes) : determineCutSetsForFT(nodes);
     const cutSetsString = cutSetsToString(cutSets);

@@ -33,8 +33,9 @@ import {
     SystemConstraint,
     UCA,
     Variable,
+    Model,
 } from "../generated/ast";
-import { getSTPAModel } from "../utils";
+import { getModel } from "../utils";
 
 export type leafElement =
     | Loss
@@ -81,7 +82,7 @@ export async function getControlActions(
 ): Promise<Record<string, string[]>> {
     const controlActionsMap: Record<string, string[]> = {};
     // get the model from the file determined by the uri
-    const model = await getSTPAModel(uri, shared);
+    const model = await getModel(uri, shared) as Model;
     // collect control actions grouped by their controller
     model.controlStructure?.nodes.forEach((systemComponent) => {
         systemComponent.actions.forEach((action) => {

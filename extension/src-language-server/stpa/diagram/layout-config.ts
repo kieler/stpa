@@ -74,7 +74,6 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected nodeOptions(snode: SNode, index: SModelIndex): LayoutOptions | undefined {
-        // TODO: check whether model order option is activated
         switch (snode.type) {
             case CS_NODE_TYPE:
                 return this.csNodeOptions(snode as CSNode);

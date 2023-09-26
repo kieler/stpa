@@ -26,7 +26,7 @@ import {
     ContextTableVariableValues,
 } from "../../../src-context-table/utils";
 import { Model } from "../../generated/ast";
-import { getSTPAModel } from "../../utils";
+import { getModel } from "../../utils";
 import { StpaServices } from "../stpa-module";
 
 export class ContextTableProvider {
@@ -66,7 +66,7 @@ export class ContextTableProvider {
      */
     async getData(uri: URI): Promise<ContextTableData> {
         // get the current model
-        const model = await getSTPAModel(uri, this.services.shared);
+        const model = await getModel(uri, this.services.shared) as Model;
 
         const actions: ContextTableControlAction[] = [];
         const variables: ContextTableSystemVariables[] = [];

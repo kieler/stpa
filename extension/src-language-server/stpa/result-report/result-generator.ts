@@ -22,13 +22,14 @@ import {
     ControllerConstraint,
     Hazard,
     LossScenario,
+    Model,
     Responsibility,
     Rule,
     SafetyConstraint,
     SystemConstraint,
     UCA
 } from "../../generated/ast";
-import { getSTPAModel } from "../../utils";
+import { getModel } from "../../utils";
 import { StpaComponent, StpaResult, UCA_TYPE } from "../utils";
 
 /**
@@ -40,7 +41,7 @@ import { StpaComponent, StpaResult, UCA_TYPE } from "../utils";
 export async function createResultData(uri: string, shared: LangiumSprottySharedServices): Promise<StpaResult> {
     const result: StpaResult = new StpaResult();
     // get the current model
-    const model = await getSTPAModel(uri, shared);
+    const model = await getModel(uri, shared) as Model;
 
     // losses
     const resultLosses: { id: string; description: string }[] = [];

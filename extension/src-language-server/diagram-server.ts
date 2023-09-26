@@ -89,9 +89,6 @@ export class PastaDiagramServer extends DiagramServer {
                 return this.handleSetSynthesisOption(action as SetSynthesisOptionsAction);
             case GenerateSVGsAction.KIND:
                 return this.handleGenerateSVGDiagrams(action as GenerateSVGsAction);
-                // TODO: implement selection of an element here instead of in "handler" and "wview" ??
-            // case SelectAction.KIND:
-            //     return this.handleSelectaction
         }
         return super.handleAction(action);
     }
