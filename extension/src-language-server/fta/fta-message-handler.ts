@@ -32,7 +32,7 @@ export function addFTANotificationHandler(
     ftaServices: FtaServices,
     sharedServices: LangiumSprottySharedServices
 ): void {
-    addCutSetsHandler(connection, sharedServices);
+    addCutSetsHandler(connection, ftaServices, sharedServices);
 }
 
 /**
@@ -40,17 +40,27 @@ export function addFTANotificationHandler(
  * @param connection
  * @param ftaServices
  */
-function addCutSetsHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+function addCutSetsHandler(connection: Connection, ftaServices: FtaServices, sharedServices: LangiumSprottySharedServices): void {
     connection.onRequest("generate/getCutSets", async (uri: string) => {
         const model = await getFTAModel(uri, sharedServices);
         const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
         const cutSets = determineCutSetsForFT(nodes);
-        return cutSetsToString(cutSets);
+        const cutSetsString = cutSetsToString(cutSets);
+        const dropdownValues = cutSetsString.map((cutSet) => {
+            return { displayName: cutSet, id: cutSet };
+        });
+        ftaServices.options.SynthesisOptions.updateCutSetsOption(dropdownValues);
+        return cutSetsString;
     });
     connection.onRequest("generate/getMinimalCutSets", async (uri: string) => {
         const model = await getFTAModel(uri, sharedServices);
         const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
         const minimalCutSets = determineMinimalCutSets(nodes);
-        return cutSetsToString(minimalCutSets);
+        const cutSetsString = cutSetsToString(minimalCutSets);
+        const dropdownValues = cutSetsString.map((cutSet) => {
+            return { displayName: cutSet, id: cutSet };
+        });
+        ftaServices.options.SynthesisOptions.updateCutSetsOption(dropdownValues);
+        return cutSetsString;
     });
 }

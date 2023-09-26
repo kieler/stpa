@@ -27,4 +27,9 @@ export class SynthesisOptions {
     getSynthesisOptions(): ValuedSynthesisOption[] {
         return this.options;
     }
+
+    protected getOption(id: string): ValuedSynthesisOption | undefined {
+        const option = this.options.find((option) => option.synthesisOption.id === id);
+        return option;
+    }
 }

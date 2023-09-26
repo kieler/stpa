@@ -28,7 +28,7 @@ import {
 import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator";
 import { FtaLayoutConfigurator } from "./diagram/fta-layout-config";
 import { FtaValidationRegistry, FtaValidator } from "./fta-validator";
-import { FtaSynthesisOptions } from "./synthesis-options";
+import { FtaSynthesisOptions } from "./fta-synthesis-options";
 
 /**
  * Declaration of custom services.

@@ -624,9 +624,4 @@ export class StpaSynthesisOptions extends SynthesisOptions {
             option.synthesisOption.currentValue = value;
         }
     }
-
-    protected getOption(id: string): ValuedSynthesisOption | undefined {
-        const option = this.options.find((option) => option.synthesisOption.id === id);
-        return option;
-    }
 }

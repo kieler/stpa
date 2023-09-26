@@ -191,26 +191,21 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
     // commands for computing and displaying the (minimal) cut sets of the fault tree.
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".fta.cutSets", async (uri: vscode.Uri) => {
-            const cutSets: string[][] = await languageClient.sendRequest("generate/getCutSets", uri.path);
+            const cutSets: string[] = await languageClient.sendRequest("generate/getCutSets", uri.path);
             handleCutSets(manager, cutSets, false);
         })
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".fta.minimalCutSets", async (uri: vscode.Uri) => {
-            const minimalCutSets: string[][] = await languageClient.sendRequest("generate/getMinimalCutSets", uri.path);
+            const minimalCutSets: string[] = await languageClient.sendRequest("generate/getMinimalCutSets", uri.path);
             handleCutSets(manager, minimalCutSets, true);
         })
     );
 }
 
-function handleCutSets(manager: StpaLspVscodeExtension, cutSets: string[][], minimal?: boolean): void {
-    const cutSetStrings = cutSets.map((cutSet) => `[${cutSet.join(", ")}]`);
+function handleCutSets(manager: StpaLspVscodeExtension, cutSets: string[], minimal?: boolean): void {
     // print cut sets to output channel
-    createOutputChannel(cutSetStrings, "FTA Cut Sets", minimal);
-    // send cut sets to the webview
-    manager.endpoints
-        .find((endpoint) => endpoint.diagramIdentifier?.diagramType === "fta")
-        ?.sendAction({ kind: SendCutSetAction.KIND, cutSets: cutSetStrings } as SendCutSetAction);
+    createOutputChannel(cutSets, "FTA Cut Sets", minimal);
 }
 
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {

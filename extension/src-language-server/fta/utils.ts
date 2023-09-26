@@ -20,16 +20,16 @@ import { Component, Condition, Gate, TopEvent } from "../generated/ast";
 export type namedFtaElement = Component | Condition | Gate | TopEvent;
 
 /**
- * Translates the cut sets in the given {@code cutSets} to lists.
+ * Translates the cut sets in the given {@code cutSets} to strings.
  * @param cutSets The list containing the cut sets to translate.
- * @returns a list containing the cut sets in {@code cutSets} as a list.
+ * @returns a list containing the cut sets in {@code cutSets} as a string.
  */
-export function cutSetsToString(cutSets: Set<namedFtaElement>[]): string[][] {
-    const result: string[][] = [];
+export function cutSetsToString(cutSets: Set<namedFtaElement>[]): string[] {
+    const result: string[] = [];
     for (const set of cutSets) {
         const newSet: string[] = [];
         set.forEach((element) => newSet.push(element.name));
-        result.push(newSet);
+        result.push(`[${newSet.join(", ")}]`);
     }
     return result;
 }

@@ -35,7 +35,7 @@ import { IDEnforcer } from "./ID-enforcer";
 import { ContextTableProvider } from "./contextTable/context-dataProvider";
 import { StpaDiagramGenerator } from "./diagram/diagram-generator";
 import { StpaLayoutConfigurator } from "./diagram/layout-config";
-import { StpaSynthesisOptions } from "./diagram/synthesis-options";
+import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options";
 import { StpaScopeProvider } from "./stpa-scopeProvider";
 import { StpaValidationRegistry, StpaValidator } from "./stpa-validator";
 

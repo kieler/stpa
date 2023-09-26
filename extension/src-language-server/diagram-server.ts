@@ -28,7 +28,7 @@ import { Connection } from "vscode-languageserver";
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions";
 import { DropDownOption } from "./options/option-models";
 import { GenerateSVGsAction, RequestSvgAction, SvgAction } from "./stpa/actions";
-import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/synthesis-options";
+import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/stpa-synthesis-options";
 import {
     COMPLETE_GRAPH_PATH,
     CONTROL_STRUCTURE_PATH,

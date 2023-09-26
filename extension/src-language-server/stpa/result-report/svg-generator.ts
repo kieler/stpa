@@ -16,7 +16,7 @@
  */
 
 import { SetSynthesisOptionsAction } from "../../options/actions";
-import { StpaSynthesisOptions } from "../diagram/synthesis-options";
+import { StpaSynthesisOptions } from "../diagram/stpa-synthesis-options";
 
 /* the paths for the several diagrams of the STPA aspects */
 export const SVG_PATH = "/images";

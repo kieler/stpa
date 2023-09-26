@@ -48,7 +48,7 @@ import {
     STPA_NODE_TYPE,
     STPA_PORT_TYPE,
 } from "./stpa-model";
-import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from "./synthesis-options";
+import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from "./stpa-synthesis-options";
 import { createUCAContextDescription, getAspect, getTargets, setLevelOfCSNodes, setLevelsForSTPANodes } from "./utils";
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
