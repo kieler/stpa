@@ -20,8 +20,7 @@ import { TextDocumentContentChangeEvent } from "vscode";
 import { Range, RenameParams, TextEdit } from "vscode-languageserver";
 import { Hazard, isHazard, isSystemConstraint, LossScenario, Model, SystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
-import { elementWithName, elementWithRefs } from "./stpa-validator";
-import { collectElementsWithSubComps } from "./utils";
+import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
 
 /**
  * Default prefixes for the different STPA aspects.
@@ -215,7 +214,7 @@ export class IDEnforcer {
         const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
         const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
         const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
-        const ucas = model.allUCAs?.map(sysUCA => sysUCA.ucas).flat(1);
+        const ucas = model.allUCAs?.map(sysUCA => sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)).flat(1);
         const contexts = model.rules?.map(rule => rule.contexts).flat(1);
         const scenarioHazards = model.scenarios.map(scenario => scenario.list);
         const scenarioUCAs = model.scenarios;
@@ -278,9 +277,9 @@ export class IDEnforcer {
                 edits = edits.concat(edit.changes[this.currentUri]);
             }
             // rename children
-            if ((isHazard(element) || isSystemConstraint(element)) && element.subComps.length !== 0) {
+            if ((isHazard(element) || isSystemConstraint(element)) && element.subComponents.length !== 0) {
                 let index = 1;
-                for (const child of element.subComps) {
+                for (const child of element.subComponents) {
                     edits = edits.concat(await this.renameID(child, prefix + counter + ".", index));
                     index++;
                 }
@@ -341,7 +340,7 @@ export class IDEnforcer {
             elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
             prefix = IDPrefix.Responsibility;
         } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
-            elements = model.allUCAs.flatMap(uca => uca.ucas);
+            elements = model.allUCAs.flatMap(sysUCA => sysUCA.notProvidingUcas.concat(sysUCA.providingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas));
             elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
             prefix = IDPrefix.UCA;
             // rules must be handled separately since they are mixed with the UCAs
@@ -381,8 +380,8 @@ export class IDEnforcer {
         // check whether the children are affected
         // if the children are affected, it must be checked whether they have again affected children
         // otherwise the current elements are the affected ones
-        if (element.subComps.length !== 0 && element.subComps[0].$cstNode && element.subComps[0].$cstNode.offset <= offset) {
-            const modified = this.findAffectedSubComponents(element.subComps, element.name + ".", offset);
+        if (element.subComponents.length !== 0 && element.subComponents[0].$cstNode && element.subComponents[0].$cstNode.offset <= offset) {
+            const modified = this.findAffectedSubComponents(element.subComponents, element.name + ".", offset);
             elements = modified.elements;
             prefix = modified.prefix;
         }

@@ -25,4 +25,3 @@ export const command = {
     getLTLFormula: withPrefix("getLTLFormula"),
     // sendModelCheckerResult: withPrefix("sendModelCheckerResult"),
 };
-

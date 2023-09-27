@@ -53,32 +53,6 @@ export class DifferentFormsOption implements RenderOption {
     currentValue = false;
 }
 
-/**
- * Boolean option to enable and disable the visualization of the control structure.
- */
-export class ShowCSOption implements RenderOption {
-    static readonly ID: string = 'show-cs';
-    static readonly NAME: string = 'Show Control Structure';
-    readonly id: string = ShowCSOption.ID;
-    readonly name: string = ShowCSOption.NAME;
-    readonly type: TransformationOptionType = TransformationOptionType.CHECK;
-    readonly initialValue: boolean = true;
-    currentValue = true;
-}
-
-/**
- * Boolean option to enable and disable the visualization of the relationship graph.
- */
-export class ShowRelationshipGraphOption implements RenderOption {
-    static readonly ID: string = 'show-relations';
-    static readonly NAME: string = 'Show Relationship Graph';
-    readonly id: string = ShowRelationshipGraphOption.ID;
-    readonly name: string = ShowRelationshipGraphOption.NAME;
-    readonly type: TransformationOptionType = TransformationOptionType.CHECK;
-    readonly initialValue: boolean = true;
-    currentValue = true;
-}
-
 export interface RenderOptionType {
     readonly ID: string,
     readonly NAME: string,
@@ -101,9 +75,6 @@ export class RenderOptionsRegistry extends Registry {
         // Add available render options to this registry
         this.register(DifferentFormsOption);
         this.register(ColorStyleOption);
-
-        this.register(ShowCSOption);
-        this.register(ShowRelationshipGraphOption);
     }
 
     @postConstruct()

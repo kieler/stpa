@@ -15,13 +15,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { isActionMessage, SelectAction } from 'sprotty-protocol';
+import { isActionMessage, SelectAction } from "sprotty-protocol";
 import { LspWebviewEndpoint } from "sprotty-vscode/lib/lsp";
-import * as vscode from 'vscode';
-import { SendConfigAction } from './actions';
+import * as vscode from "vscode";
+import { SendConfigAction } from "./actions";
 
 export class StpaLspWebview extends LspWebviewEndpoint {
-
     receiveAction(message: any): Promise<void> {
         // TODO: for multiple language support here the current language muste be determined
         if (isActionMessage(message)) {
@@ -49,10 +48,13 @@ export class StpaLspWebview extends LspWebviewEndpoint {
             let uriString = this.diagramIdentifier.uri.toString();
             const match = uriString.match(/file:\/\/\/([a-z]):/i);
             if (match) {
-                uriString = 'file:///' + match[1] + '%3A' + uriString.substring(match[0].length);
+                uriString = "file:///" + match[1] + "%3A" + uriString.substring(match[0].length);
             }
             // send ID of the first selected element to the language server to highlight the textual definition in the editor
-            this.languageClient.sendNotification('diagram/selected', { label: action.selectedElementsIDs[0], uri: uriString });
+            this.languageClient.sendNotification("diagram/selected", {
+                label: action.selectedElementsIDs[0],
+                uri: uriString,
+            });
         }
     }
 
@@ -60,8 +62,8 @@ export class StpaLspWebview extends LspWebviewEndpoint {
      * Sends the config option values to the webview
      */
     protected sendConfigValues(): void {
-        const renderOptions: { id: string, value: any; }[] = [];
-        const configOptions = vscode.workspace.getConfiguration('pasta');
+        const renderOptions: { id: string; value: any }[] = [];
+        const configOptions = vscode.workspace.getConfiguration("pasta");
         renderOptions.push({ id: "colorStyle", value: configOptions.get("colorStyle") });
         renderOptions.push({ id: "differentForms", value: configOptions.get("differentForms") });
 
@@ -69,8 +71,7 @@ export class StpaLspWebview extends LspWebviewEndpoint {
     }
 
     protected updateConfigValues(action: SendConfigAction): void {
-        const configOptions = vscode.workspace.getConfiguration('pasta');
-        action.options.forEach(element => configOptions.update(element.id, element.value));
+        const configOptions = vscode.workspace.getConfiguration("pasta");
+        action.options.forEach((element) => configOptions.update(element.id, element.value));
     }
 }
-

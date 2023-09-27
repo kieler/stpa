@@ -16,8 +16,10 @@
  */
 
 import { injectable } from "inversify";
-import { ActionMessage } from "sprotty-protocol";
+import { ActionHandlerRegistry } from "sprotty";
+import { Action, ActionMessage } from "sprotty-protocol";
 import { VscodeLspEditDiagramServer } from "sprotty-vscode-webview/lib/lsp/editing";
+import { SvgAction } from "./actions";
 
 @injectable()
 export class StpaDiagramServer extends VscodeLspEditDiagramServer {
@@ -25,6 +27,29 @@ export class StpaDiagramServer extends VscodeLspEditDiagramServer {
     protected sendMessage(message: ActionMessage): void {
         console.log("send to server: " + message.action.kind);
         super.sendMessage(message);
+    }
+
+    initialize(registry: ActionHandlerRegistry): void {
+        super.initialize(registry);
+        registry.register(SvgAction.KIND, this);
+    }
+
+    handleLocally(action: Action): boolean {
+        switch (action.kind) {
+            case SvgAction.KIND:
+                this.handleSvgAction(action as SvgAction);
+        }
+        return super.handleLocally(action);
+    }
+
+    /**
+     * Forwards the {@code action} to the server.
+     * @param action The SVGAction.
+     * @returns 
+     */
+    handleSvgAction(action: SvgAction): boolean {
+        this.forwardToServer(action);
+        return false;
     }
 
 }

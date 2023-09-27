@@ -108,6 +108,7 @@ export class OptionsRenderer {
                                 stepSize={(option as RangeOptionData).stepSize}
                                 description={option.description}
                                 onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                                onInput={this.handleSynthesisOptionInput.bind(this, option)}
                             />
                         );
                     case TransformationOptionType.TEXT:
@@ -144,7 +145,7 @@ export class OptionsRenderer {
                             <DropDownMenuOption
                                 key={option.id}
                                 id={option.id}
-                                currentId = {(option as DropDownOption).currentId}
+                                currentId={(option as DropDownOption).currentId}
                                 name={option.name}
                                 value={option.currentValue}
                                 availableValues={(option as DropDownOption).availableValues}
@@ -157,6 +158,13 @@ export class OptionsRenderer {
                         return "";
                 }
             });
+    }
+
+    /** Handler for synthesis options onInput, e.g. while a slider is being dragged. */
+    private handleSynthesisOptionInput(option: SynthesisOption, newValue: any) {
+        this.actionDispatcher.dispatch(
+            SetSynthesisOptionsAction.create([{ ...option, currentValue: newValue }])
+        );
     }
 
     private handleSynthesisOptionChange(option: SynthesisOption, newValue: any) {
@@ -191,9 +199,9 @@ export class OptionsRenderer {
                             value={option.currentValue}
                             description={option.description}
                             onChange={this.handleRenderOptionChange.bind(this, option)}
-                            availableValues = {(option as ChoiceRenderOption).availableValues}
+                            availableValues={(option as ChoiceRenderOption).availableValues}
                         />
-                    )
+                    );
                 default:
                     console.error("Unsupported option type for option:", option.name);
                     return "";
