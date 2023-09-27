@@ -21,13 +21,13 @@ import 'sprotty-vscode-webview/css/sprotty-vscode.css';
 import { Container } from 'inversify';
 import { SprottyDiagramIdentifier, VscodeDiagramServer } from 'sprotty-vscode-webview';
 import { SprottyLspEditStarter } from 'sprotty-vscode-webview/lib/lsp/editing';
-import { createSTPADiagramContainer } from './di.config';
+import { createPastaDiagramContainer } from './di.config';
 import { PastaDiagramServer } from './diagram-server';
 
-export class StpaSprottyStarter extends SprottyLspEditStarter {
+export class PastaSprottyStarter extends SprottyLspEditStarter {
 
     createContainer(diagramIdentifier: SprottyDiagramIdentifier): Container {
-        return createSTPADiagramContainer(diagramIdentifier.clientId);
+        return createPastaDiagramContainer(diagramIdentifier.clientId);
     }
 
     protected addVscodeBindings(container: Container, diagramIdentifier: SprottyDiagramIdentifier): void {
@@ -36,5 +36,5 @@ export class StpaSprottyStarter extends SprottyLspEditStarter {
     }
 }
 
-new StpaSprottyStarter().start();
+new PastaSprottyStarter().start();
 

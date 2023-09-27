@@ -70,7 +70,7 @@ import {
     STPANodeView,
 } from "./stpa/stpa-views";
 
-const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
+const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
     rebind(TYPES.CommandStackOptions).toConstantValue({
@@ -109,10 +109,10 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
     configureModelElement(context, FTA_GRAPH_TYPE, SGraph, FTAGraphView);
 });
 
-export function createSTPADiagramContainer(widgetId: string): Container {
+export function createPastaDiagramContainer(widgetId: string): Container {
     const container = new Container();
     loadDefaultModules(container);
-    container.load(stpaDiagramModule, sidebarModule, optionsModule);
+    container.load(pastaDiagramModule, sidebarModule, optionsModule);
     overrideViewerOptions(container, {
         needsClientLayout: true,
         needsServerLayout: true,
