@@ -163,8 +163,8 @@ export class StpaValidator {
 
         // check that each control action has at least one UCA
         const ucaActions = [
-            ...model.allUCAs.map((alluca) => alluca.system.ref?.name + "." + alluca.action.ref?.name),
-            ...model.rules.map((rule) => rule.system.ref?.name + "." + rule.action.ref?.name),
+            ...model.allUCAs.map((alluca) => alluca.system?.ref?.name + "." + alluca.action?.ref?.name),
+            ...model.rules.map((rule) => rule.system?.ref?.name + "." + rule.action?.ref?.name),
         ];
         model.controlStructure?.nodes.forEach((node) =>
             node.actions.forEach((action) =>
@@ -194,7 +194,7 @@ export class StpaValidator {
     checkActionUcasForDuplicates(model: Model, accept: ValidationAcceptor): void {
         const referencedCommand: Set<string> = new Set<string>();
         for (const actionUca of model.allUCAs) {
-            const action = actionUca.system.$refText + "." + actionUca.action.$refText;
+            const action = actionUca.system?.$refText + "." + actionUca.action?.$refText;
             if (referencedCommand.has(action)) {
                 accept("warning", "This action is already covered by UCAs", { node: actionUca, property: "action" });
             } else {
@@ -211,7 +211,7 @@ export class StpaValidator {
     checkRulesForDuplicates(model: Model, accept: ValidationAcceptor): void {
         const actionTypePairs = new Map<string, string[]>();
         for (const rule of model.rules) {
-            const action = rule.system.$refText + "." + rule.action.$refText;
+            const action = rule.system?.$refText + "." + rule.action?.$refText;
             const type = rule.type;
             if (actionTypePairs.has(action)) {
                 const definedTypes = actionTypePairs.get(action);
@@ -410,7 +410,7 @@ export class StpaValidator {
         const names = new Set();
         for (let i = 0; i < list.length; i++) {
             const ref = list[i];
-            const element = ref.ref;
+            const element = ref?.ref;
             // needs to be checked in order to get the name
             if (element) {
                 const name = element.name;
@@ -489,7 +489,7 @@ export class StpaValidator {
         for (const node of allElements) {
             if (node) {
                 for (const ref of node.refs) {
-                    if (ref.ref) {
+                    if (ref?.ref) {
                         refs.add(ref.ref?.name);
                     }
                 }
