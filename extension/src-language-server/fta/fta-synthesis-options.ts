@@ -21,6 +21,8 @@ import { SynthesisOptions } from "../synthesis-options";
 const cutSetsID = "cutSets";
 
 export const noCutSet = { displayName: "---", id: "---" };
+/* Single Point of Failure */
+export const spofsSet = { displayName: "SPoFs", id: "SPoFs" };
 
 const cutSets: ValuedSynthesisOption = {
     synthesisOption: {
@@ -31,12 +33,13 @@ const cutSets: ValuedSynthesisOption = {
         availableValues: [noCutSet],
         initialValue: noCutSet.id,
         currentValue: noCutSet.id,
-        values: [],
+        values: [noCutSet],
     } as DropDownOption,
     currentValue: noCutSet.id,
 };
 
 export class FtaSynthesisOptions extends SynthesisOptions {
+    protected spofs: string[];
     constructor() {
         super();
         this.options = [cutSets];
@@ -49,7 +52,8 @@ export class FtaSynthesisOptions extends SynthesisOptions {
     updateCutSetsOption(values: { displayName: string; id: string }[]): void {
         const option = this.getOption(cutSetsID);
         if (option) {
-            (option.synthesisOption as DropDownOption).availableValues = [noCutSet, ...values];
+            (option.synthesisOption as DropDownOption).availableValues = [noCutSet, spofsSet, ...values];
+            (option.synthesisOption as DropDownOption).values = [noCutSet, spofsSet, ...values];
             // if the last selected cut set is not available anymore, set the option to no cut set
             if (!values.find((val) => val.id === (option.synthesisOption as DropDownOption).currentId)) {
                 (option.synthesisOption as DropDownOption).currentId = noCutSet.id;
@@ -71,5 +75,13 @@ export class FtaSynthesisOptions extends SynthesisOptions {
 
     getCutSet(): string {
         return this.getOption(cutSetsID)?.currentValue;
+    }
+
+    setSpofs(spofs: string[]): void {
+        this.spofs = spofs;
+    }
+
+    getSpofs(): string[] {
+        return this.spofs;
     }
 }

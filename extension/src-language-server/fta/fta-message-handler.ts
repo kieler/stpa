@@ -73,6 +73,15 @@ async function cutSetsRequested(
     const model = (await getModel(uri, sharedServices)) as ModelFTA;
     const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
     const cutSets = minimal ? determineMinimalCutSets(nodes) : determineCutSetsForFT(nodes);
+    // determine single points of failure
+    const spofs: string[] = [];
+    for (const cutSet of cutSets) {
+        if (cutSet.size === 1) {
+            spofs.push([...cutSet][0].name);
+        }
+    }
+    ftaServices.options.SynthesisOptions.setSpofs(spofs);
+    // create dropdown values
     const cutSetsString = cutSetsToString(cutSets);
     const dropdownValues = cutSetsString.map((cutSet) => {
         return { displayName: cutSet, id: cutSet };

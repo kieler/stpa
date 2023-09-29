@@ -20,7 +20,7 @@ import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-spro
 import { SLabel, SModelElement, SModelRoot } from "sprotty-protocol";
 import { ModelFTA, isComponent, isCondition, isKNGate } from "../../generated/ast";
 import { FtaServices } from "../fta-module";
-import { FtaSynthesisOptions, noCutSet } from "../fta-synthesis-options";
+import { FtaSynthesisOptions, noCutSet, spofsSet } from "../fta-synthesis-options";
 import { namedFtaElement } from "../utils";
 import { FTAEdge, FTANode } from "./fta-interfaces";
 import { FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "./fta-model";
@@ -121,8 +121,14 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         const children: SModelElement[] = this.createNodeLabel(node.name, nodeId, idCache);
         const description = isComponent(node) || isCondition(node) ? node.description : "";
         const set = this.options.getCutSet();
-        const includedInCutSet = set !== noCutSet.id ? set.includes(node.name) : false;
-        const notConnected = set !== noCutSet.id ? !includedInCutSet : false;
+        let includedInCutSet = set !== noCutSet.id ? set.includes(node.name) : false;
+        let notConnected = set !== noCutSet.id ? !includedInCutSet : false;
+        // single points of failure should be shown
+        if (set === spofsSet.id) {
+            const spofs = this.options.getSpofs();
+            includedInCutSet = spofs.includes(node.name);
+            notConnected = false;
+        } 
 
         const ftNode = {
             type: FTA_NODE_TYPE,
