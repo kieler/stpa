@@ -27,13 +27,17 @@ import {
 } from "sprotty-elk/lib/elk-layout";
 import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator";
 import { FtaLayoutConfigurator } from "./diagram/fta-layout-config";
-import { FtaValidationRegistry, FtaValidator } from "./fta-validator";
+import { FtaScopeProvider } from "./fta-scopeProvider";
 import { FtaSynthesisOptions } from "./fta-synthesis-options";
+import { FtaValidationRegistry, FtaValidator } from "./fta-validator";
 
 /**
  * Declaration of custom services.
  */
 export type FtaAddedServices = {
+    references: {
+        FtaScopeProvider: FtaScopeProvider;
+    };
     validation: {
         FtaValidator: FtaValidator;
     };
@@ -67,6 +71,10 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
                 services.layout.ElementFilter,
                 services.layout.LayoutConfigurator
             ) as any,
+    },
+    references: {
+        ScopeProvider: (services) => new FtaScopeProvider(services),
+        FtaScopeProvider: (services) => new FtaScopeProvider(services),
     },
     validation: {
         ValidationRegistry: (services) => new FtaValidationRegistry(services),
