@@ -24,11 +24,16 @@ import { SNode, svg } from 'sprotty';
  * @param node The node that should be represented by a circle.
  * @returns A circle for {@code node}.
  */
-export function renderCircle(node: SNode): VNode {
-    return <circle
+export function renderOval(node: SNode): VNode {
+    const nodeWidth = node.size.width < node.size.height ? node.size.height : node.size.width;
+    return <ellipse cx={Math.max(node.size.width, 0) / 2.0}
+        cy={Math.max(node.size.height, 0) / 2.0}
+        rx={Math.max(nodeWidth, 0) / 2.0}
+        ry={Math.max(node.size.height, 0) / 2.0} />;
+    /* return <circle
         r={Math.max(node.size.width, 0) / 2.0}
         cx={Math.max(node.size.width, 0) / 2.0} cy={Math.max(node.size.height, 0) / 2.0}
-    />;
+    />; */
 }
 
 /**
@@ -177,12 +182,15 @@ export function renderHexagon(node: SNode): VNode {
  */
 export function renderAndGate(node: SNode): VNode {
     const leftX = 0;
+    const midX = Math.max(node.size.width, 0) / 2.0;
     const rightX = Math.max(node.size.width, 0);
     const botY = Math.max(node.size.height, 0);
     const midY = Math.max(node.size.height, 0) / 2.0;
     const topY = 0;
-    const d = 'M' + leftX + " " + botY + " L " + leftX + " " + midY + " C " + leftX + " " + topY + " " + rightX + " "
-        + topY + " " + rightX + " " + midY + " L " + rightX + " " + botY + 'Z';
+
+    const d = `M ${leftX}, ${midY} V ${botY} H ${rightX} V ${midY} C ${rightX}, ${midY} ${rightX}, ${topY} ${midX}, ${topY} ${leftX}, ${topY} ${leftX}, ${midY} ${leftX}, ${midY} Z`;
+    // 'M' + leftX + " " + midY + " V " + botY + " H " + rightX + " V " + midY + " C " + rightX + " " + midY + " " + rightX + " "
+    // + topY + " " + midX + " " + topY + " " + leftX + " " + topY + " " + leftX + " " + midY + " " + leftX + " " + midY + 'Z';
 
     return <path
         d={d}
@@ -199,11 +207,11 @@ export function renderOrGate(node: SNode): VNode {
     const rightX = Math.max(node.size.width, 0);
     const midX = rightX / 2.0;
     const botY = Math.max(node.size.height, 0);
-    const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0);
+    const nearBotY = botY - 5;
     const midY = Math.max(node.size.height, 0) / 2;
     const topY = 0;
-    const d = 'M' + leftX + " " + botY + " L " + leftX + " " + midY + " C " + midX + " " + topY + " " + midX + " "
-        + topY + " " + rightX + " " + midY + " L " + rightX + " " + botY + " L " + midX + " " + nearBotY + " Z ";
+    const d = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
+    + `V ${midY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${leftX},${midY} Z`;
 
     return <path
         d={d}
@@ -223,8 +231,8 @@ export function renderKnGate(node: SNode, k: number, n: number): VNode {
     const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0);
     const midY = Math.max(node.size.height, 0) / 2;
     const topY = 0;
-    const d = 'M' + leftX + " " + botY + " L " + leftX + " " + midY + " C " + midX + " " + topY + " " + midX + " "
-        + topY + " " + rightX + " " + midY + " L " + rightX + " " + botY + " L " + midX + " " + nearBotY + " Z ";
+    const d = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
+    + `V ${midY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${leftX},${midY} Z`;
 
     return (
         <g>

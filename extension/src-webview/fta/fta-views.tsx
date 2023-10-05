@@ -19,7 +19,7 @@
 import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
 import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SGraph, SGraphView, svg } from 'sprotty';
-import { renderAndGate, renderCircle, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "../views-rendering";
+import { renderAndGate, renderOval, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "../views-rendering";
 import { FTAEdge, FTANode, FTNodeType } from './fta-model';
 
 @injectable()
@@ -49,10 +49,10 @@ export class FTANodeView extends RectangularNodeView {
                 element = renderRectangle(node);
                 break;
             case (FTNodeType.COMPONENT || FTNodeType.CONDITION):
-                element = renderCircle(node);
+                element = renderOval(node);
                 break;
             case FTNodeType.CONDITION:
-                element = renderCircle(node);
+                element = renderOval(node);
                 break;
             case FTNodeType.AND:
                 element = renderAndGate(node);

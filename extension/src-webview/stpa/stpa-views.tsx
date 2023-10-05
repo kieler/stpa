@@ -21,7 +21,7 @@ import { VNode } from 'snabbdom';
 import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SNode, SPort, svg, toDegrees } from 'sprotty';
 import { DISymbol } from '../di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
-import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { renderOval, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { CSEdge, CS_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
@@ -144,7 +144,7 @@ export class STPANodeView extends RectangularNodeView {
                     element = renderPentagon(node);
                     break;
                 case STPAAspect.UCA:
-                    element = renderCircle(node);
+                    element = renderOval(node);
                     break;
                 case STPAAspect.CONTROLLERCONSTRAINT:
                     element = renderMirroredTriangle(node);
