@@ -89,7 +89,6 @@ export class RenderOptionsRegistry extends Registry {
     handle(action: Action): void | Action | ICommand {
         if (SetRenderOptionAction.isThisAction(action)) {
             const option = this._renderOptions.get(action.id);
-            
             if (!option) {return;}
             option.currentValue = action.value;
             const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };

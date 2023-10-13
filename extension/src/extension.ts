@@ -31,6 +31,13 @@ import { createOutputChannel, createQuickPickForWorkspaceOptions } from './utils
 
 let languageClient: LanguageClient;
 
+/**
+ * All file endings of the languages that are supported by pasta.
+ * The file ending should also be the language id, since it is also used to
+ * register document selectors in the language client.
+ */
+const supportedFileEndings = ['stpa', 'fta'];
+
 export function activate(context: vscode.ExtensionContext): void {
     vscode.window.showInformationMessage('Activating STPA extension');
 
@@ -40,6 +47,8 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     languageClient = createLanguageClient(context);
+    // Create context key of supported languages
+    vscode.commands.executeCommand('setContext', 'pasta.languages', supportedFileEndings);
 
     if (diagramMode === 'panel') {
         // Set up webview panel manager for freestyle webviews
@@ -53,6 +62,7 @@ export function activate(context: vscode.ExtensionContext): void {
         registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
         registerTextEditorSync(webviewPanelManager, context);
         registerSTPACommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
+        registerFTACommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
     }
 
     if (diagramMode === 'editor') {
@@ -186,7 +196,9 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
             return formulas;
         })
     );
+}
 
+function registerFTACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string; }): void {
     // commands for computing and displaying the (minimal) cut sets of the fault tree.
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".fta.cutSets", async (uri: vscode.Uri) => {
@@ -228,8 +240,10 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ scheme: 'file', language: 'stpa' },
-        { scheme: 'file', language: 'fta' }],
+        documentSelector: supportedFileEndings.map((ending) => ({
+            scheme: 'file',
+            language: ending,
+        })),
         synchronize: {
             // Notify the server about file changes to files contained in the workspace
             fileEvents: fileSystemWatcher

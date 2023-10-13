@@ -30,10 +30,6 @@ export function renderOval(node: SNode): VNode {
         cy={Math.max(node.size.height, 0) / 2.0}
         rx={Math.max(nodeWidth, 0) / 2.0}
         ry={Math.max(node.size.height, 0) / 2.0} />;
-    /* return <circle
-        r={Math.max(node.size.width, 0) / 2.0}
-        cx={Math.max(node.size.width, 0) / 2.0} cy={Math.max(node.size.height, 0) / 2.0}
-    />; */
 }
 
 /**
@@ -73,9 +69,9 @@ export function renderTriangle(node: SNode): VNode {
     const rightX = Math.max(node.size.width, 0);
     const botY = Math.max(node.size.height, 0);
     const topY = 0;
-    const d = 'M' + leftX + " " + botY + " L " + midX + " " + topY + " L " + rightX + " " + botY + 'Z';
+    const path = 'M' + leftX + " " + botY + " L " + midX + " " + topY + " L " + rightX + " " + botY + 'Z';
     return <path
-        d={d}
+        d={path}
     />;
 }
 
@@ -90,9 +86,9 @@ export function renderMirroredTriangle(node: SNode): VNode {
     const rightX = Math.max(node.size.width, 0);
     const botY = Math.max(node.size.height, 0);
     const topY = 0;
-    const d = 'M' + leftX + " " + topY + " L " + midX + " " + botY + " L " + rightX + " " + topY + 'Z';
+    const path = 'M' + leftX + " " + topY + " L " + midX + " " + botY + " L " + rightX + " " + topY + 'Z';
     return <path
-        d={d}
+        d={path}
     />;
 }
 
@@ -108,10 +104,10 @@ export function renderTrapez(node: SNode): VNode {
     const rightX = Math.max(node.size.width, 0);
     const botY = Math.max(node.size.height, 0);
     const topY = 0;
-    const d = 'M' + leftX + " " + botY + " L " + midX1 + " " + topY + " L " + midX2 + " " + topY
+    const path = 'M' + leftX + " " + botY + " L " + midX1 + " " + topY + " L " + midX2 + " " + topY
         + " L " + rightX + " " + botY + 'Z';
     return <path
-        d={d}
+        d={path}
     />;
 }
 
@@ -127,10 +123,10 @@ export function renderDiamond(node: SNode): VNode {
     const topY = 0;
     const midY = Math.max(node.size.height, 0) / 2.0;
     const botY = Math.max(node.size.height, 0);
-    const d = 'M' + leftX + " " + midY + " L " + midX + " " + topY + " L " + rightX + " " + midY
+    const path = 'M' + leftX + " " + midY + " L " + midX + " " + topY + " L " + rightX + " " + midY
         + " L " + midX + " " + botY + 'Z';
     return <path
-        d={d}
+        d={path}
     />;
 }
 
@@ -148,10 +144,10 @@ export function renderPentagon(node: SNode): VNode {
     const topY = 0;
     const midY = Math.max(node.size.height, 0) / 3.0;
     const botY = Math.max(node.size.height, 0);
-    const d = 'M' + startX + " " + botY + " L " + leftX + " " + midY + " L " + midX + " " + topY
+    const path = 'M' + startX + " " + botY + " L " + leftX + " " + midY + " L " + midX + " " + topY
         + " L " + rightX + " " + midY + " L " + endX + " " + botY + 'Z';
     return <path
-        d={d}
+        d={path}
     />;
 }
 
@@ -168,10 +164,10 @@ export function renderHexagon(node: SNode): VNode {
     const topY = 0;
     const midY = Math.max(node.size.height, 0) / 2.0;
     const botY = Math.max(node.size.height, 0);
-    const d = 'M' + leftX + " " + midY + " L " + midX1 + " " + botY + " L " + midX2 + " " + botY
+    const path = 'M' + leftX + " " + midY + " L " + midX1 + " " + botY + " L " + midX2 + " " + botY
         + " L " + rightX + " " + midY + " L " + midX2 + " " + topY + " L " + midX1 + " " + topY + 'Z';
     return <path
-        d={d}
+        d={path}
     />;
 }
 
@@ -188,12 +184,10 @@ export function renderAndGate(node: SNode): VNode {
     const midY = Math.max(node.size.height, 0) / 2.0;
     const topY = 0;
 
-    const d = `M ${leftX}, ${midY} V ${botY} H ${rightX} V ${midY} C ${rightX}, ${midY} ${rightX}, ${topY} ${midX}, ${topY} ${leftX}, ${topY} ${leftX}, ${midY} ${leftX}, ${midY} Z`;
-    // 'M' + leftX + " " + midY + " V " + botY + " H " + rightX + " V " + midY + " C " + rightX + " " + midY + " " + rightX + " "
-    // + topY + " " + midX + " " + topY + " " + leftX + " " + topY + " " + leftX + " " + midY + " " + leftX + " " + midY + 'Z';
+    const path = `M ${leftX}, ${midY} V ${botY} H ${rightX} V ${midY} C ${rightX}, ${midY} ${rightX}, ${topY} ${midX}, ${topY} ${leftX}, ${topY} ${leftX}, ${midY} ${leftX}, ${midY} Z`;
 
     return <path
-        d={d}
+        d={path}
     />;
 }
 
@@ -210,11 +204,11 @@ export function renderOrGate(node: SNode): VNode {
     const nearBotY = botY - 5;
     const midY = Math.max(node.size.height, 0) / 2;
     const topY = 0;
-    const d = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
+    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
     + `V ${midY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${leftX},${midY} Z`;
 
     return <path
-        d={d}
+        d={path}
     />;
 }
 
@@ -231,13 +225,13 @@ export function renderKnGate(node: SNode, k: number, n: number): VNode {
     const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0);
     const midY = Math.max(node.size.height, 0) / 2;
     const topY = 0;
-    const d = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
+    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
     + `V ${midY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${leftX},${midY} Z`;
 
     return (
         <g>
-            <path d={d} />
-            <text x={midX - 7.0} y={botY - 5} text-anchor="middle" class-fta-text={true}>
+            <path d={path} />
+            <text x={midX - 7.0} y={botY - 4.5} text-anchor="middle" class-fta-text={true}>
                 {`${k}/${n}`}
             </text>
         </g>
@@ -258,10 +252,9 @@ export function renderInhibitGate(node: SNode): VNode {
     const highY = Math.max(node.size.height, 0) / 4.0;
     const highestY = 0;
 
-    const d = 'M' + leftX + " " + lowY + " L " + leftX + " " + highY + " L " + midX + " " + highestY + " L " + rightX
-        + " " + highY + " L " + rightX + " " + lowY + " L " + midX + " " + lowestY + "Z";
+    const path = `M${leftX},${lowY} L ${leftX} ${highY} L ${midX} ${highestY} L ${rightX} ${highY} L ${rightX} ${lowY} L ${midX} ${lowestY} Z`;
 
     return <path
-        d={d}
+        d={path}
     />;
 }

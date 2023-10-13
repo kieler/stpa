@@ -313,7 +313,7 @@
             "editor/title": [
                 {
                     "command": "pasta.diagram.open",
-                    "when": "editorLangId == 'stpa' || editorLangId == 'fta'",
+                    "when": "editorLangId in pasta.languages",
                     "group": "navigation"
                 },
                 {

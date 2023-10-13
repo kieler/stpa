@@ -38,8 +38,8 @@
 }
 
 .fta-text{
-    fill: var(--fta-kn-dark);
-    stroke-width: 0.5;
+    fill: dimgrey;
+    stroke-width: 0;
     font-size: 10px;
 }
 
