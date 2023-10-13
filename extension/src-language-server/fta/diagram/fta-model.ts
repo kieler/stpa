@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,17 +15,21 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { inject, postConstruct } from "inversify";
-import { ModelViewer } from "sprotty";
-import { DISymbol } from "./di.symbols";
+/* fault tree element types */
+export const FTA_NODE_TYPE = "node:fta";
+export const FTA_EDGE_TYPE = "edge:fta";
+export const FTA_GRAPH_TYPE = "graph:fta";
 
-export class PastaModelViewer extends ModelViewer {
-    // @ts-ignore
-    @inject(DISymbol.Sidebar) private sidebar: unknown;
-
-    @postConstruct()
-    init(): void {
-
-    }
-
+/**
+ * Types of fault tree nodes.
+ */
+export enum FTNodeType {
+    TOPEVENT,
+    COMPONENT,
+    CONDITION,
+    AND,
+    OR,
+    KN,
+    INHIBIT,
+    UNDEFINED,
 }

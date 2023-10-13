@@ -71,14 +71,14 @@ export async function generateLTLFormulae(
     shared: LangiumSprottySharedServices
 ): Promise<Record<string, LTLFormula[]>> {
     // get the current model
-    let model = await getModel(uri, shared);
+    let model = await getModel(uri, shared) as Model;
 
     // references are not found if the stpa file has not been opened since then the linter has not been activated yet
     if (model.rules.length > 0 && model.rules[0]?.contexts[0]?.vars[0]?.ref === undefined) {
         // build document
         await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
         // update the model
-        model = await getModel(uri, shared);
+        model = await getModel(uri, shared)  as Model;
     }
     // ltl formulas are saved per controller
     const map: Record<string, LTLFormula[]> = {};

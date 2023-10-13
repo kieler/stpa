@@ -22,7 +22,6 @@ import { SendConfigAction } from "./actions";
 
 export class StpaLspWebview extends LspWebviewEndpoint {
     receiveAction(message: any): Promise<void> {
-        // TODO: for multiple language support here the current language muste be determined
         if (isActionMessage(message)) {
             switch (message.action.kind) {
                 case "optionRegistryReadyMessage":

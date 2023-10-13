@@ -113,7 +113,10 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         // send the changes to the language server
         const changes = changeEvent.contentChanges;
         const uri = changeEvent.document.uri.toString();
-        this.languageClient.sendNotification("editor/textChange", { changes: changes, uri: uri });
+        // TODO: ID enforcer for FTA
+        if (uri.endsWith(".stpa")) {
+            this.languageClient.sendNotification("editor/textChange", { changes: changes, uri: uri });
+        }
     }
 
     createContextTable(context: vscode.ExtensionContext): void {

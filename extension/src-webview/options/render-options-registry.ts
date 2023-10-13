@@ -89,9 +89,7 @@ export class RenderOptionsRegistry extends Registry {
     handle(action: Action): void | Action | ICommand {
         if (SetRenderOptionAction.isThisAction(action)) {
             const option = this._renderOptions.get(action.id);
-
             if (!option) {return;}
-
             option.currentValue = action.value;
             const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
             this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: "", action: sendAction});
@@ -110,7 +108,7 @@ export class RenderOptionsRegistry extends Registry {
                 option.currentValue = element.value;
             });
             this.notifyListeners();
-        }
+        } 
         return UpdateModelAction.create([], { animate: false, cause: action });
     }
 

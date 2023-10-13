@@ -80,7 +80,6 @@ export async function createSTPAResultMarkdownFile(data: StpaResult, extension: 
  * @returns markdown text for the given {@code data}
  */
 function createSTPAResultMarkdownText(data: StpaResult, diagramSizes: Record<string, number>): string {
-    // TODO: consider context table
     let markdown = `# STPA Report for ${data.title}\n\n`;
     // table of contents
     markdown += createTOC();

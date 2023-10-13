@@ -40,7 +40,9 @@ import {
 import { SvgCommand } from "./actions";
 import { SvgPostprocessor } from "./exportPostProcessor";
 import { CustomSvgExporter } from "./exporter";
-import { StpaModelViewer } from "./model-viewer";
+import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "./fta/fta-model";
+import { FTAGraphView, FTANodeView, PolylineArrowEdgeViewFTA } from "./fta/fta-views";
+import { PastaModelViewer } from "./model-viewer";
 import { optionsModule } from "./options/options-module";
 import { sidebarModule } from "./sidebar";
 import {
@@ -57,8 +59,8 @@ import {
     STPA_INTERMEDIATE_EDGE_TYPE,
     STPA_NODE_TYPE,
     STPA_PORT_TYPE,
-} from "./stpa-model";
-import { StpaMouseListener } from "./stpa-mouselistener";
+} from "./stpa/stpa-model";
+import { StpaMouseListener } from "./stpa/stpa-mouselistener";
 import {
     CSNodeView,
     IntermediateEdgeView,
@@ -66,9 +68,9 @@ import {
     PortView,
     STPAGraphView,
     STPANodeView,
-} from "./views";
+} from "./stpa/stpa-views";
 
-const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
+const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
     rebind(TYPES.LogLevel).toConstantValue(LogLevel.warn);
     rebind(TYPES.CommandStackOptions).toConstantValue({
@@ -77,7 +79,7 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
         undoHistoryLimit: 50,
     });
     bind(TYPES.MouseListener).to(StpaMouseListener).inSingletonScope();
-    rebind(ModelViewer).to(StpaModelViewer).inSingletonScope();
+    rebind(ModelViewer).to(PastaModelViewer).inSingletonScope();
     rebind(TYPES.SvgExporter).to(CustomSvgExporter).inSingletonScope();
     bind(SvgPostprocessor).toSelf().inSingletonScope();
     bind(TYPES.HiddenVNodePostprocessor).toService(SvgPostprocessor);
@@ -85,25 +87,32 @@ const stpaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =>
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
+    configureModelElement(context, "label", SLabel, SLabelView);
+    configureModelElement(context, "label:xref", SLabel, SLabelView);
+    configureModelElement(context, "html", HtmlRoot, HtmlRootView);
+    configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
+
+    // STPA
     configureModelElement(context, "graph", SGraph, STPAGraphView);
     configureModelElement(context, DUMMY_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
     configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
-    configureModelElement(context, "label", SLabel, SLabelView);
-    configureModelElement(context, "label:xref", SLabel, SLabelView);
     configureModelElement(context, STPA_EDGE_TYPE, STPAEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);
-    configureModelElement(context, "html", HtmlRoot, HtmlRootView);
-    configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
+
+    // FTA
+    configureModelElement(context, FTA_EDGE_TYPE, FTAEdge, PolylineArrowEdgeViewFTA);
+    configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
+    configureModelElement(context, FTA_GRAPH_TYPE, SGraph, FTAGraphView);
 });
 
-export function createSTPADiagramContainer(widgetId: string): Container {
+export function createPastaDiagramContainer(widgetId: string): Container {
     const container = new Container();
     loadDefaultModules(container);
-    container.load(stpaDiagramModule, sidebarModule, optionsModule);
+    container.load(pastaDiagramModule, sidebarModule, optionsModule);
     overrideViewerOptions(container, {
         needsClientLayout: true,
         needsServerLayout: true,

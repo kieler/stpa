@@ -66,7 +66,7 @@ export class ContextTableProvider {
      */
     async getData(uri: URI): Promise<ContextTableData> {
         // get the current model
-        const model = await getModel(uri, this.services.shared);
+        const model = await getModel(uri, this.services.shared) as Model;
 
         const actions: ContextTableControlAction[] = [];
         const variables: ContextTableSystemVariables[] = [];

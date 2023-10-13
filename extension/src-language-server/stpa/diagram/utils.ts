@@ -31,7 +31,7 @@ import {
 } from "../../generated/ast";
 import { STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
-import { groupValue } from "./synthesis-options";
+import { groupValue } from "./stpa-synthesis-options";
 
 /**
  * Getter for the references contained in {@code node}.

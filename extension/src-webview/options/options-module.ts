@@ -18,13 +18,12 @@
 import { ContainerModule } from "inversify";
 import { configureActionHandler, TYPES } from "sprotty";
 import { DISymbol } from "../di.symbols";
-import { SetRenderOptionAction, ResetRenderOptionsAction, SendConfigAction } from "./actions";
-import { OptionsRenderer } from "./options-renderer";
+import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { GeneralPanel } from "./general-panel";
-import { RenderOptionsRegistry } from "./render-options-registry";
-import { OptionsRegistry } from "./options-registry";
 import { OptionsPanel } from "./options-panel";
-// import { VsCodeApi } from "sprotty-vscode-webview/lib/services";
+import { OptionsRegistry } from "./options-registry";
+import { OptionsRenderer } from "./options-renderer";
+import { RenderOptionsRegistry } from "./render-options-registry";
 
 /** Module that configures option related panels and registries. */
 export const optionsModule = new ContainerModule((bind, _, isBound) => {
@@ -33,8 +32,6 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
 
     bind(OptionsPanel).toSelf().inSingletonScope();
     bind(DISymbol.SidebarPanel).toService(OptionsPanel);
-
-    // bind(VsCodeApi);
 
     bind(DISymbol.OptionsRenderer).to(OptionsRenderer);
     bind(DISymbol.OptionsRegistry).to(OptionsRegistry).inSingletonScope();

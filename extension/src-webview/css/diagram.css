@@ -1,89 +1,10 @@
 @import "./options.css";
 @import "./sidebar.css";
 @import "./theme.css";
+@import "./stpa-diagram.css";
+@import "./fta-diagram.css";
 
-.vscode-high-contrast .stpa-node[aspect="0"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="0"] {
-    fill: #AD0000;
-}
-
-.vscode-high-contrast .stpa-node[aspect="1"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="1"] {
-    fill: #A85400;
-}
-
-.vscode-high-contrast .stpa-node[aspect="2"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="2"] {
-    fill: #006600;
-}
-
-.vscode-high-contrast .stpa-node[aspect="3"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="3"] {
-    fill: purple;
-}
-
-.vscode-high-contrast .stpa-node[aspect="4"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="4"] {
-    fill: #0054A8;
-}
-
-.vscode-high-contrast .stpa-node[aspect="5"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="5"] {
-    fill: #006161;
-}
-
-.vscode-high-contrast .stpa-node[aspect="6"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="6"] {
-    fill: #616100;
-}
-
-.vscode-high-contrast .stpa-node[aspect="7"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="7"] {
-    fill: #2f4f4f;
-}
-
-
-.vscode-high-contrast .stpa-edge[aspect="0"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="0"] {
-    stroke: #AD0000;
-}
-
-.vscode-high-contrast .stpa-edge[aspect="1"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="1"] {
-    stroke: #A85400;
-}
-
-.vscode-high-contrast .stpa-edge[aspect="2"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="2"] {
-    stroke: #006600;
-}
-
-.vscode-high-contrast .stpa-edge[aspect="3"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="3"] {
-    stroke: purple;
-}
-
-.vscode-high-contrast .stpa-edge[aspect="4"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="4"] {
-    stroke: #0054A8;
-}
-
-.vscode-high-contrast .stpa-edge[aspect="5"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="5"] {
-    stroke: #006161;
-}
-
-.vscode-high-contrast .stpa-edge[aspect="6"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="6"] {
-    stroke: #616100;
-}
-
-.vscode-high-contrast .stpa-edge[aspect="7"],
-.vscode-high-contrast .stpa-edge-arrow[aspect="7"] {
-    stroke: #2f4f4f;
-}
-
-
+/* sprotty and black/white colors */
 .vscode-high-contrast .print-node {
     fill: black;
     stroke: white;
@@ -94,134 +15,8 @@
     stroke: black;
 }
 
-
-
-
-.vscode-dark .stpa-node[aspect="0"] {
-    fill: var(--stpa-dark-node);
-    stroke: var(--stpa-loss-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .stpa-node[aspect="1"] {
-    fill: var(--stpa-dark-node);
-    stroke: var(--stpa-hazard-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .stpa-node[aspect="2"] {
-    fill: var(--stpa-dark-node);
-    stroke: var(--stpa-sys-constraint-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .stpa-node[aspect="3"] {
-    fill: var(--stpa-dark-node);
-    stroke: var(--stpa-responsibility-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .stpa-node[aspect="4"] {
-    fill: var(--stpa-dark-node);
-    stroke: var(--stpa-uca-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .stpa-node[aspect="5"] {
-    fill: var(--stpa-dark-node);
-    stroke: var(--stpa-cont-constraint-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .stpa-node[aspect="6"] {
-    fill: var(--stpa-dark-node);
-    stroke: var(--stpa-scenario-dark);
-    stroke-width: 2;
-}
-
-.vscode-dark .stpa-node[aspect="7"] {
-    fill: var(--stpa-dark-node);
-    stroke: var(--stpa-safety-requirement-dark);
-    stroke-width: 2;
-}
-
-
-.vscode-dark .stpa-edge-arrow[aspect="0"] {
-    fill: var(--stpa-loss-dark);
-}
-
-.vscode-dark .stpa-edge-arrow[aspect="1"] {
-    fill: var(--stpa-hazard-dark);
-}
-
-.vscode-dark .stpa-edge-arrow[aspect="2"] {
-    fill: var(--stpa-sys-constraint-dark);
-}
-
-.vscode-dark .stpa-edge-arrow[aspect="3"] {
-    fill: var(--stpa-responsibility-dark);
-}
-
-.vscode-dark .stpa-edge-arrow[aspect="4"] {
-    fill: var(--stpa-uca-dark);
-}
-
-.vscode-dark .stpa-edge-arrow[aspect="5"] {
-    fill: var(--stpa-cont-constraint-dark);
-}
-
-.vscode-dark .stpa-edge-arrow[aspect="6"] {
-    fill: var(--stpa-scenario-dark);
-}
-
-.vscode-dark .stpa-edge-arrow[aspect="7"] {
-    fill: var(--stpa-safety-requirement-dark);
-}
-
-
-.vscode-dark .stpa-edge[aspect="0"],
-.vscode-dark .stpa-edge-arrow[aspect="0"] {
-    stroke: var(--stpa-loss-dark);
-}
-
-.vscode-dark .stpa-edge[aspect="1"],
-.vscode-dark .stpa-edge-arrow[aspect="1"] {
-    stroke: var(--stpa-hazard-dark);
-}
-
-.vscode-dark .stpa-edge[aspect="2"],
-.vscode-dark .stpa-edge-arrow[aspect="2"] {
-    stroke: var(--stpa-sys-constraint-dark);
-}
-
-.vscode-dark .stpa-edge[aspect="3"],
-.vscode-dark .stpa-edge-arrow[aspect="3"] {
-    stroke: var(--stpa-responsibility-dark);
-}
-
-.vscode-dark .stpa-edge[aspect="4"],
-.vscode-dark .stpa-edge-arrow[aspect="4"] {
-    stroke: var(--stpa-uca-dark);
-}
-
-.vscode-dark .stpa-edge[aspect="5"],
-.vscode-dark .stpa-edge-arrow[aspect="5"] {
-    stroke: var(--stpa-cont-constraint-dark);
-}
-
-.vscode-dark .stpa-edge[aspect="6"],
-.vscode-dark .stpa-edge-arrow[aspect="6"] {
-    stroke: var(--stpa-scenario-dark);
-}
-
-.vscode-dark .stpa-edge[aspect="7"],
-.vscode-dark .stpa-edge-arrow[aspect="7"] {
-    stroke: var(--stpa-safety-requirement-dark);
-}
-
-
 .vscode-dark .print-node {
-    fill: var(--stpa-dark-node);
+    fill: var(--dark-node);
     stroke: var(--vscode-editor-foreground);
 }
 
@@ -230,145 +25,14 @@
     stroke: black;
 }
 
-
-
-
-.vscode-light .stpa-node[aspect="0"] {
-    fill: var(--stpa-light-node);
-    stroke: var(--stpa-loss-light);
-    stroke-width: 2;
-}
-
-.vscode-light .stpa-node[aspect="1"] {
-    fill: var(--stpa-light-node);
-    stroke: var(--stpa-hazard-light);
-    stroke-width: 2;
-}
-
-.vscode-light .stpa-node[aspect="2"] {
-    fill: var(--stpa-light-node);
-    stroke: var(--stpa-sys-constraint-light);
-    stroke-width: 2;
-}
-
-.vscode-light .stpa-node[aspect="3"] {
-    fill: var(--stpa-light-node);
-    stroke: var(--stpa-responsibility-light);
-    stroke-width: 2;
-}
-
-.vscode-light .stpa-node[aspect="4"] {
-    fill: var(--stpa-light-node);
-    stroke: var(--stpa-uca-light);
-    stroke-width: 2;
-}
-
-.vscode-light .stpa-node[aspect="5"] {
-    fill: var(--stpa-light-node);
-    stroke: var(--stpa-cont-constraint-light);
-    stroke-width: 2;
-}
-
-.vscode-light .stpa-node[aspect="6"] {
-    fill: var(--stpa-light-node);
-    stroke: var(--stpa-scenario-light);
-    stroke-width: 2;
-}
-
-.vscode-light .stpa-node[aspect="7"] {
-    fill: var(--stpa-light-node);
-    stroke: var(--stpa-safety-requirement-light);
-    stroke-width: 2;
-}
-
-
-.vscode-light .stpa-edge-arrow[aspect="0"] {
-    fill: var(--stpa-loss-light);
-}
-
-.vscode-light .stpa-edge-arrow[aspect="1"] {
-    fill: var(--stpa-hazard-light);
-}
-
-.vscode-light .stpa-edge-arrow[aspect="2"] {
-    fill: var(--stpa-sys-constraint-light);
-}
-
-.vscode-light .stpa-edge-arrow[aspect="3"] {
-    fill: var(--stpa-responsibility-light);
-}
-
-.vscode-light .stpa-edge-arrow[aspect="4"] {
-    fill: var(--stpa-uca-light);
-}
-
-.vscode-light .stpa-edge-arrow[aspect="5"] {
-    fill: var(--stpa-cont-constraint-light);
-}
-
-.vscode-light .stpa-edge-arrow[aspect="6"] {
-    fill: var(--stpa-scenario-light);
-}
-
-.vscode-light .stpa-edge-arrow[aspect="7"] {
-    fill: var(--stpa-safety-requirement-light);
-}
-
-
-.vscode-light .stpa-edge[aspect="0"],
-.vscode-light .stpa-edge-arrow[aspect="0"] {
-    stroke: var(--stpa-loss-light);
-}
-
-.vscode-light .stpa-edge[aspect="1"],
-.vscode-light .stpa-edge-arrow[aspect="1"] {
-    stroke: var(--stpa-hazard-light);
-}
-
-.vscode-light .stpa-edge[aspect="2"],
-.vscode-light .stpa-edge-arrow[aspect="2"] {
-    stroke: var(--stpa-sys-constraint-light);
-}
-
-.vscode-light .stpa-edge[aspect="3"],
-.vscode-light .stpa-edge-arrow[aspect="3"] {
-    stroke: var(--stpa-responsibility-light);
-}
-
-.vscode-light .stpa-edge[aspect="4"],
-.vscode-light .stpa-edge-arrow[aspect="4"] {
-    stroke: var(--stpa-uca-light);
-}
-
-.vscode-light .stpa-edge[aspect="5"],
-.vscode-light .stpa-edge-arrow[aspect="5"] {
-    stroke: var(--stpa-cont-constraint-light);
-}
-
-.vscode-light .stpa-edge[aspect="6"],
-.vscode-light .stpa-edge-arrow[aspect="6"] {
-    stroke: var(--stpa-scenario-light);
-}
-
-.vscode-light .stpa-edge[aspect="7"],
-.vscode-light .stpa-edge-arrow[aspect="7"] {
-    stroke: var(--stpa-safety-requirement-light);
-}
-
-
 .vscode-light .print-node {
-    fill: var(--stpa-light-node);
+    fill: var(--light-node);
     stroke: black;
 }
 
 .vscode-light .sprotty-node {
     fill: #50b1f1;
     stroke: black;
-}
-
-
-.feedback-edge {
-    stroke-dasharray: 5, 5;
 }
 
 .print-edge {
@@ -380,20 +44,23 @@
     stroke: var(--vscode-editor-foreground);
 }
 
-
-.stpa-node {
-    stroke: black;
-}
-
+/* Selected node */
 .sprotty-node.selected {
     stroke-width: 2;
     stroke: var(--vscode-button-hover-background);
 }
 
-.hidden {
-    opacity: 0.4;
+.node-selected {
+    stroke-width: 5;
+    stroke: var(--vscode-button-hover-background);
 }
 
+/* greyed out element */
+.greyed-out {
+    opacity: 0.2;
+}
+
+/* label */
 body[class='vscode-light'] .sprotty-label {
     fill: black;
     stroke-width: 0;
@@ -409,6 +76,7 @@ body[class='vscode-light'] .sprotty-label {
     fill: var(--vscode-editorActiveLineNumber-foreground);
 }
 
+/* Sprotty edges */
 body[class='vscode-light'] .sprotty-edge .sprotty-label {
     fill: black
 }
@@ -463,10 +131,4 @@ body[class='vscode-light'] .sprotty-edge-arrow {
 .sprotty-hidden {
     width: 0px;
     height: 0px;
-}
-
-
-.node-selected {
-    stroke-width: 5;
-    stroke: var(--vscode-button-hover-background);
 }

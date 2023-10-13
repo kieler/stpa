@@ -23,13 +23,20 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 import { Messenger } from 'vscode-messenger';
 import { command } from './constants';
 import { StpaLspVscodeExtension } from './language-extension';
-import { createQuickPickForWorkspaceOptions } from './utils';
 import { createSTPAResultMarkdownFile } from './report/md-export';
-import { LTLFormula } from './sbm/utils';
-import { createSBMs } from './sbm/sbm-generation';
 import { StpaResult } from './report/utils';
+import { createSBMs } from './sbm/sbm-generation';
+import { LTLFormula } from './sbm/utils';
+import { createOutputChannel, createQuickPickForWorkspaceOptions } from './utils';
 
 let languageClient: LanguageClient;
+
+/**
+ * All file endings of the languages that are supported by pasta.
+ * The file ending should also be the language id, since it is also used to
+ * register document selectors in the language client.
+ */
+const supportedFileEndings = ['stpa', 'fta'];
 
 export function activate(context: vscode.ExtensionContext): void {
     vscode.window.showInformationMessage('Activating STPA extension');
@@ -40,20 +47,22 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     languageClient = createLanguageClient(context);
+    // Create context key of supported languages
+    vscode.commands.executeCommand('setContext', 'pasta.languages', supportedFileEndings);
 
     if (diagramMode === 'panel') {
         // Set up webview panel manager for freestyle webviews
         const webviewPanelManager = new StpaLspVscodeExtension({
             extensionUri: context.extensionUri,
-            defaultDiagramType: 'stpa',
             languageClient,
-            supportedFileExtensions: ['.stpa'],
+            supportedFileExtensions: ['.stpa', '.fta'],
             singleton: true,
             messenger: new Messenger({ ignoreHiddenViews: false })
-        }, 'stpa');
-        registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: 'stpa' });
+        }, 'pasta');
+        registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
         registerTextEditorSync(webviewPanelManager, context);
-        registerSTPACommands(webviewPanelManager, context, { extensionPrefix: 'stpa' });
+        registerSTPACommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
+        registerFTACommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
     }
 
     if (diagramMode === 'editor') {
@@ -100,42 +109,51 @@ export async function deactivate(): Promise<void> {
 
 function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string; }): void {
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.contextTable.open', async (...commandArgs: any[]) => {
-            manager.createContextTable(context);
-            await manager.contextTable.ready();
-            const uri = (commandArgs[0] as vscode.Uri).toString();
-            languageClient.sendNotification('contextTable/getData', uri);
-        })
+        vscode.commands.registerCommand(
+            options.extensionPrefix + ".contextTable.open",
+            async (...commandArgs: any[]) => {
+                manager.createContextTable(context);
+                await manager.contextTable.ready();
+                const uri = (commandArgs[0] as vscode.Uri).toString();
+                languageClient.sendNotification("contextTable/getData", uri);
+            }
+        )
     );
     // commands for toggling the provided validation checks
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.checks.setCheckResponsibilitiesForConstraints', async () => {
-            createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints");
-        })
+        vscode.commands.registerCommand(
+            options.extensionPrefix + ".stpa.checks.setCheckResponsibilitiesForConstraints",
+            async () => {
+                createQuickPickForWorkspaceOptions("checkResponsibilitiesForConstraints");
+            }
+        )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.checks.checkConstraintsForUCAs', async () => {
+        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.checks.checkConstraintsForUCAs", async () => {
             createQuickPickForWorkspaceOptions("checkConstraintsForUCAs");
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.checks.checkScenariosForUCAs', async () => {
+        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.checks.checkScenariosForUCAs", async () => {
             createQuickPickForWorkspaceOptions("checkScenariosForUCAs");
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.checks.checkSafetyRequirementsForUCAs', async () => {
-            createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
-        })
+        vscode.commands.registerCommand(
+            options.extensionPrefix + ".stpa.checks.checkSafetyRequirementsForUCAs",
+            async () => {
+                createQuickPickForWorkspaceOptions("checkSafetyRequirementsForUCAs");
+            }
+        )
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.IDs.undo', async () => {
+        vscode.commands.registerCommand(options.extensionPrefix + ".IDs.undo", async () => {
             manager.ignoreNextTextChange = true;
             vscode.commands.executeCommand("undo");
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.IDs.redo', async () => {
+        vscode.commands.registerCommand(options.extensionPrefix + ".IDs.redo", async () => {
             manager.ignoreNextTextChange = true;
             vscode.commands.executeCommand("redo");
         })
@@ -143,35 +161,65 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
 
     // command for creating a pdf
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.md.creation', async (uri: vscode.Uri) => {
-            const data: StpaResult = await languageClient.sendRequest('result/getData', uri.toString());
+        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.md.creation", async (uri: vscode.Uri) => {
+            const data: StpaResult = await languageClient.sendRequest("result/getData", uri.toString());
             await createSTPAResultMarkdownFile(data, manager);
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + '.SBM.generation', async (uri: vscode.Uri) => {
+        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.SBM.generation", async (uri: vscode.Uri) => {
             await manager.lsReady;
-            const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest('verification/generateLTL', uri.path);
+            const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest(
+                "verification/generateLTL",
+                uri.path
+            );
             // controlAction names are just the action without the controller as prefix
             // generate a safe behavioral model
-            const controlActions: Record<string, string[]> = await languageClient.sendRequest('verification/getControlActions', uri.path);
+            const controlActions: Record<string, string[]> = await languageClient.sendRequest(
+                "verification/getControlActions",
+                uri.path
+            );
             createSBMs(controlActions, formulas);
         })
     );
 
     // register commands that other extensions can use
-    context.subscriptions.push(vscode.commands.registerCommand(
-        command.getLTLFormula,
-        async (uri: string) => {
+    context.subscriptions.push(
+        vscode.commands.registerCommand(command.getLTLFormula, async (uri: string) => {
             // generate and send back the LTLs based on the STPA UCAs
             await manager.lsReady;
-            const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest('verification/generateLTL', uri);
+            const formulas: Record<string, LTLFormula[]> = await languageClient.sendRequest(
+                "verification/generateLTL",
+                uri
+            );
             return formulas;
-        }
-    ));
+        })
+    );
 }
 
+function registerFTACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string; }): void {
+    // commands for computing and displaying the (minimal) cut sets of the fault tree.
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + ".fta.cutSets", async (uri: vscode.Uri) => {
+            const cutSets: string[] = await languageClient.sendRequest("generate/getCutSets", uri.path);
+            await manager.openDiagram(uri);
+            handleCutSets(manager, cutSets, false);
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + ".fta.minimalCutSets", async (uri: vscode.Uri) => {
+            const minimalCutSets: string[] = await languageClient.sendRequest("generate/getMinimalCutSets", uri.path);
+            await manager.openDiagram(uri);
+            handleCutSets(manager, minimalCutSets, true);
+        })
+    );
+}
+
+function handleCutSets(manager: StpaLspVscodeExtension, cutSets: string[], minimal?: boolean): void {
+    // print cut sets to output channel
+    createOutputChannel(cutSets, "FTA Cut Sets", minimal);
+}
 
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {
     const serverModule = context.asAbsolutePath(path.join('pack', 'language-server'));
@@ -187,12 +235,15 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
         debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
     };
 
-    const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.stpa');
+    const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.{stpa,fta}');
     context.subscriptions.push(fileSystemWatcher);
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ scheme: 'file', language: 'stpa' }],
+        documentSelector: supportedFileEndings.map((ending) => ({
+            scheme: 'file',
+            language: ending,
+        })),
         synchronize: {
             // Notify the server about file changes to files contained in the workspace
             fileEvents: fileSystemWatcher

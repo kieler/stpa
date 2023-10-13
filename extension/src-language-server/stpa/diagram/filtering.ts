@@ -28,7 +28,7 @@ import {
     SafetyConstraint,
     SystemConstraint,
 } from "../../generated/ast";
-import { StpaSynthesisOptions } from "./synthesis-options";
+import { StpaSynthesisOptions } from "./stpa-synthesis-options";
 
 /**
  * Needed to work on a filtered model without changing the original model.
