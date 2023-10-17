@@ -158,6 +158,8 @@ export class ContextTable extends Table {
     protected updateActionSelector(): void {
         const selector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
         if (selector) {
+            // save previous index
+            const prevIndex = selector.selectedIndex;
             // translate control actions to strings and add them to the selector
             const actions = convertControlActionsToStrings(this.controlActions);
             replaceSelector(selector, actions, 0);
@@ -167,6 +169,10 @@ export class ContextTable extends Table {
 
             // add listener
             const htmlActionSelector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
+            // if the previous selected index still exist, set the new selector to the same index
+            if (prevIndex < htmlActionSelector.options.length) {
+                htmlActionSelector.selectedIndex = prevIndex;
+            }
             htmlActionSelector.addEventListener('change', () => {
                 this.updateControlActionSelection(htmlActionSelector.selectedIndex);
                 this.updateTable();
