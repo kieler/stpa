@@ -23,7 +23,7 @@ import { diagramSizes } from "../diagram-server";
 import { generateLTLFormulae } from "./modelChecking/model-checking";
 import { createResultData } from "./result-report/result-generator";
 import { StpaServices } from "./stpa-module";
-import { getControlActions } from "./utils";
+import { addUca, getControlActions } from "./utils";
 
 let lastUri: URI;
 
@@ -78,6 +78,13 @@ function addContextTableHandler(connection: Connection, stpaServices: StpaServic
             });
         } else {
             console.log("The selected UCA could not be found in the editor.");
+        }
+    });
+    // add a uca
+    connection.onNotification("contextTable/addUCA", ({action, context}) => {
+        const edits = addUca(action, context, lastUri, stpaServices);
+        if (edits.length !== 0) {
+            connection.sendNotification("editor/workspaceedit", { edits, uri: lastUri });
         }
     });
 }

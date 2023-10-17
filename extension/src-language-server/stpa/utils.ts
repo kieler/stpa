@@ -15,9 +15,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { LangiumSharedServices } from "langium";
+import { LangiumDocument, LangiumSharedServices } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { Range } from "vscode-languageserver";
+import { Range, TextEdit } from "vscode-languageserver";
 import {
     Command,
     Context,
@@ -37,6 +37,7 @@ import {
     Variable,
 } from "../generated/ast";
 import { getModel } from "../utils";
+import { StpaServices } from "./stpa-module";
 
 export type leafElement =
     | Loss
@@ -223,4 +224,45 @@ export function sameContext(context: Context, rule: Rule): Context | undefined {
         }
     }
     return undefined;
+}
+
+export function addUca(action: string, context: string, uri: string, services: StpaServices): TextEdit[] {
+    // TODO: replace with getModel function
+    const currentDocument = services.shared.workspace.LangiumDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
+    if (currentDocument.parseResult.lexerErrors.length !== 0 || currentDocument.parseResult.parserErrors.length !== 0) {
+        return [];
+    }
+    const model: Model = currentDocument.parseResult.value;
+    // TODO: needed?
+    const subtractOffset = 5;
+    const safetyConsOffset =
+        model.safetyCons.length !== 0 && model.safetyCons[0].$cstNode?.offset
+            ? model.safetyCons[0].$cstNode.offset - subtractOffset
+            : Number.MAX_VALUE;
+    const scenarioOffset =
+        model.scenarios.length !== 0 && model.scenarios[0].$cstNode?.offset
+            ? model.scenarios[0].$cstNode.offset - subtractOffset
+            : safetyConsOffset;
+    const ucaConstraintOffset =
+        model.controllerConstraints.length !== 0 && model.controllerConstraints[0].$cstNode?.offset
+            ? model.controllerConstraints[0].$cstNode.offset - subtractOffset
+            : scenarioOffset;
+    const ucaOffset =
+        model.rules.length !== 0 && model.rules[0].$cstNode?.offset
+            ? model.rules[0].$cstNode.offset - subtractOffset
+            : model.allUCAs.length !== 0 && model.allUCAs[0].$cstNode?.offset
+            ? model.allUCAs[0].$cstNode.offset - subtractOffset
+            : ucaConstraintOffset;
+
+    const text = 
+    `RL {
+        controlAction: ${action}
+        type: 
+        contexts: {
+            UCA [${context}] []
+        }
+    }`;
+    // TODO: check whether position is undefined
+    const edit = TextEdit.insert(model.rules[0].$cstNode?.range.end!, text);
+    return [edit];
 }

@@ -108,6 +108,7 @@ export async function deactivate(): Promise<void> {
 }
 
 function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string; }): void {
+    // commands for the context table
     context.subscriptions.push(
         vscode.commands.registerCommand(
             options.extensionPrefix + ".contextTable.open",
@@ -119,6 +120,12 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
             }
         )
     );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + ".contextTable.createUCA", async (cell: any) => {
+            languageClient.sendNotification("contextTable/addUCA", {action: cell.action, context: cell.variables});
+        })
+    );
+
     // commands for toggling the provided validation checks
     context.subscriptions.push(
         vscode.commands.registerCommand(
@@ -185,14 +192,6 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
     );
 
     // register commands that other extensions can use
-    context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + ".contextTable.createUCA", async (test: any) => {
-            // generate and send back the LTLs based on the STPA UCAs
-            console.log(test);
-        })
-    );
-
-    // register commands for the context table
     context.subscriptions.push(
         vscode.commands.registerCommand(command.getLTLFormula, async (uri: string) => {
             // generate and send back the LTLs based on the STPA UCAs

@@ -353,7 +353,9 @@ export class ContextTable extends Table {
         let cells: ContextCell[] = [];
         if (row.variables.length > 0) {
             // values of the context variables
-            cells = row.variables.map(variable => { return { cssClass: "context-variable", value: variable.value, colSpan: 1 }; });
+            cells = row.variables.map((variable) => {
+                return { cssClass: "context-variable", value: variable.value, colSpan: 1 };
+            });
             // append the result cells
             cells = cells.concat(createResults(row.results));
         } else {
@@ -381,8 +383,12 @@ export class ContextTable extends Table {
         for (let i = 0; i < addedRow.childElementCount; i++) {
             const child = addedRow.children.item(i);
             if ((child as HTMLTableElement).innerHTML === "No") {
-                (child as HTMLTableElement).dataset.vscodeContext =
-                    '{"webviewSection": "UCACell", "preventDefaultContextMenuItems": true}';
+                const ca = this.selectedControlAction.controller + "." + this.selectedControlAction.action;
+                (
+                    child as HTMLTableElement
+                ).dataset.vscodeContext = `{"webviewSection": "UCACell", "preventDefaultContextMenuItems": true, "action": "${ca}", "variables": "${row.variables.map(
+                    (variable) => `${variable.name}=${variable.value}`
+                )}"}`;
             }
         }
     }
