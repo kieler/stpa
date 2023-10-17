@@ -87,7 +87,7 @@ export function createText(text: string): VNode {
  * @param colspan The colspan of the header.
  * @returns A header element.
  */
-export function createHeaderElement(header: string, top: string, rowspan?: number, colspan?: number) {
+export function createHeaderElement(header: string, top: string, rowspan?: number, colspan?: number): VNode {
     if (rowspan && colspan) {
         return <th attrs={{ rowspan: rowspan, colspan: colspan }} style={{ top: top }}>{header}</th>;
     } else if (rowspan) {
@@ -104,7 +104,7 @@ export function createHeaderElement(header: string, top: string, rowspan?: numbe
  * @param headers The headers of the header row.
  * @returns A header row element.
  */
-export function createHeaderRow(headers: VNode[]) {
+export function createHeaderRow(headers: VNode[]): VNode {
     return <tr>
         {...headers}
     </tr>;
@@ -115,7 +115,7 @@ export function createHeaderRow(headers: VNode[]) {
  * @param headers The header rows
  * @returns A thead element containing the given header rows.
  */
-export function createTHead(headers: VNode[]) {
+export function createTHead(headers: VNode[]): VNode {
     return <thead>{...headers}</thead>;
 }
 

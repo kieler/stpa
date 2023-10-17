@@ -173,6 +173,11 @@
                 "category": "STPA PDF Creation"
             },
             {
+                "command": "pasta.contextTable.createUCA",
+                "title": "Create UCA",
+                "category": "STPA Context Table"
+            },
+            {
                 "command": "pasta.fta.cutSets",
                 "title": "Generate the cut sets",
                 "category": "Cut Sets"
@@ -184,6 +189,12 @@
             }
         ],
         "menus": {
+            "webview/context": [
+                {
+                    "command": "pasta.contextTable.createUCA",
+                    "when": "webviewId == 'contextTable' && webviewSection == 'UCACell'"
+                }
+            ],
             "commandPalette": [
                 {
                     "command": "pasta.diagram.open",
@@ -279,22 +290,18 @@
             "pasta.stpa.checks": [
                 {
                     "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",
-                    "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 },
                 {
                     "command": "pasta.stpa.checks.checkConstraintsForUCAs",
-                    "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 },
                 {
                     "command": "pasta.stpa.checks.checkScenariosForUCAs",
-                    "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 },
                 {
                     "command": "pasta.stpa.checks.checkSafetyRequirementsForUCAs",
-                    "title": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }
             ],

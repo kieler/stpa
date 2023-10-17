@@ -286,7 +286,7 @@ export class ContextTable extends Table {
                 // create the rows
                 const rows = this.determineRows();
                 // add the rows to the html table
-                rows.forEach(row => this.addRow(table, row, "context"));
+                rows.forEach((row, index) => this.addRow(table, row, `context${index}`));
             } else {
                 // table is empty
                 this.addRow(table, { variables: [], results: [] }, "empty-table");
@@ -376,6 +376,15 @@ export class ContextTable extends Table {
         // create the row
         const htmlRow = createRow(id, cells);
         patch(placeholderRow, htmlRow);
+        // set attributes to modify the context menu for the UCA cells
+        const addedRow = document.getElementById(id) as HTMLTableElement;
+        for (let i = 0; i < addedRow.childElementCount; i++) {
+            const child = addedRow.children.item(i);
+            if ((child as HTMLTableElement).innerHTML === "No") {
+                (child as HTMLTableElement).dataset.vscodeContext =
+                    '{"webviewSection": "UCACell", "preventDefaultContextMenuItems": true}';
+            }
+        }
     }
 
 
