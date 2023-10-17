@@ -17,7 +17,7 @@
 
 import { LangiumDocument, LangiumSharedServices } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { Range, TextEdit } from "vscode-languageserver";
+import { Position, Range, TextEdit } from "vscode-languageserver";
 import {
     Command,
     Context,
@@ -233,36 +233,27 @@ export function addUca(action: string, context: string, uri: string, services: S
         return [];
     }
     const model: Model = currentDocument.parseResult.value;
-    // TODO: needed?
-    const subtractOffset = 5;
-    const safetyConsOffset =
-        model.safetyCons.length !== 0 && model.safetyCons[0].$cstNode?.offset
-            ? model.safetyCons[0].$cstNode.offset - subtractOffset
-            : Number.MAX_VALUE;
-    const scenarioOffset =
-        model.scenarios.length !== 0 && model.scenarios[0].$cstNode?.offset
-            ? model.scenarios[0].$cstNode.offset - subtractOffset
-            : safetyConsOffset;
-    const ucaConstraintOffset =
-        model.controllerConstraints.length !== 0 && model.controllerConstraints[0].$cstNode?.offset
-            ? model.controllerConstraints[0].$cstNode.offset - subtractOffset
-            : scenarioOffset;
-    const ucaOffset =
-        model.rules.length !== 0 && model.rules[0].$cstNode?.offset
-            ? model.rules[0].$cstNode.offset - subtractOffset
-            : model.allUCAs.length !== 0 && model.allUCAs[0].$cstNode?.offset
-            ? model.allUCAs[0].$cstNode.offset - subtractOffset
-            : ucaConstraintOffset;
+    const lossesEnd = model.losses.length !== 0 ? model.losses[model.losses.length-1].$cstNode?.range.end : {line: 0, character: 0} as Position;
+    const hazardsEnd = model.hazards.length !== 0 ? model.hazards[model.hazards.length-1].$cstNode?.range.end : lossesEnd;
+    const sysConstraintsEnd = model.systemLevelConstraints.length !== 0 ? model.systemLevelConstraints[model.systemLevelConstraints.length-1].$cstNode?.range.end : hazardsEnd;
+    const controlStructureEnd = model.controlStructure ? model.controlStructure?.$cstNode?.range.end : sysConstraintsEnd;
+    const responsibilitiesEnd = model.responsibilities.length !== 0 ? model.responsibilities[model.responsibilities.length-1].$cstNode?.range.end : controlStructureEnd;
+    const ucaEnd = model.rules.length !== 0 ? model.rules[model.rules.length-1].$cstNode?.range.end : responsibilitiesEnd;
 
+    // TODO: check whether a rule with the same action and type already exists -> have to know the type of the uca to add
     const text = 
-    `RL {
-        controlAction: ${action}
-        type: 
-        contexts: {
-            UCA [${context}] []
-        }
-    }`;
-    // TODO: check whether position is undefined
-    const edit = TextEdit.insert(model.rules[0].$cstNode?.range.end!, text);
-    return [edit];
+    `
+RL {
+    controlAction: ${action}
+    type: 
+    contexts: {
+        UCA [${context}] []
+    }
+}`;
+
+    if (ucaEnd) {
+        const edit = TextEdit.insert(ucaEnd, text);
+        return [edit];
+    }
+    return [];
 }
