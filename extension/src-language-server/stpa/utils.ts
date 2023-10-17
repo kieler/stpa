@@ -191,3 +191,36 @@ export function getRangeOfNodeSTPA(model: Model, label: string): Range | undefin
     });
     return range;
 }
+
+/**
+ * Decides whether {@code rule} contains a context that is the same as {@code context}.
+ * Same means here that if the same variables are contained they have the same values. 
+ * The values of other variables are irrelevant.
+ * @param context The context, which should be compared to the ones of the {@code rule}.
+ * @param rule The rule that contains the contexts to which {@code context} should be compared to.
+ * @returns the context that is the same as {@code context} or undefined if none exists.
+ */
+export function sameContext(context: Context, rule: Rule): Context | undefined {
+    for (const otherContext of rule.contexts) {
+        let same = true;
+        // iterate over the variables of the context
+        for (let i = 0; i < context.vars.length; i++) {
+            const curVar = context.vars[i];
+            const otherVar = otherContext.vars.find((variable) => variable.$refText === curVar.$refText);
+            if (otherVar) {
+                // if the other context contains the the same variable,
+                // check whether their values are the same
+                const curVal = context.values[i];
+                const index = otherContext.vars.indexOf(otherVar);
+                const otherVal = otherContext.values[index];
+                if (curVal !== otherVal) {
+                    same = false;
+                }
+            }
+        }
+        if (same) {
+            return otherContext;
+        }
+    }
+    return undefined;
+}

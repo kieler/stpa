@@ -29,9 +29,10 @@ import {
     PastaAstType,
     SystemConstraint,
     isModel,
+    Rule,
 } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
-import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
+import { collectElementsWithSubComps, elementWithName, elementWithRefs, sameContext } from "./utils";
 
 /**
  * Registry for validation checks.
@@ -69,6 +70,37 @@ export class StpaValidator {
 
     /** Boolean option to toggle the check whether all UCAs are covered by safety requirements. */
     checkSafetyRequirementsForUCAs = true;
+
+    protected checkRules(rules: Rule[], accept: ValidationAcceptor): void {
+        // sort rules based on control action
+        const map = new Map<string, Rule[]>();
+        for (const rule of rules) {
+            const ca = rule.system.$refText + "." + rule.action.$refText;
+            if (map.has(ca)) {
+                map.get(ca)?.push(rule);
+            } else {
+                map.set(ca, [rule]);
+            }
+        }
+        // check for contradicting contexts for each control action
+        for (const ca of map.keys()) {
+            // search for a rule of type "provided"
+            const caRules = map.get(ca);
+            const providedRule = caRules?.find((rule) => rule.type === "provided");
+            if (providedRule && caRules) {
+                // if another rule has the same context as a context in this rule, it is contradicting
+                for (const context of providedRule.contexts) {
+                    for (const rule of caRules) {
+                        const otherContext = sameContext(context, rule);
+                        if (rule !== providedRule && otherContext) {
+                            accept("warning", `Contradicting to ${otherContext.name}`, { node: context });
+                            accept("warning", `Contradicting to ${context.name}`, { node: otherContext });
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Executes validation checks for the whole model.
@@ -184,6 +216,7 @@ export class StpaValidator {
         this.checkActionUcasForDuplicates(model, accept);
         // check for duplicate rule definition
         this.checkRulesForDuplicates(model, accept);
+        this.checkRules(model.rules, accept);
     }
 
     /**
