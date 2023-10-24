@@ -16,7 +16,7 @@ Gate:
     AND|OR|KNGate|InhibitGate;
 
 TopEvent:
-    name=STRING "=" children+=[Children:ID];
+    name=STRING "=" child=[Children:ID];
 
 Children:
     Gate | Component;

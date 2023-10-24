@@ -27,7 +27,7 @@ import { createSTPAResultMarkdownFile } from './report/md-export';
 import { StpaResult } from './report/utils';
 import { createSBMs } from './sbm/sbm-generation';
 import { LTLFormula } from './sbm/utils';
-import { createOutputChannel, createQuickPickForWorkspaceOptions } from './utils';
+import { createFile, createOutputChannel, createQuickPickForWorkspaceOptions } from './utils';
 
 let languageClient: LanguageClient;
 
@@ -181,6 +181,17 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
                 uri.path
             );
             createSBMs(controlActions, formulas);
+        })
+    );
+
+    // command for creating fault trees
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.ft.generation", async (uri: vscode.Uri) => {
+            await manager.lsReady;
+            const texts: string[] = await languageClient.sendRequest("generate/faultTrees", uri.toString());
+            const baseUri = uri.toString().substring(0, uri.toString().lastIndexOf("/"));
+            const fileName = uri.toString().substring(uri.toString().lastIndexOf("/"), uri.toString().lastIndexOf("."));
+            texts.forEach((text, index) => createFile(`${baseUri}/generatedFTA${fileName}-fta${index}.fta`, text));
         })
     );
 

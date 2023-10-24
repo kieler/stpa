@@ -213,9 +213,9 @@ function getChildrenOfNode(node: AstNode): namedFtaElement[] {
  * @returns the child of the top event.
  */
 function getChildOfTopEvent(allNodes: AstNode[]): namedFtaElement | undefined {
-    const topEventChildren = (allNodes.find((node) => isTopEvent(node)) as TopEvent).children;
-    if (topEventChildren.length !== 0) {
-        return topEventChildren[0].ref;
+    const topEventChild = (allNodes.find((node) => isTopEvent(node)) as TopEvent).child;
+    if (topEventChild) {
+        return topEventChild.ref;
     }
 }
 
