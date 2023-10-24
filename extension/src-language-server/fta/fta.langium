@@ -22,16 +22,16 @@ Children:
     Gate | Component;
 
 AND:
-    name=ID "=" children+=[Children:ID] ('and' children+=[Children:ID])+;
+    name=ID (description=STRING)? "=" children+=[Children:ID] ('and' children+=[Children:ID])+;
 
 OR:
-    name=ID "=" children+=[Children:ID] ('or' children+=[Children:ID])+;
+    name=ID (description=STRING)? "=" children+=[Children:ID] ('or' children+=[Children:ID])+;
 
 KNGate:
-    name=ID "=" k=INT 'of' children+=[Children:ID] (',' children+=[Children:ID])+;
+    name=ID (description=STRING)? "=" k=INT 'of' children+=[Children:ID] (',' children+=[Children:ID])+;
 
 InhibitGate:
-    name=ID "=" condition+=[Condition:ID] 'inhibits' children+=[Children:ID];
+    name=ID (description=STRING)? "=" condition+=[Condition:ID] 'inhibits' children+=[Children:ID];
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;

@@ -18,6 +18,7 @@
 import {
     SEdge,
     SNode,
+    SPort,
     connectableFeature,
     fadeFeature,
     hoverFeedbackFeature,
@@ -29,7 +30,9 @@ import {
 /* fault tree element types */
 export const FTA_NODE_TYPE = "node:fta";
 export const FTA_EDGE_TYPE = "edge:fta";
+export const FTA_INVISIBLE_EDGE_TYPE = "edge:fta:invisible";
 export const FTA_GRAPH_TYPE = "graph:fta";
+export const FTA_PORT_TYPE = "port:fta";
 
 /**
  * Node of a fault tree.
@@ -60,6 +63,11 @@ export class FTAEdge extends SEdge {
     notConnectedToSelectedCutSet?: boolean;
 }
 
+/** Port representing a port in the FTA graph. */
+export class FTAPort extends SPort {
+    side?: PortSide;
+}
+
 /**
  * Types of fault tree nodes.
  */
@@ -71,5 +79,15 @@ export enum FTNodeType {
     OR,
     KN,
     INHIBIT,
+    DESCRIPTION,
+    PARENT,
     UNDEFINED,
+}
+
+/** Possible sides for a port. */
+export enum PortSide {
+    WEST,
+    EAST,
+    NORTH,
+    SOUTH,
 }

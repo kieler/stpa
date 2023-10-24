@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdge, SNode } from "sprotty-protocol";
-import { FTNodeType } from "./fta-model";
+import { SEdge, SNode, SPort } from "sprotty-protocol";
+import { FTNodeType, PortSide } from "./fta-model";
 
 /**
  * Node of a fault tree.
@@ -36,4 +36,9 @@ export interface FTANode extends SNode {
  */
 export interface FTAEdge extends SEdge {
     notConnectedToSelectedCutSet?: boolean;
+}
+
+/** Port representing a port in the FTA graph. */
+export interface FTAPort extends SPort {
+    side?: PortSide;
 }

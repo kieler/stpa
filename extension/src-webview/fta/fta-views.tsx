@@ -18,7 +18,7 @@
 /** @jsx svg */
 import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SGraph, SGraphView, svg } from 'sprotty';
+import { IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, svg } from 'sprotty';
 import { renderAndGate, renderOval, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "../views-rendering";
 import { FTAEdge, FTANode, FTNodeType } from './fta-model';
 
@@ -39,12 +39,27 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
 }
 
 @injectable()
+export class FTAInvisibleEdgeView extends PolylineArrowEdgeViewFTA {
+    render(edge: Readonly<SEdge>, context: RenderingContext, args?: IViewArgs | undefined): VNode | undefined {
+        return <g></g>;
+    }
+}
+
+@injectable()
 export class FTANodeView extends RectangularNodeView {
 
     render(node: FTANode, context: RenderingContext): VNode {
         // create the element based on the type of the node
         let element: VNode;
         switch (node.nodeType) {
+            case FTNodeType.PARENT:
+                /* return <g
+                    class-fta-node={true}
+                    class-mouseover={node.hoverFeedback}
+                    class-greyed-out={node.notConnectedToSelectedCutSet}>
+                    {context.renderChildren(node)}
+                </g>; */
+            case FTNodeType.DESCRIPTION:
             case FTNodeType.TOPEVENT:
                 element = renderRectangle(node);
                 break;
@@ -94,6 +109,7 @@ export class FTAGraphView extends SGraphView {
     }
 
     protected highlightConnectedToCutSet(node: FTANode): void {
+        // TODO: must be adjusted for gate descriptions
         for (const edge of node.outgoingEdges) {
             (edge as FTAEdge).notConnectedToSelectedCutSet = true;
             const target = edge.target as FTANode;
