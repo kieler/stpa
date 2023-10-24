@@ -127,8 +127,14 @@ ControllerConstraint:
     name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
 
 LossScenario:
-    (name=ID description=STRING list=HazardList) |
-    (name=ID 'for' uca=[UCA] description=STRING (list=HazardList)?);
+    (name=ID ('<' factor=CausalFactor '>')? description=STRING list=HazardList) |
+    (name=ID ('<' factor=CausalFactor '>')? 'for' uca=[UCA] description=STRING (list=HazardList)?);
+
+CausalFactor returns string:
+    'controlAction' | 'inadequateOperation' | 'delayedOperation' | 'componentFailure' | 'changesOverTime' |
+    'conflictingCA' | 'wrongProcessInput' | 'disturbance' | 'processOutput' | 'delayedFeedback' | 
+    'measurementInaccurate' | 'incorrectInformationProvided' | 'missingFeedback' | 'inadequateControlAlgorithm' |
+    'wrongProcessModel' | 'wrongControlInput';
 
 HazardList:
     '[' refs+=[Hazard:SubID] (',' refs+=[Hazard:SubID])*']';
