@@ -20,7 +20,7 @@ import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
 import { IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, svg } from 'sprotty';
 import { renderAndGate, renderOval, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "../views-rendering";
-import { FTAEdge, FTANode, FTNodeType } from './fta-model';
+import { FTAEdge, FTANode, FTAPort, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
 
 @injectable()
 export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
@@ -57,7 +57,7 @@ export class FTANodeView extends RectangularNodeView {
                 return <g
                     class-fta-node={true}
                     class-mouseover={node.hoverFeedback}
-                    class-greyed-out={node.notConnectedToSelectedCutSet}>
+                    class-greyed-out={false}>
                     {context.renderChildren(node)}
                 </g>;
             case FTNodeType.DESCRIPTION:
@@ -103,22 +103,39 @@ export class FTAGraphView extends SGraphView {
 
     render(model: Readonly<SGraph>, context: RenderingContext): VNode {
         if (model.children.length !== 0) {
-            this.highlightConnectedToCutSet(model.children[0] as FTANode);
+            this.highlightConnectedToCutSet(model, model.children[0] as FTANode);
         }
 
         return super.render(model, context);
     }
 
-    protected highlightConnectedToCutSet(node: FTANode): void {
-        // TODO: must be adjusted for gate descriptions
-        for (const edge of node.outgoingEdges) {
-            (edge as FTAEdge).notConnectedToSelectedCutSet = true;
-            const target = edge.target as FTANode;
-            this.highlightConnectedToCutSet(target);
-            if (!target.notConnectedToSelectedCutSet) {
-                node.notConnectedToSelectedCutSet = false;
-                (edge as FTAEdge).notConnectedToSelectedCutSet = false;
+    protected highlightConnectedToCutSet(model: SGraph, currentNode: FTANode): void {
+        for (const port of currentNode.children.filter(child => child.type === FTA_PORT_TYPE)) {
+            const edge = model.children.find(child => child.type === FTA_EDGE_TYPE && (child as FTAEdge).sourceId === port.id) as FTAEdge;
+            if (edge) {
+                edge.notConnectedToSelectedCutSet = true;
+                const target = (edge.target as FTAPort).parent as FTANode;
+                // handle successor nodes
+                this.highlightConnectedToCutSet(model, target);
+                // handle current node
+                if (!target.notConnectedToSelectedCutSet) {
+                    currentNode.notConnectedToSelectedCutSet = false;
+                    edge.notConnectedToSelectedCutSet = false;
+                }
+                // handle edges in parents
+                if (currentNode.nodeType === FTNodeType.PARENT) {
+                    const innerEdge = currentNode.children.find(child => child.type === FTA_EDGE_TYPE && (child as FTAEdge).targetId === edge.sourceId) as FTAEdge;
+                    innerEdge.notConnectedToSelectedCutSet = edge.notConnectedToSelectedCutSet;
+                }
             }
+        }
+        // handle nodes in parents
+        if (currentNode.nodeType === FTNodeType.PARENT) {
+            currentNode.children.forEach(child => {
+                if (child.type === FTA_NODE_TYPE) {
+                    (child as FTANode).notConnectedToSelectedCutSet = currentNode.notConnectedToSelectedCutSet;
+                }
+            });
         }
     }
 

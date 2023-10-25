@@ -122,19 +122,24 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
                 }
 
                 // create edge to target
-                if (sourceId && targetId) {
-                    let parentParentPortId: string | undefined = undefined;
-                    // create port for target parent and edge to this port
+                if (targetId) {
+                    // create port for the target node
+                    const targetNode = this.idToSNode.get(targetId);
+                    const targetPortId = idCache.uniqueId(edgeId + "_newTransition");
+                    targetNode?.children?.push(this.createFTAPort(targetPortId, PortSide.NORTH));
+
+                    let targetParentPortId: string | undefined = undefined;
+                    // create port for target parent and edge from this port to description node
                     if (this.parentOfGate.has(targetId)) {
                         const parent = this.parentOfGate.get(targetId);
-                        parentParentPortId = idCache.uniqueId(edgeId + "_newTransition");
-                        parent?.children?.push(this.createFTAPort(parentParentPortId, PortSide.NORTH));
+                        targetParentPortId = idCache.uniqueId(edgeId + "_newTransition");
+                        parent?.children?.push(this.createFTAPort(targetParentPortId, PortSide.NORTH));
                         const betweenEdgeId = idCache.uniqueId(edgeId + "_betweenEdge");
                         const descriptionId = this.descriptionOfGate.get(targetId)?.id;
                         if (descriptionId) {
                             const invisibleEdge = this.generateFTEdge(
                                 betweenEdgeId,
-                                parentParentPortId,
+                                targetParentPortId,
                                 descriptionId,
                                 FTA_INVISIBLE_EDGE_TYPE,
                                 idCache
@@ -143,10 +148,11 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
                         }
                     }
 
+                    // create edge from source to target
                     const e = this.generateFTEdge(
                         edgeId,
                         sourceParentPortId ?? sourcePortId,
-                        parentParentPortId ?? targetId,
+                        targetParentPortId ?? targetPortId,
                         FTA_EDGE_TYPE,
                         idCache
                     );
