@@ -23,7 +23,15 @@ import { FtaServices } from "../fta-module";
 import { FtaSynthesisOptions, noCutSet, spofsSet } from "../fta-synthesis-options";
 import { namedFtaElement } from "../utils";
 import { FTAEdge, FTANode, FTAPort } from "./fta-interfaces";
-import { FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_INVISIBLE_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType, PortSide } from "./fta-model";
+import {
+    FTA_EDGE_TYPE,
+    FTA_GRAPH_TYPE,
+    FTA_INVISIBLE_EDGE_TYPE,
+    FTA_NODE_TYPE,
+    FTA_PORT_TYPE,
+    FTNodeType,
+    PortSide,
+} from "./fta-model";
 import { getFTNodeType, getTargets } from "./utils";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
@@ -33,6 +41,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     protected idToSNode: Map<string, SNode> = new Map();
 
     protected parentOfGate: Map<string, SNode> = new Map();
+    protected descriptionOfGate: Map<string, SNode> = new Map();
 
     constructor(services: FtaServices) {
         super(services);
@@ -51,6 +60,10 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         const { document } = args;
         const model = document.parseResult.value;
         const idCache = args.idCache;
+        // reset maps
+        this.descriptionOfGate = new Map();
+        this.parentOfGate = new Map();
+        this.idToSNode = new Map();
 
         const ftaChildren: SModelElement[] = [
             // create nodes for top event, components, conditions, and gates
@@ -85,26 +98,58 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             for (const target of targets) {
                 const targetId = idCache.getId(target);
                 const edgeId = idCache.uniqueId(`${sourceId}_${targetId}`, undefined);
-                
+
                 // create port for the source node
                 const sourceNode = this.idToSNode.get(sourceId);
                 const sourcePortId = idCache.uniqueId(edgeId + "_newTransition");
                 sourceNode?.children?.push(this.createFTAPort(sourcePortId, PortSide.SOUTH));
 
-                // create port for parent and edge to this port
-                let parentPortId: string | undefined = undefined;
+                // create port for source parent and edge to this port
+                let sourceParentPortId: string | undefined = undefined;
                 if (this.parentOfGate.has(sourceId)) {
                     const parent = this.parentOfGate.get(sourceId);
-                    parentPortId = idCache.uniqueId(edgeId + "_newTransition");
-                    parent?.children?.push(this.createFTAPort(parentPortId, PortSide.SOUTH));
+                    sourceParentPortId = idCache.uniqueId(edgeId + "_newTransition");
+                    parent?.children?.push(this.createFTAPort(sourceParentPortId, PortSide.SOUTH));
                     const betweenEdgeId = idCache.uniqueId(edgeId + "_betweenEdge");
-                    const e = this.generateFTEdge(betweenEdgeId, sourcePortId, parentPortId, FTA_EDGE_TYPE, idCache);
-                    elements.push(e);
+                    const e = this.generateFTEdge(
+                        betweenEdgeId,
+                        sourcePortId,
+                        sourceParentPortId,
+                        FTA_EDGE_TYPE,
+                        idCache
+                    );
+                    parent?.children?.push(e);
                 }
 
                 // create edge to target
                 if (sourceId && targetId) {
-                    const e = this.generateFTEdge(edgeId, parentPortId ?? sourcePortId, targetId, FTA_EDGE_TYPE, idCache);
+                    let parentParentPortId: string | undefined = undefined;
+                    // create port for target parent and edge to this port
+                    if (this.parentOfGate.has(targetId)) {
+                        const parent = this.parentOfGate.get(targetId);
+                        parentParentPortId = idCache.uniqueId(edgeId + "_newTransition");
+                        parent?.children?.push(this.createFTAPort(parentParentPortId, PortSide.NORTH));
+                        const betweenEdgeId = idCache.uniqueId(edgeId + "_betweenEdge");
+                        const descriptionId = this.descriptionOfGate.get(targetId)?.id;
+                        if (descriptionId) {
+                            const invisibleEdge = this.generateFTEdge(
+                                betweenEdgeId,
+                                parentParentPortId,
+                                descriptionId,
+                                FTA_INVISIBLE_EDGE_TYPE,
+                                idCache
+                            );
+                            elements.push(invisibleEdge);
+                        }
+                    }
+
+                    const e = this.generateFTEdge(
+                        edgeId,
+                        sourceParentPortId ?? sourcePortId,
+                        parentParentPortId ?? targetId,
+                        FTA_EDGE_TYPE,
+                        idCache
+                    );
                     elements.push(e);
                 }
             }
@@ -169,8 +214,9 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         // order is important to have the descriptionNode above the gateNode
         const children: SModelElement[] = [descriptionNode, gateNode, invisibleEdge];
         this.idToSNode.set(descriptionNode.id, descriptionNode);
+        this.descriptionOfGate.set(gateNode.id, descriptionNode);
         // create invisible node that contains the desciprion and gate node
-        const parent ={
+        const parent = {
             type: FTA_NODE_TYPE,
             id: idCache.uniqueId(node.name + "Parent"),
             name: node.name,
@@ -198,7 +244,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @returns a FTANode representing {@code node}.
      */
     protected generateFTNode(node: namedFtaElement, idCache: IdCache<AstNode>): FTANode {
-        const nodeId = idCache.uniqueId(node.name, node);
+        const nodeId = idCache.uniqueId(node.name.replace(" ", ""), node);
         const children: SModelElement[] = this.createNodeLabel(node.name, nodeId, idCache);
         const description = isComponent(node) || isCondition(node) ? node.description : "";
         const set = this.options.getCutSet();
@@ -220,7 +266,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             includedInCutSet,
             notConnected
         );
-        
+
         this.idToSNode.set(nodeId, ftNode);
 
         if (isKNGate(node)) {
@@ -269,7 +315,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         return [
             <SLabel>{
                 type: "label",
-                id: idCache.uniqueId(id + ".label"),
+                id: idCache.uniqueId(id + "_label"),
                 text: label,
             },
         ];
@@ -286,7 +332,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         return [
             <SLabel>{
                 type: "label:xref",
-                id: idCache.uniqueId(id + ".label"),
+                id: idCache.uniqueId(id + "_label"),
                 text: label,
             },
         ];
@@ -298,11 +344,11 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @param side The side of the port.
      * @returns an FTAPort.
      */
-        protected createFTAPort(id: string, side: PortSide): FTAPort {
-            return {
-                type: FTA_PORT_TYPE,
-                id: id,
-                side: side,
-            };
-        }
+    protected createFTAPort(id: string, side: PortSide): FTAPort {
+        return {
+            type: FTA_PORT_TYPE,
+            id: id,
+            side: side,
+        };
+    }
 }

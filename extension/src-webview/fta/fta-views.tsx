@@ -53,12 +53,13 @@ export class FTANodeView extends RectangularNodeView {
         let element: VNode;
         switch (node.nodeType) {
             case FTNodeType.PARENT:
-                /* return <g
+                // parent is invisible
+                return <g
                     class-fta-node={true}
                     class-mouseover={node.hoverFeedback}
                     class-greyed-out={node.notConnectedToSelectedCutSet}>
                     {context.renderChildren(node)}
-                </g>; */
+                </g>;
             case FTNodeType.DESCRIPTION:
             case FTNodeType.TOPEVENT:
                 element = renderRectangle(node);

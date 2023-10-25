@@ -26,6 +26,7 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
         return {
             "org.eclipse.elk.direction": "DOWN",
             "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+            'org.eclipse.elk.portConstraints': 'FIXED_SIDE'
         };
     }
 
@@ -36,6 +37,7 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
                     "org.eclipse.elk.direction": "DOWN",
                     "org.eclipse.elk.padding": "[top=0.0,left=0.0,bottom=10.0,right=0.0]",
                     "org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers": "0",
+                    'org.eclipse.elk.portConstraints': 'FIXED_SIDE'
                 };
             default:
                 return {
