@@ -56,3 +56,7 @@
 .vertical-edge {
     stroke: darkgray;
 }
+
+.description-border {
+    stroke: grey;
+}

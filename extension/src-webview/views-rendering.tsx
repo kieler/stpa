@@ -219,16 +219,7 @@ export function renderAndGate(node: SNode): VNode {
  * @returns An Or-Gate for {@code node}.
  */
 export function renderOrGate(node: SNode): VNode {
-    const leftX = 0;
-    const rightX = Math.max(node.size.width, 0);
-    const midX = rightX / 2.0;
-    const botY = Math.max(node.size.height, 0);
-    const nearBotY = botY - 5;
-    const midY = Math.max(node.size.height, 0) / 2;
-    const topY = 0;
-    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX + 10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX - 10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
-        + `V ${midY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${leftX},${midY} Z`;
-
+    const path = createOrGate(node);
     return <path
         d={path}
     />;
@@ -240,16 +231,10 @@ export function renderOrGate(node: SNode): VNode {
  * @returns An Kn-Gate for {@code node}.
  */
 export function renderKnGate(node: SNode, k: number, n: number): VNode {
-    const leftX = 0;
     const rightX = Math.max(node.size.width, 0);
     const midX = rightX / 2.0;
     const botY = Math.max(node.size.height, 0);
-    const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0);
-    const midY = Math.max(node.size.height, 0) / 2;
-    const topY = 0;
-    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX + 10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX - 10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
-        + `V ${midY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${leftX},${midY} Z`;
-
+    const path = createOrGate(node);
     return (
         <g>
             <path d={path} />
@@ -258,6 +243,20 @@ export function renderKnGate(node: SNode, k: number, n: number): VNode {
             </text>
         </g>
     );
+}
+
+function createOrGate(node: SNode): string {
+    const leftX = 0;
+    const rightX = Math.max(node.size.width, 0);
+    const midX = rightX / 2.0;
+    const botY = Math.max(node.size.height, 0);
+    const nearBotY = botY - (Math.max(node.size.height, 0) / 10.0);
+    const midY = Math.max(node.size.height, 0) / 2;
+    const topY = 0;
+    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX + 10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX - 10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
+        + `V ${midY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${leftX},${midY} Z`;
+
+    return path;
 }
 
 /**

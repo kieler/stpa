@@ -60,8 +60,8 @@ export class DescriptionNodeView extends RectangularNodeView {
             class-greyed-out={node.notConnectedToSelectedCutSet}>
             <g class-vertical-edge={true} transform={translateEdge}>{edge}</g>
             <g class-gate-description={true} class-node-selected={node.selected} class-fta-highlight-node={node.inCurrentSelectedCutSet}>{element}</g>
-            <g class-fta-edge={true}>{border1}</g>
-            <g class-fta-edge={true} transform={translateBorder}>{border2}</g>
+            <g class-description-border={true}>{border1}</g>
+            <g class-description-border={true} transform={translateBorder}>{border2}</g>
             {context.renderChildren(node)}
         </g>;
     }
