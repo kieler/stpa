@@ -213,14 +213,14 @@ function registerFTACommands(manager: StpaLspVscodeExtension, context: vscode.Ex
     // commands for computing and displaying the (minimal) cut sets of the fault tree.
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".fta.cutSets", async (uri: vscode.Uri) => {
-            const cutSets: string[] = await languageClient.sendRequest("generate/getCutSets", uri.path);
+            const cutSets: string[] = await languageClient.sendRequest("cutSets/generate", uri.path);
             await manager.openDiagram(uri);
             handleCutSets(manager, cutSets, false);
         })
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".fta.minimalCutSets", async (uri: vscode.Uri) => {
-            const minimalCutSets: string[] = await languageClient.sendRequest("generate/getMinimalCutSets", uri.path);
+            const minimalCutSets: string[] = await languageClient.sendRequest("cutSets/generateMinimal", uri.path);
             await manager.openDiagram(uri);
             handleCutSets(manager, minimalCutSets, true);
         })
@@ -285,6 +285,7 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
     context.subscriptions.push(
         vscode.workspace.onDidSaveTextDocument(async document => {
             if (document) {
+                await languageClient.sendRequest('cutSets/reset');
                 manager.openDiagram(document.uri);
                 if (manager.contextTable) {
                     languageClient.sendNotification('contextTable/getData', document.uri.toString());

@@ -64,6 +64,18 @@ export class FtaSynthesisOptions extends SynthesisOptions {
         }
     }
 
+    resetCutSets(): void {
+        const option = this.getOption(cutSetsID);
+        if (option) {
+            (option.synthesisOption as DropDownOption).availableValues = [noCutSet];
+            (option.synthesisOption as DropDownOption).values = [noCutSet];
+            (option.synthesisOption as DropDownOption).currentId = noCutSet.id;
+            option.synthesisOption.currentValue = noCutSet.id;
+            option.synthesisOption.initialValue = noCutSet.id;
+            option.currentValue = noCutSet.id;
+        }
+    }
+
     setCutSet(value: string): void {
         const option = this.options.find((option) => option.synthesisOption.id === cutSetsID);
         if (option) {

@@ -23,6 +23,7 @@ import { FtaServices } from "./fta-module";
 import { cutSetsToString } from "./utils";
 import { ModelFTA } from "../generated/ast";
 import { AstNode } from "langium";
+import { noCutSet } from "./fta-synthesis-options";
 
 /**
  * Adds handlers for notifications regarding fta.
@@ -49,11 +50,14 @@ function addCutSetsHandler(
     ftaServices: FtaServices,
     sharedServices: LangiumSprottySharedServices
 ): void {
-    connection.onRequest("generate/getCutSets", async (uri: string) => {
+    connection.onRequest("cutSets/generate", async (uri: string) => {
         return cutSetsRequested(uri, ftaServices, sharedServices, false);
     });
-    connection.onRequest("generate/getMinimalCutSets", async (uri: string) => {
+    connection.onRequest("cutSets/generateMinimal", async (uri: string) => {
         return cutSetsRequested(uri, ftaServices, sharedServices, true);
+    });
+    connection.onRequest("cutSets/reset", () => {
+        return resetCutSets(ftaServices);
     });
 }
 
@@ -92,4 +96,9 @@ async function cutSetsRequested(
     });
     ftaServices.options.SynthesisOptions.updateCutSetsOption(dropdownValues);
     return cutSetsString;
+}
+
+function resetCutSets(ftaServices: FtaServices): void {
+    ftaServices.options.SynthesisOptions.resetCutSets();
+    return;
 }
