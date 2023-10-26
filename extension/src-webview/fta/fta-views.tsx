@@ -18,9 +18,9 @@
 /** @jsx svg */
 import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
-import { IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, svg } from 'sprotty';
-import { renderAndGate, renderOval, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle } from "../views-rendering";
-import { FTAEdge, FTANode, FTAPort, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
+import { Hoverable, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SShapeElement, Selectable, svg } from 'sprotty';
+import { renderAndGate, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderOval, renderRectangle, renderVerticalLine } from "../views-rendering";
+import { DescriptionNode, FTAEdge, FTANode, FTAPort, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
 
 @injectable()
 export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
@@ -46,6 +46,28 @@ export class FTAInvisibleEdgeView extends PolylineArrowEdgeViewFTA {
 }
 
 @injectable()
+export class DescriptionNodeView extends RectangularNodeView {
+    render(node: DescriptionNode, context: RenderingContext): VNode | undefined {
+        const element = renderRectangle(node);
+        const border1 = renderHorizontalLine(node);
+        const border2 = renderHorizontalLine(node);
+        const edge = renderVerticalLine(node);
+        const translateBorder = `translate(0, ${Math.max(node.size.height, 0)})`;
+        const translateEdge = `translate(${Math.max(node.size.width / 2.0, 0)}, 0)`;
+        return <g
+            class-fta-node={true}
+            class-mouseover={node.hoverFeedback}
+            class-greyed-out={node.notConnectedToSelectedCutSet}>
+            <g class-vertical-edge={true} transform={translateEdge}>{edge}</g>
+            <g class-gate-description={true} class-node-selected={node.selected} class-fta-highlight-node={node.inCurrentSelectedCutSet}>{element}</g>
+            <g class-fta-edge={true}>{border1}</g>
+            <g class-fta-edge={true} transform={translateBorder}>{border2}</g>
+            {context.renderChildren(node)}
+        </g>;
+    }
+}
+
+@injectable()
 export class FTANodeView extends RectangularNodeView {
 
     render(node: FTANode, context: RenderingContext): VNode {
@@ -60,7 +82,6 @@ export class FTANodeView extends RectangularNodeView {
                     class-greyed-out={false}>
                     {context.renderChildren(node)}
                 </g>;
-            case FTNodeType.DESCRIPTION:
             case FTNodeType.TOPEVENT:
                 element = renderRectangle(node);
                 break;
@@ -103,7 +124,10 @@ export class FTAGraphView extends SGraphView {
 
     render(model: Readonly<SGraph>, context: RenderingContext): VNode {
         if (model.children.length !== 0) {
-            this.highlightConnectedToCutSet(model, model.children[0] as FTANode);
+            const topEvent = model.children.find(node => node instanceof FTANode && node.nodeType === FTNodeType.TOPEVENT);
+            if (topEvent) {
+                this.highlightConnectedToCutSet(model, topEvent as FTANode);
+            }
         }
 
         return super.render(model, context);

@@ -46,3 +46,13 @@
 .fta-highlight-node{
     stroke: var(--highlight-node);
 }
+
+.gate-description {
+    stroke: none;
+    fill: darkgrey;
+    fill-opacity: 20%;
+}
+
+.vertical-edge {
+    stroke: darkgray;
+}

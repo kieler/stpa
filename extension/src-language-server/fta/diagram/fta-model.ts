@@ -17,6 +17,7 @@
 
 /* fault tree element types */
 export const FTA_NODE_TYPE = "node:fta";
+export const FTA_DESCRIPTION_NODE_TYPE = "node:fta:description";
 export const FTA_EDGE_TYPE = "edge:fta";
 export const FTA_INVISIBLE_EDGE_TYPE = "edge:fta:invisible";
 export const FTA_GRAPH_TYPE = "graph:fta";
@@ -33,7 +34,6 @@ export enum FTNodeType {
     OR,
     KN,
     INHIBIT,
-    DESCRIPTION,
     PARENT,
     UNDEFINED,
 }

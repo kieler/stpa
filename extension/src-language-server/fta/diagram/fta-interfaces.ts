@@ -31,6 +31,12 @@ export interface FTANode extends SNode {
     n?: number;
 }
 
+export interface DescriptionNode extends SNode {
+    name: string;
+    inCurrentSelectedCutSet?: boolean;
+    notConnectedToSelectedCutSet?: boolean;
+}
+
 /**
  * Edge of a fault tree.
  */

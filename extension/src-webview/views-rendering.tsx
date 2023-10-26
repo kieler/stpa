@@ -45,6 +45,28 @@ export function renderRectangle(node: SNode): VNode {
 }
 
 /**
+ * Creates rectangle borders for {@code node} at the top and bottom.
+ * @param node The node that should be represented by a rectangle.
+ * @returns rectangle borders for {@code node} at the top and bottom.
+ */
+export function renderHorizontalLine(node: SNode): VNode {
+    return <g>
+        <line x="0" y="0" x2={Math.max(node.size.width, 0)} y2="0" />
+    </g>;
+}
+
+/**
+ * Creates a vertical line going through {@code node} in the middle.
+ * @param node The node for which the line should be created.
+ * @returns a vertical line for {@code node} going through its mid.
+ */
+export function renderVerticalLine(node: SNode): VNode {
+    return <g>
+        <line x="0" y="0" x2="0" y2={Math.max(node.size.height, 0)} />
+    </g>;
+}
+
+/**
  * Creates a rounded rectangle for {@code node}.
  * @param node The node that should be represented by a rounded rectangle.
  * @returns A rounded rectangle for {@code node}.
@@ -204,8 +226,8 @@ export function renderOrGate(node: SNode): VNode {
     const nearBotY = botY - 5;
     const midY = Math.max(node.size.height, 0) / 2;
     const topY = 0;
-    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
-    + `V ${midY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${leftX},${midY} Z`;
+    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX + 10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX - 10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
+        + `V ${midY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${leftX},${midY} Z`;
 
     return <path
         d={path}
@@ -225,8 +247,8 @@ export function renderKnGate(node: SNode, k: number, n: number): VNode {
     const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0);
     const midY = Math.max(node.size.height, 0) / 2;
     const topY = 0;
-    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
-    + `V ${midY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${leftX},${midY} Z`;
+    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX + 10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX - 10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
+        + `V ${midY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${leftX},${midY} Z`;
 
     return (
         <g>
