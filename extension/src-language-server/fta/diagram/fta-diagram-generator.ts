@@ -17,7 +17,7 @@
 
 import { AstNode } from "langium";
 import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-sprotty";
-import { SLabel, SNode, SModelElement, SModelRoot } from "sprotty-protocol";
+import { SLabel, SModelElement, SModelRoot, SNode } from "sprotty-protocol";
 import { Gate, ModelFTA, isComponent, isCondition, isKNGate } from "../../generated/ast";
 import { FtaServices } from "../fta-module";
 import { FtaSynthesisOptions, noCutSet, spofsSet } from "../fta-synthesis-options";
@@ -67,14 +67,19 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
 
         const ftaChildren: SModelElement[] = [
             // create nodes for top event, components, conditions, and gates
-            this.generateFTNode(model.topEvent, idCache),
             ...model.components.map((component) => this.generateFTNode(component, idCache)),
             ...model.conditions.map((condition) => this.generateFTNode(condition, idCache)),
             ...model.gates.map((gate) => this.generateGate(gate, idCache)),
             // create edges for the gates and the top event
             ...model.gates.map((gate) => this.generateEdges(gate, idCache)).flat(1),
-            ...this.generateEdges(model.topEvent, idCache),
         ];
+
+        if (model.topEvent) {
+            ftaChildren.push(
+                this.generateFTNode(model.topEvent, idCache),
+                ...this.generateEdges(model.topEvent, idCache)
+            );
+        }
 
         return {
             type: FTA_GRAPH_TYPE,

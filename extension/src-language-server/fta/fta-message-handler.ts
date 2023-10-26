@@ -22,6 +22,7 @@ import { determineMinimalCutSets, determineCutSetsForFT } from "./analysis/fta-c
 import { FtaServices } from "./fta-module";
 import { cutSetsToString } from "./utils";
 import { ModelFTA } from "../generated/ast";
+import { AstNode } from "langium";
 
 /**
  * Adds handlers for notifications regarding fta.
@@ -71,7 +72,10 @@ async function cutSetsRequested(
     minimal: boolean
 ): Promise<string[]> {
     const model = (await getModel(uri, sharedServices)) as ModelFTA;
-    const nodes = [model.topEvent, ...model.components, ...model.conditions, ...model.gates];
+    const nodes: AstNode[] = [...model.components, ...model.conditions, ...model.gates];
+    if (model.topEvent) {
+        nodes.push(model.topEvent);
+    }
     const cutSets = minimal ? determineMinimalCutSets(nodes) : determineCutSetsForFT(nodes);
     // determine single points of failure
     const spofs: string[] = [];

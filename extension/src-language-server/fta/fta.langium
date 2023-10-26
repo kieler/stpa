@@ -3,7 +3,7 @@ grammar Fta
 entry ModelFTA:
     ('Components' components+=Component*)? 
     ('Conditions' conditions+=Condition*)?     
-    ('TopEvent' topEvent=TopEvent)
+    ('TopEvent' topEvent=TopEvent)?
     ('Gates' gates+=Gate*)?;      
 
 Component:
@@ -22,13 +22,13 @@ Children:
     Gate | Component;
 
 AND:
-    name=ID (description=STRING)? "=" children+=[Children:ID] ('and' children+=[Children:ID])+;
+    name=ID (description=STRING)? "=" children+=[Children:ID] ('and' children+=[Children:ID])*;
 
 OR:
-    name=ID (description=STRING)? "=" children+=[Children:ID] ('or' children+=[Children:ID])+;
+    name=ID (description=STRING)? "=" children+=[Children:ID] ('or' children+=[Children:ID])*;
 
 KNGate:
-    name=ID (description=STRING)? "=" k=INT 'of' children+=[Children:ID] (',' children+=[Children:ID])+;
+    name=ID (description=STRING)? "=" k=INT 'of' children+=[Children:ID] (',' children+=[Children:ID])*;
 
 InhibitGate:
     name=ID (description=STRING)? "=" condition+=[Condition:ID] 'inhibits' children+=[Children:ID];
