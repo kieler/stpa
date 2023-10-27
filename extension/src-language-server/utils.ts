@@ -53,7 +53,7 @@ export function getDescription(
             // show complete description in one line
             labels.push(<SLabel>{
                 type: "label",
-                id: idCache.uniqueId(nodeId + ".label"),
+                id: idCache.uniqueId(nodeId + "_label"),
                 text: description,
             });
             break;
@@ -66,7 +66,7 @@ export function getDescription(
                 }
                 labels.push(<SLabel>{
                     type: "label",
-                    id: idCache.uniqueId(nodeId + ".label"),
+                    id: idCache.uniqueId(nodeId + "_label"),
                     text: current + "...",
                 });
             }
@@ -86,7 +86,7 @@ export function getDescription(
             for (let i = descriptions.length - 1; i >= 0; i--) {
                 labels.push(<SLabel>{
                     type: "label",
-                    id: idCache.uniqueId(nodeId + ".label"),
+                    id: idCache.uniqueId(nodeId + "_label"),
                     text: descriptions[i],
                 });
             }

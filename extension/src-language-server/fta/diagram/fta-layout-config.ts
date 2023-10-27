@@ -19,7 +19,7 @@ import { LayoutOptions } from "elkjs";
 import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout";
 import { SGraph, SNode, SModelIndex } from "sprotty-protocol";
 import { FTANode, FTAPort } from "./fta-interfaces";
-import { FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType, PortSide } from "./fta-model";
+import { FTA_DESCRIPTION_NODE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType, PortSide } from "./fta-model";
 
 export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
     protected graphOptions(_sgraph: SGraph, _index: SModelIndex): LayoutOptions {
@@ -32,28 +32,30 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected nodeOptions(snode: SNode, _index: SModelIndex): LayoutOptions | undefined {
-        if (snode.type === FTA_NODE_TYPE) {
-            switch ((snode as FTANode).nodeType) {
-                case FTNodeType.PARENT:
-                    return {
-                        "org.eclipse.elk.direction": "DOWN",
-                        "org.eclipse.elk.padding": "[top=0.0,left=0.0,bottom=10.0,right=0.0]",
-                        "org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers": "2",
-                        "org.eclipse.elk.portConstraints": "FIXED_SIDE",
-                        "org.eclipse.elk.spacing.portPort": "0.0",
-                        "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN",
-                    };
-                default:
-                    return {
-                        "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
-                        "org.eclipse.elk.spacing.portPort": "0.0",
-                    };
-            }
-        } else {
-            return {
-                "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
-                "org.eclipse.elk.spacing.portPort": "0.0",
-            };
+        switch (snode.type) {
+            case FTA_NODE_TYPE:
+                switch ((snode as FTANode).nodeType) {
+                    case FTNodeType.PARENT:
+                        return {
+                            "org.eclipse.elk.direction": "DOWN",
+                            "org.eclipse.elk.padding": "[top=0.0,left=0.0,bottom=10.0,right=0.0]",
+                            "org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers": "2",
+                            "org.eclipse.elk.portConstraints": "FIXED_SIDE",
+                            "org.eclipse.elk.spacing.portPort": "0.0",
+                            "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN",
+                        };
+                    default:
+                        return {
+                            "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
+                            "org.eclipse.elk.spacing.portPort": "0.0",
+                        };
+                }
+            case FTA_DESCRIPTION_NODE_TYPE:
+                return {
+                    "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
+                    "org.eclipse.elk.spacing.portPort": "0.0",
+                    "org.eclipse.elk.nodeSize.constraints": "NODE_LABELS",
+                };
         }
     }
 
