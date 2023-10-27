@@ -146,18 +146,20 @@ export class FTAGraphView extends SGraphView {
             const edge = model.children.find(child => child.type === FTA_EDGE_TYPE && (child as FTAEdge).sourceId === port.id) as FTAEdge;
             if (edge) {
                 edge.notConnectedToSelectedCutSet = true;
-                const target = (edge.target as FTAPort).parent as FTANode;
-                // handle successor nodes
-                this.highlightConnectedToCutSet(model, target);
-                // handle current node
-                if (!target.notConnectedToSelectedCutSet) {
-                    currentNode.notConnectedToSelectedCutSet = false;
-                    edge.notConnectedToSelectedCutSet = false;
-                }
-                // handle edges in parents
-                if (currentNode.nodeType === FTNodeType.PARENT) {
-                    const innerEdge = currentNode.children.find(child => child.type === FTA_EDGE_TYPE && (child as FTAEdge).targetId === edge.sourceId) as FTAEdge;
-                    innerEdge.notConnectedToSelectedCutSet = edge.notConnectedToSelectedCutSet;
+                if (edge.target instanceof FTAPort) {
+                    const target = (edge.target as FTAPort).parent as FTANode;
+                    // handle successor nodes
+                    this.highlightConnectedToCutSet(model, target);
+                    // handle current node
+                    if (!target.notConnectedToSelectedCutSet) {
+                        currentNode.notConnectedToSelectedCutSet = false;
+                        edge.notConnectedToSelectedCutSet = false;
+                    }
+                    // handle edges in parents
+                    if (currentNode.nodeType === FTNodeType.PARENT) {
+                        const innerEdge = currentNode.children.find(child => child.type === FTA_EDGE_TYPE && (child as FTAEdge).targetId === edge.sourceId) as FTAEdge;
+                        innerEdge.notConnectedToSelectedCutSet = edge.notConnectedToSelectedCutSet;
+                    }
                 }
             }
         }

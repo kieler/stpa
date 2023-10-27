@@ -17,12 +17,11 @@
 
 import {
     DropDownOption,
-    RangeOption,
     SynthesisOption,
     TransformationOptionType,
-    ValuedSynthesisOption,
+    ValuedSynthesisOption
 } from "../../options/option-models";
-import { SynthesisOptions } from "../../synthesis-options";
+import { SynthesisOptions, layoutCategory } from "../../synthesis-options";
 
 const hierarchyID = "hierarchy";
 const modelOrderID = "modelOrder";
@@ -38,34 +37,11 @@ const hideUCAsID = "hideUCAs";
 const hideSafetyConstraintsID = "hideSafetyConstraints";
 
 const showLabelsID = "showLabels";
-const labelManagementID = "labelManagement";
-const labelShorteningWidthID = "labelShorteningWidth";
 
-const layoutCategoryID = "layoutCategory";
 const filterCategoryID = "filterCategory";
 
 const showControlStructureID = "showControlStructure";
 const showRelationshipGraphID = "showRelationshipGraph";
-
-/**
- * Category for layout options.
- */
-const layoutCategory: SynthesisOption = {
-    id: layoutCategoryID,
-    name: "Layout",
-    type: TransformationOptionType.CATEGORY,
-    initialValue: 0,
-    currentValue: 0,
-    values: [],
-};
-
-/**
- * The option for the layout category.
- */
-const layoutCategoryOption: ValuedSynthesisOption = {
-    synthesisOption: layoutCategory,
-    currentValue: 0,
-};
 
 /**
  * Category for filtering options.
@@ -308,42 +284,6 @@ const hideScenariosWithHazardsOption: ValuedSynthesisOption = {
 };
 
 /**
- * Slider to set the desired width of label lines.
- */
-const labelShorteningWidthOption: ValuedSynthesisOption = {
-    synthesisOption: {
-        id: labelShorteningWidthID,
-        name: "Shortening Width",
-        type: TransformationOptionType.RANGE,
-        initialValue: 30,
-        currentValue: 30,
-        range: { first: 0, second: 100 },
-        stepSize: 1,
-        values: [],
-        category: layoutCategory,
-    } as RangeOption,
-    currentValue: 30,
-};
-
-/**
- * Option to determine the display of node labels.
- * It can be original labels (whole label in one line), wrapping (label is wrapped into multiple lines), 
- * truncate (label is truncated) or no labels.
- */
-const labelManagementOption: ValuedSynthesisOption = {
-    synthesisOption: {
-        id: labelManagementID,
-        name: "Node Label Management",
-        type: TransformationOptionType.CHOICE,
-        initialValue: "Wrapping",
-        currentValue: "Wrapping",
-        values: ["Original Labels", "Wrapping", "Truncate", "No Labels"],
-        category: layoutCategory,
-    },
-    currentValue: "Wrapping",
-};
-
-/**
  * Option to filter the node labels based on the aspect of the node.
  */
 const showLabelsOption: ValuedSynthesisOption = {
@@ -373,16 +313,6 @@ const showLabelsOption: ValuedSynthesisOption = {
 };
 
 /**
- * Values for general the label management.
- */
-export enum labelManagementValue {
-    ORIGINAL,
-    WRAPPING,
-    TRUNCATE,
-    NO_LABELS,
-}
-
-/**
  * Values for filtering the node labels.
  */
 export enum showLabelsValue {
@@ -399,29 +329,27 @@ export enum showLabelsValue {
 }
 
 export class StpaSynthesisOptions extends SynthesisOptions {
-
     constructor() {
         super();
-        this.options = [
-            layoutCategoryOption,
-            filterCategoryOption,
-            hierarchicalGraphOption,
-            modelOrderOption,
-            groupingOfUCAs,
-            filteringOfUCAs,
-            hideSysConsOption,
-            hideRespsOption,
-            hideUCAsOption,
-            hideContConsOption,
-            hideScenariosOption,
-            hideScenariosWithHazardsOption,
-            hideSafetyConstraintsOption,
-            labelManagementOption,
-            labelShorteningWidthOption,
-            showLabelsOption,
-            showControlStructureOption,
-            showRelationshipGraphOption,
-        ];
+        this.options.push(
+            ...[
+                filterCategoryOption,
+                hierarchicalGraphOption,
+                modelOrderOption,
+                groupingOfUCAs,
+                filteringOfUCAs,
+                hideSysConsOption,
+                hideRespsOption,
+                hideUCAsOption,
+                hideContConsOption,
+                hideScenariosOption,
+                hideScenariosWithHazardsOption,
+                hideSafetyConstraintsOption,
+                showLabelsOption,
+                showControlStructureOption,
+                showRelationshipGraphOption,
+            ]
+        );
     }
 
     getModelOrder(): boolean {
@@ -453,25 +381,6 @@ export class StpaSynthesisOptions extends SynthesisOptions {
                 return showLabelsValue.AUTOMATIC;
         }
         return option?.currentValue;
-    }
-
-    getLabelManagement(): labelManagementValue {
-        const option = this.options.find((option) => option.synthesisOption.id === labelManagementID);
-        switch (option?.currentValue) {
-            case "Original Labels":
-                return labelManagementValue.ORIGINAL;
-            case "Wrapping":
-                return labelManagementValue.WRAPPING;
-            case "Truncate":
-                return labelManagementValue.TRUNCATE;
-            case "No Labels":
-                return labelManagementValue.NO_LABELS;
-        }
-        return option?.currentValue;
-    }
-
-    getLabelShorteningWidth(): number {
-        return this.getOption(labelShorteningWidthID)?.currentValue;
     }
 
     setShowRelationshipGraph(value: boolean): void {

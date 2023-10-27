@@ -48,8 +48,10 @@ import {
     STPA_NODE_TYPE,
     STPA_PORT_TYPE,
 } from "./stpa-model";
-import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from "./stpa-synthesis-options";
+import { StpaSynthesisOptions, showLabelsValue } from "./stpa-synthesis-options";
 import { createUCAContextDescription, getAspect, getTargets, setLevelOfCSNodes, setLevelsForSTPANodes } from "./utils";
+import { labelManagementValue } from "../../synthesis-options";
+import { getDescription } from "../../utils";
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     protected readonly options: StpaSynthesisOptions;
@@ -296,7 +298,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param args GeneratorContext of the STPA model.
      * @returns A list of edges representing the commands.
      */
-    protected translateCommandsToEdges(commands: VerticalEdge[], edgetype: EdgeType, args: GeneratorContext<Model>): CSEdge[] {
+    protected translateCommandsToEdges(
+        commands: VerticalEdge[],
+        edgetype: EdgeType,
+        args: GeneratorContext<Model>
+    ): CSEdge[] {
         const idCache = args.idCache;
         const edges: CSEdge[] = [];
         for (const edge of commands) {
@@ -901,60 +907,16 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         idCache: IdCache<AstNode>,
         nodeDescription?: string
     ): SModelElement[] {
-        const labelManagement = this.options.getLabelManagement();
-        const children: SModelElement[] = [];
+        let children: SModelElement[] = [];
         //TODO: automatic label selection
-
         if (nodeDescription && showDescription) {
-            const width = this.options.getLabelShorteningWidth();
-            const words = nodeDescription.split(" ");
-            let current = "";
-            switch (labelManagement) {
-                case labelManagementValue.NO_LABELS:
-                    break;
-                case labelManagementValue.ORIGINAL:
-                    // show complete description in one line
-                    children.push(<SLabel>{
-                        type: "label",
-                        id: idCache.uniqueId(nodeId + ".label"),
-                        text: nodeDescription,
-                    });
-                    break;
-                case labelManagementValue.TRUNCATE:
-                    // truncate description to the set value
-                    if (words.length > 0) {
-                        current = words[0];
-                        for (let i = 1; i < words.length && current.length + words[i].length <= width; i++) {
-                            current += " " + words[i];
-                        }
-                        children.push(<SLabel>{
-                            type: "label",
-                            id: idCache.uniqueId(nodeId + ".label"),
-                            text: current + "...",
-                        });
-                    }
-                    break;
-                case labelManagementValue.WRAPPING:
-                    // wrap description to the set value
-                    const descriptions: string[] = [];
-                    for (const word of words) {
-                        if (current.length + word.length >= width) {
-                            descriptions.push(current);
-                            current = word;
-                        } else {
-                            current += " " + word;
-                        }
-                    }
-                    descriptions.push(current);
-                    for (let i = descriptions.length - 1; i >= 0; i--) {
-                        children.push(<SLabel>{
-                            type: "label",
-                            id: idCache.uniqueId(nodeId + ".label"),
-                            text: descriptions[i],
-                        });
-                    }
-                    break;
-            }
+            children = getDescription(
+                nodeDescription ?? "",
+                this.options.getLabelManagement(),
+                this.options.getLabelShorteningWidth(),
+                nodeId,
+                idCache
+            );
         }
 
         // show the name in the top line

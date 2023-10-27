@@ -18,9 +18,9 @@
 import { AstNode } from "langium";
 import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-sprotty";
 import { SLabel, SModelElement, SModelRoot, SNode } from "sprotty-protocol";
-import { Gate, ModelFTA, isComponent, isCondition, isKNGate } from "../../generated/ast";
+import { Component, Condition, Gate, ModelFTA, TopEvent, isComponent, isCondition, isKNGate } from "../../generated/ast";
+import { getDescription } from "../../utils";
 import { FtaServices } from "../fta-module";
-import { FtaSynthesisOptions, noCutSet, spofsSet } from "../fta-synthesis-options";
 import { namedFtaElement } from "../utils";
 import { DescriptionNode, FTAEdge, FTANode, FTAPort } from "./fta-interfaces";
 import {
@@ -33,6 +33,7 @@ import {
     FTNodeType,
     PortSide,
 } from "./fta-model";
+import { FtaSynthesisOptions, noCutSet, spofsSet } from "./fta-synthesis-options";
 import { getFTNodeType, getTargets } from "./utils";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
@@ -49,9 +50,6 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         super(services);
         this.options = services.options.SynthesisOptions;
     }
-
-    // TODO: replace with synthesis option
-    protected showDescriptions = true;
 
     /**
      * Generates an SGraph for the FTA model contained in {@code args}.
@@ -189,16 +187,23 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     protected generateGate(node: Gate, idCache: IdCache<AstNode>): FTANode {
         const gateNode = this.generateFTNode(node, idCache);
         this.idToSNode.set(gateNode.id, gateNode);
-        if (!this.showDescriptions || node.description === undefined) {
+        if (!this.options.getShowGateDescriptions() || node.description === undefined) {
             return gateNode;
         }
         // create node for gate description
         const descriptionNodeId = idCache.uniqueId(node.name + "Description");
+        const label = getDescription(
+            node.description,
+            this.options.getLabelManagement(),
+            this.options.getLabelShorteningWidth(),
+            descriptionNodeId,
+            idCache
+        ).reverse();
         const descriptionNode: DescriptionNode = {
             type: FTA_DESCRIPTION_NODE_TYPE,
             id: descriptionNodeId,
             name: node.description ?? "",
-            children: this.createNodeLabel(node.description, descriptionNodeId, idCache),
+            children: label,
             layout: "stack",
             inCurrentSelectedCutSet: gateNode.inCurrentSelectedCutSet,
             notConnectedToSelectedCutSet: gateNode.notConnectedToSelectedCutSet,
@@ -221,7 +226,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
 
         const parentId = idCache.uniqueId(node.name + "Parent");
         const port = this.createFTAPort(idCache.uniqueId(parentId + "_port"), PortSide.NORTH);
-        
+
         // create invisible edge from parent to description
         const betweenEdgeId = idCache.uniqueId(node.name + "InvisibleEdge");
         const invisibleEdgeParetToDescription = this.generateFTEdge(
@@ -233,8 +238,14 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         );
 
         // order is important to have the descriptionNode above the gateNode
-        const children: SModelElement[] = [descriptionNode, gateNode, invisibleEdge, port, invisibleEdgeParetToDescription];
-        
+        const children: SModelElement[] = [
+            descriptionNode,
+            gateNode,
+            invisibleEdge,
+            port,
+            invisibleEdgeParetToDescription,
+        ];
+
         // create invisible node that contains the desciprion and gate node
         const parent = {
             type: FTA_NODE_TYPE,
@@ -271,10 +282,20 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     protected generateFTNode(node: namedFtaElement, idCache: IdCache<AstNode>): FTANode {
         const nodeId = idCache.uniqueId(node.name.replace(" ", ""), node);
         const children: SModelElement[] = this.createNodeLabel(node.name, nodeId, idCache);
+        if (this.options.getShowComponentDescriptions() && (node.$type === Component || node.$type === Condition) && node.description !== undefined) {
+            const label = getDescription(
+                node.description,
+                this.options.getLabelManagement(),
+                this.options.getLabelShorteningWidth(),
+                nodeId,
+                idCache
+            );
+            children.push(...label.reverse());
+        }
         // one port for outgoing edges
         const port = this.createFTAPort(idCache.uniqueId(nodeId + "_port"), PortSide.NORTH);
         children.push(port);
-        this.nodeToPort.set(nodeId, port);  
+        this.nodeToPort.set(nodeId, port);
         const description = isComponent(node) || isCondition(node) ? node.description : "";
         const set = this.options.getCutSet();
         let includedInCutSet = set !== noCutSet.id ? set.includes(node.name) : false;

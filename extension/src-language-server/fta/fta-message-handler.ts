@@ -15,15 +15,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { AstNode } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection } from "vscode-languageserver";
+import { ModelFTA } from "../generated/ast";
 import { getModel } from "../utils";
-import { determineMinimalCutSets, determineCutSetsForFT } from "./analysis/fta-cutSet-calculator";
+import { determineCutSetsForFT, determineMinimalCutSets } from "./analysis/fta-cutSet-calculator";
 import { FtaServices } from "./fta-module";
 import { cutSetsToString } from "./utils";
-import { ModelFTA } from "../generated/ast";
-import { AstNode } from "langium";
-import { noCutSet } from "./fta-synthesis-options";
 
 /**
  * Adds handlers for notifications regarding fta.

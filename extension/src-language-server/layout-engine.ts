@@ -15,13 +15,29 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ElkExtendedEdge, ElkPrimitiveEdge } from "elkjs/lib/elk-api";
+import { ElkExtendedEdge, ElkNode, ElkPrimitiveEdge } from "elkjs/lib/elk-api";
 import { ElkLayoutEngine } from "sprotty-elk/lib/elk-layout";
-import { Point, SEdge, SModelIndex } from "sprotty-protocol";
+import { Point, SEdge, SGraph, SModelIndex } from "sprotty-protocol";
 import { FTAEdge } from "../src-webview/fta/fta-model";
 import { FTA_EDGE_TYPE } from "./fta/diagram/fta-model";
 
 export class LayoutEngine extends ElkLayoutEngine {
+    layout(graph: SGraph, index?: SModelIndex | undefined): SGraph | Promise<SGraph> {
+        if (this.getBasicType(graph) !== "graph") {
+            return graph;
+        }
+        if (!index) {
+            index = new SModelIndex();
+            index.add(graph);
+        }
+        const elkGraph = this.transformToElk(graph, index) as ElkNode;
+        const debugElkGraph = JSON.stringify(elkGraph);
+        console.log(debugElkGraph);
+        return this.elk.layout(elkGraph).then((result) => {
+            this.applyLayout(result, index!);
+            return graph;
+        });
+    }
 
     /** Override method to save the junctionpoints in FTAEdges*/
     protected applyEdge(sedge: SEdge, elkEdge: ElkExtendedEdge, index: SModelIndex): void {
