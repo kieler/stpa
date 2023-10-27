@@ -43,7 +43,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
 
     protected parentOfGate: Map<string, SNode> = new Map();
     protected descriptionOfGate: Map<string, SNode> = new Map();
-    protected parentToPort: Map<string, FTAPort> = new Map();
+    protected nodeToPort: Map<string, FTAPort> = new Map();
 
     constructor(services: FtaServices) {
         super(services);
@@ -134,12 +134,11 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
                     if (this.parentOfGate.has(targetId)) {
                         // get the port id from the parent
                         const parent = this.parentOfGate.get(targetId);
-                        targetPortId = this.parentToPort.get(parent?.id ?? "")?.id;
+                        targetPortId = this.nodeToPort.get(parent?.id ?? "")?.id;
                     } else {
-                        // create port for the target node
+                        // get the port id from the target node
                         const targetNode = this.idToSNode.get(targetId);
-                        targetPortId = idCache.uniqueId(edgeId + "_port");
-                        targetNode?.children?.push(this.createFTAPort(targetPortId, PortSide.NORTH));
+                        targetPortId = this.nodeToPort.get(targetNode?.id ?? "")?.id;
                     }
 
                     if (targetPortId) {
@@ -215,7 +214,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         const invisibleEdge = this.generateFTEdge(
             idCache.uniqueId(node.name + "InvisibleEdge"),
             descriptionNode.id,
-            gateNode.id,
+            this.nodeToPort.get(gateNode.id)?.id ?? gateNode.id,
             FTA_INVISIBLE_EDGE_TYPE,
             idCache
         );
@@ -259,7 +258,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         this.idToSNode.set(descriptionNode.id, descriptionNode);
         this.descriptionOfGate.set(gateNode.id, descriptionNode);
         this.parentOfGate.set(gateNode.id, parent);
-        this.parentToPort.set(parent.id, port);
+        this.nodeToPort.set(parent.id, port);
         return parent;
     }
 
@@ -272,6 +271,10 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     protected generateFTNode(node: namedFtaElement, idCache: IdCache<AstNode>): FTANode {
         const nodeId = idCache.uniqueId(node.name.replace(" ", ""), node);
         const children: SModelElement[] = this.createNodeLabel(node.name, nodeId, idCache);
+        // one port for outgoing edges
+        const port = this.createFTAPort(idCache.uniqueId(nodeId + "_port"), PortSide.NORTH);
+        children.push(port);
+        this.nodeToPort.set(nodeId, port);  
         const description = isComponent(node) || isCondition(node) ? node.description : "";
         const set = this.options.getCutSet();
         let includedInCutSet = set !== noCutSet.id ? set.includes(node.name) : false;
