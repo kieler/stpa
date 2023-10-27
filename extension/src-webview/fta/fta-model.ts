@@ -16,6 +16,7 @@
  */
 
 import {
+    Point,
     SEdge,
     SNode,
     SPort,
@@ -24,7 +25,7 @@ import {
     hoverFeedbackFeature,
     layoutContainerFeature,
     popupFeature,
-    selectFeature,
+    selectFeature
 } from "sprotty";
 
 /* fault tree element types */
@@ -77,6 +78,7 @@ export class DescriptionNode extends SNode {
  */
 export class FTAEdge extends SEdge {
     notConnectedToSelectedCutSet?: boolean;
+    junctionPoints?: Point[];
 }
 
 /** Port representing a port in the FTA graph. */

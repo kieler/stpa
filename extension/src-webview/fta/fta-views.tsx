@@ -19,7 +19,7 @@
 import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
 import { Hoverable, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SShapeElement, Selectable, svg } from 'sprotty';
-import { renderAndGate, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderOval, renderRectangle, renderVerticalLine } from "../views-rendering";
+import { renderAndGate, renderEllipse, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderOval, renderRectangle, renderVerticalLine } from "../views-rendering";
 import { DescriptionNode, FTAEdge, FTANode, FTAPort, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
 
 @injectable()
@@ -32,8 +32,16 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
             const p = segments[i];
             path += ` L ${p.x},${p.y}`;
         }
+        // renderings for all junction points
+        const junctionPointRenderings = edge.junctionPoints?.map(junctionPoint =>
+            renderEllipse(junctionPoint.x, junctionPoint.y, 4, 4, 1)
+        );
+
         // if an FTANode is selected, the components not connected to it should fade out
-        return <path class-fta-edge={true} class-greyed-out={edge.notConnectedToSelectedCutSet} d={path} />;
+        return <g>
+            <path class-fta-edge={true} class-greyed-out={edge.notConnectedToSelectedCutSet} d={path} />
+            {...(junctionPointRenderings ?? [])}
+        </g>;
     }
 
 }

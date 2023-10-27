@@ -32,6 +32,16 @@ export function renderOval(node: SNode): VNode {
         ry={Math.max(node.size.height, 0) / 2.0} />;
 }
 
+export function renderEllipse(x: number | undefined, y: number | undefined, width: number, height: number, lineWidth: number): VNode {
+    return <ellipse
+        {...(x && y ? { transform: `translate(${x},${y})` } : {})}
+        cx={0}
+        cy={0}
+        rx={width / 2 - lineWidth / 2}
+        ry={height / 2 - lineWidth / 2}
+    />;
+}
+
 /**
  * Creates a rectangle for {@code node}.
  * @param node The node that should be represented by a rectangle.

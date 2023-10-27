@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdge, SNode, SPort } from "sprotty-protocol";
+import { Point, SEdge, SNode, SPort } from "sprotty-protocol";
 import { FTNodeType, PortSide } from "./fta-model";
 
 /**
@@ -42,6 +42,7 @@ export interface DescriptionNode extends SNode {
  */
 export interface FTAEdge extends SEdge {
     notConnectedToSelectedCutSet?: boolean;
+    junctionPoints?: Point[];
 }
 
 /** Port representing a port in the FTA graph. */
