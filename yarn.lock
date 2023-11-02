@@ -238,10 +238,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@kieler/table-webview@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@kieler/table-webview/-/table-webview-0.0.4.tgz#c68a0652423a3c5f74a635fc5432e1430f758ee3"
-  integrity sha512-ZUAdX8dUCq72UdpFJz61bPX8eoJqnRuiJBOIFgOb+NqUke13zo4QmkeapmgA4zSKFBx5GC6nhSDQvVr9CMD4AQ==
+"@kieler/table-webview@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@kieler/table-webview/-/table-webview-0.0.3.tgz#33199d9b0d8cd88d0aad6d4230617b94942482aa"
+  integrity sha512-XiDfn/MwHzVEpXLWC5DT6Ysg/5Zke3GlbtjBDDPRD1mLFXIekOCxkGYAKu068djqSAg3hsoiIhwLwWBfm48VNQ==
   dependencies:
     "@types/vscode" "^1.56.0"
     reflect-metadata "^0.1.13"

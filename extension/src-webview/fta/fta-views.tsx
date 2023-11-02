@@ -19,7 +19,7 @@
 import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
 import { Hoverable, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SShapeElement, Selectable, svg } from 'sprotty';
-import { renderAndGate, renderEllipse, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderOval, renderRectangle, renderVerticalLine } from "../views-rendering";
+import { renderAndGate, renderEllipse, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderOval, renderRectangle, renderRoundedRectangle, renderVerticalLine } from "../views-rendering";
 import { DescriptionNode, FTAEdge, FTANode, FTAPort, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
 
 @injectable()
@@ -38,8 +38,8 @@ export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
         );
 
         // if an FTANode is selected, the components not connected to it should fade out
-        return <g>
-            <path class-fta-edge={true} class-greyed-out={edge.notConnectedToSelectedCutSet} d={path} />
+        return <g class-fta-edge={true} class-greyed-out={edge.notConnectedToSelectedCutSet}>
+            <path d={path} />
             {...(junctionPointRenderings ?? [])}
         </g>;
     }
@@ -93,11 +93,9 @@ export class FTANodeView extends RectangularNodeView {
             case FTNodeType.TOPEVENT:
                 element = renderRectangle(node);
                 break;
-            case (FTNodeType.COMPONENT || FTNodeType.CONDITION):
-                element = renderOval(node);
-                break;
+            case FTNodeType.COMPONENT:
             case FTNodeType.CONDITION:
-                element = renderOval(node);
+                element = renderRoundedRectangle(node, 15, 15);
                 break;
             case FTNodeType.AND:
                 element = renderAndGate(node);
@@ -121,7 +119,7 @@ export class FTANodeView extends RectangularNodeView {
             class-fta-node={true}
             class-mouseover={node.hoverFeedback}
             class-greyed-out={node.notConnectedToSelectedCutSet}>
-            <g class-node-selected={node.selected} class-fta-highlight-node={node.inCurrentSelectedCutSet}>{element}</g>
+            <g class-top-event={node.type === FTA_NODE_TYPE && node.topOfAnalysis} class-node-selected={node.selected} class-fta-highlight-node={node.inCurrentSelectedCutSet}>{element}</g>
             {context.renderChildren(node)}
         </g>;
     }

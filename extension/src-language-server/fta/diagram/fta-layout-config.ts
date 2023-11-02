@@ -28,6 +28,7 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
             "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
             "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN",
+            "org.eclipse.elk.spacing.portPort": "0.0",
         };
     }
 
@@ -43,6 +44,15 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
                             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
                             "org.eclipse.elk.spacing.portPort": "0.0",
                             "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN",
+                        };
+                    case FTNodeType.COMPONENT:
+                    case FTNodeType.CONDITION:
+                        return {
+                            "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
+                            "org.eclipse.elk.spacing.portPort": "0.0",
+                            "org.eclipse.elk.nodeSize.constraints": "MINIMUM_SIZE, NODE_LABELS",
+                            "org.eclipse.elk.nodeSize.minimum": "(30, 30)",
+                            "org.eclipse.elk.spacing.labelNode": "20.0",
                         };
                     default:
                         return {

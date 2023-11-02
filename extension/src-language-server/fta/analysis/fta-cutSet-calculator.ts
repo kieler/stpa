@@ -29,6 +29,8 @@ import {
 } from "../../generated/ast";
 import { namedFtaElement } from "../utils";
 
+export let topOfAnalysis: string | undefined;
+
 /**
  * Determines the minimal cut sets for the fault tree constructured by {@code allNodes}.
  * @param allNodes All nodes in the fault tree.
@@ -69,9 +71,10 @@ function checkMinimalCutSet(cutSet: Set<namedFtaElement>, allCutSets: Set<namedF
 /**
  * Determines all cut sets of a fault tree.
  * @param allNodes All nodes of the fault tree.
+ * @param startNode The node from which the cut sets should be determined.
  * @returns the cut sets of the fault tree.
  */
-export function determineCutSetsForFT(allNodes: AstNode[]): Set<namedFtaElement>[] {
+export function determineCutSetsForFT(allNodes: AstNode[], startNode?: namedFtaElement): Set<namedFtaElement>[] {
     /*  Idea:
             Start from the top event.
             Get the only child of top event (will always be only one) as our starting node.
@@ -79,8 +82,13 @@ export function determineCutSetsForFT(allNodes: AstNode[]): Set<namedFtaElement>
             In the evaluation we check if the child has children too and do the same recursively until 
             the children are components.
             Depending on the type of the node process the results of the children differently. */
-
-    const startNode = getChildOfTopEvent(allNodes);
+            
+    topOfAnalysis = startNode?.name;
+    if (!startNode) {
+        topOfAnalysis = (allNodes.find((node) => isTopEvent(node)) as namedFtaElement).name;
+        // if no start node is given, the top event is used as start node
+        startNode = getChildOfTopEvent(allNodes);
+    }
     if (startNode) {
         // determine the cut sets of the Fault Tree
         return determineCutSetsForGate(startNode, allNodes);

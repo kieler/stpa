@@ -52,6 +52,7 @@ export class FTANode extends SNode {
     name: string;
     nodeType: FTNodeType = FTNodeType.UNDEFINED;
     description: string = "";
+    topOfAnalysis?: boolean;
     inCurrentSelectedCutSet?: boolean;
     notConnectedToSelectedCutSet?: boolean;
     k?: number;

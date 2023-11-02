@@ -60,3 +60,7 @@
 .description-border {
     stroke: dimgray;
 }
+
+.top-event {
+    stroke: dodgerblue;
+}

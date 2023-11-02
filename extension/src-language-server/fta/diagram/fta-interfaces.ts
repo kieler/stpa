@@ -25,6 +25,7 @@ export interface FTANode extends SNode {
     name: string;
     nodeType: FTNodeType;
     description: string;
+    topOfAnalysis?: boolean;
     inCurrentSelectedCutSet?: boolean;
     notConnectedToSelectedCutSet?: boolean;
     k?: number;

@@ -79,12 +79,14 @@ export function renderVerticalLine(node: SNode): VNode {
 /**
  * Creates a rounded rectangle for {@code node}.
  * @param node The node that should be represented by a rounded rectangle.
+ * @param rx The x-radius of the rounded corners.
+ * @param ry The y-radius of the rounded corners.
  * @returns A rounded rectangle for {@code node}.
  */
-export function renderRoundedRectangle(node: SNode): VNode {
+export function renderRoundedRectangle(node: SNode, rx = 5, ry = 5): VNode {
     return <rect
         x="0" y="0"
-        rx="5" ry="5"
+        rx={rx} ry={ry}
         width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
     />;
 }

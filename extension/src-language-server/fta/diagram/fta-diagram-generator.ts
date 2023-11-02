@@ -35,6 +35,7 @@ import {
 } from "./fta-model";
 import { FtaSynthesisOptions, noCutSet, spofsSet } from "./fta-synthesis-options";
 import { getFTNodeType, getTargets } from "./utils";
+import { topOfAnalysis } from "../analysis/fta-cutSet-calculator";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     protected readonly options: FtaSynthesisOptions;
@@ -314,7 +315,8 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             description,
             children,
             includedInCutSet,
-            notConnected
+            notConnected,
+            topOfAnalysis === node.name && this.options.getCutSet() !== noCutSet.id
         );
 
         this.idToSNode.set(nodeId, ftNode);
@@ -333,7 +335,8 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         description: string,
         children: SModelElement[],
         includedInCutSet: boolean | undefined,
-        notConnected: boolean | undefined
+        notConnected: boolean | undefined,
+        topOfAnalysis: boolean | undefined
     ): FTANode {
         return {
             type: FTA_NODE_TYPE,
@@ -345,6 +348,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             layout: "stack",
             inCurrentSelectedCutSet: includedInCutSet,
             notConnectedToSelectedCutSet: notConnected,
+            topOfAnalysis: topOfAnalysis,
             layoutOptions: {
                 paddingTop: 10.0,
                 paddingBottom: 10.0,

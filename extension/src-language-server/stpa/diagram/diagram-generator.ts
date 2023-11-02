@@ -31,6 +31,7 @@ import {
     isSystemConstraint,
     isUCA,
 } from "../../generated/ast";
+import { getDescription } from "../../utils";
 import { StpaServices } from "../stpa-module";
 import { collectElementsWithSubComps, leafElement } from "../utils";
 import { filterModel } from "./filtering";
@@ -50,8 +51,6 @@ import {
 } from "./stpa-model";
 import { StpaSynthesisOptions, showLabelsValue } from "./stpa-synthesis-options";
 import { createUCAContextDescription, getAspect, getTargets, setLevelOfCSNodes, setLevelsForSTPANodes } from "./utils";
-import { labelManagementValue } from "../../synthesis-options";
-import { getDescription } from "../../utils";
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     protected readonly options: StpaSynthesisOptions;
@@ -88,7 +87,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             // subcomponents have edges to the parent
             const hazards = collectElementsWithSubComps(filteredModel.hazards);
             const sysCons = collectElementsWithSubComps(filteredModel.systemLevelConstraints);
-            stpaChildren = stpaChildren.concat([
+            stpaChildren = stpaChildren?.concat([
                 ...hazards
                     .map((sh) =>
                         this.generateAspectWithEdges(
@@ -110,7 +109,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             ]);
         } else {
             // subcomponents are contained in the parent
-            stpaChildren = stpaChildren.concat([
+            stpaChildren = stpaChildren?.concat([
                 ...filteredModel.hazards
                     ?.map((h) =>
                         this.generateAspectWithEdges(
@@ -134,7 +133,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     .flat(2),
             ]);
         }
-        stpaChildren = stpaChildren.concat([
+        stpaChildren = stpaChildren?.concat([
             ...filteredModel.responsibilities
                 ?.map((r) =>
                     r.responsiblitiesForOneSystem.map((resp) =>
@@ -201,7 +200,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
         // filtering the nodes of the STPA graph
         const stpaNodes: STPANode[] = [];
-        for (const node of stpaChildren) {
+        for (const node of stpaChildren ?? []) {
             if (node.type === STPA_NODE_TYPE) {
                 stpaNodes.push(node as STPANode);
             }
