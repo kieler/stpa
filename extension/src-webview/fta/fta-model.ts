@@ -18,6 +18,7 @@
 import {
     Point,
     SEdge,
+    SGraph,
     SNode,
     SPort,
     connectableFeature,
@@ -57,6 +58,10 @@ export class FTANode extends SNode {
     notConnectedToSelectedCutSet?: boolean;
     k?: number;
     n?: number;
+}
+
+export class FTAGraph extends SGraph {
+    modelOrder?: boolean;
 }
 
 export class DescriptionNode extends SNode {

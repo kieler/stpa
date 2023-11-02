@@ -24,7 +24,6 @@ import {
 import { SynthesisOptions, layoutCategory } from "../../synthesis-options";
 
 const hierarchyID = "hierarchy";
-const modelOrderID = "modelOrder";
 const groupingUCAsID = "groupingUCAs";
 export const filteringUCAsID = "filteringUCAs";
 
@@ -134,22 +133,6 @@ const hierarchicalGraphOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: hierarchyID,
         name: "Hierarchy",
-        type: TransformationOptionType.CHECK,
-        initialValue: true,
-        currentValue: true,
-        values: [true, false],
-        category: layoutCategory,
-    },
-    currentValue: true,
-};
-
-/**
- * Boolean option to toggle model order.
- */
-const modelOrderOption: ValuedSynthesisOption = {
-    synthesisOption: {
-        id: modelOrderID,
-        name: "Model Order",
         type: TransformationOptionType.CHECK,
         initialValue: true,
         currentValue: true,
@@ -335,7 +318,6 @@ export class StpaSynthesisOptions extends SynthesisOptions {
             ...[
                 filterCategoryOption,
                 hierarchicalGraphOption,
-                modelOrderOption,
                 groupingOfUCAs,
                 filteringOfUCAs,
                 hideSysConsOption,
@@ -350,10 +332,6 @@ export class StpaSynthesisOptions extends SynthesisOptions {
                 showRelationshipGraphOption,
             ]
         );
-    }
-
-    getModelOrder(): boolean {
-        return this.getOption(modelOrderID)?.currentValue;
     }
 
     getShowLabels(): showLabelsValue {

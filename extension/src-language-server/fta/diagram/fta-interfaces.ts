@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Point, SEdge, SNode, SPort } from "sprotty-protocol";
+import { Point, SEdge, SGraph, SNode, SPort } from "sprotty-protocol";
 import { FTNodeType, PortSide } from "./fta-model";
 
 /**
@@ -30,6 +30,10 @@ export interface FTANode extends SNode {
     notConnectedToSelectedCutSet?: boolean;
     k?: number;
     n?: number;
+}
+
+export interface FTAGraph extends SGraph {
+    modelOrder?: boolean;
 }
 
 export interface DescriptionNode extends SNode {

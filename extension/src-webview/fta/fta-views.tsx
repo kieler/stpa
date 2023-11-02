@@ -20,7 +20,7 @@ import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
 import { Hoverable, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SShapeElement, Selectable, svg } from 'sprotty';
 import { renderAndGate, renderEllipse, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderOval, renderRectangle, renderRoundedRectangle, renderVerticalLine } from "../views-rendering";
-import { DescriptionNode, FTAEdge, FTANode, FTAPort, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
+import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
 
 @injectable()
 export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
@@ -128,7 +128,7 @@ export class FTANodeView extends RectangularNodeView {
 @injectable()
 export class FTAGraphView extends SGraphView {
 
-    render(model: Readonly<SGraph>, context: RenderingContext): VNode {
+    render(model: Readonly<FTAGraph>, context: RenderingContext): VNode {
         if (model.children.length !== 0) {
             const topEvent = model.children.find(node => node instanceof FTANode && node.nodeType === FTNodeType.TOPEVENT);
             if (topEvent) {

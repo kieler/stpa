@@ -22,7 +22,7 @@ import { Component, Condition, Gate, ModelFTA, TopEvent, isComponent, isConditio
 import { getDescription } from "../../utils";
 import { FtaServices } from "../fta-module";
 import { namedFtaElement } from "../utils";
-import { DescriptionNode, FTAEdge, FTANode, FTAPort } from "./fta-interfaces";
+import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort } from "./fta-interfaces";
 import {
     FTA_DESCRIPTION_NODE_TYPE,
     FTA_EDGE_TYPE,
@@ -82,11 +82,14 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             );
         }
 
-        return {
+        const graph: FTAGraph = {
             type: FTA_GRAPH_TYPE,
             id: "root",
             children: ftaChildren,
         };
+        graph.modelOrder = this.options.getModelOrder();
+
+        return graph;
     }
 
     /**

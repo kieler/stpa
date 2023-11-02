@@ -19,6 +19,7 @@ import { RangeOption, SynthesisOption, TransformationOptionType, ValuedSynthesis
 
 const labelManagementID = "labelManagement";
 const labelShorteningWidthID = "labelShorteningWidth";
+const modelOrderID = "modelOrder";
 
 const layoutCategoryID = "layoutCategory";
 
@@ -79,6 +80,22 @@ const labelManagementOption: ValuedSynthesisOption = {
 };
 
 /**
+ * Boolean option to toggle model order.
+ */
+const modelOrderOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: modelOrderID,
+        name: "Model Order",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false],
+        category: layoutCategory,
+    },
+    currentValue: true,
+};
+
+/**
  * Values for general the label management.
  */
 export enum labelManagementValue {
@@ -95,7 +112,8 @@ export class SynthesisOptions {
         this.options = [
             layoutCategoryOption,
             labelManagementOption,
-            labelShorteningWidthOption,];
+            labelShorteningWidthOption,
+            modelOrderOption];
     }
 
     getSynthesisOptions(): ValuedSynthesisOption[] {
@@ -124,5 +142,9 @@ export class SynthesisOptions {
 
     getLabelShorteningWidth(): number {
         return this.getOption(labelShorteningWidthID)?.currentValue;
+    }
+
+    getModelOrder(): boolean {
+        return this.getOption(modelOrderID)?.currentValue;
     }
 }

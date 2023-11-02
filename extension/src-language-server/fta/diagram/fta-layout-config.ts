@@ -17,56 +17,56 @@
 
 import { LayoutOptions } from "elkjs";
 import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout";
-import { SGraph, SNode, SModelIndex } from "sprotty-protocol";
-import { FTANode, FTAPort } from "./fta-interfaces";
+import { SModelIndex, SNode } from "sprotty-protocol";
+import { FTAGraph, FTANode, FTAPort } from "./fta-interfaces";
 import { FTA_DESCRIPTION_NODE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType, PortSide } from "./fta-model";
 
 export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
-    protected graphOptions(_sgraph: SGraph, _index: SModelIndex): LayoutOptions {
-        return {
+    protected graphOptions(sgraph: FTAGraph, _index: SModelIndex): LayoutOptions {
+        const options: LayoutOptions = {
             "org.eclipse.elk.direction": "DOWN",
             "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
             "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN",
             "org.eclipse.elk.spacing.portPort": "0.0",
         };
+
+        if (sgraph.modelOrder) {
+            options["org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeOrdering"] = "NODES_AND_EDGES";
+            options["org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder"] = "true";
+            options["org.eclipse.elk.separateConnectedComponents"] = "false";
+        }
+        return options;
     }
 
     protected nodeOptions(snode: SNode, _index: SModelIndex): LayoutOptions | undefined {
+        const options: LayoutOptions = {
+            "org.eclipse.elk.portConstraints": "FIXED_SIDE",
+            "org.eclipse.elk.spacing.portPort": "0.0",
+            "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
+        };
         switch (snode.type) {
             case FTA_NODE_TYPE:
                 switch ((snode as FTANode).nodeType) {
                     case FTNodeType.PARENT:
-                        return {
-                            "org.eclipse.elk.direction": "DOWN",
-                            "org.eclipse.elk.padding": "[top=0.0,left=0.0,bottom=10.0,right=0.0]",
-                            "org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers": "2",
-                            "org.eclipse.elk.portConstraints": "FIXED_SIDE",
-                            "org.eclipse.elk.spacing.portPort": "0.0",
-                            "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN",
-                        };
+                        options["org.eclipse.elk.direction"] = "DOWN";
+                        options["org.eclipse.elk.padding"] = "[top=0.0,left=0.0,bottom=10.0,right=0.0]";
+                        options["org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers"] = "2";
+                        options["org.eclipse.elk.hierarchyHandling"] = "INCLUDE_CHILDREN";
+                        break;
                     case FTNodeType.COMPONENT:
                     case FTNodeType.CONDITION:
-                        return {
-                            "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
-                            "org.eclipse.elk.spacing.portPort": "0.0",
-                            "org.eclipse.elk.nodeSize.constraints": "MINIMUM_SIZE, NODE_LABELS",
-                            "org.eclipse.elk.nodeSize.minimum": "(30, 30)",
-                            "org.eclipse.elk.spacing.labelNode": "20.0",
-                        };
-                    default:
-                        return {
-                            "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
-                            "org.eclipse.elk.spacing.portPort": "0.0",
-                        };
+                        options["org.eclipse.elk.nodeSize.constraints"] = "MINIMUM_SIZE, NODE_LABELS";
+                        options["org.eclipse.elk.nodeSize.minimum"] = "(30, 30)";
+                        options["org.eclipse.elk.spacing.labelNode"] = "20.0";
+                        break;
                 }
+                break;
             case FTA_DESCRIPTION_NODE_TYPE:
-                return {
-                    "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
-                    "org.eclipse.elk.spacing.portPort": "0.0",
-                    "org.eclipse.elk.nodeSize.constraints": "NODE_LABELS",
-                };
+                options["org.eclipse.elk.nodeSize.constraints"] = "NODE_LABELS";
+                break;
         }
+        return options;
     }
 
     protected portOptions(sport: FTAPort, index: SModelIndex): LayoutOptions | undefined {
