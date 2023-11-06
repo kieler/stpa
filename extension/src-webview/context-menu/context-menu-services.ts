@@ -26,16 +26,11 @@ export class ContextMenuService implements IContextMenuService {
     show(items: MenuItem[], anchor: Anchor, onHide?: (() => void) | undefined): void {
         // create or get the context menu
         const menu = this.getOrCreateContextMenu(onHide);
-        // reset content of the menu
-        menu.innerHTML = "";
 
         // add the items to the menu
         for (const item of items) {
             this.addItemToContextMenu(menu, item);
         }
-
-        // display the context menu
-        menu.style.display = "block";
 
         // position the context menu
         menu.style.left = anchor.x.toString() + "px";
@@ -63,16 +58,15 @@ export class ContextMenuService implements IContextMenuService {
             // creates the context menu
             menu = document.createElement("ul");
             menu.id = this.contextMenuID;
-            menu.style.display = "none";
             menu.classList.add("context-menu");
 
             // if the context menu is left, we hide it
             menu.addEventListener("mouseleave", () => {
-                if (menu !== null) {
-                    menu.style.display = "none";
-                }
                 if (onHide !== undefined) {
                     onHide();
+                }
+                if (menu !== null) {
+                    menu.classList.add("hidden");
                 }
             });
 
@@ -84,6 +78,10 @@ export class ContextMenuService implements IContextMenuService {
                 console.log("Context menu could not be added to the DOM.");
                 return menu;
             }
+        } else {
+            // reset the menu
+            menu.innerHTML = "";
+            menu.classList.remove("hidden");
         }
         return menu;
     }

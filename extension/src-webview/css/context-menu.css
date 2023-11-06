@@ -10,6 +10,10 @@
     color: #3e4144;
 }
 
+.context-menu.hidden {
+    display: none;
+}
+
 .context-menu-item {
     display: block;
     background-color: #f4f5f6;
@@ -17,7 +21,7 @@
     padding: 5px;
 }
 
-.selected {
+.context-menu-item.selected {
     background-color: #bae5dd;
     border: 1px solid #40c2a8;
     border-radius: 5px;
