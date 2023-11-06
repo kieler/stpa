@@ -3,6 +3,7 @@
 @import "./theme.css";
 @import "./stpa-diagram.css";
 @import "./fta-diagram.css";
+@import "./context-menu.css";
 
 /* sprotty and black/white colors */
 .vscode-high-contrast .print-node {

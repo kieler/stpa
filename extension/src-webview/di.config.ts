@@ -35,15 +35,18 @@ import {
     configureCommand,
     configureModelElement,
     loadDefaultModules,
-    overrideViewerOptions,
+    overrideViewerOptions
 } from "sprotty";
 import { SvgCommand } from "./actions";
+import { ContextMenuService } from "./context-menu/context-menu-services";
+import { ContextMenuProvider } from "./context-menu/context-menu-provider";
 import { SvgPostprocessor } from "./exportPostProcessor";
 import { CustomSvgExporter } from "./exporter";
 import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort, FTA_DESCRIPTION_NODE_TYPE, FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_INVISIBLE_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE } from "./fta/fta-model";
 import { DescriptionNodeView, FTAGraphView, FTAInvisibleEdgeView, FTANodeView, PolylineArrowEdgeViewFTA } from "./fta/fta-views";
 import { PastaModelViewer } from "./model-viewer";
 import { optionsModule } from "./options/options-module";
+import { PASTA_LABEL_TYPE, PastaLabel } from "./pasta-model";
 import { sidebarModule } from "./sidebar";
 import {
     CSEdge,
@@ -84,6 +87,9 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     bind(SvgPostprocessor).toSelf().inSingletonScope();
     bind(TYPES.HiddenVNodePostprocessor).toService(SvgPostprocessor);
     configureCommand({ bind, isBound }, SvgCommand);
+    // context-menu
+    bind(TYPES.IContextMenuService).to(ContextMenuService);   
+    bind(TYPES.IContextMenuItemProvider).to(ContextMenuProvider);
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
@@ -92,6 +98,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     configureModelElement(context, "html", HtmlRoot, HtmlRootView);
     configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
 
+    configureModelElement(context, PASTA_LABEL_TYPE, PastaLabel, SLabelView);
     // STPA
     configureModelElement(context, "graph", SGraph, STPAGraphView);
     configureModelElement(context, DUMMY_NODE_TYPE, CSNode, CSNodeView);

@@ -17,9 +17,10 @@
 
 import { AstNode } from "langium";
 import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-sprotty";
-import { SLabel, SModelElement, SModelRoot, SNode } from "sprotty-protocol";
-import { Component, Condition, Gate, ModelFTA, TopEvent, isComponent, isCondition, isKNGate } from "../../generated/ast";
+import { SModelElement, SModelRoot, SNode } from "sprotty-protocol";
+import { Component, Condition, Gate, ModelFTA, isComponent, isCondition, isKNGate } from "../../generated/ast";
 import { getDescription } from "../../utils";
+import { topOfAnalysis } from "../analysis/fta-cutSet-calculator";
 import { FtaServices } from "../fta-module";
 import { namedFtaElement } from "../utils";
 import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort } from "./fta-interfaces";
@@ -35,7 +36,7 @@ import {
 } from "./fta-model";
 import { FtaSynthesisOptions, noCutSet, spofsSet } from "./fta-synthesis-options";
 import { getFTNodeType, getTargets } from "./utils";
-import { topOfAnalysis } from "../analysis/fta-cutSet-calculator";
+import { PASTA_LABEL_TYPE, PastaLabel } from "../../pasta-model";
 
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     protected readonly options: FtaSynthesisOptions;
@@ -368,10 +369,10 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @param idCache The ID cache of the FTA model.
      * @returns SLabel element representing {@code label}.
      */
-    protected createNodeLabel(label: string, id: string, idCache: IdCache<AstNode>): SLabel[] {
+    protected createNodeLabel(label: string, id: string, idCache: IdCache<AstNode>): PastaLabel[] {
         return [
-            <SLabel>{
-                type: "label",
+            <PastaLabel>{
+                type: PASTA_LABEL_TYPE,
                 id: idCache.uniqueId(id + "_label"),
                 text: label,
             },
@@ -385,9 +386,9 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @param idCache The ID cache of the FTA model.
      * @returns SLabel element representing {@code label}.
      */
-    protected createEdgeLabel(label: string, id: string, idCache: IdCache<AstNode>): SLabel[] {
+    protected createEdgeLabel(label: string, id: string, idCache: IdCache<AstNode>): PastaLabel[] {
         return [
-            <SLabel>{
+            <PastaLabel>{
                 type: "label:xref",
                 id: idCache.uniqueId(id + "_label"),
                 text: label,

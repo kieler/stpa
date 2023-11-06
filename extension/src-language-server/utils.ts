@@ -17,8 +17,8 @@
 
 import { AstNode, LangiumSharedServices } from "langium";
 import { IdCache, LangiumSprottySharedServices } from "langium-sprotty";
-import { SLabel } from "sprotty-protocol";
 import { URI } from "vscode-uri";
+import { PastaLabel } from "./pasta-model";
 import { labelManagementValue } from "./synthesis-options";
 
 /**
@@ -42,8 +42,8 @@ export function getDescription(
     labelWidth: number,
     nodeId: string,
     idCache: IdCache<AstNode>
-): SLabel[] {
-    const labels: SLabel[] = [];
+): PastaLabel[] {
+    const labels: PastaLabel[] = [];
     const words = description.split(" ");
     let current = "";
     switch (labelManagement) {
@@ -51,7 +51,7 @@ export function getDescription(
             break;
         case labelManagementValue.ORIGINAL:
             // show complete description in one line
-            labels.push(<SLabel>{
+            labels.push(<PastaLabel>{
                 type: "label",
                 id: idCache.uniqueId(nodeId + "_label"),
                 text: description,
@@ -64,7 +64,7 @@ export function getDescription(
                 for (let i = 1; i < words.length && current.length + words[i].length <= labelWidth; i++) {
                     current += " " + words[i];
                 }
-                labels.push(<SLabel>{
+                labels.push(<PastaLabel>{
                     type: "label",
                     id: idCache.uniqueId(nodeId + "_label"),
                     text: current + "...",
@@ -84,7 +84,7 @@ export function getDescription(
             }
             descriptions.push(current);
             for (let i = descriptions.length - 1; i >= 0; i--) {
-                labels.push(<SLabel>{
+                labels.push(<PastaLabel>{
                     type: "label",
                     id: idCache.uniqueId(nodeId + "_label"),
                     text: descriptions[i],
