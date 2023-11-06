@@ -26,7 +26,7 @@ export class ContextMenuProvider implements IContextMenuItemProvider {
         if (root.type === FTA_GRAPH_TYPE) {
             return Promise.resolve([
                 {
-                    label: "Add Node",
+                    label: "Cut Set Analysis",
                     actions: []
                 } as LabeledAction
             ]);

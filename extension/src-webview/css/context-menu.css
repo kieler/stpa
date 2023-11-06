@@ -3,4 +3,22 @@
     margin-left: -1px;
     background-color: #f4f5f6;
     border: 2px solid #bfc2c3;
+    float: right;
+    position: absolute;
+    list-style: none;
+    padding: 0;
+    color: #3e4144;
+}
+
+.context-menu-item {
+    display: block;
+    background-color: #f4f5f6;
+    position: relative;
+    padding: 5px;
+}
+
+.selected {
+    background-color: #bae5dd;
+    border: 1px solid #40c2a8;
+    border-radius: 5px;
 }

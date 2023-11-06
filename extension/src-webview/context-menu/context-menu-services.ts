@@ -20,29 +20,60 @@ import { Anchor, IContextMenuService, MenuItem } from "sprotty";
 
 @injectable()
 export class ContextMenuService implements IContextMenuService {
-    protected contextmenuID = "contextMenu"; //ID used to find the contextmenu
-
-    protected onHide: any; // if the contextmenu should be hidden and there was a hide method provided
+    /* The id of the context menu. */
+    protected contextMenuID = "contextMenu";
 
     show(items: MenuItem[], anchor: Anchor, onHide?: (() => void) | undefined): void {
-        //If no menu exists we want to create one
-        let menu = document.getElementById(this.contextmenuID);
-        if (menu === null) {
-            // creates the context menu and styles it
-            menu = document.createElement("ul");
-            menu.id = this.contextmenuID;
-            this.setupMenuEntrys(menu);
-            menu.style.marginTop = "-1px";
-            menu.style.marginLeft = "-1px";
-            menu.style.backgroundColor = "#f4f5f6";
-            menu.style.border = "2px solid #bfc2c3";
+        // create or get the context menu
+        const menu = this.getOrCreateContextMenu(onHide);
+        // reset content of the menu
+        menu.innerHTML = "";
 
-            // if the context menu is leaved, we hide it
+        // add the items to the menu
+        for (const item of items) {
+            this.addItemToContextMenu(menu, item);
+        }
+
+        // display the context menu
+        menu.style.display = "block";
+
+        // position the context menu
+        menu.style.left = anchor.x.toString() + "px";
+        menu.style.top = anchor.y.toString() + "px";
+
+        const window_height = menu.parentElement!.offsetHeight;
+        const window_width = menu.parentElement!.offsetWidth;
+        // if the context menu would be partially outside the view, we relocate it so it fits inside
+        if (menu.offsetHeight + menu.offsetTop > window_height) {
+            menu.style.top = (window_height - menu.offsetHeight).toString() + "px";
+        }
+        if (menu.offsetWidth + menu.offsetLeft > window_width) {
+            menu.style.left = (window_width - menu.offsetWidth).toString() + "px";
+        }
+    }
+
+    /**
+     * Creates a context menu with the "contextMenuID" if it does not exist yet, and adds it to the DOM.
+     * Otherwise it returns the existing one.
+     * @returns the context menu with the "contextMenuID".
+     */
+    protected getOrCreateContextMenu(onHide?: () => void): HTMLElement {
+        let menu = document.getElementById(this.contextMenuID);
+        if (menu === null) {
+            // creates the context menu
+            menu = document.createElement("ul");
+            menu.id = this.contextMenuID;
+            menu.style.display = "none";
+            menu.classList.add("context-menu");
+
+            // if the context menu is left, we hide it
             menu.addEventListener("mouseleave", () => {
                 if (menu !== null) {
                     menu.style.display = "none";
                 }
-                if (this.onHide !== undefined) { this.onHide();}
+                if (onHide !== undefined) {
+                    onHide();
+                }
             });
 
             // adds the context menu to the dom
@@ -50,67 +81,34 @@ export class ContextMenuService implements IContextMenuService {
             if (sprotty.length !== 0) {
                 sprotty[0].appendChild(menu);
             } else {
-                return;
+                console.log("Context menu could not be added to the DOM.");
+                return menu;
             }
         }
-        //if a contextmenu was opened before there may be items in it therefor we reset it here
-        menu.innerHTML = "";
-        menu.style.backgroundColor = "#f4f5f6";
-
-        //for every structured change we can do we want to display it to the user
-        for (const item of items) {
-            //Create an item to add to the menu via dom manipulation
-            const new_item = document.createElement("li");
-            this.setupItemEntrys(new_item);
-            new_item.innerText = item.label; //label is shown to the user
-            new_item.id = item.label;
-
-            // simple mouselisteners so the color changes to indicate what is selected
-            new_item.addEventListener("mouseenter", (ev) => {
-                new_item.style.backgroundColor = "#bae5dd";
-                new_item.style.border = "1px solid #40c2a8";
-                new_item.style.borderRadius = "5px";
-            });
-            new_item.addEventListener("mouseleave", (ev) => {
-                new_item.style.backgroundColor = "#f4f5f6";
-                new_item.style.border = "";
-                new_item.style.borderRadius = "";
-            });
-            //actually appends the items to the context menu
-            menu.appendChild(new_item);
-        }
-
-        //Displays the contextmenu
-        menu.style.display = "block";
-        this.onHide = onHide;
-
-        //Positioning of the context menu
-        menu.style.left = anchor.x.toString() + "px";
-        menu.style.top = anchor.y.toString() + "px";
-
-        const window_height = menu.parentElement!.offsetHeight;
-        const window_width = menu.parentElement!.offsetWidth;
-        //if the contextmenu would be partially outside the view we need to relocate it so it fits inside
-        if (menu.offsetHeight + menu.offsetTop > window_height)
-            menu.style.top = (window_height - menu.offsetHeight).toString() + "px";
-
-        if (menu.offsetWidth + menu.offsetLeft > window_width)
-            menu.style.left = (window_width - menu.offsetWidth).toString() + "px";
+        return menu;
     }
 
-    setupItemEntrys(item: HTMLElement): void {
-        item.style.display = "block";
-        item.style.backgroundColor = "#f4f5f6";
-        item.style.position = "relative";
-        item.style.padding = "5px";
-    }
+    /**
+     * Creates a DOM element for the given {@code item} and adds it to the given {@code menu}.
+     * @param menu The menu to which the item should be added.
+     * @param item The item to be added to the menu.
+     */
+    protected addItemToContextMenu(menu: HTMLElement, item: MenuItem): void {
+        // creates the dom element for the item
+        const domItem = document.createElement("li");
+        domItem.classList.add("context-menu-item");
+        domItem.innerText = item.label;
+        domItem.id = item.label;
 
-    setupMenuEntrys(menu: HTMLElement): void {
-        menu.style.float = "right";
-        menu.style.position = "absolute";
-        menu.style.listStyle = "none";
-        menu.style.padding = "0";
-        menu.style.display = "none";
-        menu.style.color = "#3e4144";
+        // highlights the item when the mouse is over it
+        domItem.addEventListener("mouseenter", () => {
+            domItem.classList.add("selected");
+        });
+        domItem.addEventListener("mouseleave", () => {
+            domItem.classList.remove("selected");
+        });
+
+        // append the item to the menu
+        menu.appendChild(domItem);
     }
 }
