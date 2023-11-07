@@ -25,14 +25,15 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
     protected graphOptions(sgraph: FTAGraph, _index: SModelIndex): LayoutOptions {
         const options: LayoutOptions = {
             "org.eclipse.elk.direction": "DOWN",
-            "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+            "org.eclipse.elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
             "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN",
             "org.eclipse.elk.spacing.portPort": "0.0",
+            "org.eclipse.elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED"
         };
 
         if (sgraph.modelOrder) {
-            options["org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeOrdering"] = "NODES_AND_EDGES";
+            options["org.eclipse.elk.layered.considerModelOrder.strategy"] = "NODES_AND_EDGES";
             options["org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder"] = "true";
             options["org.eclipse.elk.separateConnectedComponents"] = "false";
         }
