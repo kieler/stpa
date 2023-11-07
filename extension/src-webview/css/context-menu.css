@@ -1,13 +1,14 @@
 .context-menu {
     margin-top: -1px;
     margin-left: -1px;
-    background-color: #f4f5f6;
-    border: 2px solid #bfc2c3;
+    background-color: var(--vscode-menu-background);
+    border: 1px solid var(--vscode-menu-border);
+    border-radius: 5px;
     float: right;
     position: absolute;
     list-style: none;
-    padding: 0;
-    color: #3e4144;
+    padding: 2px;
+    color: var(--vscode-menu-foreground);
 }
 
 .context-menu.hidden {
@@ -16,13 +17,15 @@
 
 .context-menu-item {
     display: block;
-    background-color: #f4f5f6;
     position: relative;
     padding: 5px;
 }
 
 .context-menu-item.selected {
-    background-color: #bae5dd;
-    border: 1px solid #40c2a8;
+    background-color: var(--vscode-menu-selectionBackground);
+    border: 1px solid ;
     border-radius: 5px;
+    color: var(--vscode-menu-selectionForeground);
 }
+
+/* --vscode-menu-separatorBackground: #d4d4d4; */
