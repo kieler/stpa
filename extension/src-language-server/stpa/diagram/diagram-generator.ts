@@ -921,7 +921,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // show the name in the top line
         children.push(<SLabel>{
             type: "label",
-            id: idCache.uniqueId(nodeId + ".label"),
+            id: idCache.uniqueId(nodeId + "_label"),
             text: nodeName,
         });
         return children;
