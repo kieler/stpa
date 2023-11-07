@@ -65,12 +65,14 @@
 body[class='vscode-light'] .sprotty-label {
     fill: black;
     stroke-width: 0;
+    cursor: default;
 }
 
 .sprotty-label {
     fill: var(--vscode-editorActiveLineNumber-foreground);
     stroke-width: 0;
     font-family: Arial, sans-serif;
+    cursor: default;
 }
 
 .sprotty-button {
