@@ -35,7 +35,11 @@ export class ContextMenuProvider implements IContextMenuItemProvider {
                 {
                     label: "Cut Set Analysis",
                     actions: [{ kind: "cutSetAnalysis", startId: clickedNode?.id} as CutSetAnalysisAction]
-                } as LabeledAction
+                } as LabeledAction,
+                // {
+                //     label: "Minimal Cut Set Analysis",
+                //     actions: [{ kind: "minimalCutSetAnalysis", startId: clickedNode?.id} as MinimalCutSetAnalysisAction]
+                // } as LabeledAction
             ]);
         } else {
             return Promise.resolve([]);

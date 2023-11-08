@@ -35,7 +35,8 @@ import {
     configureCommand,
     configureModelElement,
     loadDefaultModules,
-    overrideViewerOptions
+    overrideViewerOptions,
+    contextMenuModule
 } from "sprotty";
 import { SvgCommand } from "./actions";
 import { ContextMenuService } from "./context-menu/context-menu-services";
@@ -46,7 +47,6 @@ import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort, FTA_DESCRIPTION_N
 import { DescriptionNodeView, FTAGraphView, FTAInvisibleEdgeView, FTANodeView, PolylineArrowEdgeViewFTA } from "./fta/fta-views";
 import { PastaModelViewer } from "./model-viewer";
 import { optionsModule } from "./options/options-module";
-import { PASTA_LABEL_TYPE, PastaLabel } from "./pasta-model";
 import { sidebarModule } from "./sidebar";
 import {
     CSEdge,
@@ -72,6 +72,7 @@ import {
     STPAGraphView,
     STPANodeView,
 } from "./stpa/stpa-views";
+import pastaContextMenuModule from "./context-menu/di.config";
 
 const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
@@ -98,7 +99,6 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     configureModelElement(context, "html", HtmlRoot, HtmlRootView);
     configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
 
-    configureModelElement(context, PASTA_LABEL_TYPE, PastaLabel, SLabelView);
     // STPA
     configureModelElement(context, "graph", SGraph, STPAGraphView);
     configureModelElement(context, DUMMY_NODE_TYPE, CSNode, CSNodeView);
@@ -121,8 +121,8 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
 
 export function createPastaDiagramContainer(widgetId: string): Container {
     const container = new Container();
-    loadDefaultModules(container);
-    container.load(pastaDiagramModule, sidebarModule, optionsModule);
+    loadDefaultModules(container, {exclude: [contextMenuModule]});
+    container.load(pastaContextMenuModule, pastaDiagramModule, sidebarModule, optionsModule);
     overrideViewerOptions(container, {
         needsClientLayout: true,
         needsServerLayout: true,

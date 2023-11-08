@@ -15,10 +15,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SLabel } from 'sprotty-protocol';
 
+import { ContextMenuMouseListener, SModelElement, SLabel } from "sprotty";
 
-export const PASTA_LABEL_TYPE = "label:pasta";
+export class PastaContextMenuMouseListener extends ContextMenuMouseListener {
 
-export interface PastaLabel extends SLabel {
+    protected async showContextMenu(target: SModelElement, event: MouseEvent): Promise<void> {
+        if (target instanceof SLabel) {
+            super.showContextMenu(target.parent, event);
+        } else {
+            super.showContextMenu(target, event);
+        }
+    }
 }
