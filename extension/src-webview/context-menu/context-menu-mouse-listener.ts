@@ -16,7 +16,7 @@
  */
 
 
-import { ContextMenuMouseListener, SModelElement, SLabel } from "sprotty";
+import { ContextMenuMouseListener, SLabel, SModelElement } from "sprotty";
 
 export class PastaContextMenuMouseListener extends ContextMenuMouseListener {
 

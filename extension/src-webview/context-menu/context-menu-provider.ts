@@ -26,15 +26,25 @@ export class ContextMenuProvider implements IContextMenuItemProvider {
     getItems(root: Readonly<SModelRoot>, lastMousePosition?: Point | undefined): Promise<LabeledAction[]> {
         if (root.type === FTA_GRAPH_TYPE) {
             // find node that was clicked on
-            const clickedNode = root.children.find(child => {
+            let clickedNode: FTANode | undefined;
+
+            root.children.forEach((child) => {
                 if (child.type === FTA_NODE_TYPE) {
-                    return (child as FTANode).selected;
+                    if ((child as FTANode).selected) {
+                        clickedNode = child as FTANode;
+                    } else {
+                        const children = child.children.filter((child) => child.type === FTA_NODE_TYPE);
+                        const selectedChild = children.find(child => (child as FTANode).selected);
+                        if (selectedChild) {
+                            clickedNode = selectedChild as FTANode;
+                        }
+                    }
                 }
             });
             return Promise.resolve([
                 {
                     label: "Cut Set Analysis",
-                    actions: [{ kind: "cutSetAnalysis", startId: clickedNode?.id} as CutSetAnalysisAction]
+                    actions: [{ kind: "cutSetAnalysis", startId: clickedNode?.id } as CutSetAnalysisAction],
                 } as LabeledAction,
                 // {
                 //     label: "Minimal Cut Set Analysis",
@@ -45,5 +55,4 @@ export class ContextMenuProvider implements IContextMenuItemProvider {
             return Promise.resolve([]);
         }
     }
-
 }
