@@ -19,7 +19,7 @@ import { injectable } from "inversify";
 import { IContextMenuItemProvider, LabeledAction, SModelRoot } from "sprotty";
 import { Point } from "sprotty-protocol";
 import { FTANode, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "../fta/fta-model";
-import { CutSetAnalysisAction } from "../actions";
+import { CutSetAnalysisAction, MinimalCutSetAnalysisAction } from "../actions";
 
 @injectable()
 export class ContextMenuProvider implements IContextMenuItemProvider {
@@ -46,10 +46,10 @@ export class ContextMenuProvider implements IContextMenuItemProvider {
                     label: "Cut Set Analysis",
                     actions: [{ kind: "cutSetAnalysis", startId: clickedNode?.id } as CutSetAnalysisAction],
                 } as LabeledAction,
-                // {
-                //     label: "Minimal Cut Set Analysis",
-                //     actions: [{ kind: "minimalCutSetAnalysis", startId: clickedNode?.id} as MinimalCutSetAnalysisAction]
-                // } as LabeledAction
+                {
+                    label: "Minimal Cut Set Analysis",
+                    actions: [{ kind: "minimalCutSetAnalysis", startId: clickedNode?.id} as MinimalCutSetAnalysisAction]
+                } as LabeledAction
             ]);
         } else {
             return Promise.resolve([]);

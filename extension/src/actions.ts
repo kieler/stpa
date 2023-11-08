@@ -75,3 +75,19 @@ export namespace CutSetAnalysisAction {
         };
     }
 }
+
+
+export interface MinimalCutSetAnalysisAction extends Action {
+    kind: typeof MinimalCutSetAnalysisAction.KIND;
+    startId: string
+}
+export namespace MinimalCutSetAnalysisAction {
+    export const KIND = 'minimalCutSetAnalysis';
+
+    export function create(startId: string,): MinimalCutSetAnalysisAction {
+        return {
+            kind: KIND,
+            startId,
+        };
+    }
+}

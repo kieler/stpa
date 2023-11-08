@@ -36,9 +36,9 @@ export let topOfAnalysis: string | undefined;
  * @param allNodes All nodes in the fault tree.
  * @returns the minimal cut sets for a fault tree.
  */
-export function determineMinimalCutSets(allNodes: AstNode[]): Set<namedFtaElement>[] {
+export function determineMinimalCutSets(allNodes: AstNode[], startNode?: namedFtaElement): Set<namedFtaElement>[] {
     // TODO: add minimal flag (could reduce computation cost)
-    const allCutSets = determineCutSetsForFT(allNodes);
+    const allCutSets = determineCutSetsForFT(allNodes, startNode);
 
     // Cut sets are minimal if removing one element destroys the cut set
     // If cut set contains another cut set from the array, remove it since it is not minimal

@@ -18,7 +18,7 @@
 import { isActionMessage, SelectAction } from "sprotty-protocol";
 import { LspWebviewEndpoint } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
-import { CutSetAnalysisAction, SendConfigAction } from "./actions";
+import { CutSetAnalysisAction, MinimalCutSetAnalysisAction, SendConfigAction } from "./actions";
 
 export class StpaLspWebview extends LspWebviewEndpoint {
     receiveAction(message: any): Promise<void> {
@@ -34,6 +34,9 @@ export class StpaLspWebview extends LspWebviewEndpoint {
                     break;
                 case CutSetAnalysisAction.KIND:
                     this.handleCutSetAnalysisAction(message.action as CutSetAnalysisAction);
+                    break;
+                    case MinimalCutSetAnalysisAction.KIND:
+                    this.handleMinimalCutSetAnalysisAction(message.action as MinimalCutSetAnalysisAction);
                     break;
             }
         }
@@ -78,6 +81,14 @@ export class StpaLspWebview extends LspWebviewEndpoint {
         if (uriString !== "") {
             const uri = vscode.Uri.parse(uriString);
             vscode.commands.executeCommand("pasta.fta.cutSets", uri, action.startId);
+        }
+    }
+
+    protected handleMinimalCutSetAnalysisAction(action: MinimalCutSetAnalysisAction): void {
+        const uriString = this.deserializeUriOfDiagramIdentifier();
+        if (uriString !== "") {
+            const uri = vscode.Uri.parse(uriString);
+            vscode.commands.executeCommand("pasta.fta.minimalCutSets", uri, action.startId);
         }
     }
 

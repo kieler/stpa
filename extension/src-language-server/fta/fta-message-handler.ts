@@ -52,8 +52,8 @@ function addCutSetsHandler(
     connection.onRequest("cutSets/generate", async (content: {uri: string, startId?: string}) => {
         return cutSetsRequested(content.uri, ftaServices, sharedServices, false, content.startId);
     });
-    connection.onRequest("cutSets/generateMinimal", async (uri: string) => {
-        return cutSetsRequested(uri, ftaServices, sharedServices, true);
+    connection.onRequest("cutSets/generateMinimal", async (content: {uri: string, startId?: string}) => {
+        return cutSetsRequested(content.uri, ftaServices, sharedServices, true, content.startId);
     });
     connection.onRequest("cutSets/reset", () => {
         return resetCutSets(ftaServices);
@@ -81,7 +81,7 @@ async function cutSetsRequested(
         nodes.push(model.topEvent);
     }
     const startNode = startId ? nodes.find((node) => node.name === startId) : undefined;
-    const cutSets = minimal ? determineMinimalCutSets(nodes) : determineCutSetsForFT(nodes, startNode);
+    const cutSets = minimal ? determineMinimalCutSets(nodes, startNode) : determineCutSetsForFT(nodes, startNode);
     // determine single points of failure
     const spofs: string[] = [];
     for (const cutSet of cutSets) {
