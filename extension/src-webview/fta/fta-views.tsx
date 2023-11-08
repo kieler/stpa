@@ -20,7 +20,7 @@ import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
 import { Hoverable, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SShapeElement, Selectable, svg } from 'sprotty';
 import { renderAndGate, renderEllipse, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderOval, renderRectangle, renderRoundedRectangle, renderVerticalLine } from "../views-rendering";
-import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
+import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort, FTA_DESCRIPTION_NODE_TYPE, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
 
 @injectable()
 export class PolylineArrowEdgeViewFTA extends PolylineEdgeView {
@@ -130,8 +130,22 @@ export class FTAGraphView extends SGraphView {
 
     render(model: Readonly<FTAGraph>, context: RenderingContext): VNode {
         if (model.children.length !== 0) {
-            const topEvent = model.children.find(node => node instanceof FTANode && node.nodeType === FTNodeType.TOPEVENT);
+            const topEvent = model.children.find(node => node instanceof FTANode && node.topOfAnalysis);
+            // model.children.find(node => node instanceof FTANode && node.nodeType === FTNodeType.TOPEVENT);
             if (topEvent) {
+                // if a cut set is selected, for which the top event is not the root, 
+                // we must hide the edges we dont inspect when calling "highlightConnectedToCutSet"
+                model.children.forEach(child => {
+                    if (child.type === FTA_EDGE_TYPE) {
+                        (child as FTAEdge).notConnectedToSelectedCutSet = true;
+                    } else if (child.type === FTA_NODE_TYPE) {
+                        (child as FTANode).children.forEach(child => {
+                            if (child.type === FTA_EDGE_TYPE) {
+                                (child as FTAEdge).notConnectedToSelectedCutSet = true;
+                            }
+                        });
+                    }
+                });
                 this.highlightConnectedToCutSet(model, topEvent as FTANode);
             }
         }
@@ -164,7 +178,7 @@ export class FTAGraphView extends SGraphView {
         // handle nodes in parents
         if (currentNode.nodeType === FTNodeType.PARENT) {
             currentNode.children.forEach(child => {
-                if (child.type === FTA_NODE_TYPE) {
+                if (child.type === FTA_NODE_TYPE || child.type === FTA_DESCRIPTION_NODE_TYPE) {
                     (child as FTANode).notConnectedToSelectedCutSet = currentNode.notConnectedToSelectedCutSet;
                 }
             });
