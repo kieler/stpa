@@ -7,7 +7,7 @@
     float: right;
     position: absolute;
     list-style: none;
-    padding: 2px;
+    padding: 4px;
     color: var(--vscode-menu-foreground);
 }
 
@@ -24,7 +24,7 @@
 
 .context-menu-item.selected {
     background-color: var(--vscode-menu-selectionBackground);
-    border: 1px solid ;
+    /* border: 1px solid ; */
     border-radius: 5px;
     color: var(--vscode-menu-selectionForeground);
 }

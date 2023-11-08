@@ -18,16 +18,23 @@
 import { injectable } from "inversify";
 import { IContextMenuItemProvider, LabeledAction, SModelRoot } from "sprotty";
 import { Point } from "sprotty-protocol";
-import { FTA_GRAPH_TYPE } from "../fta/fta-model";
+import { FTANode, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "../fta/fta-model";
+import { CutSetAnalysisAction } from "../actions";
 
 @injectable()
 export class ContextMenuProvider implements IContextMenuItemProvider {
     getItems(root: Readonly<SModelRoot>, lastMousePosition?: Point | undefined): Promise<LabeledAction[]> {
         if (root.type === FTA_GRAPH_TYPE) {
+            // find node that was clicked on
+            const clickedNode = root.children.find(child => {
+                if (child.type === FTA_NODE_TYPE) {
+                    return (child as FTANode).selected;
+                }
+            });
             return Promise.resolve([
                 {
                     label: "Cut Set Analysis",
-                    actions: []
+                    actions: [{ kind: "cutSetAnalysis", startId: clickedNode?.id} as CutSetAnalysisAction]
                 } as LabeledAction
             ]);
         } else {

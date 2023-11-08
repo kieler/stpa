@@ -212,8 +212,8 @@ function registerSTPACommands(manager: StpaLspVscodeExtension, context: vscode.E
 function registerFTACommands(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext, options: { extensionPrefix: string; }): void {
     // commands for computing and displaying the (minimal) cut sets of the fault tree.
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + ".fta.cutSets", async (uri: vscode.Uri) => {
-            const cutSets: string[] = await languageClient.sendRequest("cutSets/generate", uri.path);
+        vscode.commands.registerCommand(options.extensionPrefix + ".fta.cutSets", async (uri: vscode.Uri, startId?: string) => {
+            const cutSets: string[] = await languageClient.sendRequest("cutSets/generate", {uri: uri.path, startId});
             await manager.openDiagram(uri);
             handleCutSets(manager, cutSets, false);
         })

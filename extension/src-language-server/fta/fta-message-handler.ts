@@ -22,7 +22,7 @@ import { ModelFTA } from "../generated/ast";
 import { getModel } from "../utils";
 import { determineCutSetsForFT, determineMinimalCutSets } from "./analysis/fta-cutSet-calculator";
 import { FtaServices } from "./fta-module";
-import { cutSetsToString } from "./utils";
+import { cutSetsToString, namedFtaElement } from "./utils";
 
 /**
  * Adds handlers for notifications regarding fta.
@@ -49,8 +49,8 @@ function addCutSetsHandler(
     ftaServices: FtaServices,
     sharedServices: LangiumSprottySharedServices
 ): void {
-    connection.onRequest("cutSets/generate", async (uri: string) => {
-        return cutSetsRequested(uri, ftaServices, sharedServices, false);
+    connection.onRequest("cutSets/generate", async (content: {uri: string, startId?: string}) => {
+        return cutSetsRequested(content.uri, ftaServices, sharedServices, false, content.startId);
     });
     connection.onRequest("cutSets/generateMinimal", async (uri: string) => {
         return cutSetsRequested(uri, ftaServices, sharedServices, true);
@@ -72,14 +72,16 @@ async function cutSetsRequested(
     uri: string,
     ftaServices: FtaServices,
     sharedServices: LangiumSprottySharedServices,
-    minimal: boolean
+    minimal: boolean,
+    startId?: string
 ): Promise<string[]> {
     const model = (await getModel(uri, sharedServices)) as ModelFTA;
-    const nodes: AstNode[] = [...model.components, ...model.conditions, ...model.gates];
+    const nodes: namedFtaElement[] = [...model.components, ...model.conditions, ...model.gates];
     if (model.topEvent) {
         nodes.push(model.topEvent);
     }
-    const cutSets = minimal ? determineMinimalCutSets(nodes) : determineCutSetsForFT(nodes);
+    const startNode = startId ? nodes.find((node) => node.name === startId) : undefined;
+    const cutSets = minimal ? determineMinimalCutSets(nodes) : determineCutSetsForFT(nodes, startNode);
     // determine single points of failure
     const spofs: string[] = [];
     for (const cutSet of cutSets) {

@@ -1,15 +1,22 @@
-import { MouseListener, SLabel, SModelElement } from "sprotty";
+import { MouseListener, SLabel, SNode, SModelElement } from "sprotty";
 import { Action } from "sprotty-protocol";
 import { flagConnectedElements, flagSameAspect } from "./helper-methods";
 import { STPAEdge, STPANode, STPA_NODE_TYPE } from "./stpa-model";
 
 export class StpaMouseListener extends MouseListener {
-
     protected flaggedElements: (STPANode | STPAEdge)[] = [];
+    protected lastSelected: SNode | undefined = undefined;
 
     mouseDown(target: SModelElement, event: MouseEvent): (Action | Promise<Action>)[] {
         // when a label is selected, we are interested in its parent node
         target = target instanceof SLabel ? target.parent : target;
+        if (this.lastSelected) {
+            this.lastSelected.selected = false;
+        }
+        if (target instanceof SNode) {
+            target.selected = true;
+            this.lastSelected = target;
+        }
         if (target.type === STPA_NODE_TYPE) {
             if (event.ctrlKey) {
                 // when ctrl is pressed all nodes with the same aspect as the selected one should be highlighted
@@ -34,5 +41,4 @@ export class StpaMouseListener extends MouseListener {
         }
         this.flaggedElements = [];
     }
-
 }

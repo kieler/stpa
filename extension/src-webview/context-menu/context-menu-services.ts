@@ -15,11 +15,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { injectable } from "inversify";
+import { injectable, inject } from "inversify";
 import { Anchor, IContextMenuService, MenuItem } from "sprotty";
+import { ActionNotification } from "sprotty-vscode-protocol";
+import { VsCodeMessenger } from "sprotty-vscode-webview/lib/services";
+import { HOST_EXTENSION } from "vscode-messenger-common";
+import { Messenger } from "vscode-messenger-webview";
 
 @injectable()
 export class ContextMenuService implements IContextMenuService {
+    @inject(VsCodeMessenger) protected messenger: Messenger;
     /* The id of the context menu. */
     protected contextMenuID = "contextMenu";
 
@@ -104,6 +109,13 @@ export class ContextMenuService implements IContextMenuService {
         });
         domItem.addEventListener("mouseleave", () => {
             domItem.classList.remove("selected");
+        });
+
+        // executes the action when the item is clicked
+        domItem.addEventListener("click", () => {
+            for (const action of item.actions ?? []) {
+                this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, { clientId: "", action: action });
+            }
         });
 
         // append the item to the menu

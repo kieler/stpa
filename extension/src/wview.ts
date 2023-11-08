@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -18,7 +18,7 @@
 import { isActionMessage, SelectAction } from "sprotty-protocol";
 import { LspWebviewEndpoint } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
-import { SendConfigAction } from "./actions";
+import { CutSetAnalysisAction, SendConfigAction } from "./actions";
 
 export class StpaLspWebview extends LspWebviewEndpoint {
     receiveAction(message: any): Promise<void> {
@@ -32,6 +32,9 @@ export class StpaLspWebview extends LspWebviewEndpoint {
                 case SelectAction.KIND:
                     this.handleSelectAction(message.action as SelectAction);
                     break;
+                case CutSetAnalysisAction.KIND:
+                    this.handleCutSetAnalysisAction(message.action as CutSetAnalysisAction);
+                    break;
             }
         }
         return super.receiveAction(message);
@@ -42,13 +45,9 @@ export class StpaLspWebview extends LspWebviewEndpoint {
      * @param action The SelectAction.
      */
     protected handleSelectAction(action: SelectAction): void {
-        // the uri string must be desrialized first, since sprotty serializes it and langium does not
-        if (this.diagramIdentifier) {
-            let uriString = this.diagramIdentifier.uri.toString();
-            const match = uriString.match(/file:\/\/\/([a-z]):/i);
-            if (match) {
-                uriString = "file:///" + match[1] + "%3A" + uriString.substring(match[0].length);
-            }
+        // the uri string must be deserialized first, since sprotty serializes it and langium does not
+        const uriString = this.deserializeUriOfDiagramIdentifier();
+        if (uriString !== "") {
             // send ID of the first selected element to the language server to highlight the textual definition in the editor
             this.languageClient.sendNotification("diagram/selected", {
                 label: action.selectedElementsIDs[0],
@@ -72,5 +71,25 @@ export class StpaLspWebview extends LspWebviewEndpoint {
     protected updateConfigValues(action: SendConfigAction): void {
         const configOptions = vscode.workspace.getConfiguration("pasta");
         action.options.forEach((element) => configOptions.update(element.id, element.value));
+    }
+
+    protected handleCutSetAnalysisAction(action: CutSetAnalysisAction): void {
+        const uriString = this.deserializeUriOfDiagramIdentifier();
+        if (uriString !== "") {
+            const uri = vscode.Uri.parse(uriString);
+            vscode.commands.executeCommand("pasta.fta.cutSets", uri, action.startId);
+        }
+    }
+
+    protected deserializeUriOfDiagramIdentifier(): string {
+        if (this.diagramIdentifier) {
+            let uriString = this.diagramIdentifier.uri.toString();
+            const match = uriString.match(/file:\/\/\/([a-z]):/i);
+            if (match) {
+                uriString = "file:///" + match[1] + "%3A" + uriString.substring(match[0].length);
+            }
+            return uriString;
+        }
+        return "";
     }
 }

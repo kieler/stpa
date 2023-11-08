@@ -17,7 +17,7 @@
 
 import { inject } from "inversify";
 import { CommandExecutionContext, CommandResult, HiddenCommand, TYPES, isExportable, isHoverable, isSelectable, isViewport } from "sprotty";
-import { RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
+import { RequestAction, ResponseAction, generateRequestId, Action } from "sprotty-protocol";
 
 
 /** Requests the current SVG from the client. */
@@ -89,6 +89,21 @@ export class SvgCommand extends HiddenCommand {
         return {
             model: context.root,
             modelChanged: false
+        };
+    }
+}
+
+export interface CutSetAnalysisAction extends Action {
+    kind: typeof CutSetAnalysisAction.KIND;
+    startId: string
+}
+export namespace CutSetAnalysisAction {
+    export const KIND = 'cutSetAnalysis';
+
+    export function create(startId: string,): CutSetAnalysisAction {
+        return {
+            kind: KIND,
+            startId,
         };
     }
 }

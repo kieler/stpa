@@ -38,6 +38,7 @@ import { StpaLayoutConfigurator } from "./diagram/layout-config";
 import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options";
 import { StpaScopeProvider } from "./stpa-scopeProvider";
 import { StpaValidationRegistry, StpaValidator } from "./stpa-validator";
+import { LayoutEngine } from "../layout-engine";
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -80,7 +81,7 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
     diagram: {
         DiagramGenerator: (services) => new StpaDiagramGenerator(services),
         ModelLayoutEngine: (services) =>
-            new ElkLayoutEngine(
+            new LayoutEngine(
                 services.layout.ElkFactory,
                 services.layout.ElementFilter,
                 services.layout.LayoutConfigurator

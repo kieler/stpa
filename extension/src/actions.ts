@@ -60,3 +60,18 @@ export namespace GenerateSVGsAction {
         return action.kind === GenerateSVGsAction.KIND;
     }
 }
+
+export interface CutSetAnalysisAction extends Action {
+    kind: typeof CutSetAnalysisAction.KIND;
+    startId: string
+}
+export namespace CutSetAnalysisAction {
+    export const KIND = 'cutSetAnalysis';
+
+    export function create(startId: string,): CutSetAnalysisAction {
+        return {
+            kind: KIND,
+            startId,
+        };
+    }
+}
