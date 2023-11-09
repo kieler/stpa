@@ -130,8 +130,23 @@ export class FTAGraphView extends SGraphView {
 
     render(model: Readonly<FTAGraph>, context: RenderingContext): VNode {
         if (model.children.length !== 0) {
-            const topEvent = model.children.find(node => node instanceof FTANode && node.topOfAnalysis);
-            // model.children.find(node => node instanceof FTANode && node.nodeType === FTNodeType.TOPEVENT);
+
+            // find top event
+            let topEvent: FTANode | undefined;
+            model.children.forEach((child) => {
+                if (child.type === FTA_NODE_TYPE) {
+                    if ((child as FTANode).topOfAnalysis) {
+                        topEvent = child as FTANode;
+                    } else {
+                        const children = child.children.filter((child) => child.type === FTA_NODE_TYPE);
+                        const toaChild = children.find(child => (child as FTANode).topOfAnalysis);
+                        if (toaChild) {
+                            topEvent = toaChild as FTANode;
+                        }
+                    }
+                }
+            });
+
             if (topEvent) {
                 // if a cut set is selected, for which the top event is not the root, 
                 // we must hide the edges we dont inspect when calling "highlightConnectedToCutSet"
@@ -146,7 +161,12 @@ export class FTAGraphView extends SGraphView {
                         });
                     }
                 });
-                this.highlightConnectedToCutSet(model, topEvent as FTANode);
+                // highlight connected nodes
+                if (topEvent.parent.children.find(child => child.type === FTA_DESCRIPTION_NODE_TYPE)) {
+                    this.highlightConnectedToCutSet(model, topEvent.parent as FTANode);
+                } else {
+                    this.highlightConnectedToCutSet(model, topEvent as FTANode);
+                }
             }
         }
 
