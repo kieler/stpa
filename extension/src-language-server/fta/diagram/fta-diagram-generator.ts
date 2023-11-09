@@ -308,7 +308,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         if (set === spofsSet.id) {
             const spofs = this.options.getSpofs();
             includedInCutSet = spofs.includes(node.name);
-            notConnected = false;
+            notConnected = !includedInCutSet;
         }
 
         const ftNode = this.createNode(
