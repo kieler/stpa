@@ -302,7 +302,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         this.nodeToPort.set(nodeId, port);
         const description = isComponent(node) || isCondition(node) ? node.description : "";
         const set = this.options.getCutSet();
-        let includedInCutSet = set !== noCutSet.id ? set.includes(node.name) : false;
+        let includedInCutSet = set !== noCutSet.id ? set.includes(node.name + ",") || set.includes(node.name + "]") : false;
         let notConnected = set !== noCutSet.id ? !includedInCutSet : false;
         // single points of failure should be shown
         if (set === spofsSet.id) {

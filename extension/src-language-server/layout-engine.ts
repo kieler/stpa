@@ -31,8 +31,9 @@ export class LayoutEngine extends ElkLayoutEngine {
             index.add(graph);
         }
         const elkGraph = this.transformToElk(graph, index) as ElkNode;
-        const debugElkGraph = JSON.stringify(elkGraph);
-        console.log(debugElkGraph);
+        /* used to inspect the elk graph in elklive */
+        // const debugElkGraph = JSON.stringify(elkGraph);
+        // console.log(debugElkGraph);
         return this.elk.layout(elkGraph).then((result) => {
             this.applyLayout(result, index!);
             return graph;

@@ -17,7 +17,7 @@
 
 import type { Reference } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { Children, Component, Hazard, LossScenario, Model, ModelFTA, OR, TopEvent, isOR } from "../../generated/ast";
+import { Children, Component, Hazard, LossScenario, Model, ModelFTA, OR, TopEvent, UCA, isOR } from "../../generated/ast";
 import { getModel } from "../../utils";
 
 /**
@@ -47,7 +47,7 @@ export async function createFaultTrees(uri: string, shared: LangiumSprottyShared
 function sortScenarios(model: Model): Map<string, LossScenario[]> {
     const scenarios: Map<string, LossScenario[]> = new Map();
     for (const scenario of model.scenarios) {
-        const hazards = scenario.list?.refs;
+        const hazards = scenario.uca?.ref ? scenario.uca.ref.list.refs : scenario.list.refs;
         for (const hazard of hazards || []) {
             const hazardName = hazard.$refText;
             addToListMap(scenarios, hazardName, scenario);
