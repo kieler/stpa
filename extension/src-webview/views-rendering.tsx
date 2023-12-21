@@ -32,6 +32,15 @@ export function renderOval(node: SNode): VNode {
         ry={Math.max(node.size.height, 0) / 2.0} />;
 }
 
+/**
+ * Creates an ellipse for {@code node}.
+ * @param x The x-coordinate of the ellipse.
+ * @param y The y-coordinate of the ellipse.
+ * @param width The width of the ellipse.
+ * @param height The height of the ellipse.
+ * @param lineWidth The line width of the ellipse.
+ * @returns an ellipse for {@code node}.
+ */
 export function renderEllipse(x: number | undefined, y: number | undefined, width: number, height: number, lineWidth: number): VNode {
     return <ellipse
         {...(x && y ? { transform: `translate(${x},${y})` } : {})}
@@ -257,6 +266,11 @@ export function renderKnGate(node: SNode, k: number, n: number): VNode {
     );
 }
 
+/**
+ * Creates an Or-Gate for {@code node}.
+ * @param node The node that should be represented by an Or-Gate.
+ * @returns an Or-Gate for {@code node}.
+ */
 function createOrGate(node: SNode): string {
     const leftX = 0;
     const rightX = Math.max(node.size.width, 0);

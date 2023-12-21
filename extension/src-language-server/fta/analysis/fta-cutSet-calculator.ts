@@ -29,6 +29,7 @@ import {
 } from "../../generated/ast";
 import { namedFtaElement } from "../utils";
 
+/* element for which the cut sets were determined */
 export let topOfAnalysis: string | undefined;
 
 /**

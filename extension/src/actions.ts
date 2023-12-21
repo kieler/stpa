@@ -61,6 +61,7 @@ export namespace GenerateSVGsAction {
     }
 }
 
+/** Send from client to server to start a cut set analysis with the start node given by the startId */
 export interface CutSetAnalysisAction extends Action {
     kind: typeof CutSetAnalysisAction.KIND;
     startId: string
@@ -76,7 +77,7 @@ export namespace CutSetAnalysisAction {
     }
 }
 
-
+/** Send from client to server to start a minimal cut set analysis with the start node given by the startId */
 export interface MinimalCutSetAnalysisAction extends Action {
     kind: typeof MinimalCutSetAnalysisAction.KIND;
     startId: string

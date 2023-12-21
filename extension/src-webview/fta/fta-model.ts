@@ -60,10 +60,16 @@ export class FTANode extends SNode {
     n?: number;
 }
 
+/**
+ * FTA Graph.
+ */
 export class FTAGraph extends SGraph {
     modelOrder?: boolean;
 }
 
+/**
+ * Description node of a fault tree.
+ */
 export class DescriptionNode extends SNode {
     static readonly DEFAULT_FEATURES = [
         connectableFeature,

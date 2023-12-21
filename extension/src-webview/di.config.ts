@@ -34,13 +34,14 @@ import {
     TYPES,
     configureCommand,
     configureModelElement,
+    contextMenuModule,
     loadDefaultModules,
-    overrideViewerOptions,
-    contextMenuModule
+    overrideViewerOptions
 } from "sprotty";
 import { SvgCommand } from "./actions";
-import { ContextMenuService } from "./context-menu/context-menu-services";
 import { ContextMenuProvider } from "./context-menu/context-menu-provider";
+import { ContextMenuService } from "./context-menu/context-menu-services";
+import pastaContextMenuModule from "./context-menu/di.config";
 import { SvgPostprocessor } from "./exportPostProcessor";
 import { CustomSvgExporter } from "./exporter";
 import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort, FTA_DESCRIPTION_NODE_TYPE, FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_INVISIBLE_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE } from "./fta/fta-model";
@@ -72,7 +73,6 @@ import {
     STPAGraphView,
     STPANodeView,
 } from "./stpa/stpa-views";
-import pastaContextMenuModule from "./context-menu/di.config";
 
 const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();

@@ -17,7 +17,7 @@
 
 import type { Reference } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { Children, Component, Hazard, LossScenario, Model, ModelFTA, OR, TopEvent, UCA, isOR } from "../../generated/ast";
+import { Children, Component, Hazard, LossScenario, Model, ModelFTA, OR, TopEvent } from "../../generated/ast";
 import { getModel } from "../../utils";
 
 /**
@@ -34,7 +34,7 @@ export async function createFaultTrees(uri: string, shared: LangiumSprottyShared
     const scenarios: Map<string, LossScenario[]> = sortScenarios(model);
     // create fault tree for each hazard
     for (const hazard of model.hazards) {
-        faultTrees.push(createFaulTreeForHazard(model, scenarios, hazard));
+        faultTrees.push(createFaulTreeForHazard(scenarios, hazard));
     }
     return faultTrees;
 }
@@ -58,11 +58,10 @@ function sortScenarios(model: Model): Map<string, LossScenario[]> {
 
 /**
  * Creates a fault tree with {@code hazard} as top event.
- * @param stpaModel The stpa model that contains the {@code hazard}.
  * @param hazard The hazard for which the fault tree should be created.
  * @returns the AST of the created fault tree with {@code hazard} as top event.
  */
-function createFaulTreeForHazard(stpaModel: Model, scenarios: Map<string, LossScenario[]>, hazard: Hazard): ModelFTA {
+function createFaulTreeForHazard(scenarios: Map<string, LossScenario[]>, hazard: Hazard): ModelFTA {
     const ftaModel = {} as ModelFTA;
     ftaModel.components = [];
     ftaModel.gates = [];
@@ -108,7 +107,9 @@ function createFaulTreeForHazard(stpaModel: Model, scenarios: Map<string, LossSc
     }
 
     // create gate to connect top event with all other gates
-    const gateChildren = ftaModel.gates.map((gate) => { return { ref: gate, $refText: gate.name } as Reference<Children>; });
+    const gateChildren = ftaModel.gates.map((gate) => {
+        return { ref: gate, $refText: gate.name } as Reference<Children>;
+    });
     const gate = {
         name: `G0`,
         children: gateChildren,
@@ -129,6 +130,12 @@ function createFaulTreeForHazard(stpaModel: Model, scenarios: Map<string, LossSc
     return ftaModel;
 }
 
+/**
+ * Adds {@code value} to the list of {@code map} at {@code key}.
+ * @param map The map to which the value should be added.
+ * @param key The key at which the value should be added.
+ * @param value The value which should be added.
+ */
 function addToListMap(map: Map<string, any[]>, key: string, value: any): void {
     if (map.has(key)) {
         const currentValues = map.get(key);

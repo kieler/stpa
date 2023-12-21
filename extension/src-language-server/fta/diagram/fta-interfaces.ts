@@ -32,10 +32,16 @@ export interface FTANode extends SNode {
     n?: number;
 }
 
+/**
+ * FTA Graph.
+ */
 export interface FTAGraph extends SGraph {
     modelOrder?: boolean;
 }
 
+/**
+ * Description node of a fault tree.
+ */
 export interface DescriptionNode extends SNode {
     name: string;
     inCurrentSelectedCutSet?: boolean;

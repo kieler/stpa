@@ -43,8 +43,11 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     /** Saves the Ids of the generated SNodes */
     protected idToSNode: Map<string, SNode> = new Map();
 
+    /** Saves the parent node of a gate */
     protected parentOfGate: Map<string, SNode> = new Map();
+    /** Saves the description node of a gate */
     protected descriptionOfGate: Map<string, SNode> = new Map();
+    /** Saves the port of a node */
     protected nodeToPort: Map<string, FTAPort> = new Map();
 
     constructor(services: FtaServices) {

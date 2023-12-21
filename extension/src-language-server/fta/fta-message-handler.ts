@@ -15,7 +15,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection } from "vscode-languageserver";
 import { ModelFTA } from "../generated/ast";
@@ -49,10 +48,10 @@ function addCutSetsHandler(
     ftaServices: FtaServices,
     sharedServices: LangiumSprottySharedServices
 ): void {
-    connection.onRequest("cutSets/generate", async (content: {uri: string, startId?: string}) => {
+    connection.onRequest("cutSets/generate", async (content: { uri: string; startId?: string }) => {
         return cutSetsRequested(content.uri, ftaServices, sharedServices, false, content.startId);
     });
-    connection.onRequest("cutSets/generateMinimal", async (content: {uri: string, startId?: string}) => {
+    connection.onRequest("cutSets/generateMinimal", async (content: { uri: string; startId?: string }) => {
         return cutSetsRequested(content.uri, ftaServices, sharedServices, true, content.startId);
     });
     connection.onRequest("cutSets/reset", () => {

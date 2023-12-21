@@ -18,8 +18,8 @@
 /** @jsx svg */
 import { injectable } from 'inversify';
 import { VNode } from "snabbdom";
-import { Hoverable, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SShapeElement, Selectable, svg } from 'sprotty';
-import { renderAndGate, renderEllipse, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderOval, renderRectangle, renderRoundedRectangle, renderVerticalLine } from "../views-rendering";
+import { IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, svg } from 'sprotty';
+import { renderAndGate, renderEllipse, renderHorizontalLine, renderInhibitGate, renderKnGate, renderOrGate, renderRectangle, renderRoundedRectangle, renderVerticalLine } from "../views-rendering";
 import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort, FTA_DESCRIPTION_NODE_TYPE, FTA_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType } from './fta-model';
 
 @injectable()
@@ -56,6 +56,7 @@ export class FTAInvisibleEdgeView extends PolylineArrowEdgeViewFTA {
 @injectable()
 export class DescriptionNodeView extends RectangularNodeView {
     render(node: DescriptionNode, context: RenderingContext): VNode | undefined {
+        // render the description node similar to an on edge label
         const element = renderRectangle(node);
         const border1 = renderHorizontalLine(node);
         const border2 = renderHorizontalLine(node);
@@ -172,7 +173,11 @@ export class FTAGraphView extends SGraphView {
 
         return super.render(model, context);
     }
-
+    /**
+     * Highlights the nodes and edges connected to the selected cut set.
+     * @param model The FTAGraph.
+     * @param currentNode The current node, which should be handled including its targets.
+     */
     protected highlightConnectedToCutSet(model: SGraph, currentNode: FTANode): void {
         for (const port of currentNode.children.filter(child => child.type === FTA_PORT_TYPE)) {
             const edge = model.children.find(child => child.type === FTA_EDGE_TYPE && (child as FTAEdge).sourceId === port.id) as FTAEdge;

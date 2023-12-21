@@ -27,7 +27,6 @@ export class ContextMenuProvider implements IContextMenuItemProvider {
         if (root.type === FTA_GRAPH_TYPE) {
             // find node that was clicked on
             let clickedNode: FTANode | undefined;
-
             root.children.forEach((child) => {
                 if (child.type === FTA_NODE_TYPE) {
                     if ((child as FTANode).selected) {
@@ -41,6 +40,7 @@ export class ContextMenuProvider implements IContextMenuItemProvider {
                     }
                 }
             });
+            // create context menu items
             return Promise.resolve([
                 {
                     label: "Cut Set Analysis",

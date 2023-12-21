@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { injectable, inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { Anchor, IContextMenuService, MenuItem } from "sprotty";
 import { ActionNotification } from "sprotty-vscode-protocol";
 import { VsCodeMessenger } from "sprotty-vscode-webview/lib/services";

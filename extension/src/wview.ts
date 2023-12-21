@@ -71,11 +71,19 @@ export class StpaLspWebview extends LspWebviewEndpoint {
         this.sendAction({ kind: SendConfigAction.KIND, options: renderOptions } as SendConfigAction);
     }
 
+    /**
+     * Updates the configuration of the PASTA extension.
+     * @param action The action containing the configuration options.
+     */
     protected updateConfigValues(action: SendConfigAction): void {
         const configOptions = vscode.workspace.getConfiguration("pasta");
         action.options.forEach((element) => configOptions.update(element.id, element.value));
     }
 
+    /**
+     * Executes the cut set analysis for the given start ID.
+     * @param action The action containing the start ID.
+     */
     protected handleCutSetAnalysisAction(action: CutSetAnalysisAction): void {
         const uriString = this.deserializeUriOfDiagramIdentifier();
         if (uriString !== "") {
@@ -84,6 +92,10 @@ export class StpaLspWebview extends LspWebviewEndpoint {
         }
     }
 
+    /**
+     * Executes the minimal cut set analysis for the given start ID.
+     * @param action The action containing the start ID.
+     */
     protected handleMinimalCutSetAnalysisAction(action: MinimalCutSetAnalysisAction): void {
         const uriString = this.deserializeUriOfDiagramIdentifier();
         if (uriString !== "") {
@@ -92,6 +104,10 @@ export class StpaLspWebview extends LspWebviewEndpoint {
         }
     }
 
+    /**
+     * Deserializes the URI of the diagram identifier.
+     * @returns the deserialized URI of the diagram identifier.
+     */
     protected deserializeUriOfDiagramIdentifier(): string {
         if (this.diagramIdentifier) {
             let uriString = this.diagramIdentifier.uri.toString();

@@ -48,6 +48,9 @@ const analysisCategoryOption: ValuedSynthesisOption = {
     currentValue: 0,
 };
 
+/**
+ * Boolean option to toggle the visualization gate descriptions.
+ */
 const showGateDescriptionsOptions: ValuedSynthesisOption = {
     synthesisOption: {
         id: showGateDescriptionsID,
@@ -61,6 +64,9 @@ const showGateDescriptionsOptions: ValuedSynthesisOption = {
     currentValue: true,
 };
 
+/**
+ * Boolean option to toggle the visualization node descriptions.
+ */
 const showComponentDescriptionsOptions: ValuedSynthesisOption = {
     synthesisOption: {
         id: showComponentDescriptionsID,
@@ -74,6 +80,9 @@ const showComponentDescriptionsOptions: ValuedSynthesisOption = {
     currentValue: false,
 };
 
+/**
+ * Option to highlight the components of a cut set.
+ */
 const cutSets: ValuedSynthesisOption = {
     synthesisOption: {
         id: cutSetsID,
@@ -123,6 +132,9 @@ export class FtaSynthesisOptions extends SynthesisOptions {
         }
     }
 
+    /**
+     * Resets the cutSets option to no cut set.
+     */
     resetCutSets(): void {
         const option = this.getOption(cutSetsID);
         if (option) {

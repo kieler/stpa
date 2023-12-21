@@ -36,6 +36,15 @@ export async function getModel(
     return currentDoc.parseResult.value;
 }
 
+/**
+ * Creates a list of labels containing the given {@code description} respecting the {@code labelManagement} and {@code labelWidth}.
+ * @param description The text for the label to create.
+ * @param labelManagement The label management option.
+ * @param labelWidth The desired width of the label.
+ * @param nodeId The id of the node for which the label is created.
+ * @param idCache The id cache.
+ * @returns a list of labels containing the given {@code description} respecting the {@code labelManagement} and {@code labelWidth}.
+ */
 export function getDescription(
     description: string,
     labelManagement: labelManagementValue,
