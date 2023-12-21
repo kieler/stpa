@@ -80,6 +80,8 @@ function createFaulTreeForHazard(stpaModel: Model, scenarios: Map<string, LossSc
         const causalFactor = scenario.factor;
         if (causalFactor) {
             addToListMap(causalFactors, causalFactor, scenario);
+        } else {
+            addToListMap(causalFactors, "No causal factor", scenario);
         }
     }
 
