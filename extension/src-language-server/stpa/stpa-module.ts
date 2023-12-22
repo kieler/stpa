@@ -27,10 +27,10 @@ import {
 import {
     DefaultElementFilter,
     ElkFactory,
-    ElkLayoutEngine,
     IElementFilter,
-    ILayoutConfigurator,
+    ILayoutConfigurator
 } from "sprotty-elk/lib/elk-layout";
+import { LayoutEngine } from "../layout-engine";
 import { IDEnforcer } from "./ID-enforcer";
 import { ContextTableProvider } from "./contextTable/context-dataProvider";
 import { StpaDiagramGenerator } from "./diagram/diagram-generator";
@@ -80,7 +80,7 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
     diagram: {
         DiagramGenerator: (services) => new StpaDiagramGenerator(services),
         ModelLayoutEngine: (services) =>
-            new ElkLayoutEngine(
+            new LayoutEngine(
                 services.layout.ElkFactory,
                 services.layout.ElementFilter,
                 services.layout.LayoutConfigurator

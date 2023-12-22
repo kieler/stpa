@@ -41,8 +41,27 @@
     fill: dimgrey;
     stroke-width: 0;
     font-size: 10px;
+    cursor: default;
 }
 
 .fta-highlight-node{
     stroke: var(--highlight-node);
+}
+
+.gate-description {
+    stroke: none;
+    fill: darkgrey;
+    fill-opacity: 20%;
+}
+
+.vertical-edge {
+    stroke: lightgray;
+}
+
+.description-border {
+    stroke: dimgray;
+}
+
+.top-event {
+    stroke: dodgerblue;
 }

@@ -173,6 +173,11 @@
                 "category": "STPA PDF Creation"
             },
             {
+                "command": "pasta.stpa.ft.generation",
+                "title": "Generate Fault Trees",
+                "category": "STPA and FTA"
+            },
+            {
                 "command": "pasta.fta.cutSets",
                 "title": "Generate the cut sets",
                 "category": "Cut Sets"
@@ -238,6 +243,10 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
+                    "command": "pasta.stpa.ft.generation",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
                     "command": "pasta.fta.cutSets",
                     "when": "editorLangId == 'fta'"
                 },
@@ -262,7 +271,7 @@
                     "group": "checks"
                 },
                 {
-                    "submenu": "pasta.generate",
+                    "submenu": "pasta.fta.generate",
                     "group": "generate"
                 },
                 {
@@ -272,6 +281,11 @@
                 },
                 {
                     "command": "pasta.stpa.md.creation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "stpa"
+                },
+                {
+                    "command": "pasta.stpa.ft.generation",
                     "when": "editorLangId == 'stpa'",
                     "group": "stpa"
                 }
@@ -298,7 +312,7 @@
                     "group": "navigation"
                 }
             ],
-            "pasta.generate": [
+            "pasta.fta.generate": [
                 {
                     "command": "pasta.fta.cutSets",
                     "when": "editorLangId == 'fta'",
@@ -332,16 +346,6 @@
                     "command": "pasta.contextTable.open",
                     "when": "resourceExtname == '.stpa'",
                     "group": "navigation"
-                },
-                {
-                    "command": "pasta.fta.cutSets",
-                    "when": "resourceExtname == '.fta'",
-                    "group": "navigation"
-                },
-                {
-                    "command": "pasta.fta.minimalCutSets",
-                    "when": "resourceExtname == '.fta'",
-                    "group": "navigation"
                 }
             ]
         },
@@ -351,7 +355,7 @@
                 "label": "Validation Checks"
             },
             {
-                "id": "pasta.generate",
+                "id": "pasta.fta.generate",
                 "label": "Generate cut sets"
             }
         ],

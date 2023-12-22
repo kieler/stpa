@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdge, SNode } from "sprotty-protocol";
-import { FTNodeType } from "./fta-model";
+import { Point, SEdge, SGraph, SNode, SPort } from "sprotty-protocol";
+import { FTNodeType, PortSide } from "./fta-model";
 
 /**
  * Node of a fault tree.
@@ -25,6 +25,7 @@ export interface FTANode extends SNode {
     name: string;
     nodeType: FTNodeType;
     description: string;
+    topOfAnalysis?: boolean;
     inCurrentSelectedCutSet?: boolean;
     notConnectedToSelectedCutSet?: boolean;
     k?: number;
@@ -32,8 +33,30 @@ export interface FTANode extends SNode {
 }
 
 /**
+ * FTA Graph.
+ */
+export interface FTAGraph extends SGraph {
+    modelOrder?: boolean;
+}
+
+/**
+ * Description node of a fault tree.
+ */
+export interface DescriptionNode extends SNode {
+    name: string;
+    inCurrentSelectedCutSet?: boolean;
+    notConnectedToSelectedCutSet?: boolean;
+}
+
+/**
  * Edge of a fault tree.
  */
 export interface FTAEdge extends SEdge {
     notConnectedToSelectedCutSet?: boolean;
+    junctionPoints?: Point[];
+}
+
+/** Port representing a port in the FTA graph. */
+export interface FTAPort extends SPort {
+    side?: PortSide;
 }

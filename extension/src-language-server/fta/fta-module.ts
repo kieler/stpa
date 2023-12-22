@@ -21,14 +21,14 @@ import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty"
 import {
     DefaultElementFilter,
     ElkFactory,
-    ElkLayoutEngine,
     IElementFilter,
-    ILayoutConfigurator,
+    ILayoutConfigurator
 } from "sprotty-elk/lib/elk-layout";
+import { LayoutEngine } from "../layout-engine";
 import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator";
 import { FtaLayoutConfigurator } from "./diagram/fta-layout-config";
+import { FtaSynthesisOptions } from "./diagram/fta-synthesis-options";
 import { FtaScopeProvider } from "./fta-scopeProvider";
-import { FtaSynthesisOptions } from "./fta-synthesis-options";
 import { FtaValidationRegistry, FtaValidator } from "./fta-validator";
 
 /**
@@ -66,7 +66,7 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
     diagram: {
         DiagramGenerator: (services) => new FtaDiagramGenerator(services),
         ModelLayoutEngine: (services) =>
-            new ElkLayoutEngine(
+            new LayoutEngine(
                 services.layout.ElkFactory,
                 services.layout.ElementFilter,
                 services.layout.LayoutConfigurator

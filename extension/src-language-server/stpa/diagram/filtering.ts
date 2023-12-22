@@ -135,12 +135,12 @@ function setFilterUCAOption(allUCAs: ActionUCAs[], rules: Rule[], options: StpaS
     const set = new Set<string>();
     set.add("all UCAs");
     // collect all available control actions
-    allUCAs.forEach((uca) => {
+    allUCAs?.forEach((uca) => {
         if (!set.has(uca.system.ref?.name + "." + uca.action.ref?.name)) {
             set.add(uca.system.ref?.name + "." + uca.action.ref?.name);
         }
     });
-    rules.forEach((rule) => {
+    rules?.forEach((rule) => {
         if (!set.has(rule.system.ref?.name + "." + rule.action.ref?.name)) {
             set.add(rule.system.ref?.name + "." + rule.action.ref?.name);
         }

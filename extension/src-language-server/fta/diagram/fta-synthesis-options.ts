@@ -15,15 +15,74 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { DropDownOption, TransformationOptionType, ValuedSynthesisOption } from "../options/option-models";
-import { SynthesisOptions } from "../synthesis-options";
+import { DropDownOption, SynthesisOption, TransformationOptionType, ValuedSynthesisOption } from "../../options/option-models";
+import { SynthesisOptions, layoutCategory } from "../../synthesis-options";
 
 const cutSetsID = "cutSets";
+const showGateDescriptionsID = "showGateDescriptions";
+const showComponentDescriptionsID = "showComponentDescriptions";
+
+const analysisCategoryID = "analysisCategory";
 
 export const noCutSet = { displayName: "---", id: "---" };
 /* Single Point of Failure */
 export const spofsSet = { displayName: "SPoFs", id: "SPoFs" };
 
+/**
+ * Category for analysis options.
+ */
+export const analysisCategory: SynthesisOption = {
+    id: analysisCategoryID,
+    name: "Analysis",
+    type: TransformationOptionType.CATEGORY,
+    initialValue: 0,
+    currentValue: 0,
+    values: [],
+};
+
+/**
+ * The option for the analysis category.
+ */
+const analysisCategoryOption: ValuedSynthesisOption = {
+    synthesisOption: analysisCategory,
+    currentValue: 0,
+};
+
+/**
+ * Boolean option to toggle the visualization gate descriptions.
+ */
+const showGateDescriptionsOptions: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showGateDescriptionsID,
+        name: "Show Gate Descriptions",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false],
+        category: layoutCategory,
+    },
+    currentValue: true,
+};
+
+/**
+ * Boolean option to toggle the visualization node descriptions.
+ */
+const showComponentDescriptionsOptions: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showComponentDescriptionsID,
+        name: "Show Component Descriptions",
+        type: TransformationOptionType.CHECK,
+        initialValue: false,
+        currentValue: false,
+        values: [true, false],
+        category: layoutCategory,
+    },
+    currentValue: false,
+};
+
+/**
+ * Option to highlight the components of a cut set.
+ */
 const cutSets: ValuedSynthesisOption = {
     synthesisOption: {
         id: cutSetsID,
@@ -34,6 +93,7 @@ const cutSets: ValuedSynthesisOption = {
         initialValue: noCutSet.id,
         currentValue: noCutSet.id,
         values: [noCutSet],
+        category: analysisCategory,
     } as DropDownOption,
     currentValue: noCutSet.id,
 };
@@ -42,7 +102,15 @@ export class FtaSynthesisOptions extends SynthesisOptions {
     protected spofs: string[];
     constructor() {
         super();
-        this.options = [cutSets];
+        this.options.push(...[analysisCategoryOption, cutSets, showGateDescriptionsOptions, showComponentDescriptionsOptions]);
+    }
+
+    getShowGateDescriptions(): boolean {
+        return this.getOption(showGateDescriptionsID)?.currentValue;
+    }
+
+    getShowComponentDescriptions(): boolean {
+        return this.getOption(showComponentDescriptionsID)?.currentValue;
     }
 
     /**
@@ -61,6 +129,21 @@ export class FtaSynthesisOptions extends SynthesisOptions {
                 option.synthesisOption.initialValue = noCutSet.id;
                 option.currentValue = noCutSet.id;
             }
+        }
+    }
+
+    /**
+     * Resets the cutSets option to no cut set.
+     */
+    resetCutSets(): void {
+        const option = this.getOption(cutSetsID);
+        if (option) {
+            (option.synthesisOption as DropDownOption).availableValues = [noCutSet];
+            (option.synthesisOption as DropDownOption).values = [noCutSet];
+            (option.synthesisOption as DropDownOption).currentId = noCutSet.id;
+            option.synthesisOption.currentValue = noCutSet.id;
+            option.synthesisOption.initialValue = noCutSet.id;
+            option.currentValue = noCutSet.id;
         }
     }
 

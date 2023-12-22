@@ -33,6 +33,25 @@ export function renderOval(node: SNode): VNode {
 }
 
 /**
+ * Creates an ellipse for {@code node}.
+ * @param x The x-coordinate of the ellipse.
+ * @param y The y-coordinate of the ellipse.
+ * @param width The width of the ellipse.
+ * @param height The height of the ellipse.
+ * @param lineWidth The line width of the ellipse.
+ * @returns an ellipse for {@code node}.
+ */
+export function renderEllipse(x: number | undefined, y: number | undefined, width: number, height: number, lineWidth: number): VNode {
+    return <ellipse
+        {...(x && y ? { transform: `translate(${x},${y})` } : {})}
+        cx={0}
+        cy={0}
+        rx={width / 2 - lineWidth / 2}
+        ry={height / 2 - lineWidth / 2}
+    />;
+}
+
+/**
  * Creates a rectangle for {@code node}.
  * @param node The node that should be represented by a rectangle.
  * @returns A rectangle for {@code node}.
@@ -45,14 +64,38 @@ export function renderRectangle(node: SNode): VNode {
 }
 
 /**
+ * Creates rectangle borders for {@code node} at the top and bottom.
+ * @param node The node that should be represented by a rectangle.
+ * @returns rectangle borders for {@code node} at the top and bottom.
+ */
+export function renderHorizontalLine(node: SNode): VNode {
+    return <g>
+        <line x="0" y="0" x2={Math.max(node.size.width, 0)} y2="0" />
+    </g>;
+}
+
+/**
+ * Creates a vertical line going through {@code node} in the middle.
+ * @param node The node for which the line should be created.
+ * @returns a vertical line for {@code node} going through its mid.
+ */
+export function renderVerticalLine(node: SNode): VNode {
+    return <g>
+        <line x="0" y="0" x2="0" y2={Math.max(node.size.height, 0)} />
+    </g>;
+}
+
+/**
  * Creates a rounded rectangle for {@code node}.
  * @param node The node that should be represented by a rounded rectangle.
+ * @param rx The x-radius of the rounded corners.
+ * @param ry The y-radius of the rounded corners.
  * @returns A rounded rectangle for {@code node}.
  */
-export function renderRoundedRectangle(node: SNode): VNode {
+export function renderRoundedRectangle(node: SNode, rx = 5, ry = 5): VNode {
     return <rect
         x="0" y="0"
-        rx="5" ry="5"
+        rx={rx} ry={ry}
         width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
     />;
 }
@@ -197,16 +240,7 @@ export function renderAndGate(node: SNode): VNode {
  * @returns An Or-Gate for {@code node}.
  */
 export function renderOrGate(node: SNode): VNode {
-    const leftX = 0;
-    const rightX = Math.max(node.size.width, 0);
-    const midX = rightX / 2.0;
-    const botY = Math.max(node.size.height, 0);
-    const nearBotY = botY - 5;
-    const midY = Math.max(node.size.height, 0) / 2;
-    const topY = 0;
-    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
-    + `V ${midY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${leftX},${midY} Z`;
-
+    const path = createOrGate(node);
     return <path
         d={path}
     />;
@@ -218,16 +252,10 @@ export function renderOrGate(node: SNode): VNode {
  * @returns An Kn-Gate for {@code node}.
  */
 export function renderKnGate(node: SNode, k: number, n: number): VNode {
-    const leftX = 0;
     const rightX = Math.max(node.size.width, 0);
     const midX = rightX / 2.0;
     const botY = Math.max(node.size.height, 0);
-    const nearBotY = Math.max(node.size.height, 0) - (Math.max(node.size.height, 0) / 10.0);
-    const midY = Math.max(node.size.height, 0) / 2;
-    const topY = 0;
-    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX+10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX-10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
-    + `V ${midY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height-10},${0},${0},${0},${leftX},${midY} Z`;
-
+    const path = createOrGate(node);
     return (
         <g>
             <path d={path} />
@@ -236,6 +264,25 @@ export function renderKnGate(node: SNode, k: number, n: number): VNode {
             </text>
         </g>
     );
+}
+
+/**
+ * Creates an Or-Gate for {@code node}.
+ * @param node The node that should be represented by an Or-Gate.
+ * @returns an Or-Gate for {@code node}.
+ */
+function createOrGate(node: SNode): string {
+    const leftX = 0;
+    const rightX = Math.max(node.size.width, 0);
+    const midX = rightX / 2.0;
+    const botY = Math.max(node.size.height, 0);
+    const nearBotY = botY - (Math.max(node.size.height, 0) / 10.0);
+    const midY = Math.max(node.size.height, 0) / 2;
+    const topY = 0;
+    const path = `M${leftX},${midY} V ${botY}` + `C ${leftX}, ${botY} ${leftX + 10}, ${nearBotY} ${midX}, ${nearBotY} ${rightX - 10}, ${nearBotY} ${rightX}, ${botY} ${rightX}, ${botY}`
+        + `V ${midY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${midX},${topY} A ${node.size.width},${node.size.height - 10},${0},${0},${0},${leftX},${midY} Z`;
+
+    return path;
 }
 
 /**

@@ -31,6 +31,7 @@ import {
     isSystemConstraint,
     isUCA,
 } from "../../generated/ast";
+import { getDescription } from "../../utils";
 import { StpaServices } from "../stpa-module";
 import { collectElementsWithSubComps, leafElement } from "../utils";
 import { filterModel } from "./filtering";
@@ -48,7 +49,7 @@ import {
     STPA_NODE_TYPE,
     STPA_PORT_TYPE,
 } from "./stpa-model";
-import { StpaSynthesisOptions, labelManagementValue, showLabelsValue } from "./stpa-synthesis-options";
+import { StpaSynthesisOptions, showLabelsValue } from "./stpa-synthesis-options";
 import { createUCAContextDescription, getAspect, getTargets, setLevelOfCSNodes, setLevelsForSTPANodes } from "./utils";
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
@@ -86,7 +87,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             // subcomponents have edges to the parent
             const hazards = collectElementsWithSubComps(filteredModel.hazards);
             const sysCons = collectElementsWithSubComps(filteredModel.systemLevelConstraints);
-            stpaChildren = stpaChildren.concat([
+            stpaChildren = stpaChildren?.concat([
                 ...hazards
                     .map((sh) =>
                         this.generateAspectWithEdges(
@@ -108,7 +109,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             ]);
         } else {
             // subcomponents are contained in the parent
-            stpaChildren = stpaChildren.concat([
+            stpaChildren = stpaChildren?.concat([
                 ...filteredModel.hazards
                     ?.map((h) =>
                         this.generateAspectWithEdges(
@@ -132,7 +133,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     .flat(2),
             ]);
         }
-        stpaChildren = stpaChildren.concat([
+        stpaChildren = stpaChildren?.concat([
             ...filteredModel.responsibilities
                 ?.map((r) =>
                     r.responsiblitiesForOneSystem.map((resp) =>
@@ -199,7 +200,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
         // filtering the nodes of the STPA graph
         const stpaNodes: STPANode[] = [];
-        for (const node of stpaChildren) {
+        for (const node of stpaChildren ?? []) {
             if (node.type === STPA_NODE_TYPE) {
                 stpaNodes.push(node as STPANode);
             }
@@ -296,7 +297,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param args GeneratorContext of the STPA model.
      * @returns A list of edges representing the commands.
      */
-    protected translateCommandsToEdges(commands: VerticalEdge[], edgetype: EdgeType, args: GeneratorContext<Model>): CSEdge[] {
+    protected translateCommandsToEdges(
+        commands: VerticalEdge[],
+        edgetype: EdgeType,
+        args: GeneratorContext<Model>
+    ): CSEdge[] {
         const idCache = args.idCache;
         const edges: CSEdge[] = [];
         for (const edge of commands) {
@@ -901,66 +906,22 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         idCache: IdCache<AstNode>,
         nodeDescription?: string
     ): SModelElement[] {
-        const labelManagement = this.options.getLabelManagement();
-        const children: SModelElement[] = [];
+        let children: SModelElement[] = [];
         //TODO: automatic label selection
-
         if (nodeDescription && showDescription) {
-            const width = this.options.getLabelShorteningWidth();
-            const words = nodeDescription.split(" ");
-            let current = "";
-            switch (labelManagement) {
-                case labelManagementValue.NO_LABELS:
-                    break;
-                case labelManagementValue.ORIGINAL:
-                    // show complete description in one line
-                    children.push(<SLabel>{
-                        type: "label",
-                        id: idCache.uniqueId(nodeId + ".label"),
-                        text: nodeDescription,
-                    });
-                    break;
-                case labelManagementValue.TRUNCATE:
-                    // truncate description to the set value
-                    if (words.length > 0) {
-                        current = words[0];
-                        for (let i = 1; i < words.length && current.length + words[i].length <= width; i++) {
-                            current += " " + words[i];
-                        }
-                        children.push(<SLabel>{
-                            type: "label",
-                            id: idCache.uniqueId(nodeId + ".label"),
-                            text: current + "...",
-                        });
-                    }
-                    break;
-                case labelManagementValue.WRAPPING:
-                    // wrap description to the set value
-                    const descriptions: string[] = [];
-                    for (const word of words) {
-                        if (current.length + word.length >= width) {
-                            descriptions.push(current);
-                            current = word;
-                        } else {
-                            current += " " + word;
-                        }
-                    }
-                    descriptions.push(current);
-                    for (let i = descriptions.length - 1; i >= 0; i--) {
-                        children.push(<SLabel>{
-                            type: "label",
-                            id: idCache.uniqueId(nodeId + ".label"),
-                            text: descriptions[i],
-                        });
-                    }
-                    break;
-            }
+            children = getDescription(
+                nodeDescription ?? "",
+                this.options.getLabelManagement(),
+                this.options.getLabelShorteningWidth(),
+                nodeId,
+                idCache
+            );
         }
 
         // show the name in the top line
         children.push(<SLabel>{
             type: "label",
-            id: idCache.uniqueId(nodeId + ".label"),
+            id: idCache.uniqueId(nodeId + "_label"),
             text: nodeName,
         });
         return children;

@@ -60,3 +60,35 @@ export namespace GenerateSVGsAction {
         return action.kind === GenerateSVGsAction.KIND;
     }
 }
+
+/** Send from client to server to start a cut set analysis with the start node given by the startId */
+export interface CutSetAnalysisAction extends Action {
+    kind: typeof CutSetAnalysisAction.KIND;
+    startId: string
+}
+export namespace CutSetAnalysisAction {
+    export const KIND = 'cutSetAnalysis';
+
+    export function create(startId: string,): CutSetAnalysisAction {
+        return {
+            kind: KIND,
+            startId,
+        };
+    }
+}
+
+/** Send from client to server to start a minimal cut set analysis with the start node given by the startId */
+export interface MinimalCutSetAnalysisAction extends Action {
+    kind: typeof MinimalCutSetAnalysisAction.KIND;
+    startId: string
+}
+export namespace MinimalCutSetAnalysisAction {
+    export const KIND = 'minimalCutSetAnalysis';
+
+    export function create(startId: string,): MinimalCutSetAnalysisAction {
+        return {
+            kind: KIND,
+            startId,
+        };
+    }
+}

@@ -59,8 +59,11 @@ export function getFTNodeType(node: AstNode): FTNodeType {
  */
 export function getTargets(node: AstNode): AstNode[] {
     const targets: AstNode[] = [];
-    // only the top event and gates have children
-    if (isTopEvent(node) || isGate(node)) {
+    // only the top event and gates have children/targets
+    if (isTopEvent(node) && node.child.ref) {
+        targets.push(node.child.ref);
+    }
+    if (isGate(node)) {
         for (const child of node.children) {
             if (child.ref) {
                 targets.push(child.ref);

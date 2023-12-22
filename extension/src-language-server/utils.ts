@@ -16,8 +16,10 @@
  */
 
 import { AstNode, LangiumSharedServices } from "langium";
-import { LangiumSprottySharedServices } from "langium-sprotty";
+import { IdCache, LangiumSprottySharedServices } from "langium-sprotty";
 import { URI } from "vscode-uri";
+import { labelManagementValue } from "./synthesis-options";
+import { SLabel } from 'sprotty-protocol';
 
 /**
  * Determines the model for {@code uri}.
@@ -32,4 +34,72 @@ export async function getModel(
     const textDocuments = shared.workspace.LangiumDocuments;
     const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri));
     return currentDoc.parseResult.value;
+}
+
+/**
+ * Creates a list of labels containing the given {@code description} respecting the {@code labelManagement} and {@code labelWidth}.
+ * @param description The text for the label to create.
+ * @param labelManagement The label management option.
+ * @param labelWidth The desired width of the label.
+ * @param nodeId The id of the node for which the label is created.
+ * @param idCache The id cache.
+ * @returns a list of labels containing the given {@code description} respecting the {@code labelManagement} and {@code labelWidth}.
+ */
+export function getDescription(
+    description: string,
+    labelManagement: labelManagementValue,
+    labelWidth: number,
+    nodeId: string,
+    idCache: IdCache<AstNode>
+): SLabel[] {
+    const labels: SLabel[] = [];
+    const words = description.split(" ");
+    let current = "";
+    switch (labelManagement) {
+        case labelManagementValue.NO_LABELS:
+            break;
+        case labelManagementValue.ORIGINAL:
+            // show complete description in one line
+            labels.push(<SLabel>{
+                type: "label",
+                id: idCache.uniqueId(nodeId + "_label"),
+                text: description,
+            });
+            break;
+        case labelManagementValue.TRUNCATE:
+            // truncate description to the set value
+            if (words.length > 0) {
+                current = words[0];
+                for (let i = 1; i < words.length && current.length + words[i].length <= labelWidth; i++) {
+                    current += " " + words[i];
+                }
+                labels.push(<SLabel>{
+                    type: "label",
+                    id: idCache.uniqueId(nodeId + "_label"),
+                    text: current + "...",
+                });
+            }
+            break;
+        case labelManagementValue.WRAPPING:
+            // wrap description to the set value
+            const descriptions: string[] = [];
+            for (const word of words) {
+                if (current.length + word.length >= labelWidth) {
+                    descriptions.push(current);
+                    current = word;
+                } else {
+                    current += " " + word;
+                }
+            }
+            descriptions.push(current);
+            for (let i = descriptions.length - 1; i >= 0; i--) {
+                labels.push(<SLabel>{
+                    type: "label",
+                    id: idCache.uniqueId(nodeId + "_label"),
+                    text: descriptions[i],
+                });
+            }
+            break;
+    }
+    return labels;
 }

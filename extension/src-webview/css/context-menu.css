@@ -1,0 +1,32 @@
+.context-menu {
+    margin-top: -1px;
+    margin-left: -1px;
+    background-color: var(--vscode-menu-background);
+    border: 1px solid var(--vscode-menu-border);
+    border-radius: 5px;
+    float: right;
+    position: absolute;
+    list-style: none;
+    padding: 4px;
+    color: var(--vscode-menu-foreground);
+}
+
+.context-menu.hidden {
+    display: none;
+}
+
+.context-menu-item {
+    display: block;
+    position: relative;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.context-menu-item.selected {
+    background-color: var(--vscode-menu-selectionBackground);
+    /* border: 1px solid ; */
+    border-radius: 5px;
+    color: var(--vscode-menu-selectionForeground);
+}
+
+/* --vscode-menu-separatorBackground: #d4d4d4; */

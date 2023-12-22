@@ -34,14 +34,18 @@ import {
     TYPES,
     configureCommand,
     configureModelElement,
+    contextMenuModule,
     loadDefaultModules,
-    overrideViewerOptions,
+    overrideViewerOptions
 } from "sprotty";
 import { SvgCommand } from "./actions";
+import { ContextMenuProvider } from "./context-menu/context-menu-provider";
+import { ContextMenuService } from "./context-menu/context-menu-services";
+import pastaContextMenuModule from "./context-menu/di.config";
 import { SvgPostprocessor } from "./exportPostProcessor";
 import { CustomSvgExporter } from "./exporter";
-import { FTAEdge, FTANode, FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "./fta/fta-model";
-import { FTAGraphView, FTANodeView, PolylineArrowEdgeViewFTA } from "./fta/fta-views";
+import { DescriptionNode, FTAEdge, FTAGraph, FTANode, FTAPort, FTA_DESCRIPTION_NODE_TYPE, FTA_EDGE_TYPE, FTA_GRAPH_TYPE, FTA_INVISIBLE_EDGE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE } from "./fta/fta-model";
+import { DescriptionNodeView, FTAGraphView, FTAInvisibleEdgeView, FTANodeView, PolylineArrowEdgeViewFTA } from "./fta/fta-views";
 import { PastaModelViewer } from "./model-viewer";
 import { optionsModule } from "./options/options-module";
 import { sidebarModule } from "./sidebar";
@@ -84,6 +88,9 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     bind(SvgPostprocessor).toSelf().inSingletonScope();
     bind(TYPES.HiddenVNodePostprocessor).toService(SvgPostprocessor);
     configureCommand({ bind, isBound }, SvgCommand);
+    // context-menu
+    bind(TYPES.IContextMenuService).to(ContextMenuService);   
+    bind(TYPES.IContextMenuItemProvider).to(ContextMenuProvider);
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
@@ -105,14 +112,17 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
 
     // FTA
     configureModelElement(context, FTA_EDGE_TYPE, FTAEdge, PolylineArrowEdgeViewFTA);
+    configureModelElement(context, FTA_INVISIBLE_EDGE_TYPE, FTAEdge, FTAInvisibleEdgeView);
     configureModelElement(context, FTA_NODE_TYPE, FTANode, FTANodeView);
-    configureModelElement(context, FTA_GRAPH_TYPE, SGraph, FTAGraphView);
+    configureModelElement(context, FTA_DESCRIPTION_NODE_TYPE, DescriptionNode, DescriptionNodeView);
+    configureModelElement(context, FTA_GRAPH_TYPE, FTAGraph, FTAGraphView);
+    configureModelElement(context, FTA_PORT_TYPE, FTAPort, PortView);
 });
 
 export function createPastaDiagramContainer(widgetId: string): Container {
     const container = new Container();
-    loadDefaultModules(container);
-    container.load(pastaDiagramModule, sidebarModule, optionsModule);
+    loadDefaultModules(container, {exclude: [contextMenuModule]});
+    container.load(pastaContextMenuModule, pastaDiagramModule, sidebarModule, optionsModule);
     overrideViewerOptions(container, {
         needsClientLayout: true,
         needsServerLayout: true,

@@ -20,6 +20,8 @@ import { LangiumSprottySharedServices } from "langium-sprotty";
 import { TextDocumentContentChangeEvent } from "vscode";
 import { Connection, URI } from "vscode-languageserver";
 import { diagramSizes } from "../diagram-server";
+import { serializeFTAAST } from "../fta/utils";
+import { createFaultTrees } from "./ftaGeneration/fta-generation";
 import { generateLTLFormulae } from "./modelChecking/model-checking";
 import { createResultData } from "./result-report/result-generator";
 import { StpaServices } from "./stpa-module";
@@ -46,6 +48,7 @@ export function addSTPANotificationHandler(
     addTextChangeHandler(connection, stpaServices, sharedServices);
     addVerificationHandler(connection, sharedServices);
     addResultHandler(connection, sharedServices);
+    addFTAGeneratorHandler(connection, sharedServices);
 }
 
 /**
@@ -151,5 +154,18 @@ function addResultHandler(connection: Connection, sharedServices: LangiumSprotty
         const diagramServerManager = sharedServices.diagram.DiagramServerManager;
         await diagramServerManager.acceptAction(msg);
         return diagramSizes;
+    });
+}
+
+/**
+ * Adds handlers for requests regarding the fault tree creation.
+ * @param connection
+ */
+function addFTAGeneratorHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    // creates and serializes fault trees
+    connection.onRequest("generate/faultTrees", async (uri: string) => {
+        const models = await createFaultTrees(uri, sharedServices);
+        const texts = models.map((model) => serializeFTAAST(model));
+        return texts;
     });
 }

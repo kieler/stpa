@@ -16,20 +16,26 @@
  */
 
 import {
+    Point,
     SEdge,
+    SGraph,
     SNode,
+    SPort,
     connectableFeature,
     fadeFeature,
     hoverFeedbackFeature,
     layoutContainerFeature,
     popupFeature,
-    selectFeature,
+    selectFeature
 } from "sprotty";
 
 /* fault tree element types */
 export const FTA_NODE_TYPE = "node:fta";
+export const FTA_DESCRIPTION_NODE_TYPE = "node:fta:description";
 export const FTA_EDGE_TYPE = "edge:fta";
+export const FTA_INVISIBLE_EDGE_TYPE = "edge:fta:invisible";
 export const FTA_GRAPH_TYPE = "graph:fta";
+export const FTA_PORT_TYPE = "port:fta";
 
 /**
  * Node of a fault tree.
@@ -47,6 +53,7 @@ export class FTANode extends SNode {
     name: string;
     nodeType: FTNodeType = FTNodeType.UNDEFINED;
     description: string = "";
+    topOfAnalysis?: boolean;
     inCurrentSelectedCutSet?: boolean;
     notConnectedToSelectedCutSet?: boolean;
     k?: number;
@@ -54,10 +61,41 @@ export class FTANode extends SNode {
 }
 
 /**
+ * FTA Graph.
+ */
+export class FTAGraph extends SGraph {
+    modelOrder?: boolean;
+}
+
+/**
+ * Description node of a fault tree.
+ */
+export class DescriptionNode extends SNode {
+    static readonly DEFAULT_FEATURES = [
+        connectableFeature,
+        selectFeature,
+        layoutContainerFeature,
+        fadeFeature,
+        hoverFeedbackFeature,
+        popupFeature,
+    ];
+
+    name: string;
+    inCurrentSelectedCutSet?: boolean;
+    notConnectedToSelectedCutSet?: boolean;
+}
+
+/**
  * Edge of a fault tree.
  */
 export class FTAEdge extends SEdge {
     notConnectedToSelectedCutSet?: boolean;
+    junctionPoints?: Point[];
+}
+
+/** Port representing a port in the FTA graph. */
+export class FTAPort extends SPort {
+    side?: PortSide;
 }
 
 /**
@@ -71,5 +109,14 @@ export enum FTNodeType {
     OR,
     KN,
     INHIBIT,
+    PARENT,
     UNDEFINED,
+}
+
+/** Possible sides for a port. */
+export enum PortSide {
+    WEST,
+    EAST,
+    NORTH,
+    SOUTH,
 }
