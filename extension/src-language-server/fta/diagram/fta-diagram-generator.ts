@@ -42,7 +42,6 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
 
     /** Saves the Ids of the generated SNodes */
     protected idToSNode: Map<string, SNode> = new Map();
-
     /** Saves the parent node of a gate */
     protected parentOfGate: Map<string, SNode> = new Map();
     /** Saves the description node of a gate */
@@ -117,7 +116,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
                 sourceNode?.children?.push(this.createFTAPort(sourcePortId, PortSide.SOUTH));
 
                 // create port for source parent and edge to this port
-                let sourceParentPortId: string | undefined = undefined;
+                let sourceParentPortId: string | undefined;
                 if (this.parentOfGate.has(sourceId)) {
                     const parent = this.parentOfGate.get(sourceId);
                     sourceParentPortId = idCache.uniqueId(edgeId + "_port");

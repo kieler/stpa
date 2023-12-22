@@ -23,7 +23,7 @@ import { CutSetAnalysisAction, MinimalCutSetAnalysisAction } from "../actions";
 
 @injectable()
 export class ContextMenuProvider implements IContextMenuItemProvider {
-    getItems(root: Readonly<SModelRoot>, lastMousePosition?: Point | undefined): Promise<LabeledAction[]> {
+    getItems(root: Readonly<SModelRoot>, _lastMousePosition?: Point | undefined): Promise<LabeledAction[]> {
         if (root.type === FTA_GRAPH_TYPE) {
             // find node that was clicked on
             let clickedNode: FTANode | undefined;

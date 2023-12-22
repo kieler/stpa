@@ -70,22 +70,11 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
         return options;
     }
 
-    protected portOptions(sport: FTAPort, index: SModelIndex): LayoutOptions | undefined {
+    protected portOptions(sport: FTAPort, _index: SModelIndex): LayoutOptions | undefined {
         if (sport.type === FTA_PORT_TYPE) {
             let side = "";
-            switch ((sport as FTAPort).side) {
-                case PortSide.WEST:
-                    side = "WEST";
-                    break;
-                case PortSide.EAST:
-                    side = "EAST";
-                    break;
-                case PortSide.NORTH:
-                    side = "NORTH";
-                    break;
-                case PortSide.SOUTH:
-                    side = "SOUTH";
-                    break;
+            if ((sport as FTAPort).side) {
+                side = PortSide[(sport as FTAPort).side!].toUpperCase();
             }
             return {
                 "org.eclipse.elk.port.side": side,

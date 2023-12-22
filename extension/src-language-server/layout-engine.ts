@@ -48,13 +48,13 @@ export class LayoutEngine extends ElkLayoutEngine {
         }
         if (elkEdge.sections && elkEdge.sections.length > 0) {
             const section = elkEdge.sections[0];
-            if (section.startPoint) points.push(section.startPoint);
-            if (section.bendPoints) points.push(...section.bendPoints);
-            if (section.endPoint) points.push(section.endPoint);
+            if (section.startPoint) { points.push(section.startPoint); }
+            if (section.bendPoints) { points.push(...section.bendPoints); }
+            if (section.endPoint) { points.push(section.endPoint); }
         } else if (isPrimitiveEdge(elkEdge)) {
-            if (elkEdge.sourcePoint) points.push(elkEdge.sourcePoint);
-            if (elkEdge.bendPoints) points.push(...elkEdge.bendPoints);
-            if (elkEdge.targetPoint) points.push(elkEdge.targetPoint);
+            if (elkEdge.sourcePoint) { points.push(elkEdge.sourcePoint); }
+            if (elkEdge.bendPoints) { points.push(...elkEdge.bendPoints); }
+            if (elkEdge.targetPoint) { points.push(elkEdge.targetPoint); }
         }
         sedge.routingPoints = points;
 
