@@ -26,6 +26,7 @@ import { generateLTLFormulae } from "./modelChecking/model-checking";
 import { createResultData } from "./result-report/result-generator";
 import { StpaServices } from "./stpa-module";
 import { getControlActions } from "./utils";
+import { currentOffset, setCurrentOffset } from "./diagram/utils";
 
 let lastUri: URI;
 
@@ -39,11 +40,7 @@ let changeUri: string;
  * @param connection
  * @param stpaServices
  */
-export function addSTPANotificationHandler(
-    connection: Connection,
-    stpaServices: StpaServices,
-    sharedServices: LangiumSprottySharedServices
-): void {
+export function addSTPANotificationHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
     addContextTableHandler(connection, stpaServices);
     addTextChangeHandler(connection, stpaServices, sharedServices);
     addVerificationHandler(connection, sharedServices);
@@ -91,11 +88,7 @@ function addContextTableHandler(connection: Connection, stpaServices: StpaServic
  * @param stpaServices
  * @param sharedServices
  */
-function addTextChangeHandler(
-    connection: Connection,
-    stpaServices: StpaServices,
-    sharedServices: LangiumSprottySharedServices
-): void {
+function addTextChangeHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
     // text in the editor changed
     connection.onNotification("editor/textChange", async ({ changes, uri }) => {
         // save the changes and the uri of the file. Before we can do something we have to wait until the document is built (see below).
@@ -116,6 +109,9 @@ function addTextChangeHandler(
             textChange = false;
             textChanges = [];
         }
+    });
+    connection.onNotification("editor/save", async (offset) => {
+        setCurrentOffset(offset);
     });
 }
 
