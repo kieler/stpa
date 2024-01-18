@@ -21,6 +21,7 @@ import { TextDocumentContentChangeEvent } from "vscode";
 import { Connection, URI } from "vscode-languageserver";
 import { diagramSizes } from "../diagram-server";
 import { serializeFTAAST } from "../fta/utils";
+import { setCurrentCursorOffset } from "./diagram/utils";
 import { createFaultTrees } from "./ftaGeneration/fta-generation";
 import { generateLTLFormulae } from "./modelChecking/model-checking";
 import { createResultData } from "./result-report/result-generator";
@@ -39,11 +40,7 @@ let changeUri: string;
  * @param connection
  * @param stpaServices
  */
-export function addSTPANotificationHandler(
-    connection: Connection,
-    stpaServices: StpaServices,
-    sharedServices: LangiumSprottySharedServices
-): void {
+export function addSTPANotificationHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
     addContextTableHandler(connection, stpaServices);
     addTextChangeHandler(connection, stpaServices, sharedServices);
     addVerificationHandler(connection, sharedServices);
@@ -91,11 +88,7 @@ function addContextTableHandler(connection: Connection, stpaServices: StpaServic
  * @param stpaServices
  * @param sharedServices
  */
-function addTextChangeHandler(
-    connection: Connection,
-    stpaServices: StpaServices,
-    sharedServices: LangiumSprottySharedServices
-): void {
+function addTextChangeHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
     // text in the editor changed
     connection.onNotification("editor/textChange", async ({ changes, uri }) => {
         // save the changes and the uri of the file. Before we can do something we have to wait until the document is built (see below).
@@ -116,6 +109,10 @@ function addTextChangeHandler(
             textChange = false;
             textChanges = [];
         }
+    });
+    // update the cursor position on save
+    connection.onNotification("editor/save", async (offset) => {
+        setCurrentCursorOffset(offset);
     });
 }
 

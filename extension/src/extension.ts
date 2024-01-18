@@ -319,14 +319,11 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
     context.subscriptions.push(
         vscode.workspace.onDidSaveTextDocument(async (document) => {
             if (document) {
-                manager.openDiagram(document.uri);
-            }
-        })
-    );
-    context.subscriptions.push(
-        vscode.workspace.onDidSaveTextDocument(async (document) => {
-            if (document) {
                 await languageClient.sendRequest("cutSets/reset");
+                const currentCursorPosition = vscode.window.activeTextEditor?.selection.active;
+                if (currentCursorPosition) {
+                    await languageClient.sendNotification("editor/save", document.offsetAt(currentCursorPosition));
+                }
                 manager.openDiagram(document.uri);
                 if (manager.contextTable) {
                     languageClient.sendNotification("contextTable/getData", document.uri.toString());

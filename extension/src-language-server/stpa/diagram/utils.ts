@@ -18,16 +18,20 @@
 import { AstNode } from "langium";
 import {
     Context,
+    Model,
     Node,
-    isControllerConstraint,
+    isActionUCAs,
     isContext,
+    isControllerConstraint,
     isHazard,
     isLoss,
     isLossScenario,
     isResponsibility,
+    isRule,
     isSafetyConstraint,
     isSystemConstraint,
-    isUCA
+    isSystemResponsibilities,
+    isUCA,
 } from "../../generated/ast";
 import { STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
@@ -42,20 +46,34 @@ import { groupValue } from "./stpa-synthesis-options";
 export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
     if (node) {
         const targets: AstNode[] = [];
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isControllerConstraint(node) || isSafetyConstraint(node)) {
+        if (
+            isHazard(node) ||
+            isResponsibility(node) ||
+            isSystemConstraint(node) ||
+            isControllerConstraint(node) ||
+            isSafetyConstraint(node)
+        ) {
             for (const ref of node.refs) {
-                if (ref?.ref) { targets.push(ref.ref); }
+                if (ref?.ref) {
+                    targets.push(ref.ref);
+                }
             }
             // for subcomponents the parents must be declared as targets too, if hierarchy is false
-            if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
+            if (
+                !hierarchy &&
+                ((isHazard(node) && isHazard(node.$container)) ||
+                    (isSystemConstraint(node) && isSystemConstraint(node.$container)))
+            ) {
                 targets.push(node.$container);
             }
         } else if (isLossScenario(node) && node.uca && node.uca.ref) {
             targets.push(node.uca.ref);
         } else if ((isUCA(node) || isContext(node) || isLossScenario(node)) && node.list) {
-            const refs = node.list.refs.map(x => x.ref);
+            const refs = node.list.refs.map((x) => x.ref);
             for (const ref of refs) {
-                if (ref) { targets.push(ref); }
+                if (ref) {
+                    targets.push(ref);
+                }
             }
         }
         return targets;
@@ -73,7 +91,13 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
  * @param groupUCAs Determines whether and how UCAs should be grouped.
  * @returns The number of the layer {@code node} should be in.
  */
-function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number, map: Map<string, number>, groupUCAs: groupValue): number {
+function determineLayerForSTPANode(
+    node: STPANode,
+    hazardDepth: number,
+    sysConsDepth: number,
+    map: Map<string, number>,
+    groupUCAs: groupValue
+): number {
     switch (node.aspect) {
         case STPAAspect.LOSS:
             return 0;
@@ -92,10 +116,18 @@ function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsD
                     }
                     return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!)!;
                 case groupValue.SYSTEM_COMPONENT:
-                    if (node.controlAction && !map.has(node.controlAction.substring(0, node.controlAction.indexOf(".")))) {
+                    if (
+                        node.controlAction &&
+                        !map.has(node.controlAction.substring(0, node.controlAction.indexOf(".")))
+                    ) {
                         map.set(node.controlAction.substring(0, node.controlAction.indexOf(".")), map.size);
                     }
-                    return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!.substring(0, node.controlAction!.indexOf(".")))!;
+                    return (
+                        4 +
+                        hazardDepth +
+                        sysConsDepth +
+                        map.get(node.controlAction!.substring(0, node.controlAction!.indexOf(".")))!
+                    );
                 default:
                     return 4 + hazardDepth + sysConsDepth;
             }
@@ -130,14 +162,13 @@ export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue):
 
     // used to determine which control action or system component belongs to which group number
     const map = new Map<string, number>();
-    // sets level property to the layer of the nodes. Since we layout the relationship graph with the direction "UP", 
+    // sets level property to the layer of the nodes. Since we layout the relationship graph with the direction "UP",
     // the determined layer must be negated to get the correct layer.
     for (const node of nodes) {
         const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth, map, groupUCAs);
         node.level = -layer;
     }
 }
-
 
 /**
  * Set the levels of the control structure nodes.
@@ -190,25 +221,25 @@ export function createUCAContextDescription(uca: Context): string {
     const controlAction = rule.action.$refText;
     let description = rule.system.$refText;
     switch (rule.type) {
-        case 'not-provided':
+        case "not-provided":
             description += " did not provide " + controlAction;
             break;
-        case 'provided':
+        case "provided":
             description += " provided " + controlAction;
             break;
-        case 'too-late':
+        case "too-late":
             description += " provided " + controlAction + " too late";
             break;
-        case 'too-early':
+        case "too-early":
             description += " provided " + controlAction + " too early";
             break;
-        case 'wrong-time':
+        case "wrong-time":
             description += " provided " + controlAction + " at the wrong time";
             break;
-        case 'applied-too-long':
+        case "applied-too-long":
             description += " applied " + controlAction + " too long";
             break;
-        case 'stopped-too-soon':
+        case "stopped-too-soon":
             description += " stopped " + controlAction + " too soon";
             break;
     }
@@ -235,9 +266,9 @@ export function getAspect(node: AstNode): STPAAspect {
         return STPAAspect.HAZARD;
     } else if (isSystemConstraint(node)) {
         return STPAAspect.SYSTEMCONSTRAINT;
-    } else if (isUCA(node) || isContext(node)) {
+    } else if (isUCA(node) || isContext(node) || isRule(node) || isActionUCAs(node)) {
         return STPAAspect.UCA;
-    } else if (isResponsibility(node)) {
+    } else if (isResponsibility(node) || isSystemResponsibilities(node)) {
         return STPAAspect.RESPONSIBILITY;
     } else if (isControllerConstraint(node)) {
         return STPAAspect.CONTROLLERCONSTRAINT;
@@ -247,4 +278,82 @@ export function getAspect(node: AstNode): STPAAspect {
         return STPAAspect.SAFETYREQUIREMENT;
     }
     return STPAAspect.UNDEFINED;
+}
+
+/** Needed to determine which node descriptions should be shown when the showLabels options is set to automatic */
+export let currentCursorOffset: number;
+
+/**
+ * Sets the current cursor offset to {@code offset}.
+ * @param offset The current cursor offset.
+ */
+export function setCurrentCursorOffset(offset: number): void {
+    currentCursorOffset = offset;
+}
+
+/**
+ * Determines the aspect of the component at the current cursor position.
+ * @param model The current STPA model.
+ * @returns the aspect of the component at the current cursor position.
+ */
+export function getCurrentAspect(model: Model): STPAAspect {
+    let elements: AstNode[] = [];
+    // add elements in the order they appear in the document
+    elements = [
+        ...model.losses,
+        ...model.hazards,
+        ...model.systemLevelConstraints,
+        ...model.responsibilities,
+        ...model.allUCAs,
+        ...model.rules,
+        ...model.controllerConstraints,
+        ...model.scenarios,
+        ...model.safetyCons,
+    ];
+
+    // find first element that is after the cursor position and return the aspect of the previous element
+    const index = elements.findIndex((element) => element.$cstNode && element.$cstNode.offset >= currentCursorOffset) - 1;
+    if (index < 0) {
+        return STPAAspect.LOSS;
+    }
+    return getAspect(elements[index]);
+}
+
+/**
+ * Determines the aspects for which the descriptions should be shown, when the showLabels option is set to automatic.
+ * @param model The current STPA model.
+ * @returns the aspects for which the descriptions should be shown.
+ */
+export function getAspectsThatShouldHaveDesriptions(model: Model): STPAAspect[] {
+    const aspectsToShowDescriptions: STPAAspect[] = [];
+    switch (getCurrentAspect(model)) {
+        case STPAAspect.LOSS:
+            break;
+        case STPAAspect.HAZARD:
+            aspectsToShowDescriptions.push(STPAAspect.LOSS);
+            aspectsToShowDescriptions.push(STPAAspect.HAZARD);
+            break;
+        case STPAAspect.SYSTEMCONSTRAINT:
+            aspectsToShowDescriptions.push(STPAAspect.HAZARD);
+            break;
+        case STPAAspect.RESPONSIBILITY:
+            aspectsToShowDescriptions.push(STPAAspect.SYSTEMCONSTRAINT);
+            break;
+        case STPAAspect.UCA:
+            aspectsToShowDescriptions.push(STPAAspect.HAZARD);
+            break;
+        case STPAAspect.CONTROLLERCONSTRAINT:
+            aspectsToShowDescriptions.push(STPAAspect.UCA);
+            break;
+        case STPAAspect.SCENARIO:
+            aspectsToShowDescriptions.push(STPAAspect.UCA);
+            aspectsToShowDescriptions.push(STPAAspect.HAZARD);
+            break;
+        case STPAAspect.SAFETYREQUIREMENT:
+            aspectsToShowDescriptions.push(STPAAspect.SCENARIO);
+            break;
+        default:
+            break;
+    }
+    return aspectsToShowDescriptions;
 }

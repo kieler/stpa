@@ -50,7 +50,14 @@ import {
     STPA_PORT_TYPE,
 } from "./stpa-model";
 import { StpaSynthesisOptions, showLabelsValue } from "./stpa-synthesis-options";
-import { createUCAContextDescription, getAspect, getTargets, setLevelOfCSNodes, setLevelsForSTPANodes } from "./utils";
+import {
+    createUCAContextDescription,
+    getAspect,
+    getAspectsThatShouldHaveDesriptions,
+    getTargets,
+    setLevelOfCSNodes,
+    setLevelsForSTPANodes,
+} from "./utils";
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     protected readonly options: StpaSynthesisOptions;
@@ -75,12 +82,20 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const filteredModel = filterModel(model, this.options);
 
         const showLabels = this.options.getShowLabels();
+        // aspects that should have a description when showLabel option is set to automatic
+        const aspectsToShowDescriptions = getAspectsThatShouldHaveDesriptions(model);
 
         // determine the children for the STPA graph
         // for each component a node is generated with edges representing the references of the component
         // in order to be able to set the target IDs of the edges, the nodes must be created in the correct order
         let stpaChildren: SModelElement[] = filteredModel.losses?.map((l) =>
-            this.generateSTPANode(l, showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.LOSSES, args)
+            this.generateSTPANode(
+                l,
+                showLabels === showLabelsValue.ALL ||
+                    showLabels === showLabelsValue.LOSSES ||
+                    (showLabels === showLabelsValue.AUTOMATIC && aspectsToShowDescriptions.includes(STPAAspect.LOSS)),
+                args
+            )
         );
         // the hierarchy option determines whether subcomponents are contained in ther parent or not
         if (!this.options.getHierarchy()) {
@@ -92,7 +107,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     .map((sh) =>
                         this.generateAspectWithEdges(
                             sh,
-                            showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.HAZARDS,
+                            showLabels === showLabelsValue.ALL ||
+                                showLabels === showLabelsValue.HAZARDS ||
+                                (showLabels === showLabelsValue.AUTOMATIC &&
+                                    aspectsToShowDescriptions.includes(STPAAspect.HAZARD)),
                             args
                         )
                     )
@@ -101,7 +119,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     .map((ssc) =>
                         this.generateAspectWithEdges(
                             ssc,
-                            showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SYSTEM_CONSTRAINTS,
+                            showLabels === showLabelsValue.ALL ||
+                                showLabels === showLabelsValue.SYSTEM_CONSTRAINTS ||
+                                (showLabels === showLabelsValue.AUTOMATIC &&
+                                    aspectsToShowDescriptions.includes(STPAAspect.SYSTEMCONSTRAINT)),
                             args
                         )
                     )
@@ -114,7 +135,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     ?.map((h) =>
                         this.generateAspectWithEdges(
                             h,
-                            showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.HAZARDS,
+                            showLabels === showLabelsValue.ALL ||
+                                showLabels === showLabelsValue.HAZARDS ||
+                                (showLabels === showLabelsValue.AUTOMATIC &&
+                                    aspectsToShowDescriptions.includes(STPAAspect.HAZARD)),
                             args
                         )
                     )
@@ -123,7 +147,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     ?.map((sc) =>
                         this.generateAspectWithEdges(
                             sc,
-                            showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SYSTEM_CONSTRAINTS,
+                            showLabels === showLabelsValue.ALL ||
+                                showLabels === showLabelsValue.SYSTEM_CONSTRAINTS ||
+                                (showLabels === showLabelsValue.AUTOMATIC &&
+                                    aspectsToShowDescriptions.includes(STPAAspect.SYSTEMCONSTRAINT)),
                             args
                         )
                     )
@@ -139,7 +166,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     r.responsiblitiesForOneSystem.map((resp) =>
                         this.generateAspectWithEdges(
                             resp,
-                            showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.RESPONSIBILITIES,
+                            showLabels === showLabelsValue.ALL ||
+                                showLabels === showLabelsValue.RESPONSIBILITIES ||
+                                (showLabels === showLabelsValue.AUTOMATIC &&
+                                    aspectsToShowDescriptions.includes(STPAAspect.RESPONSIBILITY)),
                             args
                         )
                     )
@@ -152,7 +182,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                         .map((uca) =>
                             this.generateAspectWithEdges(
                                 uca,
-                                showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS,
+                                showLabels === showLabelsValue.ALL ||
+                                    showLabels === showLabelsValue.UCAS ||
+                                    (showLabels === showLabelsValue.AUTOMATIC &&
+                                        aspectsToShowDescriptions.includes(STPAAspect.UCA)),
                                 args
                             )
                         )
@@ -163,7 +196,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     rule.contexts.map((context) =>
                         this.generateAspectWithEdges(
                             context,
-                            showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.UCAS,
+                            showLabels === showLabelsValue.ALL ||
+                                showLabels === showLabelsValue.UCAS ||
+                                (showLabels === showLabelsValue.AUTOMATIC &&
+                                    aspectsToShowDescriptions.includes(STPAAspect.UCA)),
                             args
                         )
                     )
@@ -173,7 +209,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 ?.map((c) =>
                     this.generateAspectWithEdges(
                         c,
-                        showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.CONTROLLER_CONSTRAINTS,
+                        showLabels === showLabelsValue.ALL ||
+                            showLabels === showLabelsValue.CONTROLLER_CONSTRAINTS ||
+                            (showLabels === showLabelsValue.AUTOMATIC &&
+                                aspectsToShowDescriptions.includes(STPAAspect.CONTROLLERCONSTRAINT)),
                         args
                     )
                 )
@@ -182,7 +221,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 ?.map((s) =>
                     this.generateAspectWithEdges(
                         s,
-                        showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SCENARIOS,
+                        showLabels === showLabelsValue.ALL ||
+                            showLabels === showLabelsValue.SCENARIOS ||
+                            (showLabels === showLabelsValue.AUTOMATIC &&
+                                aspectsToShowDescriptions.includes(STPAAspect.SCENARIO)),
                         args
                     )
                 )
@@ -191,7 +233,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 ?.map((sr) =>
                     this.generateAspectWithEdges(
                         sr,
-                        showLabels === showLabelsValue.ALL || showLabels === showLabelsValue.SAFETY_CONSTRAINTS,
+                        showLabels === showLabelsValue.ALL ||
+                            showLabels === showLabelsValue.SAFETY_CONSTRAINTS ||
+                            (showLabels === showLabelsValue.AUTOMATIC &&
+                                aspectsToShowDescriptions.includes(STPAAspect.SAFETYREQUIREMENT)),
                         args
                     )
                 )
@@ -907,7 +952,6 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         nodeDescription?: string
     ): SModelElement[] {
         let children: SModelElement[] = [];
-        //TODO: automatic label selection
         if (nodeDescription && showDescription) {
             children = getDescription(
                 nodeDescription ?? "",
