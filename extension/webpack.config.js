@@ -27,7 +27,8 @@ const commonConfig = {
                 use: ['source-map-loader'],
             }
         ]
-    }
+    },
+    ignoreWarnings: [/Failed to parse source map/]
 }
 
 /**@type {import('webpack').Configuration}*/
@@ -57,7 +58,7 @@ const lsConfig = {
 const commonWebConfig = {
     target: 'web',
     mode: "none", // Leave source code as close as possible. Only set to production during distribution.
-    devtool: 'nosources-source-map',
+    devtool: 'eval-source-map',
     resolve: {
         extensions: ['.ts', '.tsx', '.js']
     },
@@ -88,7 +89,8 @@ const commonWebConfig = {
                 }
             },
         ]
-    }
+    },
+    ignoreWarnings: [/Failed to parse source map/]
 };
 
 /**@type {import('webpack').Configuration}*/

@@ -19,11 +19,11 @@
 import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SNode, SPort, svg, toDegrees } from 'sprotty';
-import { DISymbol } from './di.symbols';
+import { DISymbol } from '../di.symbols';
+import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
+import { renderOval, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from './options/render-options-registry';
-import { CSEdge, CS_EDGE_TYPE, CS_NODE_TYPE, EdgeType, PARENT_TYPE, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE } from './stpa-model';
-import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
+import { CSEdge, CS_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
@@ -56,7 +56,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
         }
         return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge}
-            class-feedback-edge={feedbackEdge} class-hidden={hidden} aspect={aspect} d={path} />;
+            class-feedback-edge={feedbackEdge} class-greyed-out={hidden} aspect={aspect} d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
@@ -76,7 +76,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
         }
         return [
-            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-hidden={hidden} aspect={aspect}
+            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-greyed-out={hidden} aspect={aspect}
                 class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
                 transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} />
         ];
@@ -144,7 +144,7 @@ export class STPANodeView extends RectangularNodeView {
                     element = renderPentagon(node);
                     break;
                 case STPAAspect.UCA:
-                    element = renderCircle(node);
+                    element = renderOval(node);
                     break;
                 case STPAAspect.CONTROLLERCONSTRAINT:
                     element = renderMirroredTriangle(node);
@@ -191,7 +191,7 @@ export class STPANodeView extends RectangularNodeView {
             class-sprotty-node={sprottyNode}
             class-sprotty-port={node instanceof SPort}
             class-mouseover={node.hoverFeedback}
-            class-hidden={hidden}>
+            class-greyed-out={hidden}>
             <g class-node-selected={node.selected}>{element}</g>
             {context.renderChildren(node)}
         </g>;

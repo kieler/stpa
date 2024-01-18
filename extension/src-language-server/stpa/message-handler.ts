@@ -15,12 +15,17 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { DocumentState } from 'langium';
+import { DocumentState } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
-import { TextDocumentContentChangeEvent } from 'vscode';
+import { TextDocumentContentChangeEvent } from "vscode";
 import { Connection, URI } from "vscode-languageserver";
-import { generateLTLFormulae } from './modelChecking/model-checking';
+import { diagramSizes } from "../diagram-server";
+import { serializeFTAAST } from "../fta/utils";
+import { createFaultTrees } from "./ftaGeneration/fta-generation";
+import { generateLTLFormulae } from "./modelChecking/model-checking";
+import { createResultData } from "./result-report/result-generator";
 import { StpaServices } from "./stpa-module";
+import { getControlActions } from "./utils";
 
 let lastUri: URI;
 
@@ -31,36 +36,49 @@ let changeUri: string;
 
 /**
  * Adds handlers for notifications regarding stpa.
- * @param connection 
- * @param stpaServices 
+ * @param connection
+ * @param stpaServices
  */
-export function addSTPANotificationHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
+export function addSTPANotificationHandler(
+    connection: Connection,
+    stpaServices: StpaServices,
+    sharedServices: LangiumSprottySharedServices
+): void {
     addContextTableHandler(connection, stpaServices);
     addTextChangeHandler(connection, stpaServices, sharedServices);
-    addModelCheckingHandler(connection, sharedServices);
+    addVerificationHandler(connection, sharedServices);
+    addResultHandler(connection, sharedServices);
+    addFTAGeneratorHandler(connection, sharedServices);
 }
 
 /**
  * Adds handlers for notifications regarding the context table.
- * @param connection 
- * @param stpaServices 
+ * @param connection
+ * @param stpaServices
  */
 function addContextTableHandler(connection: Connection, stpaServices: StpaServices): void {
     // the data needed to create the context table is requested
-    connection.onNotification('contextTable/getData', uri => {
+    connection.onNotification("contextTable/getData", async (uri) => {
         // data is computed and send back to the extension
         lastUri = uri;
         const contextTable = stpaServices.contextTable.ContextTableProvider;
-        connection.sendNotification('contextTable/data', contextTable.getData(uri));
+        const data = await contextTable.getData(uri);
+        connection.sendNotification("contextTable/data", data);
     });
     // a cell in the context table is selected
-    connection.onNotification('contextTable/selected', text => {
+    connection.onNotification("contextTable/selected", (text) => {
         // compute the range of the textual definition of the selected UCA
         const contextTable = stpaServices.contextTable.ContextTableProvider;
         const range = contextTable.getRangeOfUCA(lastUri, text);
         if (range) {
             // highlight the textual definition in the editor
-            connection.sendNotification('editor/highlight', ({ startLine: range.start.line, startChar: range.start.character, endLine: range.end.line, endChar: range.end.character, uri: lastUri }));
+            connection.sendNotification("editor/highlight", {
+                startLine: range.start.line,
+                startChar: range.start.character,
+                endLine: range.end.line,
+                endChar: range.end.character,
+                uri: lastUri,
+            });
         } else {
             console.log("The selected UCA could not be found in the editor.");
         }
@@ -69,13 +87,17 @@ function addContextTableHandler(connection: Connection, stpaServices: StpaServic
 
 /**
  * Adds handlers for notifications regarding changes in the editor.
- * @param connection 
- * @param stpaServices 
- * @param sharedServices 
+ * @param connection
+ * @param stpaServices
+ * @param sharedServices
  */
-function addTextChangeHandler(connection: Connection, stpaServices: StpaServices, sharedServices: LangiumSprottySharedServices): void {
+function addTextChangeHandler(
+    connection: Connection,
+    stpaServices: StpaServices,
+    sharedServices: LangiumSprottySharedServices
+): void {
     // text in the editor changed
-    connection.onNotification('editor/textChange', async ({ changes, uri }) => {
+    connection.onNotification("editor/textChange", async ({ changes, uri }) => {
         // save the changes and the uri of the file. Before we can do something we have to wait until the document is built (see below).
         textChange = true;
         textChanges = changes;
@@ -88,7 +110,7 @@ function addTextChangeHandler(connection: Connection, stpaServices: StpaServices
             // enforce correct IDs for the STPA components by sending the computed edits to the extension
             const edits = await stpaServices.utility.IDEnforcer.enforceIDs(textChanges, changeUri);
             if (edits.length !== 0) {
-                connection.sendNotification('editor/workspaceedit', ({ edits, uri: changeUri }));
+                connection.sendNotification("editor/workspaceedit", { edits, uri: changeUri });
             }
             // reset saved changes
             textChange = false;
@@ -98,15 +120,52 @@ function addTextChangeHandler(connection: Connection, stpaServices: StpaServices
 }
 
 /**
- * Adds handlers for model checking.
- * @param connection 
- * @param sharedServices 
+ * Adds handlers for verification.
+ * @param connection
+ * @param sharedServices
  */
-function addModelCheckingHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
-    // model checking
-    connection.onRequest('modelChecking/generateLTL', async (uri: string) => {
+function addVerificationHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    // LTL generation
+    connection.onRequest("verification/generateLTL", async (uri: string) => {
         // generate and send back the LTL formula based on the STPA UCAs
         const formulas = await generateLTLFormulae(uri, sharedServices);
         return formulas;
+    });
+    // get the control actions
+    connection.onRequest("verification/getControlActions", async (uri: string) => {
+        const controlActions = await getControlActions(uri, sharedServices);
+        return controlActions;
+    });
+}
+
+/**
+ * Adds handlers for notifications regarding the STPA result.
+ * @param connection
+ * @param sharedServices
+ */
+function addResultHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    // creates and send back the STPA result data
+    connection.onRequest("result/getData", async (uri: string) => {
+        const data = await createResultData(uri, sharedServices);
+        return data;
+    });
+    // create the diagrams needed for the STPA result report and send back the widths of them.
+    connection.onRequest("result/createDiagrams", async (msg) => {
+        const diagramServerManager = sharedServices.diagram.DiagramServerManager;
+        await diagramServerManager.acceptAction(msg);
+        return diagramSizes;
+    });
+}
+
+/**
+ * Adds handlers for requests regarding the fault tree creation.
+ * @param connection
+ */
+function addFTAGeneratorHandler(connection: Connection, sharedServices: LangiumSprottySharedServices): void {
+    // creates and serializes fault trees
+    connection.onRequest("generate/faultTrees", async (uri: string) => {
+        const models = await createFaultTrees(uri, sharedServices);
+        const texts = models.map((model) => serializeFTAAST(model));
+        return texts;
     });
 }

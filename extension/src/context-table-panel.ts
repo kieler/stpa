@@ -15,20 +15,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { TableWebview } from "@kieler/table-webview/lib/table-webview";
 import * as vscode from "vscode";
-import { TableWebview } from '@kieler/table-webview/lib/table-webview';
-import { SendContextTableDataAction } from '../src-context-table/actions';
-import { ContextTableData } from '../src-context-table/utils';
+import { SendContextTableDataAction } from "../src-context-table/actions";
+import { ContextTableData } from "../src-context-table/utils";
 
 export class ContextTablePanel extends TableWebview {
+    constructor(identifier: string, localResourceRoots: vscode.Uri[], scriptUri: vscode.Uri) {
+        super(identifier, localResourceRoots, scriptUri);
+        this.createWebviewPanel([]);
+    }
 
-  constructor(identifier: string, localResourceRoots: vscode.Uri[], scriptUri: vscode.Uri) {
-    super(identifier, localResourceRoots, scriptUri);
-    this.createWebviewPanel([]);
-  }
-
-  setData(data: ContextTableData): void {
-    this.sendToWebview({ action: SendContextTableDataAction.create(data) });
-  }
-
+    setData(data: ContextTableData): void {
+        this.sendToWebview({ action: SendContextTableDataAction.create(data) });
+    }
 }

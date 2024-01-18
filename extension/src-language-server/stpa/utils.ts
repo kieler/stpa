@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,16 +15,19 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode } from "langium";
+import { LangiumSharedServices } from "langium";
+import { LangiumSprottySharedServices } from "langium-sprotty";
+import { Range } from "vscode-languageserver";
 import {
     Command,
-    ContConstraint,
     Context,
+    ControllerConstraint,
     Graph,
     Hazard,
     HazardList,
     Loss,
     LossScenario,
+    Model,
     Node,
     Responsibility,
     Rule,
@@ -32,80 +35,69 @@ import {
     SystemConstraint,
     UCA,
     Variable,
-    isContConstraint,
-    isContext,
-    isHazard,
-    isLoss,
-    isLossScenario,
-    isResponsibility,
-    isSafetyConstraint,
-    isSystemConstraint,
-    isUCA
 } from "../generated/ast";
-import { STPANode } from "./stpa-interfaces";
-import { STPAAspect } from "./stpa-model";
-import { groupValue } from "./synthesis-options";
+import { getModel } from "../utils";
 
-
-export type leafElement = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Context;
-export type elementWithName = Loss | Hazard | SystemConstraint | Responsibility | UCA | ContConstraint | LossScenario | SafetyConstraint | Node | Variable | Graph | Command | Context | Rule;
-export type elementWithRefs = Hazard | SystemConstraint | Responsibility | HazardList | ContConstraint | SafetyConstraint;
-
-/**
- * Getter for the references contained in {@code node}.
- * @param node The STPAAspect which tracings should be returned.
- * @param hierarchy If this is true, subcomponents are children of their parents in the diagram, otherwise the relationship is represented by edges.
- * @returns The objects {@code node} is traceable to.
- */
-export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
-    if (node) {
-        const targets: AstNode[] = [];
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node) || isSafetyConstraint(node)) {
-            for (const ref of node.refs) {
-                if (ref?.ref) { targets.push(ref.ref); }
-            }
-            // for subcomponents the parents must be declared as targets too, if hierarchy is false
-            if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
-                targets.push(node.$container);
-            }
-        } else if (isLossScenario(node) && node.uca && node.uca.ref) {
-            targets.push(node.uca.ref);
-        } else if ((isUCA(node) || isContext(node) || isLossScenario(node)) && node.list) {
-            const refs = node.list.refs.map(x => x.ref);
-            for (const ref of refs) {
-                if (ref) { targets.push(ref); }
-            }
-        }
-        return targets;
-    } else {
-        return [];
-    }
-}
+export type leafElement =
+    | Loss
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | UCA
+    | ControllerConstraint
+    | LossScenario
+    | SafetyConstraint
+    | Context;
+export type elementWithName =
+    | Loss
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | UCA
+    | ControllerConstraint
+    | LossScenario
+    | SafetyConstraint
+    | Node
+    | Variable
+    | Graph
+    | Command
+    | Context
+    | Rule;
+export type elementWithRefs =
+    | Hazard
+    | SystemConstraint
+    | Responsibility
+    | HazardList
+    | ControllerConstraint
+    | SafetyConstraint;
 
 /**
- * Getter for the aspect of a STPA component.
- * @param node AstNode which aspect should determined.
- * @returns the aspect of {@code node}.
+ * Returns the control actions defined in the file given by the {@code uri}.
+ * @param uri Uri of the file which control actions should be returned.
+ * @param shared The shared services of Langium.
+ * @returns the control actions that are defined in the file determined by the {@code uri}.
  */
-export function getAspect(node: AstNode): STPAAspect {
-    if (isLoss(node)) {
-        return STPAAspect.LOSS;
-    } else if (isHazard(node)) {
-        return STPAAspect.HAZARD;
-    } else if (isSystemConstraint(node)) {
-        return STPAAspect.SYSTEMCONSTRAINT;
-    } else if (isUCA(node) || isContext(node)) {
-        return STPAAspect.UCA;
-    } else if (isResponsibility(node)) {
-        return STPAAspect.RESPONSIBILITY;
-    } else if (isContConstraint(node)) {
-        return STPAAspect.CONTROLLERCONSTRAINT;
-    } else if (isLossScenario(node)) {
-        return STPAAspect.SCENARIO;
-    } else if (isSafetyConstraint(node)) {
-        return STPAAspect.SAFETYREQUIREMENT;
-    }
-    return STPAAspect.UNDEFINED;
+export async function getControlActions(
+    uri: string,
+    shared: LangiumSprottySharedServices | LangiumSharedServices
+): Promise<Record<string, string[]>> {
+    const controlActionsMap: Record<string, string[]> = {};
+    // get the model from the file determined by the uri
+    const model = await getModel(uri, shared) as Model;
+    // collect control actions grouped by their controller
+    model.controlStructure?.nodes.forEach((systemComponent) => {
+        systemComponent.actions.forEach((action) => {
+            action.comms.forEach((command) => {
+                const actionList = controlActionsMap[systemComponent.name];
+                if (actionList !== undefined) {
+                    actionList.push(command.name);
+                } else {
+                    controlActionsMap[systemComponent.name] = [command.name];
+                }
+            });
+        });
+    });
+    return controlActionsMap;
 }
 
 /**
@@ -118,167 +110,84 @@ export function collectElementsWithSubComps(topElements: (Hazard | SystemConstra
     let todo = topElements;
     for (let i = 0; i < todo.length; i++) {
         const current = todo[i];
-        if (current.subComps) {
-            result = result.concat(current.subComps);
-            todo = todo.concat(current.subComps);
+        if (current.subComponents) {
+            result = result.concat(current.subComponents);
+            todo = todo.concat(current.subComponents);
         }
     }
     return result;
 }
 
-/**
- * Determines the layer {@code node} should be in depending on the STPA aspect it represents.
- * @param node STPANode for which the layer should be determined.
- * @param hazardDepth Maximal depth of the hazard hierarchy.
- * @param sysConsDepth Maximal depth of the system-level constraint hierarchy.
- * @param map Maps control actions to group number.
- * @param groupUCAs Determines whether and how UCAs should be grouped.
- * @returns The number of the layer {@code node} should be in.
- */
-function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number, map: Map<string, number>, groupUCAs: groupValue): number {
-    switch (node.aspect) {
-        case STPAAspect.LOSS:
-            return 0;
-        case STPAAspect.HAZARD:
-            return 1 + node.hierarchyLvl;
-        case STPAAspect.SYSTEMCONSTRAINT:
-            return 2 + hazardDepth + node.hierarchyLvl;
-        case STPAAspect.RESPONSIBILITY:
-            return 3 + hazardDepth + sysConsDepth;
-        case STPAAspect.UCA:
-            // each UCA group gets its own layer
-            switch (groupUCAs) {
-                case groupValue.CONTROL_ACTION:
-                    if (node.controlAction && !map.has(node.controlAction)) {
-                        map.set(node.controlAction, map.size);
-                    }
-                    return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!)!;
-                case groupValue.SYSTEM_COMPONENT:
-                    if (node.controlAction && !map.has(node.controlAction.substring(0, node.controlAction.indexOf(".")))) {
-                        map.set(node.controlAction.substring(0, node.controlAction.indexOf(".")), map.size);
-                    }
-                    return 4 + hazardDepth + sysConsDepth + map.get(node.controlAction!.substring(0, node.controlAction!.indexOf(".")))!;
-                default:
-                    return 4 + hazardDepth + sysConsDepth;
-            }
-        case STPAAspect.CONTROLLERCONSTRAINT:
-            return 5 + hazardDepth + sysConsDepth + map.size;
-        case STPAAspect.SCENARIO:
-            return 6 + hazardDepth + sysConsDepth + map.size;
-        case STPAAspect.SAFETYREQUIREMENT:
-            return 7 + hazardDepth + sysConsDepth + map.size;
-        default:
-            return -1;
-    }
+export class StpaResult {
+    title: string;
+    losses: StpaComponent[] = [];
+    hazards: StpaComponent[] = [];
+    systemLevelConstraints: StpaComponent[] = [];
+    // sorted by system components
+    responsibilities: Record<string, StpaComponent[]> = {};
+    // sorted first by control action, then by uca type
+    ucas: Record<string, Record<string, StpaComponent[]>> = {};
+    // sorted by control action
+    controllerConstraints: Record<string, StpaComponent[]> = {};
+    // sorted by control action and by ucas
+    ucaScenarios: Record<string, Record<string, StpaComponent[]>> = {};
+    scenarios: StpaComponent[] = [];
+    safetyConstraints: StpaComponent[] = [];
+}
+
+export class StpaComponent {
+    id: string;
+    description: string;
+    references?: string;
+    subComponents?: StpaComponent[];
 }
 
 /**
- * Sets the level property for {@code nodes} depending on the layer they should be in.
- * @param nodes The nodes representing the stpa components.
- * @param groupUCAs Determines whether and how UCAs are grouped.
+ * Provides the different UCA types.
  */
-export function setLevelsForSTPANodes(nodes: STPANode[], groupUCAs: groupValue): void {
-    // determines the maximal hierarchy depth of hazards and system constraints
-    let maxHazardDepth = -1;
-    let maxSysConsDepth = -1;
-    for (const node of nodes) {
-        if (node.aspect === STPAAspect.HAZARD) {
-            maxHazardDepth = maxHazardDepth > node.hierarchyLvl ? maxHazardDepth : node.hierarchyLvl;
-        }
-        if (node.aspect === STPAAspect.SYSTEMCONSTRAINT) {
-            maxSysConsDepth = maxSysConsDepth > node.hierarchyLvl ? maxSysConsDepth : node.hierarchyLvl;
-        }
-    }
-
-    // used to determine which control action or system component belongs to which group number
-    const map = new Map<string, number>();
-    // sets level property to the layer of the nodes.
-    for (const node of nodes) {
-        const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth, map, groupUCAs);
-        node.level = -layer;
-    }
+export class UCA_TYPE {
+    static NOT_PROVIDED = "not-provided";
+    static PROVIDED = "provided";
+    static TOO_EARLY = "too-early";
+    static TOO_LATE = "too-late";
+    static APPLIED_TOO_LONG = "applied-too-long";
+    static STOPPED_TOO_SOON = "stopped-too-soon";
+    static WRONG_TIME = "wrong-time";
+    static CONTINUOUS = "continuous-problem";
+    static UNDEFINED = "undefined";
 }
 
 /**
- * Set the levels of the control structure nodes.
- * @param nodes The nodes representing the control structure.
+ * Determines the range of the component identified by {@code label} in the editor,
+ * @param model The current STPA model.
+ * @param label The label of the searched component.
+ * @returns The range of the component idenified by the label or undefined if no component was found.
  */
-export function setLevelOfCSNodes(nodes: Node[]): void {
-    const visited = new Map<string, Set<string>>();
-    for (const node of nodes) {
-        visited.set(node.name, new Set<string>());
+export function getRangeOfNodeSTPA(model: Model, label: string): Range | undefined {
+    let range: Range | undefined = undefined;
+    const elements: elementWithName[] = [
+        ...model.losses,
+        ...model.hazards,
+        ...model.hazards.flatMap((hazard) => hazard.subComponents),
+        ...model.systemLevelConstraints,
+        ...model.systemLevelConstraints.flatMap((constraint) => constraint.subComponents),
+        ...model.responsibilities.flatMap((resp) => resp.responsiblitiesForOneSystem),
+        ...model.allUCAs.flatMap((ucas) =>
+            ucas.providingUcas.concat(ucas.notProvidingUcas, ucas.wrongTimingUcas, ucas.continousUcas)
+        ),
+        ...model.rules.flatMap((rule) => rule.contexts),
+        ...model.controllerConstraints,
+        ...model.scenarios,
+        ...model.safetyCons,
+    ];
+    if (model.controlStructure) {
+        elements.push(...model.controlStructure.nodes);
     }
-    nodes[0].level = 0;
-    assignLevel(nodes[0], visited);
-}
-
-/**
- * Assigns the level to the connected nodes of {@code node}.
- * @param node The node for which the connected nodes should be assigned a level.
- * @param visited The edges that have been visited.
- */
-function assignLevel(node: Node, visited: Map<string, Set<string>>): void {
-    for (const action of node.actions) {
-        const target = action.target.ref;
-        if (target && !visited.get(node.name)?.has(target.name)) {
-            visited.get(node.name)?.add(target.name);
-            if (target.level === undefined || target.level < node.level! + 1) {
-                target.level = node.level! + 1;
-            }
-            assignLevel(target, visited);
+    elements.forEach((component) => {
+        if (component.name === label) {
+            range = component.$cstNode?.range;
+            return;
         }
-    }
-    for (const feedback of node.feedbacks) {
-        const target = feedback.target.ref;
-        if (target && !visited.get(node.name)?.has(target.name)) {
-            visited.get(node.name)?.add(target.name);
-            if (target.level === undefined || target.level > node.level! - 1) {
-                target.level = node.level! - 1;
-            }
-            assignLevel(target, visited);
-        }
-    }
-}
-
-/**
- * Creates a description for the given UCA context.
- * @param uca The UCA context.
- * @returns the description of the UCA context.
- */
-export function createUCAContextDescription(uca: Context): string {
-    const rule = uca.$container;
-    const controlAction = rule.action.$refText;
-    let description = rule.system.$refText;
-    switch (rule.type) {
-        case 'not-provided':
-            description += " did not provide " + controlAction;
-            break;
-        case 'provided':
-            description += " provided " + controlAction;
-            break;
-        case 'too-late':
-            description += " provided " + controlAction + " too late";
-            break;
-        case 'too-early':
-            description += " provided " + controlAction + " too early";
-            break;
-        case 'wrong-time':
-            description += " provided " + controlAction + " at the wrong time";
-            break;
-        case 'applied-too-long':
-            description += " applied " + controlAction + " too long";
-            break;
-        case 'stopped-too-soon':
-            description += " stopped " + controlAction + " too soon";
-            break;
-    }
-    description += " in the context of ";
-    for (let i = 0; i < uca.vars.length; i++) {
-        description += uca.vars[i].$refText + "=" + uca.values[i];
-        if (i < uca.vars.length - 1) {
-            description += ", ";
-        }
-    }
-
-    return description;
+    });
+    return range;
 }

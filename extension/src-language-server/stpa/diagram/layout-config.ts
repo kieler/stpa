@@ -65,7 +65,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
 
         // model order is used to determine the order of the children
         if (snode.modelOrder) {
-            options['org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeOrdering'] = 'NODES_AND_EDGES';
+            options['org.eclipse.elk.layered.considerModelOrder.strategy'] = 'NODES_AND_EDGES';
             options['org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder'] = 'true';
             options['org.eclipse.elk.separateConnectedComponents'] = 'false';
         }
@@ -74,7 +74,6 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected nodeOptions(snode: SNode, index: SModelIndex): LayoutOptions | undefined {
-        // TODO: check whether model order option is activated
         switch (snode.type) {
             case CS_NODE_TYPE:
                 return this.csNodeOptions(snode as CSNode);
@@ -115,7 +114,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
 
         // model order is used to determine the order of the children
         if (node.modelOrder) {
-            options['org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeOrdering'] = 'NODES_AND_EDGES';
+            options['org.eclipse.elk.layered.considerModelOrder.strategy'] = 'NODES_AND_EDGES';
             options['org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder'] = 'true';
             options['org.eclipse.elk.separateConnectedComponents'] = 'false';
         }
