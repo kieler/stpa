@@ -281,10 +281,14 @@ export function getAspect(node: AstNode): STPAAspect {
 }
 
 /** Needed to determine which node descriptions should be shown when the showLabels options is set to automatic */
-export let currentOffset: number;
+export let currentCursorOffset: number;
 
-export function setCurrentOffset(offset: number): void {
-    currentOffset = offset;
+/**
+ * Sets the current cursor offset to {@code offset}.
+ * @param offset The current cursor offset.
+ */
+export function setCurrentCursorOffset(offset: number): void {
+    currentCursorOffset = offset;
 }
 
 /**
@@ -294,6 +298,7 @@ export function setCurrentOffset(offset: number): void {
  */
 export function getCurrentAspect(model: Model): STPAAspect {
     let elements: AstNode[] = [];
+    // add elements in the order they appear in the document
     elements = [
         ...model.losses,
         ...model.hazards,
@@ -306,12 +311,12 @@ export function getCurrentAspect(model: Model): STPAAspect {
         ...model.safetyCons,
     ];
 
-    let index = elements.findIndex((element) => element.$cstNode && element.$cstNode.offset >= currentOffset) - 1;
+    // find first element that is after the cursor position and return the aspect of the previous element
+    const index = elements.findIndex((element) => element.$cstNode && element.$cstNode.offset >= currentCursorOffset) - 1;
     if (index < 0) {
         return STPAAspect.LOSS;
     }
-    let apsect = getAspect(elements[index]);
-    return apsect;
+    return getAspect(elements[index]);
 }
 
 /**
@@ -320,36 +325,35 @@ export function getCurrentAspect(model: Model): STPAAspect {
  * @returns the aspects for which the descriptions should be shown.
  */
 export function getAspectsThatShouldHaveDesriptions(model: Model): STPAAspect[] {
-    let aspectsWithShownDescriptions: STPAAspect[] = [];
-    let currentAspect = getCurrentAspect(model);
-    switch (currentAspect) {
+    const aspectsToShowDescriptions: STPAAspect[] = [];
+    switch (getCurrentAspect(model)) {
         case STPAAspect.LOSS:
             break;
         case STPAAspect.HAZARD:
-            aspectsWithShownDescriptions.push(STPAAspect.LOSS);
-            aspectsWithShownDescriptions.push(STPAAspect.HAZARD);
+            aspectsToShowDescriptions.push(STPAAspect.LOSS);
+            aspectsToShowDescriptions.push(STPAAspect.HAZARD);
             break;
         case STPAAspect.SYSTEMCONSTRAINT:
-            aspectsWithShownDescriptions.push(STPAAspect.HAZARD);
+            aspectsToShowDescriptions.push(STPAAspect.HAZARD);
             break;
         case STPAAspect.RESPONSIBILITY:
-            aspectsWithShownDescriptions.push(STPAAspect.SYSTEMCONSTRAINT);
+            aspectsToShowDescriptions.push(STPAAspect.SYSTEMCONSTRAINT);
             break;
         case STPAAspect.UCA:
-            aspectsWithShownDescriptions.push(STPAAspect.HAZARD);
+            aspectsToShowDescriptions.push(STPAAspect.HAZARD);
             break;
         case STPAAspect.CONTROLLERCONSTRAINT:
-            aspectsWithShownDescriptions.push(STPAAspect.UCA);
+            aspectsToShowDescriptions.push(STPAAspect.UCA);
             break;
         case STPAAspect.SCENARIO:
-            aspectsWithShownDescriptions.push(STPAAspect.UCA);
-            aspectsWithShownDescriptions.push(STPAAspect.HAZARD);
+            aspectsToShowDescriptions.push(STPAAspect.UCA);
+            aspectsToShowDescriptions.push(STPAAspect.HAZARD);
             break;
         case STPAAspect.SAFETYREQUIREMENT:
-            aspectsWithShownDescriptions.push(STPAAspect.SCENARIO);
+            aspectsToShowDescriptions.push(STPAAspect.SCENARIO);
             break;
         default:
             break;
     }
-    return aspectsWithShownDescriptions;
+    return aspectsToShowDescriptions;
 }

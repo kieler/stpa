@@ -320,11 +320,9 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
         vscode.workspace.onDidSaveTextDocument(async (document) => {
             if (document) {
                 await languageClient.sendRequest("cutSets/reset");
-                let editor = vscode.window.activeTextEditor;
-                let position = editor?.selection.active;
-                console.log(position);
-                if (position) {
-                    await languageClient.sendNotification("editor/save", document.offsetAt(position));
+                const currentCursorPosition = vscode.window.activeTextEditor?.selection.active;
+                if (currentCursorPosition) {
+                    await languageClient.sendNotification("editor/save", document.offsetAt(currentCursorPosition));
                 }
                 manager.openDiagram(document.uri);
                 if (manager.contextTable) {

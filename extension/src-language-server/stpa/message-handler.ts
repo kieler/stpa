@@ -21,12 +21,12 @@ import { TextDocumentContentChangeEvent } from "vscode";
 import { Connection, URI } from "vscode-languageserver";
 import { diagramSizes } from "../diagram-server";
 import { serializeFTAAST } from "../fta/utils";
+import { setCurrentCursorOffset } from "./diagram/utils";
 import { createFaultTrees } from "./ftaGeneration/fta-generation";
 import { generateLTLFormulae } from "./modelChecking/model-checking";
 import { createResultData } from "./result-report/result-generator";
 import { StpaServices } from "./stpa-module";
 import { getControlActions } from "./utils";
-import { currentOffset, setCurrentOffset } from "./diagram/utils";
 
 let lastUri: URI;
 
@@ -110,8 +110,9 @@ function addTextChangeHandler(connection: Connection, stpaServices: StpaServices
             textChanges = [];
         }
     });
+    // update the cursor position on save
     connection.onNotification("editor/save", async (offset) => {
-        setCurrentOffset(offset);
+        setCurrentCursorOffset(offset);
     });
 }
 
