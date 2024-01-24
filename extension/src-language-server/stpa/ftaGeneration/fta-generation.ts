@@ -66,16 +66,9 @@ function createFaulTreeForHazard(scenarios: Map<string, LossScenario[]>, hazard:
     ftaModel.components = [];
     ftaModel.gates = [];
 
-    // add scenarios as components and sort them by their causal factor
+    // sort scenarios by their causal factor
     const causalFactors: Map<string, LossScenario[]> = new Map();
     for (const scenario of scenarios.get(hazard.name) || []) {
-        const component = {
-            name: scenario.name,
-            description: scenario.description,
-            $container: ftaModel,
-            $type: "Component",
-        } as Component;
-        ftaModel.components.push(component);
         const causalFactor = scenario.factor;
         if (causalFactor) {
             addToListMap(causalFactors, causalFactor, scenario);
@@ -84,12 +77,25 @@ function createFaulTreeForHazard(scenarios: Map<string, LossScenario[]>, hazard:
         }
     }
 
+    // add scenarios as components ordered by their causal factor
+    for (const causalFactor of causalFactors.keys()) {
+        for (const scenario of causalFactors.get(causalFactor) || []) {
+            const component = {
+                name: scenario.name,
+                description: scenario.description,
+                $container: ftaModel,
+                $type: "Component",
+            } as Component;
+            ftaModel.components.push(component);
+        }
+    }
+
     // create gate for each causal factor
     let counter = 1;
     for (const causalFactor of causalFactors.keys()) {
-        const children = causalFactors.get(causalFactor)?.map((scenario) => {
+        const children = causalFactors.get(causalFactor)?.map(scenario => {
             return {
-                ref: ftaModel.components.find((component) => component.name === scenario.name),
+                ref: ftaModel.components.find(component => component.name === scenario.name),
                 $refText: scenario.name,
             } as Reference<Children>;
         });
@@ -107,7 +113,7 @@ function createFaulTreeForHazard(scenarios: Map<string, LossScenario[]>, hazard:
     }
 
     // create gate to connect top event with all other gates
-    const gateChildren = ftaModel.gates.map((gate) => {
+    const gateChildren = ftaModel.gates.map(gate => {
         return { ref: gate, $refText: gate.name } as Reference<Children>;
     });
     const gate = {
