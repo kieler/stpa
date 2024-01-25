@@ -1,8 +1,10 @@
 # PASTA: Pragmatic Automated System-Theoretic Process Analysis
 
-> This extension offers a Domain-Specific-Language (DSL) for System-Theoretic Process Analysis (STPA) including an automatic visualization and validity checks.
+This extension offers a Domain-Specific-Language (DSL) for System-Theoretic Process Analysis (STPA) including an automatic visualization and validity checks.
 
 ## Features
+
+### Validity Checks
 
 Several validity checks are provided, for example
 * for each control action at least one Unsafe Control Action (UCA) must be defined,
@@ -10,17 +12,35 @@ Several validity checks are provided, for example
   
 These checks can be turned off in the context menu of the editor.
 
+### Diagram
+
 A diagram can be opened for the analysis by clicking on the icon right above the editor or by selecting `Open in Diagram` in the editor context menu. In the diagram different color styles and filtering methods are provided. Clicking on a node fades out non-connected nodes and clicking on a node while pressing the `Ctrl` key fades out nodes that belong to another aspect.
+
+### Context Table
 
 Instead of informal UCA definitions a context table may be used. This is done by using the section `Context-Table` instead of `UCAs`. A context table can then be generated automatically and shown alongside the diagram by selecting `Show Context Tables` in the editor context menu or the corresponding icon right above the editor. Clicking on a UCA in the context table highlights the corresponding node in the diagram and its definition in the editor. In the context table view a control action can be selected in order to inspect it. 
 
+### Safe Behavioral Model Generation
+
+In the context menu an option to automatically generate a safe behavioral model as an SCChart is provided. For that the defined UCAs are translated to LTL formulas, which are further used to create the SCChart. This guarantees that the identified UCAs cannot occur since the LTL formulas are respected except the ones for the UCA type too early. 
+
+The SCChart language and an automatic visualization is provided by the two KIELER extensions [KLighD Diagrams](https://marketplace.visualstudio.com/items?itemName=kieler.klighd-vscode) and [KIELER VS Code](https://marketplace.visualstudio.com/items?itemName=kieler.keith-vscode).
+
+### Fault Tree Analysis (FTA)
+
+Besides STPA the extension also supports FTA. A textual DSL as well as an automatic generation of a diagram is provided. The context menu provides an option to generate the (minimal) cut sets for the current Fault Tree. These cut sets can also be visualized by selecting the desired cut set in the diagram options. In order to analyse the cut sets of a subtree, a rightclick on the node which should be the root of the subtree is needed and than the action to generate the (minimal) cut sets can be selected.
+
+Furthermore, after an STPA is done, a corresponding Fault Tree can be generated automatically. To do this, the action "Generate Fault Trees" in the context menu must be selected. It generates a fault tree for each hazard and groups the scenarios by their causal factor if one is given.
+
 ## DSL
+
+### STPA
 
 To use the extension for an analysis, the file in which the analysis is done must have `.stpa` as its file ending. Each STPA aspect has its own section in the DSL. Components for each aspect are defined with an ID, a description, and a reference list. In order to define a new component, the prefix of the corresponding aspect must be stated, for example "L", and afterwards a string with the description. The numbering of the IDs is adjusted automatically.
 
 In the control structure, system components can be stated, which can contain a process model, input, output, control actions, and feedback. The visualization of input and output edges is in an experimental state at the moment and will be improved in the future.
 
-### Minimal example of an analysis for a ferry:
+*Minimal example of an analysis for a ferry:*
 ```
 Losses
 L1 "Loss of life or serious injury to people"
@@ -91,7 +111,7 @@ SafetyRequirements
 SR1 "ControlCentre must manual set the parameters of the engine when vessel comes too close to a No Go Area" [Scenario1]
 ```
 
-### Example for defining UCAs with the context table:
+*Example for defining UCAs with the context table:*
 ```
 Context-Table
 RL1 {
@@ -103,3 +123,53 @@ RL1 {
 }
 ```
 
+### FTA
+
+The file in which the analysis is done must have `.fta` as its file ending. Each component type in the fault tree has its own section. Components are stated with an ID and a descriptions. Afterwards, Conditions for Inhibit gates can be stated. The actual fault tree is than stated with a top event and the gates leading to this event. The gates can be annotated with a description as well. The gate types Or, And, Inhibit, and n/k are supported.
+
+*Example of an analysis:*
+
+```
+Components
+M1 "Redundant memory unit 1"
+M2 "Redundant memory unit 2"
+M3 "Redundant memory unit 3"
+C1 "CPU1"
+C2 "CPU2"
+PS "Power supply"
+B "System bus"
+
+Conditions
+U "In Use"
+
+TopEvent
+"System Failure" = G1 
+
+Gates
+G1 = U inhibits G2 
+G2 = G3 or B 
+G3 = G4 and G5
+G4 = C1 or PS or G6
+G5 = C2 or PS or G6
+G6 "Memory Fail" = 2 of M1, M2, M3
+```
+
+## Diagram Options
+
+The extension provides several diagram options to adjust the diagram.
+* Model Order: Order of the elements depends on the order of their textual definition
+* Node Label Management: Node Labels can be wrapped, truncated, or not shown at all. The Shortening Width states how many characters are allowed in one line when truncating/wrapping
+
+### FTA 
+* Show Gate Descriptions: Shows the descriptions of the gates in the diagram.
+* Show Component Descriptions: Shows the descriptions of the components in the diagram.
+* Highlight Cut Set: To use this first the action to generate the cut sets must be executed. Then here a cut set can be selected. The components belonging to the cut set are highlighted in red, components and gates irrelevant for the failure are faded out, and the top event is highlighted in blue. Thus, when only a subtree is analyzed, the root of this subtree is highlighted. Additionally, the option SPoFs in the dropdown menu highlights all single point of failures.
+
+### STPA
+* Color Style: The STPA aspect are colored differently to better distinguish them. With this option this can be adjusted to just use black or fewer/more colors. 
+* Hierarchy: If this option is selected, subcomponents are drawn inside their parents. Otherwise this connection is shown by an edge from the subcomponent to its parent.
+* Group UCAs: UCAs can be grouped by their control action or their system component. Each group of UCAs has their own layer in the diagram.
+* Show Labels of: This option determines of which aspects the descriptions are shown in the diagram. If "Automatic" is selected, the shown labels are determined by the cursor position. In most cases the labels of the aspect which must be referenced by the currently modified aspect are shown. When writing Hazards also the Hazard descriptions are shown.
+* Filter UCA by Control Action: The UCAs can be filtered such that only UCAs for a certain control action are shown making the diagram smaller and clearer.
+* Hide x: When selected the components of the specified aspect are not visualized.
+* Show x: When selected the specified graph is shown, otherwise it is hidden.
