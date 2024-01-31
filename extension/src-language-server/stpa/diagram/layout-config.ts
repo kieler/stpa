@@ -122,14 +122,23 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected csNodeOptions(node: CSNode): LayoutOptions {
-        return {
-            'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
+        const options: LayoutOptions = {
             'org.eclipse.elk.partitioning.partition': "" + node.level,
             'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
             // edges do no start at the border of the node
             'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
             'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
         };
+        if (node.children?.find(child => child.type.startsWith('node'))) {
+            options['org.eclipse.elk.nodeLabels.placement'] = "INSIDE V_TOP H_CENTER";
+            // TODO: want to use rectpacking instead of layered but this does not work at the moment (sprotty issue)
+            options['org.eclipse.elk.direction'] = 'DOWN';
+            options['org.eclipse.elk.separateConnectedComponents'] = 'false';
+        } else {
+            // TODO: want H_LEFT but this expands the node more than needed
+            options['org.eclipse.elk.nodeLabels.placement'] = "INSIDE V_CENTER H_CENTER";
+        }
+        return options;
     }
 
     protected portOptions(sport: SPort, index: SModelIndex): LayoutOptions | undefined {

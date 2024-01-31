@@ -25,6 +25,7 @@ import {
     Model,
     Node,
     SystemConstraint,
+    Variable,
     VerticalEdge,
     isContext,
     isHazard,
@@ -41,6 +42,7 @@ import {
     CS_NODE_TYPE,
     DUMMY_NODE_TYPE,
     EdgeType,
+    HEADER_LABEL_TYPE,
     PARENT_TYPE,
     PortSide,
     STPAAspect,
@@ -296,11 +298,15 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     protected createControlStructureNode(node: Node, { idCache }: GeneratorContext<Model>): CSNode {
         const label = node.label ? node.label : node.name;
         const nodeId = idCache.uniqueId(node.name, node);
+        const children: SModelElement[] = this.createLabel([label], nodeId, idCache);
+        if (this.options.getShowProcessModels()) {
+            children.push(...this.createCSChildren(node.variables, idCache));
+        }
         const csNode = {
             type: CS_NODE_TYPE,
             id: nodeId,
             level: node.level,
-            children: this.createLabel([label], nodeId, idCache),
+            children: children,
             layout: "stack",
             layoutOptions: {
                 paddingTop: 10.0,
@@ -311,6 +317,30 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         };
         this.idToSNode.set(nodeId, csNode);
         return csNode;
+    }
+
+    protected createCSChildren(variables: Variable[], idCache: IdCache<AstNode>): SModelElement[] {
+        const csChildren: SModelElement[] = [];
+        for (const variable of variables) {
+            const label = variable.name;
+            const nodeId = idCache.uniqueId(variable.name, variable);
+            const values = variable.values?.map((value) => value.name);
+            const children = [...this.createLabel([label], nodeId, idCache, HEADER_LABEL_TYPE), ...this.createLabel(values, nodeId, idCache)];
+            const csNode = {
+                type: CS_NODE_TYPE,
+                id: nodeId,
+                children: children,
+                layout: "stack",
+                layoutOptions: {
+                    paddingTop: 10.0,
+                    paddingBottom: 10.0,
+                    paddingLeft: 10.0,
+                    paddingRight: 10.0,
+                },
+            } as CSNode;
+            csChildren.push(csNode);
+        }
+        return csChildren;
     }
 
     /**
@@ -890,12 +920,12 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param id The ID of the element for which the label should be generated.
      * @returns SLabel elements representing {@code label}.
      */
-    protected createLabel(label: string[], id: string, idCache: IdCache<AstNode>): SLabel[] {
+    protected createLabel(label: string[], id: string, idCache: IdCache<AstNode>, type: string = "label:xref"): SLabel[] {
         const children: SLabel[] = [];
         if (label.find((l) => l !== "")) {
             label.forEach((l) => {
                 children.push({
-                    type: "label:xref",
+                    type: type,
                     id: idCache.uniqueId(id + "_label"),
                     text: l,
                 } as SLabel);
@@ -903,7 +933,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         } else {
             // needed for correct layout
             children.push({
-                type: "label:xref",
+                type: type,
                 id: idCache.uniqueId(id + "_label"),
                 text: " ",
             } as SLabel);

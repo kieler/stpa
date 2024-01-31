@@ -55,6 +55,7 @@ import {
     CS_EDGE_TYPE,
     CS_NODE_TYPE,
     DUMMY_NODE_TYPE,
+    HEADER_LABEL_TYPE,
     PARENT_TYPE,
     STPAEdge,
     STPANode,
@@ -67,6 +68,7 @@ import {
 import { StpaMouseListener } from "./stpa/stpa-mouselistener";
 import {
     CSNodeView,
+    HeaderLabelView,
     IntermediateEdgeView,
     PolylineArrowEdgeView,
     PortView,
@@ -96,6 +98,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     const context = { bind, unbind, isBound, rebind };
     configureModelElement(context, "label", SLabel, SLabelView);
     configureModelElement(context, "label:xref", SLabel, SLabelView);
+    configureModelElement(context, HEADER_LABEL_TYPE, SLabel, HeaderLabelView);
     configureModelElement(context, "html", HtmlRoot, HtmlRootView);
     configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
 

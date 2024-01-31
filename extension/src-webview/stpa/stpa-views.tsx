@@ -18,10 +18,10 @@
 /** @jsx svg */
 import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
-import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SNode, SPort, svg, toDegrees } from 'sprotty';
+import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SLabel, SLabelView, SNode, SPort, svg, toDegrees } from 'sprotty';
 import { DISymbol } from '../di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
-import { renderOval, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { CSEdge, CS_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
@@ -237,5 +237,14 @@ export class STPAGraphView extends SGraphView {
 export class PortView implements IView {
     render(model: SPort, context: RenderingContext): VNode {
         return <g />;
+    }
+}
+
+@injectable()
+export class HeaderLabelView extends SLabelView {
+    render(label: Readonly<SLabel>, context: RenderingContext): VNode | undefined {
+        return <g class-header={true}>
+            {super.render(label, context)}
+        </g>
     }
 }

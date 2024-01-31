@@ -40,6 +40,7 @@ const showLabelsID = "showLabels";
 const filterCategoryID = "filterCategory";
 
 const showControlStructureID = "showControlStructure";
+const showProcessModelsID = "showProcessModels";
 const showRelationshipGraphID = "showRelationshipGraph";
 
 /**
@@ -76,6 +77,22 @@ const showControlStructureOption: ValuedSynthesisOption = {
         category: filterCategory,
     },
     currentValue: true,
+};
+
+/**
+ * Boolean option to toggle the visualization of the control structure.
+ */
+const showProcessModelsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showProcessModelsID,
+        name: "Show Process Models",
+        type: TransformationOptionType.CHECK,
+        initialValue: false,
+        currentValue: false,
+        values: [true, false],
+        category: filterCategory,
+    },
+    currentValue: false,
 };
 
 /**
@@ -329,6 +346,7 @@ export class StpaSynthesisOptions extends SynthesisOptions {
                 hideSafetyConstraintsOption,
                 showLabelsOption,
                 showControlStructureOption,
+                showProcessModelsOption,
                 showRelationshipGraphOption,
             ]
         );
@@ -375,6 +393,14 @@ export class StpaSynthesisOptions extends SynthesisOptions {
 
     getShowControlStructure(): boolean {
         return this.getOption(showControlStructureID)?.currentValue;
+    }
+
+    setShowProcessModels(value: boolean): void {
+        this.setOption(showProcessModelsID, value);
+    }
+
+    getShowProcessModels(): boolean {
+        return this.getOption(showProcessModelsID)?.currentValue;
     }
 
     setHierarchy(value: boolean): void {
