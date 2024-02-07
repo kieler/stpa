@@ -16,20 +16,18 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LayoutOptions } from 'elkjs';
-import { DefaultLayoutConfigurator } from 'sprotty-elk/lib/elk-layout';
-import { SGraph, SModelIndex, SNode, SPort } from 'sprotty-protocol';
-import { CSNode, ParentNode, STPANode, STPAPort } from './stpa-interfaces';
-import { CS_NODE_TYPE, PARENT_TYPE, PortSide, STPA_NODE_TYPE, STPA_PORT_TYPE } from './stpa-model';
-
+import { LayoutOptions } from "elkjs";
+import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout";
+import { SGraph, SModelIndex, SNode, SPort } from "sprotty-protocol";
+import { CSNode, ParentNode, STPANode, STPAPort } from "./stpa-interfaces";
+import { CS_NODE_TYPE, INVISIBLE_NODE_TYPE, PARENT_TYPE, PortSide, STPA_NODE_TYPE, STPA_PORT_TYPE } from "./stpa-model";
 
 export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
-
     protected graphOptions(sgraph: SGraph, index: SModelIndex): LayoutOptions {
         // options for the whole graph containing the control structure and the STPA graph
         return {
-            'org.eclipse.elk.partitioning.activate': 'true',
-            'org.eclipse.elk.direction': 'DOWN'
+            "org.eclipse.elk.partitioning.activate": "true",
+            "org.eclipse.elk.direction": "DOWN",
         };
     }
 
@@ -37,37 +35,37 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
      * Options for the parent nodes of the STPA graph and the control structure
      */
     protected grandparentNodeOptions(snode: ParentNode, index: SModelIndex): LayoutOptions {
-        let direction = '';
+        let direction = "";
         // priority is used to determine the order of the nodes
-        let priority = '';
+        let priority = "";
         if (snode.children?.find(child => child.type === CS_NODE_TYPE)) {
             // options for the control structure
-            direction = 'DOWN';
-            priority = '1';
+            direction = "DOWN";
+            priority = "1";
         } else if (snode.children?.find(child => child.type === STPA_NODE_TYPE)) {
             // options for the STPA graph
-            direction = 'UP';
-            priority = '0';
+            direction = "UP";
+            priority = "0";
         }
 
         const options: LayoutOptions = {
-            'org.eclipse.elk.layered.thoroughness': '70',
-            'org.eclipse.elk.partitioning.activate': 'true',
-            'org.eclipse.elk.direction': direction,
-            // nodes with many edges are streched 
-            'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
-            'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
-            'org.eclipse.elk.spacing.portPort': '10',
+            "org.eclipse.elk.layered.thoroughness": "70",
+            "org.eclipse.elk.partitioning.activate": "true",
+            "org.eclipse.elk.direction": direction,
+            // nodes with many edges are streched
+            "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+            "org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default": "NODE_SIZE",
+            "org.eclipse.elk.spacing.portPort": "10",
             // edges do no start at the border of the node
-            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
-            'org.eclipse.elk.priority': priority,
+            "org.eclipse.elk.spacing.portsSurrounding": "[top=10.0,left=10.0,bottom=10.0,right=10.0]",
+            "org.eclipse.elk.priority": priority,
         };
 
         // model order is used to determine the order of the children
         if (snode.modelOrder) {
-            options['org.eclipse.elk.layered.considerModelOrder.strategy'] = 'NODES_AND_EDGES';
-            options['org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder'] = 'true';
-            options['org.eclipse.elk.separateConnectedComponents'] = 'false';
+            options["org.eclipse.elk.layered.considerModelOrder.strategy"] = "NODES_AND_EDGES";
+            options["org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder"] = "true";
+            options["org.eclipse.elk.separateConnectedComponents"] = "false";
         }
 
         return options;
@@ -77,6 +75,8 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         switch (snode.type) {
             case CS_NODE_TYPE:
                 return this.csNodeOptions(snode as CSNode);
+            case INVISIBLE_NODE_TYPE:
+                return this.invisibleNodeOptions(snode);
             case STPA_NODE_TYPE:
                 return this.stpaNodeOptions(snode as STPANode);
             case PARENT_TYPE:
@@ -84,15 +84,22 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         }
     }
 
+    protected invisibleNodeOptions(snode: SNode): LayoutOptions | undefined {
+        return {
+            "org.eclipse.elk.partitioning.activate": "true",
+            "org.eclipse.elk.direction": "DOWN",
+        };
+    }
+
     protected stpaNodeOptions(node: STPANode): LayoutOptions {
-        if (node.children?.find(child => child.type.startsWith('node'))) {
+        if (node.children?.find(child => child.type.startsWith("node"))) {
             return this.parentSTPANodeOptions(node);
         } else {
             return {
-                'org.eclipse.elk.nodeLabels.placement': "INSIDE V_CENTER H_CENTER",
-                'org.eclipse.elk.partitioning.partition': "" + node.level,
-                'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
-                'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
+                "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
+                "org.eclipse.elk.partitioning.partition": "" + node.level,
+                "org.eclipse.elk.portConstraints": "FIXED_SIDE",
+                "org.eclipse.elk.nodeSize.constraints": "NODE_LABELS",
             };
         }
     }
@@ -100,69 +107,70 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     protected parentSTPANodeOptions(node: STPANode): LayoutOptions {
         // options for nodes in the STPA graphs that have children
         const options: LayoutOptions = {
-            'org.eclipse.elk.direction': 'UP',
-            'org.eclipse.elk.nodeLabels.placement': "INSIDE V_TOP H_CENTER",
-            'org.eclipse.elk.partitioning.partition': "" + node.level,
-            'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
-            // nodes with many edges are streched 
-            'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
-            'org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default': 'NODE_SIZE',
+            "org.eclipse.elk.direction": "UP",
+            "org.eclipse.elk.nodeLabels.placement": "INSIDE V_TOP H_CENTER",
+            "org.eclipse.elk.partitioning.partition": "" + node.level,
+            "org.eclipse.elk.nodeSize.constraints": "NODE_LABELS",
+            // nodes with many edges are streched
+            "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+            "org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default": "NODE_SIZE",
             // edges do no start at the border of the node
-            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
-            'org.eclipse.elk.portConstraints': 'FIXED_SIDE'
+            "org.eclipse.elk.spacing.portsSurrounding": "[top=10.0,left=10.0,bottom=10.0,right=10.0]",
+            "org.eclipse.elk.portConstraints": "FIXED_SIDE",
         };
 
         // model order is used to determine the order of the children
         if (node.modelOrder) {
-            options['org.eclipse.elk.layered.considerModelOrder.strategy'] = 'NODES_AND_EDGES';
-            options['org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder'] = 'true';
-            options['org.eclipse.elk.separateConnectedComponents'] = 'false';
+            options["org.eclipse.elk.layered.considerModelOrder.strategy"] = "NODES_AND_EDGES";
+            options["org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder"] = "true";
+            options["org.eclipse.elk.separateConnectedComponents"] = "false";
         }
         return options;
     }
 
     protected csNodeOptions(node: CSNode): LayoutOptions {
         const options: LayoutOptions = {
-            'org.eclipse.elk.partitioning.partition': "" + node.level,
-            'org.eclipse.elk.nodeSize.constraints': 'NODE_LABELS',
+            "org.eclipse.elk.partitioning.partition": "" + node.level,
+            "org.eclipse.elk.nodeSize.constraints": "NODE_LABELS",
             // edges do no start at the border of the node
-            'org.eclipse.elk.spacing.portsSurrounding': '[top=10.0,left=10.0,bottom=10.0,right=10.0]',
-            'org.eclipse.elk.portConstraints': 'FIXED_SIDE',
+            "org.eclipse.elk.spacing.portsSurrounding": "[top=10.0,left=10.0,bottom=10.0,right=10.0]",
+            "org.eclipse.elk.portConstraints": "FIXED_SIDE",
         };
-        if (node.children?.find(child => child.type.startsWith('node'))) {
-            options['org.eclipse.elk.nodeLabels.placement'] = "INSIDE V_TOP H_CENTER";
+        if (node.children?.find(child => child.type.startsWith("node"))) {
+            // cs nodes with children
+            options["org.eclipse.elk.nodeLabels.placement"] = "INSIDE V_TOP H_CENTER";
             // TODO: want to use rectpacking instead of layered but this does not work at the moment (sprotty issue)
-            options['org.eclipse.elk.direction'] = 'DOWN';
-            options['org.eclipse.elk.separateConnectedComponents'] = 'false';
+            // options['org.eclipse.elk.algorithm'] = 'RECTPACKING';
+            options["org.eclipse.elk.direction"] = "DOWN";
+            options["org.eclipse.elk.separateConnectedComponents"] = "false";
+            options["org.eclipse.elk.partitioning.activate"] = "true";
         } else {
             // TODO: want H_LEFT but this expands the node more than needed
-            options['org.eclipse.elk.nodeLabels.placement'] = "INSIDE V_CENTER H_CENTER";
+            options["org.eclipse.elk.nodeLabels.placement"] = "INSIDE V_CENTER H_CENTER";
         }
         return options;
     }
 
     protected portOptions(sport: SPort, index: SModelIndex): LayoutOptions | undefined {
         if (sport.type === STPA_PORT_TYPE) {
-            let side = '';
+            let side = "";
             switch ((sport as STPAPort).side) {
                 case PortSide.WEST:
-                    side = 'WEST';
+                    side = "WEST";
                     break;
                 case PortSide.EAST:
-                    side = 'EAST';
+                    side = "EAST";
                     break;
                 case PortSide.NORTH:
-                    side = 'NORTH';
+                    side = "NORTH";
                     break;
                 case PortSide.SOUTH:
-                    side = 'SOUTH';
+                    side = "SOUTH";
                     break;
             }
             return {
-                'org.eclipse.elk.port.side': side
+                "org.eclipse.elk.port.side": side,
             };
         }
-
     }
-
 }

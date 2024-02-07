@@ -69,7 +69,7 @@ export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
         } else if (isLossScenario(node) && node.uca && node.uca.ref) {
             targets.push(node.uca.ref);
         } else if ((isUCA(node) || isContext(node) || isLossScenario(node)) && node.list) {
-            const refs = node.list.refs.map((x) => x.ref);
+            const refs = node.list.refs.map(x => x.ref);
             for (const ref of refs) {
                 if (ref) {
                     targets.push(ref);
@@ -178,9 +178,14 @@ export function setLevelOfCSNodes(nodes: Node[]): void {
     const visited = new Map<string, Set<string>>();
     for (const node of nodes) {
         visited.set(node.name, new Set<string>());
+        if (node.children) {
+            setLevelOfCSNodes(node.children);
+        }
     }
-    nodes[0].level = 0;
-    assignLevel(nodes[0], visited);
+    if (nodes.length > 0) {
+        nodes[0].level = 0;
+        assignLevel(nodes[0], visited);
+    }
 }
 
 /**
@@ -312,7 +317,7 @@ export function getCurrentAspect(model: Model): STPAAspect {
     ];
 
     // find first element that is after the cursor position and return the aspect of the previous element
-    const index = elements.findIndex((element) => element.$cstNode && element.$cstNode.offset >= currentCursorOffset) - 1;
+    const index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset >= currentCursorOffset) - 1;
     if (index < 0) {
         return STPAAspect.LOSS;
     }

@@ -43,6 +43,7 @@ import {
     DUMMY_NODE_TYPE,
     EdgeType,
     HEADER_LABEL_TYPE,
+    INVISIBLE_NODE_TYPE,
     PARENT_TYPE,
     PortSide,
     STPAAspect,
@@ -90,7 +91,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // determine the children for the STPA graph
         // for each component a node is generated with edges representing the references of the component
         // in order to be able to set the target IDs of the edges, the nodes must be created in the correct order
-        let stpaChildren: SModelElement[] = filteredModel.losses?.map((l) =>
+        let stpaChildren: SModelElement[] = filteredModel.losses?.map(l =>
             this.generateSTPANode(
                 l,
                 showLabels === showLabelsValue.ALL ||
@@ -106,7 +107,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             const sysCons = collectElementsWithSubComps(filteredModel.systemLevelConstraints);
             stpaChildren = stpaChildren?.concat([
                 ...hazards
-                    .map((sh) =>
+                    .map(sh =>
                         this.generateAspectWithEdges(
                             sh,
                             showLabels === showLabelsValue.ALL ||
@@ -118,7 +119,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     )
                     .flat(1),
                 ...sysCons
-                    .map((ssc) =>
+                    .map(ssc =>
                         this.generateAspectWithEdges(
                             ssc,
                             showLabels === showLabelsValue.ALL ||
@@ -134,7 +135,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             // subcomponents are contained in the parent
             stpaChildren = stpaChildren?.concat([
                 ...filteredModel.hazards
-                    ?.map((h) =>
+                    ?.map(h =>
                         this.generateAspectWithEdges(
                             h,
                             showLabels === showLabelsValue.ALL ||
@@ -146,7 +147,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     )
                     .flat(1),
                 ...filteredModel.systemLevelConstraints
-                    ?.map((sc) =>
+                    ?.map(sc =>
                         this.generateAspectWithEdges(
                             sc,
                             showLabels === showLabelsValue.ALL ||
@@ -158,14 +159,14 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     )
                     .flat(1),
                 ...filteredModel.systemLevelConstraints
-                    ?.map((sc) => sc.subComponents?.map((ssc) => this.generateEdgesForSTPANode(ssc, args)))
+                    ?.map(sc => sc.subComponents?.map(ssc => this.generateEdgesForSTPANode(ssc, args)))
                     .flat(2),
             ]);
         }
         stpaChildren = stpaChildren?.concat([
             ...filteredModel.responsibilities
-                ?.map((r) =>
-                    r.responsiblitiesForOneSystem.map((resp) =>
+                ?.map(r =>
+                    r.responsiblitiesForOneSystem.map(resp =>
                         this.generateAspectWithEdges(
                             resp,
                             showLabels === showLabelsValue.ALL ||
@@ -178,10 +179,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 )
                 .flat(2),
             ...filteredModel.allUCAs
-                ?.map((sysUCA) =>
+                ?.map(sysUCA =>
                     sysUCA.providingUcas
                         .concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)
-                        .map((uca) =>
+                        .map(uca =>
                             this.generateAspectWithEdges(
                                 uca,
                                 showLabels === showLabelsValue.ALL ||
@@ -194,8 +195,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 )
                 .flat(2),
             ...filteredModel.rules
-                ?.map((rule) =>
-                    rule.contexts.map((context) =>
+                ?.map(rule =>
+                    rule.contexts.map(context =>
                         this.generateAspectWithEdges(
                             context,
                             showLabels === showLabelsValue.ALL ||
@@ -208,7 +209,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 )
                 .flat(2),
             ...filteredModel.controllerConstraints
-                ?.map((c) =>
+                ?.map(c =>
                     this.generateAspectWithEdges(
                         c,
                         showLabels === showLabelsValue.ALL ||
@@ -220,7 +221,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 )
                 .flat(1),
             ...filteredModel.scenarios
-                ?.map((s) =>
+                ?.map(s =>
                     this.generateAspectWithEdges(
                         s,
                         showLabels === showLabelsValue.ALL ||
@@ -232,7 +233,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 )
                 .flat(1),
             ...filteredModel.safetyCons
-                ?.map((sr) =>
+                ?.map(sr =>
                     this.generateAspectWithEdges(
                         sr,
                         showLabels === showLabelsValue.ALL ||
@@ -259,7 +260,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         if (filteredModel.controlStructure) {
             setLevelOfCSNodes(filteredModel.controlStructure?.nodes);
             // determine the nodes of the control structure graph
-            const csNodes = filteredModel.controlStructure?.nodes.map((n) => this.createControlStructureNode(n, args));
+            const csNodes = filteredModel.controlStructure?.nodes.map(n => this.createControlStructureNode(n, args));
             // children (nodes and edges) of the control structure
             const CSChildren = [
                 ...csNodes,
@@ -295,12 +296,32 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param param1 GeneratorContext of the STPA model.
      * @returns A CSNode representing {@code node}.
      */
-    protected createControlStructureNode(node: Node, { idCache }: GeneratorContext<Model>): CSNode {
+    protected createControlStructureNode(node: Node, args: GeneratorContext<Model>): CSNode {
+        const idCache = args.idCache;
         const label = node.label ? node.label : node.name;
         const nodeId = idCache.uniqueId(node.name, node);
         const children: SModelElement[] = this.createLabel([label], nodeId, idCache);
         if (this.options.getShowProcessModels()) {
-            children.push(...this.createCSChildren(node.variables, idCache));
+            children.push(...this.createProcessModelNodes(node.variables, idCache));
+        }
+        // add children of the control structure node
+        if (node.children?.length !== 0) {
+            const invisibleNode = {
+                type: INVISIBLE_NODE_TYPE,
+                id: idCache.uniqueId(node.name + "_invisible"),
+                children: [] as SModelElement[],
+                layout: "stack",
+                layoutOptions: {
+                    paddingTop: 10.0,
+                    paddingBottom: 10.0,
+                    paddingLeft: 10.0,
+                    paddingRight: 10.0,
+                },
+            };
+            node.children?.forEach(child => {
+                invisibleNode.children?.push(this.createControlStructureNode(child, args));
+            });
+            children.push(invisibleNode);
         }
         const csNode = {
             type: CS_NODE_TYPE,
@@ -319,13 +340,16 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return csNode;
     }
 
-    protected createCSChildren(variables: Variable[], idCache: IdCache<AstNode>): SModelElement[] {
+    protected createProcessModelNodes(variables: Variable[], idCache: IdCache<AstNode>): SModelElement[] {
         const csChildren: SModelElement[] = [];
         for (const variable of variables) {
             const label = variable.name;
             const nodeId = idCache.uniqueId(variable.name, variable);
-            const values = variable.values?.map((value) => value.name);
-            const children = [...this.createLabel([label], nodeId, idCache, HEADER_LABEL_TYPE), ...this.createLabel(values, nodeId, idCache)];
+            const values = variable.values?.map(value => value.name);
+            const children = [
+                ...this.createLabel([label], nodeId, idCache, HEADER_LABEL_TYPE),
+                ...this.createLabel(values, nodeId, idCache),
+            ];
             const csNode = {
                 type: CS_NODE_TYPE,
                 id: nodeId,
@@ -353,6 +377,12 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const edges: (CSNode | CSEdge)[] = [];
         // for every control action and feedback of every a node, a edge should be created
         for (const node of nodes) {
+            const nodeId = args.idCache.getId(node);
+            if (nodeId) {
+                const snode = this.idToSNode.get(nodeId);
+                // if a cs node has children they are encapsulated in an invisible node
+                snode?.children?.find(node => node.type === INVISIBLE_NODE_TYPE)?.children?.push(...this.generateVerticalCSEdges(node.children, args));
+            }
             // create edges representing the control actions
             edges.push(...this.translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, args));
             // create edges representing feedback
@@ -920,10 +950,15 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param id The ID of the element for which the label should be generated.
      * @returns SLabel elements representing {@code label}.
      */
-    protected createLabel(label: string[], id: string, idCache: IdCache<AstNode>, type: string = "label:xref"): SLabel[] {
+    protected createLabel(
+        label: string[],
+        id: string,
+        idCache: IdCache<AstNode>,
+        type: string = "label:xref"
+    ): SLabel[] {
         const children: SLabel[] = [];
-        if (label.find((l) => l !== "")) {
-            label.forEach((l) => {
+        if (label.find(l => l !== "")) {
+            label.forEach(l => {
                 children.push({
                     type: type,
                     id: idCache.uniqueId(id + "_label"),

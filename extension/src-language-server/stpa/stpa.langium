@@ -69,6 +69,7 @@ Node:
         ('output' '[' outputs+=Command (',' outputs+=Command)* ']')?
         ('controlActions' '{'actions+=VerticalEdge*'}')?
         ('feedback' '{'feedbacks+=VerticalEdge*'}')?
+        (children+=Node)*
     '}';
 
 /* Edge:

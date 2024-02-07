@@ -219,6 +219,18 @@ export class CSNodeView extends RectangularNodeView {
 }
 
 @injectable()
+export class InvisibleNodeView extends RectangularNodeView {
+
+    @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
+
+    render(node: SNode, context: RenderingContext): VNode {
+        return <g>
+            {context.renderChildren(node)}
+        </g>;
+    }
+}
+
+@injectable()
 export class STPAGraphView extends SGraphView {
 
     render(model: Readonly<SGraph>, context: RenderingContext): VNode {
