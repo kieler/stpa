@@ -18,6 +18,7 @@
 import { AstNode } from "langium";
 import {
     Context,
+    Graph,
     Model,
     Node,
     isActionUCAs,
@@ -196,7 +197,7 @@ export function setLevelOfCSNodes(nodes: Node[]): void {
 function assignLevel(node: Node, visited: Map<string, Set<string>>): void {
     for (const action of node.actions) {
         const target = action.target.ref;
-        if (target && !visited.get(node.name)?.has(target.name)) {
+        if (getCommonAncestor(node, target!) === node.$container && target && !visited.get(node.name)?.has(target.name)) {
             visited.get(node.name)?.add(target.name);
             if (target.level === undefined || target.level < node.level! + 1) {
                 target.level = node.level! + 1;
@@ -206,7 +207,7 @@ function assignLevel(node: Node, visited: Map<string, Set<string>>): void {
     }
     for (const feedback of node.feedbacks) {
         const target = feedback.target.ref;
-        if (target && !visited.get(node.name)?.has(target.name)) {
+        if (getCommonAncestor(node, target!) === node.$container && target && !visited.get(node.name)?.has(target.name)) {
             visited.get(node.name)?.add(target.name);
             if (target.level === undefined || target.level > node.level! - 1) {
                 target.level = node.level! - 1;
@@ -361,4 +362,26 @@ export function getAspectsThatShouldHaveDesriptions(model: Model): STPAAspect[] 
             break;
     }
     return aspectsToShowDescriptions;
+}
+
+
+export function getCommonAncestor(node: Node, target: Node): Node|Graph | undefined {
+    const nodeAncestors = getAncestors(node);
+    const targetAncestors = getAncestors(target);
+    for (const ancestor of nodeAncestors) {
+        if (targetAncestors.includes(ancestor)) {
+            return ancestor;
+        }
+    }
+    return undefined;
+}
+
+export function getAncestors(node: Node): (Node|Graph)[] {
+    const ancestors: (Node|Graph)[] = [];
+    let current: Node | Graph | undefined = node;
+    while (current?.$type !== "Graph") {
+        ancestors.push(current.$container);
+        current = current.$container;
+    }
+    return ancestors;
 }

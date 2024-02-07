@@ -53,6 +53,7 @@ import {
     CSEdge,
     CSNode,
     CS_EDGE_TYPE,
+    CS_INTERMEDIATE_EDGE_TYPE,
     CS_NODE_TYPE,
     DUMMY_NODE_TYPE,
     HEADER_LABEL_TYPE,
@@ -113,6 +114,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
     configureModelElement(context, STPA_EDGE_TYPE, STPAEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
+    configureModelElement(context, CS_INTERMEDIATE_EDGE_TYPE, CSEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);
 

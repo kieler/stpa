@@ -21,6 +21,7 @@ import { SLabel, SModelElement, SModelRoot, SNode } from "sprotty-protocol";
 
 import {
     Command,
+    Graph,
     Hazard,
     Model,
     Node,
@@ -39,6 +40,7 @@ import { filterModel } from "./filtering";
 import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, STPAPort } from "./stpa-interfaces";
 import {
     CS_EDGE_TYPE,
+    CS_INTERMEDIATE_EDGE_TYPE,
     CS_NODE_TYPE,
     DUMMY_NODE_TYPE,
     EdgeType,
@@ -57,6 +59,7 @@ import {
     createUCAContextDescription,
     getAspect,
     getAspectsThatShouldHaveDesriptions,
+    getCommonAncestor,
     getTargets,
     setLevelOfCSNodes,
     setLevelsForSTPANodes,
@@ -377,12 +380,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const edges: (CSNode | CSEdge)[] = [];
         // for every control action and feedback of every a node, a edge should be created
         for (const node of nodes) {
-            const nodeId = args.idCache.getId(node);
-            if (nodeId) {
-                const snode = this.idToSNode.get(nodeId);
-                // if a cs node has children they are encapsulated in an invisible node
-                snode?.children?.find(node => node.type === INVISIBLE_NODE_TYPE)?.children?.push(...this.generateVerticalCSEdges(node.children, args));
-            }
+            // create edges for children and add the ones that must be added at the top level
+            edges.push(...this.generateVerticalCSEdges(node.children, args));
             // create edges representing the control actions
             edges.push(...this.translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, args));
             // create edges representing feedback
@@ -398,45 +397,112 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     /**
      * Translates the commands (control action or feedback) of a node to edges.
      * @param commands The control actions or feedback of a node.
-     * @param edgetype The type of the edge (control action or feedback).
+     * @param edgeType The type of the edge (control action or feedback).
      * @param args GeneratorContext of the STPA model.
      * @returns A list of edges representing the commands.
      */
     protected translateCommandsToEdges(
         commands: VerticalEdge[],
-        edgetype: EdgeType,
+        edgeType: EdgeType,
         args: GeneratorContext<Model>
     ): CSEdge[] {
         const idCache = args.idCache;
         const edges: CSEdge[] = [];
         for (const edge of commands) {
-            const sourceId = idCache.getId(edge.$container);
-            const targetId = idCache.getId(edge.target.ref);
+            const source = edge.$container;
+            const target = edge.target.ref;
+            const sourceId = idCache.getId(source);
+            const targetId = idCache.getId(target);
             const edgeId = idCache.uniqueId(`${sourceId}_${edge.comms[0].name}_${targetId}`, edge);
-            // multiple commands to same target is represented by one edge
-            const label: string[] = [];
-            for (let i = 0; i < edge.comms.length; i++) {
-                const com = edge.comms[i];
-                label.push(com.label);
-            }
-            const portIds = this.createPortsForEdge(
-                sourceId ?? "",
-                edgetype === EdgeType.CONTROL_ACTION ? PortSide.SOUTH : PortSide.NORTH,
-                targetId ?? "",
-                edgetype === EdgeType.CONTROL_ACTION ? PortSide.NORTH : PortSide.SOUTH,
-                edgeId,
-                idCache
-            );
 
-            const e = this.createControlStructureEdge(
-                edgeId,
-                portIds.sourcePortId,
-                portIds.targetPortId,
-                label,
-                edgetype,
-                args
-            );
-            edges.push(e);
+            // TODO: intermediate edges if source and target are in different hierarchies
+            if (target && sourceId) {
+                const commonAncestor = getCommonAncestor(source, target);
+
+                if (edgeType === EdgeType.CONTROL_ACTION) {
+                    const sourcePortIds = this.generatePortsForCSHierarchy(
+                        source,
+                        edgeId,
+                        PortSide.SOUTH,
+                        idCache,
+                        commonAncestor
+                    );
+                    const targetPortIds = this.generatePortsForCSHierarchy(
+                        target,
+                        edgeId,
+                        PortSide.NORTH,
+                        idCache,
+                        commonAncestor
+                    );
+
+                    // add edges between the ports
+                    for (let i = 0; i < sourcePortIds.nodes.length - 1; i++) {
+                        const sEdgeType = CS_INTERMEDIATE_EDGE_TYPE;
+                        sourcePortIds.nodes[i + 1]?.children?.push(
+                            this.createControlStructureEdge(
+                                idCache.uniqueId(edgeId),
+                                sourcePortIds.portIds[i],
+                                sourcePortIds.portIds[i + 1],
+                                [],
+                                edgeType,
+                                sEdgeType,
+                                args
+                            )
+                        );
+                    }
+                    // add edges between the ports
+                    for (let i = 0; i < targetPortIds.nodes.length - 1; i++) {
+                        const sEdgeType = i === 0 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE;
+                        targetPortIds.nodes[i + 1]?.children?.push(
+                            this.createControlStructureEdge(
+                                idCache.uniqueId(edgeId),
+                                targetPortIds.portIds[i + 1],
+                                targetPortIds.portIds[i],
+                                [],
+                                edgeType,
+                                sEdgeType,
+                                args
+                            )
+                        );
+                    }
+
+                    // multiple commands to same target is represented by one edge
+                    const label: string[] = [];
+                    for (let i = 0; i < edge.comms.length; i++) {
+                        const com = edge.comms[i];
+                        label.push(com.label);
+                    }
+                    // edge between the two ports in the common ancestor
+                    if (commonAncestor?.$type === "Graph") {
+                        const e = this.createControlStructureEdge(
+                            edgeId,
+                            sourcePortIds.portIds[sourcePortIds.portIds.length - 1],
+                            targetPortIds.portIds[targetPortIds.portIds.length - 1],
+                            label,
+                            edgeType,
+                            targetPortIds.portIds.length === 1 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
+                            args
+                        );
+                        edges.push(e);
+                    } else {
+                        const snodeAncestor = this.idToSNode.get(idCache.getId(commonAncestor!)!);
+                        snodeAncestor?.children
+                            ?.find(node => node.type === INVISIBLE_NODE_TYPE)
+                            ?.children?.push(
+                                this.createControlStructureEdge(
+                                    idCache.uniqueId(edgeId),
+                                    sourcePortIds.portIds[sourcePortIds.portIds.length - 1],
+                                    targetPortIds.portIds[targetPortIds.portIds.length - 1],
+                                    label,
+                                    edgeType,
+                                    targetPortIds.portIds.length === 1 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
+                                    args
+                                )
+                            );
+                    }
+                } else if (edgeType === EdgeType.FEEDBACK) {
+                }
+            }
         }
         return edges;
     }
@@ -512,6 +578,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                         nodeId ? nodeId : "",
                         label,
                         edgetype,
+                        CS_EDGE_TYPE,
                         args
                     );
                     graphComponents = [inputEdge, inputDummyNode];
@@ -530,6 +597,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                         outputDummyNode.id ? outputDummyNode.id : "",
                         label,
                         edgetype,
+                        CS_EDGE_TYPE,
                         args
                     );
                     graphComponents = [outputEdge, outputDummyNode];
@@ -678,7 +746,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
             if ((isHazard(target) || isSystemConstraint(target)) && target.$container?.$type !== "Model") {
                 // if the target is a subcomponent we need to add several ports and edges through the hierarchical structure
-                return this.generateIntermediateIncomingEdges(target, source, sourceId, edgeId, children, idCache);
+                return this.generateIntermediateIncomingSTPAEdges(target, source, sourceId, edgeId, children, idCache);
             } else {
                 // otherwise it is sufficient to add ports for source and target
                 const portIds = this.createPortsForEdge(
@@ -713,7 +781,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param idCache The ID cache of the STPA model.
      * @returns an STPAEdge to connect the {@code source} (or its top parent) with the top parent of the {@code target}.
      */
-    protected generateIntermediateIncomingEdges(
+    protected generateIntermediateIncomingSTPAEdges(
         target: AstNode,
         source: AstNode,
         sourceId: string,
@@ -744,7 +812,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
 
         if (isSystemConstraint(source) && source.$container?.$type !== "Model") {
             // if the source is a sub-sytemconstraint we also need intermediate edges to the top system constraint
-            return this.generateIntermediateOutgoingEdges(
+            return this.generateIntermediateOutgoingSTPAEdges(
                 source,
                 edgeId,
                 children,
@@ -778,7 +846,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param idCache The ID cache of the STPA model.
      * @returns the STPAEdge to connect the top parent of the {@code source} with the {@code targetPortId}.
      */
-    protected generateIntermediateOutgoingEdges(
+    protected generateIntermediateOutgoingSTPAEdges(
         source: AstNode,
         edgeId: string,
         children: SModelElement[],
@@ -839,6 +907,35 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             current = current?.$container;
         }
         return ids;
+    }
+
+    protected generatePortsForCSHierarchy(
+        current: AstNode | undefined,
+        edgeId: string,
+        side: PortSide,
+        idCache: IdCache<AstNode>,
+        ancestor?: Node | Graph
+    ): { portIds: string[]; nodes: SNode[] } {
+        const ids: string[] = [];
+        const nodes: SNode[] = [];
+        while (current && (!ancestor || current !== ancestor)) {
+            const currentId = idCache.getId(current);
+            const currentNode = this.idToSNode.get(currentId!);
+            const invisibleChild = currentNode?.children?.find(child => child.type === INVISIBLE_NODE_TYPE);
+            if (invisibleChild && ids.length !== 0) {
+                // add port for the invisible node first
+                const portId = idCache.uniqueId(edgeId + "_newTransition");
+                invisibleChild.children?.push(this.createSTPAPort(portId, side));
+                ids.push(portId);
+                nodes.push(invisibleChild);
+            }
+            const portId = idCache.uniqueId(edgeId + "_newTransition");
+            currentNode?.children?.push(this.createSTPAPort(portId, side));
+            ids.push(portId);
+            nodes.push(currentNode!);
+            current = current?.$container;
+        }
+        return { portIds: ids, nodes: nodes };
     }
 
     /**
@@ -932,10 +1029,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         targetId: string,
         label: string[],
         edgeType: EdgeType,
+        sedgeType: string,
         args: GeneratorContext<Model>
     ): CSEdge {
         return {
-            type: CS_EDGE_TYPE,
+            type: sedgeType,
             id: edgeId,
             sourceId: sourceId!,
             targetId: targetId!,
