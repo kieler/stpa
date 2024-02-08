@@ -197,7 +197,7 @@ export function setLevelOfCSNodes(nodes: Node[]): void {
 function assignLevel(node: Node, visited: Map<string, Set<string>>): void {
     for (const action of node.actions) {
         const target = action.target.ref;
-        if (getCommonAncestor(node, target!) === node.$container && target && !visited.get(node.name)?.has(target.name)) {
+        if (target && node.$container === target.$container && target && !visited.get(node.name)?.has(target.name)) {
             visited.get(node.name)?.add(target.name);
             if (target.level === undefined || target.level < node.level! + 1) {
                 target.level = node.level! + 1;
@@ -207,7 +207,7 @@ function assignLevel(node: Node, visited: Map<string, Set<string>>): void {
     }
     for (const feedback of node.feedbacks) {
         const target = feedback.target.ref;
-        if (getCommonAncestor(node, target!) === node.$container && target && !visited.get(node.name)?.has(target.name)) {
+        if (target && node.$container === target.$container && target && !visited.get(node.name)?.has(target.name)) {
             visited.get(node.name)?.add(target.name);
             if (target.level === undefined || target.level > node.level! - 1) {
                 target.level = node.level! - 1;

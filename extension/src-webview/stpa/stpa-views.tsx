@@ -23,7 +23,7 @@ import { DISymbol } from '../di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
 import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
-import { CSEdge, CS_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
+import { CSEdge, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
@@ -44,7 +44,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         // if an STPANode is selected, the components not connected to it should fade out
         const hidden = (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) && highlighting && !(edge as STPAEdge).highlight;
         // feedback edges in the control structure should be dashed
-        const feedbackEdge = edge.type === CS_EDGE_TYPE && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
+        const feedbackEdge = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const printEdge = colorStyle === "black & white";
