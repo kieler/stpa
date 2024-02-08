@@ -47,6 +47,7 @@ import {
     HEADER_LABEL_TYPE,
     INVISIBLE_NODE_TYPE,
     PARENT_TYPE,
+    PROCESS_MODEL_NODE_TYPE,
     PortSide,
     STPAAspect,
     STPA_EDGE_TYPE,
@@ -305,7 +306,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const nodeId = idCache.uniqueId(node.name, node);
         const children: SModelElement[] = this.createLabel([label], nodeId, idCache);
         if (this.options.getShowProcessModels()) {
-            children.push(...this.createProcessModelNodes(node.variables, idCache));
+            children.push(this.createProcessModelNodes(node.variables, idCache));
         }
         // add children of the control structure node
         if (node.children?.length !== 0) {
@@ -343,7 +344,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return csNode;
     }
 
-    protected createProcessModelNodes(variables: Variable[], idCache: IdCache<AstNode>): SModelElement[] {
+    protected createProcessModelNodes(variables: Variable[], idCache: IdCache<AstNode>): SModelElement {
         const csChildren: SModelElement[] = [];
         for (const variable of variables) {
             const label = variable.name;
@@ -367,7 +368,19 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             } as CSNode;
             csChildren.push(csNode);
         }
-        return csChildren;
+        const invisibleNode = {
+            type: PROCESS_MODEL_NODE_TYPE,
+            id: idCache.uniqueId("invisible"),
+            children: csChildren,
+            layout: "stack",
+            layoutOptions: {
+                paddingTop: 10.0,
+                paddingBottom: 10.0,
+                paddingLeft: 10.0,
+                paddingRight: 10.0,
+            },
+        };
+        return invisibleNode;
     }
 
     /**
@@ -380,8 +393,6 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const edges: (CSNode | CSEdge)[] = [];
         // for every control action and feedback of every a node, a edge should be created
         for (const node of nodes) {
-            // create edges for children and add the ones that must be added at the top level
-            edges.push(...this.generateVerticalCSEdges(node.children, args));
             // create edges representing the control actions
             edges.push(...this.translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, args));
             // create edges representing feedback
@@ -390,6 +401,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             edges.push(...this.translateIOToEdgeAndNode(node.inputs, node, EdgeType.INPUT, args));
             // create edges representing the other outputs
             edges.push(...this.translateIOToEdgeAndNode(node.outputs, node, EdgeType.OUTPUT, args));
+            // create edges for children and add the ones that must be added at the top level
+            edges.push(...this.generateVerticalCSEdges(node.children, args));
         }
         return edges;
     }

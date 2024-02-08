@@ -20,7 +20,15 @@ import { LayoutOptions } from "elkjs";
 import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout";
 import { SGraph, SModelIndex, SNode, SPort } from "sprotty-protocol";
 import { CSNode, ParentNode, STPANode, STPAPort } from "./stpa-interfaces";
-import { CS_NODE_TYPE, INVISIBLE_NODE_TYPE, PARENT_TYPE, PortSide, STPA_NODE_TYPE, STPA_PORT_TYPE } from "./stpa-model";
+import {
+    CS_NODE_TYPE,
+    INVISIBLE_NODE_TYPE,
+    PARENT_TYPE,
+    PROCESS_MODEL_NODE_TYPE,
+    PortSide,
+    STPA_NODE_TYPE,
+    STPA_PORT_TYPE,
+} from "./stpa-model";
 
 export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     protected graphOptions(sgraph: SGraph, index: SModelIndex): LayoutOptions {
@@ -77,11 +85,21 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
                 return this.csNodeOptions(snode as CSNode);
             case INVISIBLE_NODE_TYPE:
                 return this.invisibleNodeOptions(snode);
+            case PROCESS_MODEL_NODE_TYPE:
+                return this.processModelNodeOptions(snode);
             case STPA_NODE_TYPE:
                 return this.stpaNodeOptions(snode as STPANode);
             case PARENT_TYPE:
                 return this.grandparentNodeOptions(snode as ParentNode, index);
         }
+    }
+    processModelNodeOptions(snode: SNode): LayoutOptions | undefined {
+        return {
+            "org.eclipse.elk.separateConnectedComponents": "false",
+            "org.eclipse.elk.direction": "DOWN",
+            "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+            "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true"
+        };
     }
 
     protected invisibleNodeOptions(snode: SNode): LayoutOptions | undefined {
@@ -89,6 +107,8 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             "org.eclipse.elk.partitioning.activate": "true",
             "org.eclipse.elk.direction": "DOWN",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
+            "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+            "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true"
         };
     }
 
@@ -140,10 +160,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         if (node.children?.find(child => child.type.startsWith("node"))) {
             // cs nodes with children
             options["org.eclipse.elk.nodeLabels.placement"] = "INSIDE V_TOP H_CENTER";
-            // TODO: want to use rectpacking instead of layered but this does not work at the moment (sprotty issue)
-            // options['org.eclipse.elk.algorithm'] = 'RECTPACKING';
             options["org.eclipse.elk.direction"] = "DOWN";
-            options["org.eclipse.elk.separateConnectedComponents"] = "false";
             options["org.eclipse.elk.partitioning.activate"] = "true";
         } else {
             // TODO: want H_LEFT but this expands the node more than needed

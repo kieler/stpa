@@ -59,6 +59,7 @@ import {
     HEADER_LABEL_TYPE,
     INVISIBLE_NODE_TYPE,
     PARENT_TYPE,
+    PROCESS_MODEL_NODE_TYPE,
     STPAEdge,
     STPANode,
     STPAPort,
@@ -108,6 +109,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     // STPA
     configureModelElement(context, "graph", SGraph, STPAGraphView);
     configureModelElement(context, INVISIBLE_NODE_TYPE, SNode, InvisibleNodeView);
+    configureModelElement(context, PROCESS_MODEL_NODE_TYPE, SNode, InvisibleNodeView);
     configureModelElement(context, DUMMY_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
