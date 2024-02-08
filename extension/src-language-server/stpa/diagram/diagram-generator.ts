@@ -469,11 +469,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         // add ports for source and target
         const sourceNode = this.idToSNode.get(sourceId);
         const sourcePortId = idCache.uniqueId(edgeId + "_newTransition");
-        sourceNode?.children?.push(this.createSTPAPort(sourcePortId, sourceSide));
+        sourceNode?.children?.push(this.createPort(sourcePortId, sourceSide));
 
         const targetNode = this.idToSNode.get(targetId!);
         const targetPortId = idCache.uniqueId(edgeId + "_newTransition");
-        targetNode?.children?.push(this.createSTPAPort(targetPortId, targetSide));
+        targetNode?.children?.push(this.createPort(targetPortId, targetSide));
 
         return { sourcePortId, targetPortId };
     }
@@ -764,7 +764,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             // add port for source node
             const sourceNode = this.idToSNode.get(sourceId);
             const sourcePortId = idCache.uniqueId(edgeId + "_newTransition");
-            sourceNode?.children?.push(this.createSTPAPort(sourcePortId, PortSide.NORTH));
+            sourceNode?.children?.push(this.createPort(sourcePortId, PortSide.NORTH));
 
             // add edge from source to top parent of the target
             return this.createSTPAEdge(
@@ -843,7 +843,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             const currentId = idCache.getId(current);
             const currentNode = this.idToSNode.get(currentId!);
             const portId = idCache.uniqueId(edgeId + "_newTransition");
-            currentNode?.children?.push(this.createSTPAPort(portId, side));
+            currentNode?.children?.push(this.createPort(portId, side));
             ids.push(portId);
             current = current?.$container;
         }
@@ -913,12 +913,12 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     if (invisibleChild && ids.length !== 0) {
                         // add port for the invisible node first
                         const invisiblePortId = idCache.uniqueId(edgeId + "_newTransition");
-                        invisibleChild.children?.push(this.createSTPAPort(invisiblePortId, side));
+                        invisibleChild.children?.push(this.createPort(invisiblePortId, side));
                         ids.push(invisiblePortId);
                         nodes.push(invisibleChild);
                     }
                     const nodePortId = idCache.uniqueId(edgeId + "_newTransition");
-                    currentNode?.children?.push(this.createSTPAPort(nodePortId, side));
+                    currentNode?.children?.push(this.createPort(nodePortId, side));
                     ids.push(nodePortId);
                     nodes.push(currentNode);
                     current = current?.$container;
@@ -967,7 +967,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param side The side of the port.
      * @returns an STPAPort.
      */
-    protected createSTPAPort(id: string, side: PortSide): STPAPort {
+    protected createPort(id: string, side: PortSide): STPAPort {
         return {
             type: STPA_PORT_TYPE,
             id: id,

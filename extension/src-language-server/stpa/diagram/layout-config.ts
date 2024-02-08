@@ -88,6 +88,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         return {
             "org.eclipse.elk.partitioning.activate": "true",
             "org.eclipse.elk.direction": "DOWN",
+            "org.eclipse.elk.portConstraints": "FIXED_SIDE",
         };
     }
 
