@@ -27,7 +27,7 @@ import {
     getDocument,
     stream
 } from "langium";
-import { ActionUCAs, Command, Context, DCAContext, DCARule, Hazard, LossScenario, Model, Node, Rule, SystemConstraint, UCA, Variable, isActionUCAs, isControllerConstraint, isContext, isDCAContext, isDCARule, isHazardList, isLossScenario, isModel, isResponsibility, isSystemResponsibilities, isRule, isSafetyConstraint, isSystemConstraint } from "../generated/ast";
+import { ActionUCAs, Command, Context, DCAContext, DCARule, Hazard, LossScenario, Model, Node, Rule, SystemConstraint, UCA, Variable, isActionUCAs, isControllerConstraint, isContext, isDCAContext, isDCARule, isHazardList, isLossScenario, isModel, isResponsibility, isSystemResponsibilities, isRule, isSafetyConstraint, isSystemConstraint, isNode, isVerticalEdge, VerticalEdge, isGraph, Graph } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 
 
@@ -40,6 +40,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     private UCA_TYPE = UCA;
     private CONTEXT_TYPE = Context;
     private VAR_TYPE = Variable;
+    private NODE_TYPE = Node;
 
     constructor(services: StpaServices) {
         super(services);
@@ -68,6 +69,8 @@ export class StpaScopeProvider extends DefaultScopeProvider {
                 return this.getCAs(node, precomputed);
             } else if ((isContext(node) || isDCAContext(node)) && referenceType === this.VAR_TYPE) {
                 return this.getVars(node, precomputed);
+            } else if (isVerticalEdge(node) && referenceType === this.NODE_TYPE) {
+                return this.getNodes(node, precomputed);
             } else {
                 return this.getStandardScope(node, referenceType, precomputed);
             }
@@ -127,6 +130,28 @@ export class StpaScopeProvider extends DefaultScopeProvider {
             }
         }
         return this.descriptionsToScope(allDescriptions);
+    }
+
+    protected getNodes(node: VerticalEdge, precomputed: PrecomputedScopes): Scope {
+        let graph: Node | Graph = node.$container;
+        while (graph && !isGraph(graph)) {
+            graph = graph.$container;
+        }
+            
+        const allDescriptions = this.getChildrenNodes(graph.nodes, precomputed);
+        return this.descriptionsToScope(allDescriptions);
+    }
+
+    getChildrenNodes(nodes: Node[], precomputed: PrecomputedScopes): AstNodeDescription[] {
+        let res: AstNodeDescription[] = [];
+        for (const node of nodes) {
+            const currentNode: AstNode | undefined = node;
+            if (node.children.length !== 0) {
+                res = res.concat(this.getChildrenNodes(node.children, precomputed));
+            }
+            res = res.concat(this.getDescriptions(currentNode, this.NODE_TYPE, precomputed));
+        }
+        return res;
     }
 
     /**
