@@ -411,96 +411,37 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         for (const edge of commands) {
             const source = edge.$container;
             const target = edge.target.ref;
-            const sourceId = idCache.getId(source);
-            const targetId = idCache.getId(target);
-            const edgeId = idCache.uniqueId(`${sourceId}_${edge.comms[0].name}_${targetId}`, edge);
+            const edgeId = idCache.uniqueId(
+                `${idCache.getId(source)}_${edge.comms[0].name}_${idCache.getId(target)}`,
+                edge
+            );
 
-            // TODO: intermediate edges if source and target are in different hierarchies
-            if (target && sourceId) {
+            if (target) {
+                // multiple commands to same target is represented by one edge
+                const label: string[] = [];
+                for (let i = 0; i < edge.comms.length; i++) {
+                    const com = edge.comms[i];
+                    label.push(com.label);
+                }
+                // edges can be hierachy crossing so we must determine the common ancestor
                 const commonAncestor = getCommonAncestor(source, target);
-
-                if (edgeType === EdgeType.CONTROL_ACTION) {
-                    const sourcePortIds = this.generatePortsForCSHierarchy(
-                        source,
-                        edgeId,
-                        PortSide.SOUTH,
-                        idCache,
-                        commonAncestor
-                    );
-                    const targetPortIds = this.generatePortsForCSHierarchy(
-                        target,
-                        edgeId,
-                        PortSide.NORTH,
-                        idCache,
-                        commonAncestor
-                    );
-
-                    // add edges between the ports
-                    for (let i = 0; i < sourcePortIds.nodes.length - 1; i++) {
-                        const sEdgeType = CS_INTERMEDIATE_EDGE_TYPE;
-                        sourcePortIds.nodes[i + 1]?.children?.push(
-                            this.createControlStructureEdge(
-                                idCache.uniqueId(edgeId),
-                                sourcePortIds.portIds[i],
-                                sourcePortIds.portIds[i + 1],
-                                [],
-                                edgeType,
-                                sEdgeType,
-                                args
-                            )
-                        );
-                    }
-                    // add edges between the ports
-                    for (let i = 0; i < targetPortIds.nodes.length - 1; i++) {
-                        const sEdgeType = i === 0 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE;
-                        targetPortIds.nodes[i + 1]?.children?.push(
-                            this.createControlStructureEdge(
-                                idCache.uniqueId(edgeId),
-                                targetPortIds.portIds[i + 1],
-                                targetPortIds.portIds[i],
-                                [],
-                                edgeType,
-                                sEdgeType,
-                                args
-                            )
-                        );
-                    }
-
-                    // multiple commands to same target is represented by one edge
-                    const label: string[] = [];
-                    for (let i = 0; i < edge.comms.length; i++) {
-                        const com = edge.comms[i];
-                        label.push(com.label);
-                    }
-                    // edge between the two ports in the common ancestor
-                    if (commonAncestor?.$type === "Graph") {
-                        const e = this.createControlStructureEdge(
-                            edgeId,
-                            sourcePortIds.portIds[sourcePortIds.portIds.length - 1],
-                            targetPortIds.portIds[targetPortIds.portIds.length - 1],
-                            label,
-                            edgeType,
-                            targetPortIds.portIds.length === 1 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
-                            args
-                        );
-                        edges.push(e);
-                    } else {
-                        const snodeAncestor = this.idToSNode.get(idCache.getId(commonAncestor!)!);
-                        snodeAncestor?.children
-                            ?.find(node => node.type === INVISIBLE_NODE_TYPE)
-                            ?.children?.push(
-                                this.createControlStructureEdge(
-                                    idCache.uniqueId(edgeId),
-                                    sourcePortIds.portIds[sourcePortIds.portIds.length - 1],
-                                    targetPortIds.portIds[targetPortIds.portIds.length - 1],
-                                    label,
-                                    edgeType,
-                                    targetPortIds.portIds.length === 1 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
-                                    args
-                                )
-                            );
-                    }
-                } else if (edgeType === EdgeType.FEEDBACK) {
+                // create the intermediate ports and edges for the control action
+                const ports = this.generateIntermediateCSEdges(source, target, edgeId, edgeType, args, commonAncestor);
+                // add edge between the two ports in the common ancestor
+                const csEdge = this.createControlStructureEdge(
+                    idCache.uniqueId(edgeId),
+                    ports.sourcePort,
+                    ports.targetPort,
+                    label,
+                    edgeType,
+                    target.$container === commonAncestor ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
+                    args
+                );
+                if (commonAncestor?.$type === "Graph") {
+                    edges.push(csEdge);
+                } else if (commonAncestor) {
+                    const snodeAncestor = this.idToSNode.get(idCache.getId(commonAncestor)!);
+                    snodeAncestor?.children?.find(node => node.type === INVISIBLE_NODE_TYPE)?.children?.push(csEdge);
                 }
             }
         }
@@ -909,6 +850,51 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return ids;
     }
 
+    protected generateIntermediateCSEdges(
+        source: AstNode | undefined,
+        target: AstNode | undefined,
+        edgeId: string,
+        edgeType: EdgeType,
+        args: GeneratorContext<Model>,
+        ancestor?: Node | Graph
+    ): { sourcePort: string; targetPort: string } {
+        const sources = this.generatePortsForCSHierarchy(source, edgeId, edgeType === EdgeType.CONTROL_ACTION ? PortSide.SOUTH : PortSide.NORTH, args.idCache, ancestor);
+        const targets = this.generatePortsForCSHierarchy(target, edgeId, edgeType === EdgeType.CONTROL_ACTION ? PortSide.NORTH : PortSide.SOUTH, args.idCache, ancestor);
+        for (let i = 0; i < sources.nodes.length - 1; i++) {
+            const sEdgeType = CS_INTERMEDIATE_EDGE_TYPE;
+            sources.nodes[i + 1]?.children?.push(
+                this.createControlStructureEdge(
+                    args.idCache.uniqueId(edgeId),
+                    sources.portIds[i],
+                    sources.portIds[i + 1],
+                    [],
+                    edgeType,
+                    sEdgeType,
+                    args
+                )
+            );
+        }
+        for (let i = 0; i < targets.nodes.length - 1; i++) {
+            const sEdgeType = i == 0 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE;
+            targets.nodes[i + 1]?.children?.push(
+                this.createControlStructureEdge(
+                    args.idCache.uniqueId(edgeId),
+                    targets.portIds[i + 1],
+                    targets.portIds[i],
+                    [],
+                    edgeType,
+                    sEdgeType,
+                    args
+                )
+            );
+        }
+        return {
+            sourcePort: sources.portIds[sources.portIds.length - 1],
+            targetPort: targets.portIds[targets.portIds.length - 1],
+        };
+    }
+
+    // adds ports for current node and its (grand)parents up to the ancestor. The ancestor get no port.
     protected generatePortsForCSHierarchy(
         current: AstNode | undefined,
         edgeId: string,
@@ -920,20 +906,24 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const nodes: SNode[] = [];
         while (current && (!ancestor || current !== ancestor)) {
             const currentId = idCache.getId(current);
-            const currentNode = this.idToSNode.get(currentId!);
-            const invisibleChild = currentNode?.children?.find(child => child.type === INVISIBLE_NODE_TYPE);
-            if (invisibleChild && ids.length !== 0) {
-                // add port for the invisible node first
-                const portId = idCache.uniqueId(edgeId + "_newTransition");
-                invisibleChild.children?.push(this.createSTPAPort(portId, side));
-                ids.push(portId);
-                nodes.push(invisibleChild);
+            if (currentId) {
+                const currentNode = this.idToSNode.get(currentId);
+                if (currentNode) {
+                    const invisibleChild = currentNode?.children?.find(child => child.type === INVISIBLE_NODE_TYPE);
+                    if (invisibleChild && ids.length !== 0) {
+                        // add port for the invisible node first
+                        const invisiblePortId = idCache.uniqueId(edgeId + "_newTransition");
+                        invisibleChild.children?.push(this.createSTPAPort(invisiblePortId, side));
+                        ids.push(invisiblePortId);
+                        nodes.push(invisibleChild);
+                    }
+                    const nodePortId = idCache.uniqueId(edgeId + "_newTransition");
+                    currentNode?.children?.push(this.createSTPAPort(nodePortId, side));
+                    ids.push(nodePortId);
+                    nodes.push(currentNode);
+                    current = current?.$container;
+                }
             }
-            const portId = idCache.uniqueId(edgeId + "_newTransition");
-            currentNode?.children?.push(this.createSTPAPort(portId, side));
-            ids.push(portId);
-            nodes.push(currentNode!);
-            current = current?.$container;
         }
         return { portIds: ids, nodes: nodes };
     }
