@@ -162,6 +162,8 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             options["org.eclipse.elk.nodeLabels.placement"] = "INSIDE V_TOP H_CENTER";
             options["org.eclipse.elk.direction"] = "DOWN";
             options["org.eclipse.elk.partitioning.activate"] = "true";
+            options["org.eclipse.elk.padding"] = "[top=0.0,left=0.0,bottom=0.0,right=0.0]";
+            options["org.eclipse.elk.spacing.portPort"] = "0.0";
         } else {
             // TODO: want H_LEFT but this expands the node more than needed
             options["org.eclipse.elk.nodeLabels.placement"] = "INSIDE V_CENTER H_CENTER";

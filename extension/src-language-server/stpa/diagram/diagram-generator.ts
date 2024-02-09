@@ -883,7 +883,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     [],
                     edgeType,
                     sEdgeType,
-                    args
+                    args,
+                    false
                 )
             );
         }
@@ -897,7 +898,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     [],
                     edgeType,
                     sEdgeType,
-                    args
+                    args,
+                    false
                 )
             );
         }
@@ -1033,7 +1035,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         label: string[],
         edgeType: EdgeType,
         sedgeType: string,
-        args: GeneratorContext<Model>
+        args: GeneratorContext<Model>,
+        dummyLabel: boolean = true
     ): CSEdge {
         return {
             type: sedgeType,
@@ -1041,7 +1044,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             sourceId: sourceId!,
             targetId: targetId!,
             edgeType: edgeType,
-            children: this.createLabel(label, edgeId, args.idCache),
+            children: this.createLabel(label, edgeId, args.idCache, undefined, dummyLabel),
         };
     }
 
@@ -1055,7 +1058,8 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         label: string[],
         id: string,
         idCache: IdCache<AstNode>,
-        type: string = "label:xref"
+        type: string = "label:xref",
+        dummyLabel: boolean = true
     ): SLabel[] {
         const children: SLabel[] = [];
         if (label.find(l => l !== "")) {
@@ -1066,7 +1070,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     text: l,
                 } as SLabel);
             });
-        } else {
+        } else if (dummyLabel) {
             // needed for correct layout
             children.push({
                 type: type,
