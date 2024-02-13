@@ -29,7 +29,7 @@ export const CS_EDGE_TYPE = 'edge:controlStructure';
 export const STPA_EDGE_TYPE = 'edge:stpa';
 export const STPA_INTERMEDIATE_EDGE_TYPE = 'edge:stpa-intermediate';
 export const CS_INTERMEDIATE_EDGE_TYPE = 'edge:cs-intermediate';
-export const STPA_PORT_TYPE = 'port:stpa';
+export const PORT_TYPE = 'port:pasta';
 export const HEADER_LABEL_TYPE = 'label:header';
 
 export class ParentNode extends SNode {
@@ -62,8 +62,9 @@ export class STPAEdge extends SEdge {
 }
 
 /** Port representing a port in the STPA graph. */
-export class STPAPort extends SPort {
+export class PastaPort extends SPort {
     side?: PortSide;
+    assocEdge?: {node1: string, node2: string}
 }
 
 /**

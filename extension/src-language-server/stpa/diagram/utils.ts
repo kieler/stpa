@@ -34,9 +34,10 @@ import {
     isSystemResponsibilities,
     isUCA,
 } from "../../generated/ast";
-import { STPANode } from "./stpa-interfaces";
+import { CSNode, PastaPort, STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
 import { groupValue } from "./stpa-synthesis-options";
+import { SModelElement } from "sprotty-protocol"
 
 /**
  * Getter for the references contained in {@code node}.
@@ -364,8 +365,7 @@ export function getAspectsThatShouldHaveDesriptions(model: Model): STPAAspect[] 
     return aspectsToShowDescriptions;
 }
 
-
-export function getCommonAncestor(node: Node, target: Node): Node|Graph | undefined {
+export function getCommonAncestor(node: Node, target: Node): Node | Graph | undefined {
     const nodeAncestors = getAncestors(node);
     const targetAncestors = getAncestors(target);
     for (const ancestor of nodeAncestors) {
@@ -376,12 +376,43 @@ export function getCommonAncestor(node: Node, target: Node): Node|Graph | undefi
     return undefined;
 }
 
-export function getAncestors(node: Node): (Node|Graph)[] {
-    const ancestors: (Node|Graph)[] = [];
+export function getAncestors(node: Node): (Node | Graph)[] {
+    const ancestors: (Node | Graph)[] = [];
     let current: Node | Graph | undefined = node;
     while (current?.$type !== "Graph") {
         ancestors.push(current.$container);
         current = current.$container;
     }
     return ancestors;
+}
+
+export function sortPorts(nodes: CSNode[]): void {
+    for (const node of nodes) {
+        const children = node.children?.filter(child => child.type.startsWith("node")) as CSNode[];
+        sortPorts(children);
+        const ports: PastaPort[] = []
+        const otherChildren: SModelElement[] = []
+        node.children?.forEach(child => {
+            if (child.type.startsWith("port")) {
+                ports.push(child as any as PastaPort);
+            } else {
+                otherChildren.push(child);
+            }
+        });
+
+        const newPorts: PastaPort[] = [];
+        for (const port of ports) {
+            newPorts.push(port);
+            if (port.assocEdge) {
+                for (const otherPort of ports) {
+                    if (port.assocEdge.node1 == otherPort.assocEdge?.node2 && port.assocEdge.node2 == otherPort.assocEdge.node1) {
+                        newPorts.push(otherPort);
+                        ports.splice(ports.indexOf(otherPort), 1);
+                    }
+                }
+            }
+        }
+
+        node.children = [...otherChildren, ...newPorts];
+    }
 }

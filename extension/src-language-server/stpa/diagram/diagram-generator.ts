@@ -37,7 +37,7 @@ import { getDescription } from "../../utils";
 import { StpaServices } from "../stpa-module";
 import { collectElementsWithSubComps, leafElement } from "../utils";
 import { filterModel } from "./filtering";
-import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, STPAPort } from "./stpa-interfaces";
+import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, PastaPort } from "./stpa-interfaces";
 import {
     CS_EDGE_TYPE,
     CS_INTERMEDIATE_EDGE_TYPE,
@@ -53,7 +53,7 @@ import {
     STPA_EDGE_TYPE,
     STPA_INTERMEDIATE_EDGE_TYPE,
     STPA_NODE_TYPE,
-    STPA_PORT_TYPE,
+    PORT_TYPE,
 } from "./stpa-model";
 import { StpaSynthesisOptions, showLabelsValue } from "./stpa-synthesis-options";
 import {
@@ -64,6 +64,7 @@ import {
     getTargets,
     setLevelOfCSNodes,
     setLevelsForSTPANodes,
+    sortPorts,
 } from "./utils";
 
 export class StpaDiagramGenerator extends LangiumDiagramGenerator {
@@ -271,6 +272,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 ...this.generateVerticalCSEdges(filteredModel.controlStructure.nodes, args),
                 //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, args)
             ];
+            sortPorts(CSChildren.filter(node => node.type.startsWith("node")) as CSNode[]);
             // add control structure to roots children
             rootChildren.push({
                 type: PARENT_TYPE,
@@ -864,15 +866,30 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     }
 
     protected generateIntermediateCSEdges(
-        source: AstNode | undefined,
-        target: AstNode | undefined,
+        source: Node | undefined,
+        target: Node | undefined,
         edgeId: string,
         edgeType: EdgeType,
         args: GeneratorContext<Model>,
         ancestor?: Node | Graph
     ): { sourcePort: string; targetPort: string } {
-        const sources = this.generatePortsForCSHierarchy(source, edgeId, edgeType === EdgeType.CONTROL_ACTION ? PortSide.SOUTH : PortSide.NORTH, args.idCache, ancestor);
-        const targets = this.generatePortsForCSHierarchy(target, edgeId, edgeType === EdgeType.CONTROL_ACTION ? PortSide.NORTH : PortSide.SOUTH, args.idCache, ancestor);
+        const assocEdge = { node1: source?.name ?? "", node2: target?.name ?? "" };
+        const sources = this.generatePortsForCSHierarchy(
+            source,
+            assocEdge,
+            edgeId,
+            edgeType === EdgeType.CONTROL_ACTION ? PortSide.SOUTH : PortSide.NORTH,
+            args.idCache,
+            ancestor
+        );
+        const targets = this.generatePortsForCSHierarchy(
+            target,
+            assocEdge,
+            edgeId,
+            edgeType === EdgeType.CONTROL_ACTION ? PortSide.NORTH : PortSide.SOUTH,
+            args.idCache,
+            ancestor
+        );
         for (let i = 0; i < sources.nodes.length - 1; i++) {
             const sEdgeType = CS_INTERMEDIATE_EDGE_TYPE;
             sources.nodes[i + 1]?.children?.push(
@@ -912,6 +929,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     // adds ports for current node and its (grand)parents up to the ancestor. The ancestor get no port.
     protected generatePortsForCSHierarchy(
         current: AstNode | undefined,
+        assocEdge: { node1: string; node2: string },
         edgeId: string,
         side: PortSide,
         idCache: IdCache<AstNode>,
@@ -928,12 +946,12 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     if (invisibleChild && ids.length !== 0) {
                         // add port for the invisible node first
                         const invisiblePortId = idCache.uniqueId(edgeId + "_newTransition");
-                        invisibleChild.children?.push(this.createPort(invisiblePortId, side));
+                        invisibleChild.children?.push(this.createPort(invisiblePortId, side, assocEdge));
                         ids.push(invisiblePortId);
                         nodes.push(invisibleChild);
                     }
                     const nodePortId = idCache.uniqueId(edgeId + "_newTransition");
-                    currentNode?.children?.push(this.createPort(nodePortId, side));
+                    currentNode?.children?.push(this.createPort(nodePortId, side, assocEdge));
                     ids.push(nodePortId);
                     nodes.push(currentNode);
                     current = current?.$container;
@@ -982,11 +1000,12 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param side The side of the port.
      * @returns an STPAPort.
      */
-    protected createPort(id: string, side: PortSide): STPAPort {
+    protected createPort(id: string, side: PortSide, assocEdge?: { node1: string; node2: string }): PastaPort {
         return {
-            type: STPA_PORT_TYPE,
+            type: PORT_TYPE,
             id: id,
             side: side,
+            assocEdge: assocEdge,
         };
     }
 

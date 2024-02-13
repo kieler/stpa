@@ -62,11 +62,11 @@ import {
     PROCESS_MODEL_NODE_TYPE,
     STPAEdge,
     STPANode,
-    STPAPort,
+    PastaPort,
     STPA_EDGE_TYPE,
     STPA_INTERMEDIATE_EDGE_TYPE,
     STPA_NODE_TYPE,
-    STPA_PORT_TYPE,
+    PORT_TYPE,
 } from "./stpa/stpa-model";
 import { StpaMouseListener } from "./stpa/stpa-mouselistener";
 import {
@@ -118,7 +118,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_INTERMEDIATE_EDGE_TYPE, CSEdge, IntermediateEdgeView);
     configureModelElement(context, CS_EDGE_TYPE, CSEdge, PolylineArrowEdgeView);
-    configureModelElement(context, STPA_PORT_TYPE, STPAPort, PortView);
+    configureModelElement(context, PORT_TYPE, PastaPort, PortView);
 
     // FTA
     configureModelElement(context, FTA_EDGE_TYPE, FTAEdge, PolylineArrowEdgeViewFTA);

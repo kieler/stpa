@@ -19,7 +19,7 @@
 import { LayoutOptions } from "elkjs";
 import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout";
 import { SGraph, SModelIndex, SNode, SPort } from "sprotty-protocol";
-import { CSNode, ParentNode, STPANode, STPAPort } from "./stpa-interfaces";
+import { CSNode, ParentNode, STPANode, PastaPort } from "./stpa-interfaces";
 import {
     CS_NODE_TYPE,
     INVISIBLE_NODE_TYPE,
@@ -27,7 +27,7 @@ import {
     PROCESS_MODEL_NODE_TYPE,
     PortSide,
     STPA_NODE_TYPE,
-    STPA_PORT_TYPE,
+    PORT_TYPE,
 } from "./stpa-model";
 
 export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
@@ -95,10 +95,10 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
     processModelNodeOptions(snode: SNode): LayoutOptions | undefined {
         return {
-            "org.eclipse.elk.separateConnectedComponents": "false",
-            "org.eclipse.elk.direction": "DOWN",
             "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
-            "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true"
+            "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true",
+            // TODO: wait for node size fix in elkjs
+            // "org.eclipse.elk.algorithm": "rectpacking",
         };
     }
 
@@ -172,9 +172,9 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     }
 
     protected portOptions(sport: SPort, index: SModelIndex): LayoutOptions | undefined {
-        if (sport.type === STPA_PORT_TYPE) {
+        if (sport.type === PORT_TYPE) {
             let side = "";
-            switch ((sport as STPAPort).side) {
+            switch ((sport as PastaPort).side) {
                 case PortSide.WEST:
                     side = "WEST";
                     break;

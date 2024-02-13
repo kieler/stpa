@@ -44,8 +44,9 @@ export interface STPANode extends SNode {
 }
 
 /** Port representing a port in the STPA graph. */
-export interface STPAPort extends SPort {
+export interface PastaPort extends SPort {
     side?: PortSide
+    assocEdge?: {node1: string, node2: string}
 }
 
 /**
