@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021-2023 by
+ * Copyright 2021-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -33,6 +33,7 @@ import {
     Context,
     DCAContext,
     DCARule,
+    Graph,
     Hazard,
     LossScenario,
     Model,
@@ -41,24 +42,22 @@ import {
     SystemConstraint,
     UCA,
     Variable,
+    VerticalEdge,
     isActionUCAs,
-    isControllerConstraint,
     isContext,
+    isControllerConstraint,
     isDCAContext,
     isDCARule,
+    isGraph,
     isHazardList,
     isLossScenario,
     isModel,
     isResponsibility,
-    isSystemResponsibilities,
     isRule,
     isSafetyConstraint,
     isSystemConstraint,
-    isNode,
+    isSystemResponsibilities,
     isVerticalEdge,
-    VerticalEdge,
-    isGraph,
-    Graph,
 } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 
@@ -173,6 +172,12 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         return this.descriptionsToScope(allDescriptions);
     }
 
+    /**
+     * Creates scope containing all nodes of the control structure.
+     * @param node Current VerticalEdge.
+     * @param precomputed Precomputed Scope of the document.
+     * @returns scope containing all nodes of the control structure.
+     */
     protected getNodes(node: VerticalEdge, precomputed: PrecomputedScopes): Scope {
         let graph: Node | Graph = node.$container;
         while (graph && !isGraph(graph)) {
@@ -183,7 +188,13 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         return this.descriptionsToScope(allDescriptions);
     }
 
-    getChildrenNodes(nodes: Node[], precomputed: PrecomputedScopes): AstNodeDescription[] {
+    /**
+     * Collects the descriptions of all {@code nodes} and their children.
+     * @param nodes The nodes for which the descriptions should be collected.
+     * @param precomputed Precomputed Scope of the document.
+     * @returns the descriptions of all {@code nodes} and their children.
+     */
+    protected getChildrenNodes(nodes: Node[], precomputed: PrecomputedScopes): AstNodeDescription[] {
         let res: AstNodeDescription[] = [];
         for (const node of nodes) {
             const currentNode: AstNode | undefined = node;

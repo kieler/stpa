@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021-2023 by
+ * Copyright 2021-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -22,9 +22,9 @@ import { SGraph, SModelIndex, SNode, SPort } from "sprotty-protocol";
 import { CSNode, ParentNode, STPANode, PastaPort } from "./stpa-interfaces";
 import {
     CS_NODE_TYPE,
-    INVISIBLE_NODE_TYPE,
+    CS_INVISIBLE_SUBCOMPONENT_TYPE,
     PARENT_TYPE,
-    PROCESS_MODEL_NODE_TYPE,
+    PROCESS_MODEL_PARENT_NODE_TYPE,
     PortSide,
     STPA_NODE_TYPE,
     PORT_TYPE,
@@ -83,17 +83,21 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         switch (snode.type) {
             case CS_NODE_TYPE:
                 return this.csNodeOptions(snode as CSNode);
-            case INVISIBLE_NODE_TYPE:
-                return this.invisibleNodeOptions(snode);
-            case PROCESS_MODEL_NODE_TYPE:
-                return this.processModelNodeOptions(snode);
+            case CS_INVISIBLE_SUBCOMPONENT_TYPE:
+                return this.invisibleSubcomponentOptions(snode);
+            case PROCESS_MODEL_PARENT_NODE_TYPE:
+                return this.processModelParentNodeOptions(snode);
             case STPA_NODE_TYPE:
                 return this.stpaNodeOptions(snode as STPANode);
             case PARENT_TYPE:
                 return this.grandparentNodeOptions(snode as ParentNode, index);
         }
     }
-    processModelNodeOptions(snode: SNode): LayoutOptions | undefined {
+
+    /**
+     * Options for the invisible node that contains the process model nodes.
+     */
+    processModelParentNodeOptions(snode: SNode): LayoutOptions | undefined {
         return {
             "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
             "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true",
@@ -102,7 +106,10 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         };
     }
 
-    protected invisibleNodeOptions(snode: SNode): LayoutOptions | undefined {
+    /**
+     * Options for the invisible node that contains subcomponents of a cs node.
+     */
+    protected invisibleSubcomponentOptions(snode: SNode): LayoutOptions | undefined {
         return {
             "org.eclipse.elk.partitioning.activate": "true",
             "org.eclipse.elk.direction": "DOWN",
@@ -112,8 +119,12 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         };
     }
 
+    /**
+     * Options for the standard STPA nodes.
+     */
     protected stpaNodeOptions(node: STPANode): LayoutOptions {
         if (node.children?.find(child => child.type.startsWith("node"))) {
+            // node has further children nodes
             return this.parentSTPANodeOptions(node);
         } else {
             return {
@@ -125,6 +136,9 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         }
     }
 
+    /**
+     * Options for an STPA node that has children nodes.
+     */
     protected parentSTPANodeOptions(node: STPANode): LayoutOptions {
         // options for nodes in the STPA graphs that have children
         const options: LayoutOptions = {
@@ -149,6 +163,9 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
         return options;
     }
 
+    /**
+     * Options for a standard control structure node.
+     */
     protected csNodeOptions(node: CSNode): LayoutOptions {
         const options: LayoutOptions = {
             "org.eclipse.elk.partitioning.partition": "" + node.level,
@@ -158,19 +175,22 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
         };
         if (node.children?.find(child => child.type.startsWith("node"))) {
-            // cs nodes with children
+            // node hast children nodes
             options["org.eclipse.elk.nodeLabels.placement"] = "INSIDE V_TOP H_CENTER";
             options["org.eclipse.elk.direction"] = "DOWN";
             options["org.eclipse.elk.partitioning.activate"] = "true";
             options["org.eclipse.elk.padding"] = "[top=0.0,left=0.0,bottom=0.0,right=0.0]";
             options["org.eclipse.elk.spacing.portPort"] = "0.0";
         } else {
-            // TODO: want H_LEFT but this expands the node more than needed
+            // TODO: maybe want H_LEFT for process model nodes but this expands the node more than needed
             options["org.eclipse.elk.nodeLabels.placement"] = "INSIDE V_CENTER H_CENTER";
         }
         return options;
     }
 
+    /**
+     * Options for a standard port.
+     */
     protected portOptions(sport: SPort, index: SModelIndex): LayoutOptions | undefined {
         if (sport.type === PORT_TYPE) {
             let side = "";

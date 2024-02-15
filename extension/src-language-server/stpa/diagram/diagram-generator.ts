@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021-2023 by
+ * Copyright 2021-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -37,23 +37,23 @@ import { getDescription } from "../../utils";
 import { StpaServices } from "../stpa-module";
 import { collectElementsWithSubComps, leafElement } from "../utils";
 import { filterModel } from "./filtering";
-import { CSEdge, CSNode, ParentNode, STPAEdge, STPANode, PastaPort } from "./stpa-interfaces";
+import { CSEdge, CSNode, ParentNode, PastaPort, STPAEdge, STPANode } from "./stpa-interfaces";
 import {
     CS_EDGE_TYPE,
     CS_INTERMEDIATE_EDGE_TYPE,
+    CS_INVISIBLE_SUBCOMPONENT_TYPE,
     CS_NODE_TYPE,
     DUMMY_NODE_TYPE,
     EdgeType,
     HEADER_LABEL_TYPE,
-    INVISIBLE_NODE_TYPE,
     PARENT_TYPE,
-    PROCESS_MODEL_NODE_TYPE,
+    PORT_TYPE,
+    PROCESS_MODEL_PARENT_NODE_TYPE,
     PortSide,
     STPAAspect,
     STPA_EDGE_TYPE,
     STPA_INTERMEDIATE_EDGE_TYPE,
     STPA_NODE_TYPE,
-    PORT_TYPE,
 } from "./stpa-model";
 import { StpaSynthesisOptions, showLabelsValue } from "./stpa-synthesis-options";
 import {
@@ -272,6 +272,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 ...this.generateVerticalCSEdges(filteredModel.controlStructure.nodes, args),
                 //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, args)
             ];
+            // sort the ports in order to group edges based on the nodes they are connected to
             sortPorts(CSChildren.filter(node => node.type.startsWith("node")) as CSNode[]);
             // add control structure to roots children
             rootChildren.push({
@@ -308,12 +309,14 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const nodeId = idCache.uniqueId(node.name, node);
         const children: SModelElement[] = this.createLabel([label], nodeId, idCache);
         if (this.options.getShowProcessModels()) {
+            // add nodes representing the process model
             children.push(this.createProcessModelNodes(node.variables, idCache));
         }
         // add children of the control structure node
         if (node.children?.length !== 0) {
+            // add invisible node to group the children in order to be able to lay them out separately from the process model node
             const invisibleNode = {
-                type: INVISIBLE_NODE_TYPE,
+                type: CS_INVISIBLE_SUBCOMPONENT_TYPE,
                 id: idCache.uniqueId(node.name + "_invisible"),
                 children: [] as SModelElement[],
                 layout: "stack",
@@ -324,6 +327,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     paddingRight: 10.0,
                 },
             };
+            // create the actual children
             node.children?.forEach(child => {
                 invisibleNode.children?.push(this.createControlStructureNode(child, args));
             });
@@ -346,9 +350,16 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return csNode;
     }
 
-    protected createProcessModelNodes(variables: Variable[], idCache: IdCache<AstNode>): SModelElement {
+    /**
+     * Creates nodes representing the process model defined by the {@code variables} and encapsulates them in an invisible node.
+     * @param variables The variables of the process model.
+     * @param idCache The id cache of the STPA model.
+     * @returns an invisible node containing the nodes representing the process model.
+     */
+    protected createProcessModelNodes(variables: Variable[], idCache: IdCache<AstNode>): SNode {
         const csChildren: SModelElement[] = [];
         for (const variable of variables) {
+            // translate the variable name to a header label and the values to further labels
             const label = variable.name;
             const nodeId = idCache.uniqueId(variable.name, variable);
             const values = variable.values?.map(value => value.name);
@@ -356,6 +367,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 ...this.createLabel([label], nodeId, idCache, HEADER_LABEL_TYPE),
                 ...this.createLabel(values, nodeId, idCache),
             ];
+            // create the actual node with the created labels
             const csNode = {
                 type: CS_NODE_TYPE,
                 id: nodeId,
@@ -370,8 +382,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             } as CSNode;
             csChildren.push(csNode);
         }
+        // encapsulate the nodes representing the process model in an invisible node
         const invisibleNode = {
-            type: PROCESS_MODEL_NODE_TYPE,
+            type: PROCESS_MODEL_PARENT_NODE_TYPE,
             id: idCache.uniqueId("invisible"),
             children: csChildren,
             layout: "stack",
@@ -399,6 +412,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             edges.push(...this.translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, args));
             // create edges representing feedback
             edges.push(...this.translateCommandsToEdges(node.feedbacks, EdgeType.FEEDBACK, args));
+            // FIXME: input/output does not work anymore
             // create edges representing the other inputs
             edges.push(...this.translateIOToEdgeAndNode(node.inputs, node, EdgeType.INPUT, args));
             // create edges representing the other outputs
@@ -410,11 +424,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     }
 
     /**
-     * Translates the commands (control action or feedback) of a node to edges.
+     * Translates the commands (control action or feedback) of a node to (intermediate) edges and adds them to the correct nodes.
      * @param commands The control actions or feedback of a node.
      * @param edgeType The type of the edge (control action or feedback).
      * @param args GeneratorContext of the STPA model.
-     * @returns A list of edges representing the commands.
+     * @returns A list of edges representing the commands that should be added at the top level.
      */
     protected translateCommandsToEdges(
         commands: VerticalEdge[],
@@ -424,6 +438,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         const idCache = args.idCache;
         const edges: CSEdge[] = [];
         for (const edge of commands) {
+            // create edge id
             const source = edge.$container;
             const target = edge.target.ref;
             const edgeId = idCache.uniqueId(
@@ -432,15 +447,15 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             );
 
             if (target) {
-                // multiple commands to same target is represented by one edge
+                // multiple commands to same target is represented by one edge -> combine labels to one
                 const label: string[] = [];
                 for (let i = 0; i < edge.comms.length; i++) {
                     const com = edge.comms[i];
                     label.push(com.label);
                 }
-                // edges can be hierachy crossing so we must determine the common ancestor
+                // edges can be hierachy crossing so we must determine the common ancestor of source and target
                 const commonAncestor = getCommonAncestor(source, target);
-                // create the intermediate ports and edges for the control action
+                // create the intermediate ports and edges
                 const ports = this.generateIntermediateCSEdges(source, target, edgeId, edgeType, args, commonAncestor);
                 // add edge between the two ports in the common ancestor
                 const csEdge = this.createControlStructureEdge(
@@ -449,14 +464,19 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     ports.targetPort,
                     label,
                     edgeType,
+                    // if the common ancestor is the parent of the target we want an edge with an arrow otherwise an intermediate edge
                     target.$container === commonAncestor ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
                     args
                 );
                 if (commonAncestor?.$type === "Graph") {
+                    // if the common ancestor is the graph, the edge must be added at the top level and hence have to be returned
                     edges.push(csEdge);
                 } else if (commonAncestor) {
+                    // if the common ancestor is a node, the edge must be added to the children of the common ancestor
                     const snodeAncestor = this.idToSNode.get(idCache.getId(commonAncestor)!);
-                    snodeAncestor?.children?.find(node => node.type === INVISIBLE_NODE_TYPE)?.children?.push(csEdge);
+                    snodeAncestor?.children
+                        ?.find(node => node.type === CS_INVISIBLE_SUBCOMPONENT_TYPE)
+                        ?.children?.push(csEdge);
                 }
             }
         }
@@ -865,6 +885,16 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         return ids;
     }
 
+    /**
+     * Generates intermediate edges and ports for the given {@code source} and {@code target} to connect them through hierarchical levels.
+     * @param source The source of the edge.
+     * @param target The target of the edge.
+     * @param edgeId The ID of the original edge.
+     * @param edgeType The type of the edge.
+     * @param args The GeneratorContext of the STPA model.
+     * @param ancestor The common ancestor of the source and target.
+     * @returns the IDs of the source and target port at the hierarchy level of the {@code ancestor}.
+     */
     protected generateIntermediateCSEdges(
         source: Node | undefined,
         target: Node | undefined,
@@ -874,6 +904,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         ancestor?: Node | Graph
     ): { sourcePort: string; targetPort: string } {
         const assocEdge = { node1: source?.name ?? "", node2: target?.name ?? "" };
+        // add ports for source and target and their ancestors till the common ancestor
         const sources = this.generatePortsForCSHierarchy(
             source,
             assocEdge,
@@ -890,6 +921,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             args.idCache,
             ancestor
         );
+        // add edges between the ports of the source and its ancestors
         for (let i = 0; i < sources.nodes.length - 1; i++) {
             const sEdgeType = CS_INTERMEDIATE_EDGE_TYPE;
             sources.nodes[i + 1]?.children?.push(
@@ -905,6 +937,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 )
             );
         }
+        // add edges between the ports of the target and its ancestors
         for (let i = 0; i < targets.nodes.length - 1; i++) {
             const sEdgeType = i === 0 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE;
             targets.nodes[i + 1]?.children?.push(
@@ -920,13 +953,23 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                 )
             );
         }
+        // return the source and target port at the hierarchy level of the ancestor
         return {
             sourcePort: sources.portIds[sources.portIds.length - 1],
             targetPort: targets.portIds[targets.portIds.length - 1],
         };
     }
 
-    // adds ports for current node and its (grand)parents up to the ancestor. The ancestor get no port.
+    /**
+     * Adds ports for the {@code current} node and its (grand)parents up to the {@code ancestor}.
+     * @param current The node for which the ports should be created.
+     * @param assocEdge The associated edge for which the ports should be created.
+     * @param edgeId The ID of the original edge for which the ports should be created.
+     * @param side The side of the ports.
+     * @param idCache The ID cache of the STPA model.
+     * @param ancestor The common ancestor of the source and target of the associated edge.
+     * @returns the IDs of the created ports and the nodes the ports were added to.
+     */
     protected generatePortsForCSHierarchy(
         current: AstNode | undefined,
         assocEdge: { node1: string; node2: string },
@@ -942,7 +985,10 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             if (currentId) {
                 const currentNode = this.idToSNode.get(currentId);
                 if (currentNode) {
-                    const invisibleChild = currentNode?.children?.find(child => child.type === INVISIBLE_NODE_TYPE);
+                    // current node could have an invisible child that was skipped while going up the hierarchy because it does not exist in the AST
+                    const invisibleChild = currentNode?.children?.find(
+                        child => child.type === CS_INVISIBLE_SUBCOMPONENT_TYPE
+                    );
                     if (invisibleChild && ids.length !== 0) {
                         // add port for the invisible node first
                         const invisiblePortId = idCache.uniqueId(edgeId + "_newTransition");
@@ -950,6 +996,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                         ids.push(invisiblePortId);
                         nodes.push(invisibleChild);
                     }
+                    // add port for the current node
                     const nodePortId = idCache.uniqueId(edgeId + "_newTransition");
                     currentNode?.children?.push(this.createPort(nodePortId, side, assocEdge));
                     ids.push(nodePortId);
@@ -1005,7 +1052,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             type: PORT_TYPE,
             id: id,
             side: side,
-            assocEdge: assocEdge,
+            associatedEdge: assocEdge,
         };
     }
 
@@ -1071,6 +1118,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * Generates SLabel elements for the given {@code label}.
      * @param label Labels to translate to SLabel elements.
      * @param id The ID of the element for which the label should be generated.
+     * @param idCache The ID cache of the STPA model.
+     * @param type The type of the label.
+     * @param dummyLabel Determines whether a dummy label should be created to get a correct layout.
      * @returns SLabel elements representing {@code label}.
      */
     protected createLabel(

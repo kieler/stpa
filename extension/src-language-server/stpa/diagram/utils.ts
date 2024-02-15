@@ -16,6 +16,7 @@
  */
 
 import { AstNode } from "langium";
+import { SModelElement } from "sprotty-protocol";
 import {
     Context,
     Graph,
@@ -37,7 +38,6 @@ import {
 import { CSNode, PastaPort, STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
 import { groupValue } from "./stpa-synthesis-options";
-import { SModelElement } from "sprotty-protocol";
 
 /**
  * Getter for the references contained in {@code node}.
@@ -181,6 +181,7 @@ export function setLevelOfCSNodes(nodes: Node[]): void {
     for (const node of nodes) {
         visited.set(node.name, new Set<string>());
         if (node.children) {
+            // set levels of children seperately
             setLevelOfCSNodes(node.children);
         }
     }
@@ -191,7 +192,7 @@ export function setLevelOfCSNodes(nodes: Node[]): void {
 }
 
 /**
- * Assigns the level to the connected nodes of {@code node}.
+ * Assigns the level to the connected nodes of {@code node} that are on the same hierarchical level.
  * @param node The node for which the connected nodes should be assigned a level.
  * @param visited The edges that have been visited.
  */
@@ -365,17 +366,28 @@ export function getAspectsThatShouldHaveDesriptions(model: Model): STPAAspect[] 
     return aspectsToShowDescriptions;
 }
 
-export function getCommonAncestor(node: Node, target: Node): Node | Graph | undefined {
-    const nodeAncestors = getAncestors(node);
-    const targetAncestors = getAncestors(target);
-    for (const ancestor of nodeAncestors) {
-        if (targetAncestors.includes(ancestor)) {
+/**
+ * Determines the least common ancestor of {@code node1} and {@code node2}.
+ * @param node1 The first node.
+ * @param node2 The second node.
+ * @returns the least common ancestor of {@code node1} and {@code node2} or undefined if none exists.
+ */
+export function getCommonAncestor(node1: Node, node2: Node): Node | Graph | undefined {
+    const node1Ancestors = getAncestors(node1);
+    const node2Ancestors = getAncestors(node2);
+    for (const ancestor of node1Ancestors) {
+        if (node2Ancestors.includes(ancestor)) {
             return ancestor;
         }
     }
     return undefined;
 }
 
+/**
+ * Calculates the ancestors of {@code node}.
+ * @param node The node for which the ancestors should be calculated.
+ * @returns the ancestors of {@code node}.
+ */
 export function getAncestors(node: Node): (Node | Graph)[] {
     const ancestors: (Node | Graph)[] = [];
     let current: Node | Graph | undefined = node;
@@ -386,10 +398,17 @@ export function getAncestors(node: Node): (Node | Graph)[] {
     return ancestors;
 }
 
+/**
+ * Sorts the ports of the nodes in {@code nodes} based on their associated edges.
+ * @param nodes The nodes which ports should be sorted.
+ */
 export function sortPorts(nodes: CSNode[]): void {
     for (const node of nodes) {
+        // sort the ports of the children
         const children = node.children?.filter(child => child.type.startsWith("node")) as CSNode[];
         sortPorts(children);
+
+        // separate the ports from the other children
         const ports: PastaPort[] = [];
         const otherChildren: SModelElement[] = [];
         node.children?.forEach(child => {
@@ -400,15 +419,17 @@ export function sortPorts(nodes: CSNode[]): void {
             }
         });
 
+        // sort the ports based on their associated edges
         const newPorts: PastaPort[] = [];
         for (const port of ports) {
             newPorts.push(port);
-            if (port.assocEdge) {
+            if (port.associatedEdge) {
                 for (const otherPort of ports) {
                     if (
-                        port.assocEdge.node1 === otherPort.assocEdge?.node2 &&
-                        port.assocEdge.node2 === otherPort.assocEdge.node1
+                        port.associatedEdge.node1 === otherPort.associatedEdge?.node2 &&
+                        port.associatedEdge.node2 === otherPort.associatedEdge.node1
                     ) {
+                        // associated edges connect the same nodes but in the opposite direction -> add the other port to the list to group them together
                         newPorts.push(otherPort);
                         ports.splice(ports.indexOf(otherPort), 1);
                     }

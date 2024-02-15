@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022-2023 by
+ * Copyright 2022-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -19,7 +19,7 @@ import {
     DropDownOption,
     SynthesisOption,
     TransformationOptionType,
-    ValuedSynthesisOption
+    ValuedSynthesisOption,
 } from "../../options/option-models";
 import { SynthesisOptions, layoutCategory } from "../../synthesis-options";
 
@@ -80,7 +80,7 @@ const showControlStructureOption: ValuedSynthesisOption = {
 };
 
 /**
- * Boolean option to toggle the visualization of the control structure.
+ * Boolean option to toggle the visualization of the process model of controllers.
  */
 const showProcessModelsOption: ValuedSynthesisOption = {
     synthesisOption: {
@@ -412,7 +412,7 @@ export class StpaSynthesisOptions extends SynthesisOptions {
     }
 
     setGroupingUCAs(value: groupValue): void {
-        const option = this.options.find((option) => option.synthesisOption.id === groupingUCAsID);
+        const option = this.options.find(option => option.synthesisOption.id === groupingUCAsID);
         if (option) {
             switch (value) {
                 case groupValue.NO_GROUPING:
@@ -443,7 +443,7 @@ export class StpaSynthesisOptions extends SynthesisOptions {
     }
 
     setFilteringUCAs(value: string): void {
-        const option = this.options.find((option) => option.synthesisOption.id === filteringUCAsID);
+        const option = this.options.find(option => option.synthesisOption.id === filteringUCAsID);
         if (option) {
             option.currentValue = value;
             option.synthesisOption.currentValue = value;
@@ -521,7 +521,7 @@ export class StpaSynthesisOptions extends SynthesisOptions {
             (option.synthesisOption as DropDownOption).availableValues = values;
             // if the last selected control action is not available anymore,
             // set the option to the first control action of the new list
-            if (!values.find((val) => val.id === (option.synthesisOption as DropDownOption).currentId)) {
+            if (!values.find(val => val.id === (option.synthesisOption as DropDownOption).currentId)) {
                 (option.synthesisOption as DropDownOption).currentId = values[0].id;
                 option.synthesisOption.currentValue = values[0].id;
                 option.synthesisOption.initialValue = values[0].id;

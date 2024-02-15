@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021-2023 by
+ * Copyright 2021-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -19,14 +19,14 @@
 export const STPA_NODE_TYPE = 'node:stpa';
 export const PARENT_TYPE= 'node:parent';
 export const CS_NODE_TYPE = 'node:cs';
-export const INVISIBLE_NODE_TYPE = 'node:invisible';
-export const PROCESS_MODEL_NODE_TYPE = 'node:processModel';
+export const CS_INVISIBLE_SUBCOMPONENT_TYPE = 'node:invisibleSubcomponent';
+export const PROCESS_MODEL_PARENT_NODE_TYPE = 'node:processModelParent';
 export const DUMMY_NODE_TYPE = 'node:dummy';
 export const EDGE_TYPE = 'edge';
 export const CS_EDGE_TYPE = 'edge:controlStructure';
+export const CS_INTERMEDIATE_EDGE_TYPE = 'edge:cs-intermediate';
 export const STPA_EDGE_TYPE = 'edge:stpa';
 export const STPA_INTERMEDIATE_EDGE_TYPE = 'edge:stpa-intermediate';
-export const CS_INTERMEDIATE_EDGE_TYPE = 'edge:cs-intermediate';
 export const PORT_TYPE = 'port:pasta';
 export const HEADER_LABEL_TYPE = 'label:header';
 
