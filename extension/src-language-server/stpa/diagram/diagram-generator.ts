@@ -412,7 +412,6 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             edges.push(...this.translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, args));
             // create edges representing feedback
             edges.push(...this.translateCommandsToEdges(node.feedbacks, EdgeType.FEEDBACK, args));
-            // FIXME: input/output does not work anymore
             // create edges representing the other inputs
             edges.push(...this.translateIOToEdgeAndNode(node.inputs, node, EdgeType.INPUT, args));
             // create edges representing the other outputs
@@ -519,7 +518,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param node The node of the inputs or outputs.
      * @param edgetype The type of the edge (input or output).
      * @param args GeneratorContext of the STPA model.
-     * @returns a list of edges representing the inputs or outputs.
+     * @returns a list of edges representing the inputs or outputs that should be added at the top level.
      */
     protected translateIOToEdgeAndNode(
         io: Command[],
@@ -582,7 +581,13 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     console.error("EdgeType is not INPUT or OUTPUT");
                     break;
             }
-            return graphComponents;
+            if (node.$container?.$type === "Graph") {
+                return graphComponents;
+            } else {
+                const parent = this.idToSNode.get(idCache.getId(node.$container)!);
+                const invisibleChild = parent?.children?.find(child => child.type === CS_INVISIBLE_SUBCOMPONENT_TYPE);
+                invisibleChild?.children?.push(...graphComponents);
+            }
         }
         return [];
     }

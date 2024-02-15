@@ -405,7 +405,7 @@ export function getAncestors(node: Node): (Node | Graph)[] {
 export function sortPorts(nodes: CSNode[]): void {
     for (const node of nodes) {
         // sort the ports of the children
-        const children = node.children?.filter(child => child.type.startsWith("node")) as CSNode[];
+        const children = node.children?.filter(child => child.type.startsWith("node")) as CSNode[] ?? [];
         sortPorts(children);
 
         // separate the ports from the other children
