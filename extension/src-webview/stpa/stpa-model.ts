@@ -40,8 +40,7 @@ export class ParentNode extends SNode {
  * Node representing an STPA component.
  */
 export class STPANode extends SNode {
-    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature];
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
 
     aspect: STPAAspect = STPAAspect.UNDEFINED;
     description: string = "";
@@ -64,7 +63,7 @@ export class STPAEdge extends SEdge {
 /** Port representing a port in the STPA graph. */
 export class PastaPort extends SPort {
     side?: PortSide;
-    assocEdge?: {node1: string, node2: string}
+    assocEdge?: { node1: string; node2: string };
 }
 
 /**
@@ -73,8 +72,7 @@ export class PastaPort extends SPort {
 export class CSNode extends SNode {
     level?: number;
     // processmodel?
-    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature];
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
 }
 
 /**
@@ -97,7 +95,7 @@ export enum STPAAspect {
     CONTROLLERCONSTRAINT,
     SCENARIO,
     SAFETYREQUIREMENT,
-    UNDEFINED
+    UNDEFINED,
 }
 
 /**
@@ -108,7 +106,7 @@ export enum EdgeType {
     FEEDBACK,
     INPUT,
     OUTPUT,
-    UNDEFINED
+    UNDEFINED,
 }
 
 /** Possible sides for a port. */
@@ -116,5 +114,5 @@ export enum PortSide {
     WEST,
     EAST,
     NORTH,
-    SOUTH
+    SOUTH,
 }

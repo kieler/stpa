@@ -37,7 +37,7 @@ import {
 import { CSNode, PastaPort, STPANode } from "./stpa-interfaces";
 import { STPAAspect } from "./stpa-model";
 import { groupValue } from "./stpa-synthesis-options";
-import { SModelElement } from "sprotty-protocol"
+import { SModelElement } from "sprotty-protocol";
 
 /**
  * Getter for the references contained in {@code node}.
@@ -390,8 +390,8 @@ export function sortPorts(nodes: CSNode[]): void {
     for (const node of nodes) {
         const children = node.children?.filter(child => child.type.startsWith("node")) as CSNode[];
         sortPorts(children);
-        const ports: PastaPort[] = []
-        const otherChildren: SModelElement[] = []
+        const ports: PastaPort[] = [];
+        const otherChildren: SModelElement[] = [];
         node.children?.forEach(child => {
             if (child.type.startsWith("port")) {
                 ports.push(child as any as PastaPort);
@@ -405,7 +405,10 @@ export function sortPorts(nodes: CSNode[]): void {
             newPorts.push(port);
             if (port.assocEdge) {
                 for (const otherPort of ports) {
-                    if (port.assocEdge.node1 == otherPort.assocEdge?.node2 && port.assocEdge.node2 == otherPort.assocEdge.node1) {
+                    if (
+                        port.assocEdge.node1 === otherPort.assocEdge?.node2 &&
+                        port.assocEdge.node2 === otherPort.assocEdge.node1
+                    ) {
                         newPorts.push(otherPort);
                         ports.splice(ports.indexOf(otherPort), 1);
                     }

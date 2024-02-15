@@ -906,7 +906,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             );
         }
         for (let i = 0; i < targets.nodes.length - 1; i++) {
-            const sEdgeType = i == 0 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE;
+            const sEdgeType = i === 0 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE;
             targets.nodes[i + 1]?.children?.push(
                 this.createControlStructureEdge(
                     args.idCache.uniqueId(edgeId),
