@@ -29,6 +29,7 @@ import {
     PastaAstType,
     SystemConstraint,
     isModel,
+    Graph,
 } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
@@ -49,6 +50,7 @@ export class StpaValidationRegistry extends ValidationRegistry {
             HazardList: validator.checkHazardList,
             Node: validator.checkNode,
             Context: validator.checkContext,
+            Graph: validator.checkControlStructure,
         };
         this.register(checks, validator);
     }
@@ -80,20 +82,20 @@ export class StpaValidator {
 
         const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
         const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
-        const responsibilities = model.responsibilities?.map((r) => r.responsiblitiesForOneSystem).flat(1);
+        const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
         const ucas = model.allUCAs
-            ?.map((sysUCA) =>
+            ?.map(sysUCA =>
                 sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)
             )
             .flat(1);
-        const contexts = model.rules?.map((rule) => rule.contexts).flat(1);
+        const contexts = model.rules?.map(rule => rule.contexts).flat(1);
 
         // collect all elements that have a reference list
         let elementsWithRefs: elementWithRefs[] = [
             ...hazards,
             ...sysCons,
-            ...ucas.map((uca) => uca.list),
-            ...contexts.map((context) => context.list),
+            ...ucas.map(uca => uca.list),
+            ...contexts.map(context => context.list),
         ];
 
         // collect nodes that should be checked whether they are referenced
@@ -121,7 +123,7 @@ export class StpaValidator {
             constraintsRefs = this.collectReferences(model.controllerConstraints);
         }
         if (this.checkScenariosForUCAs) {
-            scenarioRefs = model.scenarios.map((scenario) => scenario.uca?.ref?.name);
+            scenarioRefs = model.scenarios.map(scenario => scenario.uca?.ref?.name);
         }
         if (this.checkSafetyRequirementsForUCAs) {
             safetyRequirementsRefs = this.collectReferences(model.safetyCons);
@@ -155,20 +157,17 @@ export class StpaValidator {
             ...model.scenarios,
             ...model.safetyCons,
         ];
-        if (model.controlStructure) {
-            allElements.push(model.controlStructure);
-        }
         //check that their IDs are unique
         this.checkIDsAreUnique(allElements, accept);
 
         // check that each control action has at least one UCA
         const ucaActions = [
-            ...model.allUCAs.map((alluca) => alluca.system?.ref?.name + "." + alluca.action?.ref?.name),
-            ...model.rules.map((rule) => rule.system?.ref?.name + "." + rule.action?.ref?.name),
+            ...model.allUCAs.map(alluca => alluca.system?.ref?.name + "." + alluca.action?.ref?.name),
+            ...model.rules.map(rule => rule.system?.ref?.name + "." + rule.action?.ref?.name),
         ];
-        model.controlStructure?.nodes.forEach((node) =>
-            node.actions.forEach((action) =>
-                action.comms.forEach((command) => {
+        model.controlStructure?.nodes.forEach(node =>
+            node.actions.forEach(action =>
+                action.comms.forEach(command => {
                     const name = node.name + "." + command.name;
                     if (!ucaActions.includes(name)) {
                         accept("warning", "This element is not referenced by a UCA", {
@@ -237,7 +236,7 @@ export class StpaValidator {
     checkContext(context: Context, accept: ValidationAcceptor): void {
         for (let i = 0; i < context.vars.length; i++) {
             const variable = context.vars[i];
-            const variableValues = variable.ref?.values.map((value) => value.name);
+            const variableValues = variable.ref?.values.map(value => value.name);
             // the value of the variable in the context should be one of the values that are stated in the definition of the variable
             if (!variableValues?.includes(context.values[i])) {
                 accept("error", "This variable has an invalid value.", {
@@ -291,14 +290,38 @@ export class StpaValidator {
     }
 
     /**
+     * Executes validation checks for the control structure.
+     * @param graph The control structure to check.
+     * @param accept 
+     */
+    checkControlStructure(graph: Graph, accept: ValidationAcceptor): void {
+        const nodes = [...graph.nodes, ...graph.nodes.map(node => this.getChildren(node)).flat(1)];
+        this.checkIDsAreUnique(nodes, accept);
+    }
+
+    /**
+     * Collects all (grand)children of a node.
+     * @param node The node to collect the children from.
+     * @returns a list of all (grand)children of the node.
+     */
+    protected getChildren(node: Node): Node[] {
+        const children: Node[] = [];
+        node.children.forEach(child => {
+            children.push(child);
+            children.push(...this.getChildren(child));
+        });
+        return children;
+    }
+
+    /**
      * Executes validation checks for a node of the control structure.
      * @param node The node to check.
      * @param accept
      */
     checkNode(node: Node, accept: ValidationAcceptor): void {
         this.checkIDsAreUnique(node.variables, accept);
-        this.checkIDsAreUnique(node.actions.map((ve) => ve.comms).flat(1), accept);
-        this.checkIDsAreUnique(node.feedbacks.map((ve) => ve.comms).flat(1), accept);
+        this.checkIDsAreUnique(node.actions.map(ve => ve.comms).flat(1), accept);
+        this.checkIDsAreUnique(node.feedbacks.map(ve => ve.comms).flat(1), accept);
     }
 
     /**
