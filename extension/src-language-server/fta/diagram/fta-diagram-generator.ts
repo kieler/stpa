@@ -266,7 +266,7 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
             layoutOptions: {
                 paddingTop: 0.0,
                 paddingBottom: 10.0,
-                paddngLeft: 0.0,
+                paddingLeft: 0.0,
                 paddingRight: 0.0,
             },
         };

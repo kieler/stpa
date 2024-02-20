@@ -5,6 +5,11 @@
 @import "./fta-diagram.css";
 @import "./context-menu.css";
 
+.header {
+    text-decoration-line: underline;
+    font-weight: bold;
+}
+
 /* sprotty and black/white colors */
 .vscode-high-contrast .print-node {
     fill: black;

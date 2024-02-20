@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021-2023 by
+ * Copyright 2021-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -26,39 +26,40 @@ export interface ParentNode extends SNode {
  * Node representing a STPA component.
  */
 export interface STPANode extends SNode {
-    aspect: STPAAspect
-    description: string
-    hierarchyLvl: number
-    highlight?: boolean
-    level?: number
-    controlAction?: string
-    modelOrder?: boolean
+    aspect: STPAAspect;
+    description: string;
+    hierarchyLvl: number;
+    highlight?: boolean;
+    level?: number;
+    controlAction?: string;
+    modelOrder?: boolean;
 }
 
 /**
  * Edge representing an edge in the relationship graph.
  */
- export interface STPAEdge extends SEdge {
-    aspect: STPAAspect
-    highlight?: boolean
+export interface STPAEdge extends SEdge {
+    aspect: STPAAspect;
+    highlight?: boolean;
 }
 
 /** Port representing a port in the STPA graph. */
-export interface STPAPort extends SPort {
-    side?: PortSide
+export interface PastaPort extends SPort {
+    side?: PortSide;
+    /** Saves start and end of the edge for which the port was created. Needed to sort the ports based on their associacted edges. */
+    associatedEdge?: { node1: string; node2: string };
 }
 
 /**
  * Node representing a system component in the control structure.
  */
 export interface CSNode extends SNode {
-    level?: number
-    // processmodel?
+    level?: number;
 }
 
 /**
  * Edge representing control actions and feedback in the control structure.
  */
 export interface CSEdge extends SEdge {
-    edgeType: EdgeType
+    edgeType: EdgeType;
 }

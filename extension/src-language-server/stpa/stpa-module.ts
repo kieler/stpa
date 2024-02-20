@@ -95,7 +95,7 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
         StpaValidator: () => new StpaValidator(),
     },
     layout: {
-        ElkFactory: () => () => new ElkConstructor({ algorithms: ["layered"] }),
+        ElkFactory: () => () => new ElkConstructor({ algorithms: ["layered", "rectpacking"] }),
         ElementFilter: () => new DefaultElementFilter(),
         LayoutConfigurator: () => new StpaLayoutConfigurator(),
     },

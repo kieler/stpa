@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021-2023 by
+ * Copyright 2021-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -21,12 +21,16 @@ import { SEdge, SNode, SPort, connectableFeature, fadeFeature, layoutContainerFe
 export const STPA_NODE_TYPE = 'node:stpa';
 export const PARENT_TYPE = 'node:parent';
 export const CS_NODE_TYPE = 'node:cs';
+export const CS_INVISIBLE_SUBCOMPONENT_TYPE = 'node:invisibleSubcomponent';
+export const PROCESS_MODEL_PARENT_NODE_TYPE = 'node:processModelParent';
 export const DUMMY_NODE_TYPE = 'node:dummy';
 export const EDGE_TYPE = 'edge';
 export const CS_EDGE_TYPE = 'edge:controlStructure';
 export const STPA_EDGE_TYPE = 'edge:stpa';
 export const STPA_INTERMEDIATE_EDGE_TYPE = 'edge:stpa-intermediate';
-export const STPA_PORT_TYPE = 'port:stpa';
+export const CS_INTERMEDIATE_EDGE_TYPE = 'edge:cs-intermediate';
+export const PORT_TYPE = 'port:pasta';
+export const HEADER_LABEL_TYPE = 'label:header';
 
 export class ParentNode extends SNode {
     modelOrder: boolean;
@@ -36,8 +40,7 @@ export class ParentNode extends SNode {
  * Node representing an STPA component.
  */
 export class STPANode extends SNode {
-    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature];
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
 
     aspect: STPAAspect = STPAAspect.UNDEFINED;
     description: string = "";
@@ -58,8 +61,10 @@ export class STPAEdge extends SEdge {
 }
 
 /** Port representing a port in the STPA graph. */
-export class STPAPort extends SPort {
+export class PastaPort extends SPort {
     side?: PortSide;
+    /** Saves start and end of the edge for which the port was created. Needed to sort the ports based on their associacted edges. */
+    associatedEdge?: { node1: string; node2: string };
 }
 
 /**
@@ -67,9 +72,7 @@ export class STPAPort extends SPort {
  */
 export class CSNode extends SNode {
     level?: number;
-    // processmodel?
-    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature,
-        layoutContainerFeature, fadeFeature];
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
 }
 
 /**
@@ -92,7 +95,7 @@ export enum STPAAspect {
     CONTROLLERCONSTRAINT,
     SCENARIO,
     SAFETYREQUIREMENT,
-    UNDEFINED
+    UNDEFINED,
 }
 
 /**
@@ -103,7 +106,7 @@ export enum EdgeType {
     FEEDBACK,
     INPUT,
     OUTPUT,
-    UNDEFINED
+    UNDEFINED,
 }
 
 /** Possible sides for a port. */
@@ -111,5 +114,5 @@ export enum PortSide {
     WEST,
     EAST,
     NORTH,
-    SOUTH
+    SOUTH,
 }
