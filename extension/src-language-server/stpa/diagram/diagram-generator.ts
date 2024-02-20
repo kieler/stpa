@@ -112,9 +112,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             const sysCons = collectElementsWithSubComps(filteredModel.systemLevelConstraints);
             stpaChildren = stpaChildren?.concat([
                 ...hazards
-                    .map(sh =>
+                    .map(hazard =>
                         this.generateAspectWithEdges(
-                            sh,
+                            hazard,
                             showLabels === showLabelsValue.ALL ||
                                 showLabels === showLabelsValue.HAZARDS ||
                                 (showLabels === showLabelsValue.AUTOMATIC &&
@@ -124,9 +124,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     )
                     .flat(1),
                 ...sysCons
-                    .map(ssc =>
+                    .map(systemConstraint =>
                         this.generateAspectWithEdges(
-                            ssc,
+                            systemConstraint,
                             showLabels === showLabelsValue.ALL ||
                                 showLabels === showLabelsValue.SYSTEM_CONSTRAINTS ||
                                 (showLabels === showLabelsValue.AUTOMATIC &&
@@ -140,9 +140,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
             // subcomponents are contained in the parent
             stpaChildren = stpaChildren?.concat([
                 ...filteredModel.hazards
-                    ?.map(h =>
+                    ?.map(hazard =>
                         this.generateAspectWithEdges(
-                            h,
+                            hazard,
                             showLabels === showLabelsValue.ALL ||
                                 showLabels === showLabelsValue.HAZARDS ||
                                 (showLabels === showLabelsValue.AUTOMATIC &&
@@ -152,9 +152,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     )
                     .flat(1),
                 ...filteredModel.systemLevelConstraints
-                    ?.map(sc =>
+                    ?.map(systemConstraint =>
                         this.generateAspectWithEdges(
-                            sc,
+                            systemConstraint,
                             showLabels === showLabelsValue.ALL ||
                                 showLabels === showLabelsValue.SYSTEM_CONSTRAINTS ||
                                 (showLabels === showLabelsValue.AUTOMATIC &&
@@ -164,7 +164,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     )
                     .flat(1),
                 ...filteredModel.systemLevelConstraints
-                    ?.map(sc => sc.subComponents?.map(ssc => this.generateEdgesForSTPANode(ssc, args)))
+                    ?.map(systemConstraint => systemConstraint.subComponents?.map(subsystemConstraint => this.generateEdgesForSTPANode(subsystemConstraint, args)))
                     .flat(2),
             ]);
         }
