@@ -35,6 +35,14 @@ import {
 import { StpaSynthesisOptions } from "./stpa-synthesis-options";
 import { getCommonAncestor, setLevelOfCSNodes, sortPorts } from "./utils";
 
+/**
+ * Creates the control structure diagram for the given {@code controlStructure}.
+ * @param controlStructure The control structure.
+ * @param idToSNode The map of IDs to SNodes.
+ * @param options The synthesis options of the STPA model.
+ * @param args The GeneratorContext of the STPA model.
+ * @returns the generated control structure diagram.
+ */
 export function createControlStructure(
     controlStructure: Graph,
     idToSNode: Map<string, SNode>,

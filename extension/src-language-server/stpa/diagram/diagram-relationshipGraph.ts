@@ -40,6 +40,15 @@ import {
     setLevelsForSTPANodes,
 } from "./utils";
 
+/**
+ * Creates the relationship graph for the STPA model.
+ * @param filteredModel The filtered STPA model.
+ * @param model The STPA model.
+ * @param idToSNode The map of the generated IDs to their generated SNodes.
+ * @param options The synthesis options of the STPA model.
+ * @param args The generator context of the STPA model.
+ * @returns the relationship graph for the STPA model.
+ */
 export function createRelationshipGraph(
     filteredModel: CustomModel,
     model: Model,
@@ -67,6 +76,15 @@ export function createRelationshipGraph(
     };
 }
 
+/**
+ * Creates the children for the relationship graph.
+ * @param filteredModel The filtered STPA model.
+ * @param model The STPA model.
+ * @param idToSNode The map of the generated IDs to their generated SNodes.
+ * @param options The synthesis options of the STPA model.
+ * @param args The generator context of the STPA model.
+ * @returns the children of the relationship graph.
+ */
 export function createRelationshipGraphChildren(
     filteredModel: CustomModel,
     model: Model,
@@ -264,37 +282,6 @@ export function createRelationshipGraphChildren(
 }
 
 /**
- * Create the source and target port for the edge with the given {@code edgeId}.
- * @param sourceId The id of the source node.
- * @param sourceSide The side of the source node the edge should be connected to.
- * @param targetId The id of the target node.
- * @param targetSide The side of the target node the edge should be connected to.
- * @param edgeId The id of the edge.
- * @param idCache The id cache of the STPA model.
- * @returns the ids of the source and target port the edge should be connected to.
- */
-export function createPortsForSTPAEdge(
-    sourceId: string,
-    sourceSide: PortSide,
-    targetId: string,
-    targetSide: PortSide,
-    edgeId: string,
-    idToSNode: Map<string, SNode>,
-    idCache: IdCache<AstNode>
-): { sourcePortId: string; targetPortId: string } {
-    // add ports for source and target
-    const sourceNode = idToSNode.get(sourceId);
-    const sourcePortId = idCache.uniqueId(edgeId + "_newTransition");
-    sourceNode?.children?.push(createPort(sourcePortId, sourceSide));
-
-    const targetNode = idToSNode.get(targetId!);
-    const targetPortId = idCache.uniqueId(edgeId + "_newTransition");
-    targetNode?.children?.push(createPort(targetPortId, targetSide));
-
-    return { sourcePortId, targetPortId };
-}
-
-/**
  * Generates a node and the edges for the given {@code node}.
  * @param node STPA component for which a node and edges should be generated.
  * @param args GeneratorContext of the STPA model.
@@ -463,6 +450,37 @@ export function generateSTPAEdge(
             );
         }
     }
+}
+
+/**
+ * Create the source and target port for the edge with the given {@code edgeId}.
+ * @param sourceId The id of the source node.
+ * @param sourceSide The side of the source node the edge should be connected to.
+ * @param targetId The id of the target node.
+ * @param targetSide The side of the target node the edge should be connected to.
+ * @param edgeId The id of the edge.
+ * @param idCache The id cache of the STPA model.
+ * @returns the ids of the source and target port the edge should be connected to.
+ */
+export function createPortsForSTPAEdge(
+    sourceId: string,
+    sourceSide: PortSide,
+    targetId: string,
+    targetSide: PortSide,
+    edgeId: string,
+    idToSNode: Map<string, SNode>,
+    idCache: IdCache<AstNode>
+): { sourcePortId: string; targetPortId: string } {
+    // add ports for source and target
+    const sourceNode = idToSNode.get(sourceId);
+    const sourcePortId = idCache.uniqueId(edgeId + "_newTransition");
+    sourceNode?.children?.push(createPort(sourcePortId, sourceSide));
+
+    const targetNode = idToSNode.get(targetId!);
+    const targetPortId = idCache.uniqueId(edgeId + "_newTransition");
+    targetNode?.children?.push(createPort(targetPortId, targetSide));
+
+    return { sourcePortId, targetPortId };
 }
 
 /**
