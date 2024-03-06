@@ -21,7 +21,15 @@ import { SLabel, SModelElement } from "sprotty-protocol";
 import { Model } from "../../generated/ast";
 import { getDescription } from "../../utils";
 import { CSEdge, CSNode, PastaPort, STPAEdge, STPANode } from "./stpa-interfaces";
-import { DUMMY_NODE_TYPE, EdgeType, PORT_TYPE, PortSide, STPAAspect, STPA_NODE_TYPE } from "./stpa-model";
+import {
+    DUMMY_NODE_TYPE,
+    EdgeType,
+    HEADER_LABEL_TYPE,
+    PORT_TYPE,
+    PortSide,
+    STPAAspect,
+    STPA_NODE_TYPE,
+} from "./stpa-model";
 import { getAspect } from "./utils";
 import { StpaSynthesisOptions } from "./stpa-synthesis-options";
 
@@ -222,7 +230,7 @@ export function generateDescriptionLabels(
 
     // show the name in the top line
     children.push(<SLabel>{
-        type: "label",
+        type: showDescription ? HEADER_LABEL_TYPE : "label",
         id: idCache.uniqueId(nodeId + "_label"),
         text: nodeName,
     });
