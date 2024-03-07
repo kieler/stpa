@@ -36,7 +36,7 @@ import {
 } from "./fta-model";
 import { FtaSynthesisOptions, noCutSet, spofsSet } from "./fta-synthesis-options";
 import { getFTNodeType, getTargets } from "./utils";
-
+import { HEADER_LABEL_TYPE } from "../../stpa/diagram/stpa-model";
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     protected readonly options: FtaSynthesisOptions;
 
@@ -70,11 +70,11 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
 
         const ftaChildren: SModelElement[] = [
             // create nodes for top event, components, conditions, and gates
-            ...model.components.map((component) => this.generateFTNode(component, idCache)),
-            ...model.conditions.map((condition) => this.generateFTNode(condition, idCache)),
-            ...model.gates.map((gate) => this.generateGate(gate, idCache)),
+            ...model.components.map(component => this.generateFTNode(component, idCache)),
+            ...model.conditions.map(condition => this.generateFTNode(condition, idCache)),
+            ...model.gates.map(gate => this.generateGate(gate, idCache)),
             // create edges for the gates and the top event
-            ...model.gates.map((gate) => this.generateEdges(gate, idCache)).flat(1),
+            ...model.gates.map(gate => this.generateEdges(gate, idCache)).flat(1),
         ];
 
         if (model.topEvent) {
@@ -287,8 +287,13 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      */
     protected generateFTNode(node: namedFtaElement, idCache: IdCache<AstNode>): FTANode {
         const nodeId = idCache.uniqueId(node.name.replace(" ", ""), node);
-        const children: SModelElement[] = this.createNodeLabel(node.name, nodeId, idCache);
-        if (this.options.getShowComponentDescriptions() && (node.$type === Component || node.$type === Condition) && node.description !== undefined) {
+        let children: SModelElement[] = [];
+        if (
+            this.options.getShowComponentDescriptions() &&
+            (node.$type === Component || node.$type === Condition) &&
+            node.description !== undefined
+        ) {
+            children = this.createNodeLabel(node.name, nodeId, idCache, HEADER_LABEL_TYPE);
             const label = getDescription(
                 node.description,
                 this.options.getLabelManagement(),
@@ -297,6 +302,8 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
                 idCache
             );
             children.push(...label.reverse());
+        } else {
+            children = this.createNodeLabel(node.name, nodeId, idCache);
         }
         // one port for outgoing edges
         const port = this.createFTAPort(idCache.uniqueId(nodeId + "_port"), PortSide.NORTH);
@@ -304,7 +311,8 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
         this.nodeToPort.set(nodeId, port);
         const description = isComponent(node) || isCondition(node) ? node.description : "";
         const set = this.options.getCutSet();
-        let includedInCutSet = set !== noCutSet.id ? set.includes(node.name + ",") || set.includes(node.name + "]") : false;
+        let includedInCutSet =
+            set !== noCutSet.id ? set.includes(node.name + ",") || set.includes(node.name + "]") : false;
         let notConnected = set !== noCutSet.id ? !includedInCutSet : false;
         // single points of failure should be shown
         if (set === spofsSet.id) {
@@ -368,12 +376,13 @@ export class FtaDiagramGenerator extends LangiumDiagramGenerator {
      * @param label Label to translate to SLabel element.
      * @param id The ID of the element for which the label should be generated.
      * @param idCache The ID cache of the FTA model.
+     * @param type The type of the label.
      * @returns SLabel element representing {@code label}.
      */
-    protected createNodeLabel(label: string, id: string, idCache: IdCache<AstNode>): SLabel[] {
+    protected createNodeLabel(label: string, id: string, idCache: IdCache<AstNode>, type = "label"): SLabel[] {
         return [
             <SLabel>{
-                type: 'label',
+                type: type,
                 id: idCache.uniqueId(id + "_label"),
                 text: label,
             },
