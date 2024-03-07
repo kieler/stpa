@@ -30,9 +30,10 @@ import {
     SystemConstraint,
     isModel,
     Graph,
+    Rule,
 } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
-import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
+import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
 
 /**
  * Registry for validation checks.
@@ -71,6 +72,8 @@ export class StpaValidator {
 
     /** Boolean option to toggle the check whether all UCAs are covered by safety requirements. */
     checkSafetyRequirementsForUCAs = true;
+
+    checkForConflictingUCAs = true;
 
     /**
      * Executes validation checks for the whole model.
@@ -182,7 +185,20 @@ export class StpaValidator {
         // check for duplicate ActionUCA definition
         this.checkActionUcasForDuplicates(model, accept);
         // check for duplicate rule definition
-        this.checkRulesForDuplicates(model, accept);
+        // group rules by action and system
+        const ruleMap = new Map<string, Rule[]>();
+        for (const rule of model.rules) {
+            const key = rule.system?.ref?.name + "." + rule.action?.ref?.name;
+            if (ruleMap.has(key)) {
+                ruleMap.get(key)?.push(rule);
+            } else {
+                ruleMap.set(key, [rule]);
+            }
+        }
+        this.checkRulesForDuplicates(ruleMap, accept);
+        if (this.checkForConflictingUCAs) {
+            this.checkForConflictingRules(ruleMap, accept);
+        }
     }
 
     /**
@@ -204,28 +220,81 @@ export class StpaValidator {
 
     /**
      * Validates that at most one UCA rule is defined for a control action and type.
-     * @param model The model containing the rules.
+     * @param ruleMap The rules mapped by their control action.
      * @param accept
      */
-    checkRulesForDuplicates(model: Model, accept: ValidationAcceptor): void {
-        const actionTypePairs = new Map<string, string[]>();
-        for (const rule of model.rules) {
-            const action = rule.system?.$refText + "." + rule.action?.$refText;
-            const type = rule.type;
-            if (actionTypePairs.has(action)) {
-                const definedTypes = actionTypePairs.get(action);
-                if (definedTypes?.includes(type)) {
+    checkRulesForDuplicates(ruleMap: Map<string, Rule[]>, accept: ValidationAcceptor): void {
+        for (const rules of ruleMap.values()) {
+            const types = new Set<string>();
+            for (const rule of rules) {
+                if (types.has(rule.type)) {
                     accept("warning", "This UCA type is already covered by another rule for the stated action", {
                         node: rule,
                         property: "type",
                     });
                 } else {
-                    definedTypes?.push(type);
+                    types.add(rule.type);
                 }
-            } else {
-                actionTypePairs.set(action, [type]);
             }
         }
+    }
+
+    /**
+     * Validates that rules for the same control action and type do not conflict.
+     * @param ruleMap The rules mapped by their control action.
+     * @param accept 
+     */
+    protected checkForConflictingRules(ruleMap: Map<string, Rule[]>, accept: ValidationAcceptor): void {
+        for (const rules of ruleMap.values()) {
+            // UCAs can only conflict if one of them is a provided UCA
+            const providedRule = rules.find(rule => rule.type === UCA_TYPE.PROVIDED);
+            if (providedRule) {
+                for (const rule of rules) {
+                    // check the UCAs of type provided against all other UCAs
+                    if (rule.type !== UCA_TYPE.PROVIDED) {
+                        for (const context of rule.contexts) {
+                            for (const otherContext of providedRule.contexts) {
+                                if (this.isSameContext(context, otherContext)) {
+                                    accept("warning", "Conflict with " + providedRule.name + " " + otherContext.name + " detected", {
+                                        node: context,
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks whether the contexts of two rules are the same or whether one of them is a subset of the other.
+     * @param context1 The first context to compare.
+     * @param context2 The second context to compare.
+     * @returns true if the contexts are the same or one of them is a subset of the other, false otherwise.
+     */
+    protected isSameContext(context1: Context, context2: Context): boolean {
+        let isSame = true;
+        // check whether context1 is a subset of context2
+        for (let i = 0; i < context1.vars.length; i++) {
+            const varIndex = context2.vars.findIndex(v => v.$refText === context1.vars[i].$refText);
+            if (varIndex === -1 || context2.values[varIndex] !== context1.values[i]) {
+                isSame = false;
+                break;
+            }
+        }
+        if (!isSame) {
+            isSame = true;
+            // check whether context2 is a subset of context1
+            for (let i = 0; i < context2.vars.length; i++) {
+                const varIndex = context1.vars.findIndex(v => v.$refText === context2.vars[i].$refText);
+                if (varIndex === -1 || context1.values[varIndex] !== context2.values[i]) {
+                    isSame = false;
+                    break;
+                }
+            }
+        }
+        return isSame;
     }
 
     /**
@@ -292,7 +361,7 @@ export class StpaValidator {
     /**
      * Executes validation checks for the control structure.
      * @param graph The control structure to check.
-     * @param accept 
+     * @param accept
      */
     checkControlStructure(graph: Graph, accept: ValidationAcceptor): void {
         const nodes = [...graph.nodes, ...graph.nodes.map(node => this.getChildren(node)).flat(1)];
