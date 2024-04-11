@@ -31,6 +31,8 @@ import {
     isModel,
     Graph,
     Rule,
+    DCARule,
+    DCAContext,
 } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
@@ -199,6 +201,7 @@ export class StpaValidator {
         if (this.checkForConflictingUCAs) {
             this.checkForConflictingRules(ruleMap, accept);
         }
+        this.checkForConflictsBetweenUCAsAndDCAs(model.rules, model.allDCAs, accept);
     }
 
     /**
@@ -242,7 +245,7 @@ export class StpaValidator {
     /**
      * Validates that rules for the same control action and type do not conflict.
      * @param ruleMap The rules mapped by their control action.
-     * @param accept 
+     * @param accept
      */
     protected checkForConflictingRules(ruleMap: Map<string, Rule[]>, accept: ValidationAcceptor): void {
         for (const rules of ruleMap.values()) {
@@ -255,10 +258,42 @@ export class StpaValidator {
                         for (const context of rule.contexts) {
                             for (const otherContext of providedRule.contexts) {
                                 if (this.isSameContext(context, otherContext)) {
-                                    accept("warning", "Conflict with " + providedRule.name + " " + otherContext.name + " detected", {
-                                        node: context,
-                                    });
+                                    accept(
+                                        "warning",
+                                        "Conflict with " + providedRule.name + " " + otherContext.name + " detected",
+                                        {
+                                            node: context,
+                                        }
+                                    );
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Validates that there are no conflicts between UCAs and DCAs.
+     * A DCA is not allowed to have the same type and context as a UCA.
+     * @param ucas The UCAs to check.
+     * @param dcas The DCAs to check.
+     * @param accept
+     */
+    protected checkForConflictsBetweenUCAsAndDCAs(ucas: Rule[], dcas: DCARule[], accept: ValidationAcceptor): void {
+        for (const dca of dcas) {
+            for (const uca of ucas) {
+                // if they have different types, they cannot conflict
+                const ucaType = uca.type === UCA_TYPE.PROVIDED ? UCA_TYPE.PROVIDED : UCA_TYPE.NOT_PROVIDED;
+                if (dca.type === ucaType) {
+                    for (const context of dca.contexts) {
+                        for (const otherContext of uca.contexts) {
+                            // if they have the same type and context, they conflict
+                            if (this.isSameContext(context, otherContext)) {
+                                accept("warning", "Conflict with " + uca.name + " " + otherContext.name + " detected", {
+                                    node: context,
+                                });
                             }
                         }
                     }
@@ -273,7 +308,7 @@ export class StpaValidator {
      * @param context2 The second context to compare.
      * @returns true if the contexts are the same or one of them is a subset of the other, false otherwise.
      */
-    protected isSameContext(context1: Context, context2: Context): boolean {
+    protected isSameContext(context1: Context | DCAContext, context2: Context | DCAContext): boolean {
         let isSame = true;
         // check whether context1 is a subset of context2
         for (let i = 0; i < context1.vars.length; i++) {
