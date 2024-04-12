@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2022-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,174 +15,91 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode } from "langium";
-import {
-    isHazard, isResponsibility, isSystemConstraint, isContConstraint, isSafetyConstraint, isUCA, isLossScenario,
-    isLoss, Hazard, SystemConstraint
-} from "./generated/ast";
-import { STPAAspect } from "./stpa-model";
-import { STPANode } from "./stpa-interfaces";
+import { AstNode, LangiumSharedServices } from "langium";
+import { IdCache, LangiumSprottySharedServices } from "langium-sprotty";
+import { URI } from "vscode-uri";
+import { labelManagementValue } from "./synthesis-options";
+import { SLabel } from 'sprotty-protocol';
 
-/* export function determineLayerForCSNodes(nodes: CSNode[]): void {
-    let layer = nodes.length
-    let sinks: CSNode[] = []
-    while (true) {
-        for (let n of nodes) {
-            let s = true
-            for (let edge of n.outgoingEdges) {
-                if (edge instanceof CSEdge && edge.direction == EdgeDirection.DOWN && edge.target instanceof CSNode && !edge.target.layer) {
-                    s = false
+/**
+ * Determines the model for {@code uri}.
+ * @param uri The URI for which the model is desired.
+ * @param shared The shared services.
+ * @returns the model for the given uri.
+ */
+export async function getModel(
+    uri: string,
+    shared: LangiumSprottySharedServices | LangiumSharedServices
+): Promise<AstNode> {
+    const textDocuments = shared.workspace.LangiumDocuments;
+    const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri));
+    return currentDoc.parseResult.value;
+}
+
+/**
+ * Creates a list of labels containing the given {@code description} respecting the {@code labelManagement} and {@code labelWidth}.
+ * @param description The text for the label to create.
+ * @param labelManagement The label management option.
+ * @param labelWidth The desired width of the label.
+ * @param nodeId The id of the node for which the label is created.
+ * @param idCache The id cache.
+ * @returns a list of labels containing the given {@code description} respecting the {@code labelManagement} and {@code labelWidth}.
+ */
+export function getDescription(
+    description: string,
+    labelManagement: labelManagementValue,
+    labelWidth: number,
+    nodeId: string,
+    idCache: IdCache<AstNode>
+): SLabel[] {
+    const labels: SLabel[] = [];
+    const words = description.split(" ");
+    let current = "";
+    switch (labelManagement) {
+        case labelManagementValue.NO_LABELS:
+            break;
+        case labelManagementValue.ORIGINAL:
+            // show complete description in one line
+            labels.push(<SLabel>{
+                type: "label",
+                id: idCache.uniqueId(nodeId + "_label"),
+                text: description,
+            });
+            break;
+        case labelManagementValue.TRUNCATE:
+            // truncate description to the set value
+            if (words.length > 0) {
+                current = words[0];
+                for (let i = 1; i < words.length && current.length + words[i].length <= labelWidth; i++) {
+                    current += " " + words[i];
+                }
+                labels.push(<SLabel>{
+                    type: "label",
+                    id: idCache.uniqueId(nodeId + "_label"),
+                    text: current + "...",
+                });
+            }
+            break;
+        case labelManagementValue.WRAPPING:
+            // wrap description to the set value
+            const descriptions: string[] = [];
+            for (const word of words) {
+                if (current.length + word.length >= labelWidth) {
+                    descriptions.push(current);
+                    current = word;
+                } else {
+                    current += " " + word;
                 }
             }
-            if (s) {
-                sinks.push(n)
-                break;
+            descriptions.push(current);
+            for (let i = descriptions.length - 1; i >= 0; i--) {
+                labels.push(<SLabel>{
+                    type: "label",
+                    id: idCache.uniqueId(nodeId + "_label"),
+                    text: descriptions[i],
+                });
             }
-        }
-        if (sinks.length == 0) {
             break;
-        }
-
-        for (let s of sinks) {
-            s.layer = layer
-        }
-        layer--
-        sinks = []
     }
-} */
-
-/**
- * Getter for the references contained in {@code node}.
- * @param node The STPAAspect which tracings should be returned.
- * @returns The objects {@code node} is traceable to.
- */
-export function getTargets(node: AstNode, hierarchy: boolean): AstNode[] {
-    if (node) {
-        if (isHazard(node) || isResponsibility(node) || isSystemConstraint(node) || isContConstraint(node)) {
-            const targets: AstNode[] = [];
-            for (const ref of node.refs) {
-                if (ref?.ref) { targets.push(ref.ref); }
-            }
-            // for subcomponents the parents must be declared as targets too, if hierarchy is false
-            if (!hierarchy && ((isHazard(node) && isHazard(node.$container)) || (isSystemConstraint(node) && isSystemConstraint(node.$container)))) {
-                targets.push(node.$container);
-            }
-            return targets;
-        } else if (isSafetyConstraint(node)) {
-            const targets = [];
-            if (node.refs.ref) { targets.push(node.refs.ref); }
-            return targets;
-        } else if (isLossScenario(node) && node.uca && node.uca.ref) {
-            return [node.uca.ref];
-        } else if ((isUCA(node) || isLossScenario(node)) && node.list) {
-            const refs = node.list.refs.map(x => x.ref);
-            const targets = [];
-            for (const ref of refs) {
-                if (ref) { targets.push(ref); }
-            }
-            return targets;
-        } else {
-            return [];
-        }
-    } else {
-        return [];
-    }
+    return labels;
 }
-
-/**
- * Getter for the aspect of a STPA component.
- * @param node AstNode which aspect should determined.
- * @returns the aspect of {@code node}.
- */
-export function getAspect(node: AstNode): STPAAspect {
-    if (isLoss(node)) {
-        return STPAAspect.LOSS;
-    } else if (isHazard(node)) {
-        return STPAAspect.HAZARD;
-    } else if (isSystemConstraint(node)) {
-        return STPAAspect.SYSTEMCONSTRAINT;
-    } else if (isUCA(node)) {
-        return STPAAspect.UCA;
-    } else if (isResponsibility(node)) {
-        return STPAAspect.RESPONSIBILITY;
-    } else if (isContConstraint(node)) {
-        return STPAAspect.CONTROLLERCONSTRAINT;
-    } else if (isLossScenario(node)) {
-        return STPAAspect.SCENARIO;
-    } else if (isSafetyConstraint(node)) {
-        return STPAAspect.SAFETYREQUIREMENT;
-    }
-    return STPAAspect.UNDEFINED;
-}
-
-/**
- * Collects the {@code topElements}, their children, their children's children and so on.
- * @param topElements The top elements that possbible have children.
- * @returns A list with the given {@code topElements} and their descendants.
- */
-export function collectElementsWithSubComps(topElements: (Hazard | SystemConstraint)[]): AstNode[] {
-    let result = topElements;
-    let todo = topElements;
-    for (let i = 0; i < todo.length; i++) {
-        let current = todo[i];
-        if (current.subComps) {
-            result = result.concat(current.subComps);
-            todo = todo.concat(current.subComps);
-        }
-    }
-    return result;
-}
-
-/**
- * Determines the layer {@code node} should be in depending on the STPA aspect it represents.
- * @param node STPANode for which the layer should be determined.
- * @param hazardDepth Maximal depth of the hazard hierarchy.
- * @param sysConsDepth Maximal depth of the system-level constraint hierarchy.
- * @returns The number of the layer {@code node} should be in.
- */
-function determineLayerForSTPANode(node: STPANode, hazardDepth: number, sysConsDepth: number): number {
-    switch (node.aspect) {
-        case STPAAspect.LOSS:
-            return 0;
-        case STPAAspect.HAZARD:
-            return 1 + node.hierarchyLvl;
-        case STPAAspect.SYSTEMCONSTRAINT:
-            return 2 + hazardDepth + node.hierarchyLvl;
-        case STPAAspect.RESPONSIBILITY:
-            return 3 + hazardDepth + sysConsDepth;
-        case STPAAspect.UCA:
-            return 4 + hazardDepth + sysConsDepth;
-        case STPAAspect.CONTROLLERCONSTRAINT:
-            return 5 + hazardDepth + sysConsDepth;
-        case STPAAspect.SCENARIO:
-            return 6 + hazardDepth + sysConsDepth;
-        case STPAAspect.SAFETYREQUIREMENT:
-            return 7 + hazardDepth + sysConsDepth;
-        default:
-            return -1;
-    }
-}
-
-/**
- * Sets the level property for {@code nodes} depending on the layer they should be in.
- * @param nodes The nodes representing the stpa components.
- */
-export function setLevelsForSTPANodes(nodes: STPANode[]): void {
-    // determines the maximal hierarchy depth of hazards and system constraints
-    let maxHazardDepth = -1;
-    let maxSysConsDepth = -1;
-    for (const node of nodes) {
-        if (node.aspect === STPAAspect.HAZARD) {
-            maxHazardDepth = maxHazardDepth > node.hierarchyLvl ? maxHazardDepth : node.hierarchyLvl;
-        }
-        if (node.aspect === STPAAspect.SYSTEMCONSTRAINT) {
-            maxSysConsDepth = maxSysConsDepth > node.hierarchyLvl ? maxSysConsDepth : node.hierarchyLvl;
-        }
-    }
-    // sets level property to the layer of the nodes.
-    for (const node of nodes) {
-        const layer = determineLayerForSTPANode(node, maxHazardDepth, maxSysConsDepth);
-        node.level = -layer;
-    }
-}
-

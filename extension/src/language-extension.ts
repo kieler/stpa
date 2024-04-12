@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,36 +15,27 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import * as path from 'path';
-import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
-import { LspLabelEditActionHandler, WorkspaceEditActionHandler, SprottyLspEditVscodeExtension } from "sprotty-vscode/lib/lsp/editing";
-import { acceptMessageType, SprottyDiagramIdentifier } from 'sprotty-vscode/lib/lsp';
-import { SprottyWebview } from 'sprotty-vscode/lib/sprotty-webview';
-import { ActionMessage, JsonMap } from 'sprotty-protocol';
-import { StpaFormattingEditProvider } from './stpa-formatter';
-import { StpaLspWebview } from './wview';
-import { AddTemplateAction, UpdateViewAction } from './actions';
+import { ActionMessage, JsonMap, SelectAction } from "sprotty-protocol";
+import { createFileUri } from "sprotty-vscode";
+import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
+import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from "sprotty-vscode/lib/lsp";
+import * as vscode from "vscode";
+import { GenerateSVGsAction } from "./actions";
+import { ContextTablePanel } from "./context-table-panel";
+import { StpaFormattingEditProvider } from "./stpa-formatter";
+import { applyTextEdits, collectOptions, createFile } from "./utils";
+import { StpaLspWebview } from "./wview";
 
-export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
+export class StpaLspVscodeExtension extends LspWebviewPanelManager {
+    protected extensionPrefix: string;
 
+    public contextTable: ContextTablePanel;
+    /** Saves the last selected UCA in the context table. */
+    protected lastSelectedUCA: string[];
     clientId: string | undefined;
 
-    constructor(context: vscode.ExtensionContext) {
-        super('stpa', context);
-        let sel: vscode.DocumentSelector = { scheme: 'file', language: 'stpa' };
-        vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
-        this.languageClient.onReady().then(() => {
-            this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
-            this.languageClient.onNotification('config/add', (temps) => this.handleAddToConfig(temps));
-            this.languageClient.onNotification('templates/creationFailed', () => vscode.window.showWarningMessage("Template could not be created."));
-        });
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.templates.add', async (...commandArgs: any) => {
-                this.addTemplate(commandArgs);
-            }));
-    }
-
+    protected resolveLSReady: () => void;
+    readonly lsReady = new Promise<void>((resolve) => (this.resolveLSReady = resolve));
     /**
      * Sends an AddTemplateAction to the language server containing the selected text.
      * @param commandArgs 
@@ -126,81 +117,190 @@ export class StpaLspVscodeExtension extends SprottyLspEditVscodeExtension {
         return undefined;
     }
 
-    createWebView(identifier: SprottyDiagramIdentifier): SprottyWebview {
-        const webview = new StpaLspWebview({
-            extension: this,
-            identifier,
-            localResourceRoots: [
-                this.getExtensionFileUri('pack')
-            ],
-            scriptUri: this.getExtensionFileUri('pack', 'webview.js'),
-            singleton: true // Change this to `true` to enable a singleton view
+    /** needed for undo/redo actions when ID enforcement is active*/
+    ignoreNextTextChange: boolean = false;
+
+    constructor(options: LspWebviewPanelManagerOptions, extensionPrefix: string) {
+        super(options);
+        this.extensionPrefix = extensionPrefix;
+        // user changed configuration settings
+        vscode.workspace.onDidChangeConfiguration(() => {
+            // sends configuration of stpa to the language server
+            this.languageClient.sendNotification(
+                "configuration",
+                collectOptions(vscode.workspace.getConfiguration("pasta"))
+            );
         });
-        webview.addActionHandler(WorkspaceEditActionHandler);
-        webview.addActionHandler(LspLabelEditActionHandler);
+        
+        this.languageClient.onReady().then(() => {
+            this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
+            this.languageClient.onNotification('config/add', (temps) => this.handleAddToConfig(temps));
+            this.languageClient.onNotification('templates/creationFailed', () => vscode.window.showWarningMessage("Template could not be created."));
+        });
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(this.extensionPrefix + '.templates.add', async (...commandArgs: any) => {
+                this.addTemplate(commandArgs);
+            }));
 
-        this.singleton = webview;
-        this.clientId = identifier.clientId;
-        return webview;
-    }
+        // add auto formatting provider
+        const sel: vscode.DocumentSelector = { scheme: "file", language: "stpa" };
+        vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
-    protected activateLanguageClient(context: vscode.ExtensionContext): LanguageClient {
-        const serverModule = context.asAbsolutePath(path.join('pack', 'language-server'));
-        // The debug options for the server
-        // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging.
-        // By setting `process.env.DEBUG_BREAK` to a truthy value, the language server will wait until a debugger is attached.
-        const debugOptions = { execArgv: ['--nolazy', `--inspect${process.env.DEBUG_BREAK ? '-brk' : ''}=${process.env.DEBUG_SOCKET || '6009'}`] };
-
-        // If the extension is launched in debug mode then the debug server options are used
-        // Otherwise the run options are used
-        const serverOptions: ServerOptions = {
-            run: { module: serverModule, transport: TransportKind.ipc },
-            debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
-        };
-
-        const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.stpa');
-        context.subscriptions.push(fileSystemWatcher);
-
-        // Options to control the language client
-        const clientOptions: LanguageClientOptions = {
-            documentSelector: [{ scheme: 'file', language: 'stpa' }],
-            synchronize: {
-                // Notify the server about file changes to files contained in the workspace
-                fileEvents: fileSystemWatcher
+        // handling of notifications regarding the context table
+        options.languageClient.onNotification("contextTable/data", (data) => this.contextTable.setData(data));
+        options.languageClient.onNotification(
+            "editor/highlight",
+            (msg: { startLine: number; startChar: number; endLine: number; endChar: number; uri: string }) => {
+                // highlight and reveal the given range in the editor
+                const editor = vscode.window.visibleTextEditors.find(
+                    (visibleEditor) => visibleEditor.document.uri.toString() === msg.uri
+                );
+                if (editor) {
+                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+                    editor.selection = new vscode.Selection(startPosition, endPosition);
+                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+                }
             }
-        };
-
-        // Create the language client and start the client.
-        const languageClient = new LanguageClient(
-            'stpa',
-            'stpa',
-            serverOptions,
-            clientOptions
         );
 
-        // Start the client. This will also launch the server
-        context.subscriptions.push(languageClient.start());
-        // TODO: should already work automatically. does not work on windows due to representation of path -> '%3A' is used instead of ':' in one of the uris.
-        // diagram is updated when file changes
-        fileSystemWatcher.onDidChange(() => this.sendUpdateView(languageClient));
-        return languageClient;
+        // textdocument has changed
+        vscode.workspace.onDidChangeTextDocument((changeEvent) => {
+            this.handleTextChangeEvent(changeEvent);
+        });
+        // language client sent workspace edits
+        options.languageClient.onNotification("editor/workspaceedit", ({ edits, uri }) => applyTextEdits(edits, uri));
+        // laguage server is ready
+        options.languageClient.onNotification("ready", () => {
+            this.resolveLSReady();
+            // open diagram
+            vscode.commands.executeCommand(
+                this.extensionPrefix + ".diagram.open",
+                vscode.window.activeTextEditor?.document.uri
+            );
+            // sends configuration of stpa to the language server
+            options.languageClient.sendNotification(
+                "configuration",
+                collectOptions(vscode.workspace.getConfiguration("pasta"))
+            );
+        });
+
+        // server sent svg that should be saved
+        this.languageClient.onNotification("svg", ({ uri, svg }) => {
+            createFile(uri, svg);
+        });
     }
 
-    protected sendUpdateView(languageClient: LanguageClient) {
-        if (this.singleton) {
-            const mes: ActionMessage = {
-                clientId: this.singleton?.diagramIdentifier.clientId,
-                action: {
-                    kind: UpdateViewAction.KIND,
-                    options: {
-                        diagramType: this.singleton.diagramIdentifier.diagramType,
-                        needsClientLayout: true,
-                        needsServerLayout: true,
-                        sourceUri: this.singleton.diagramIdentifier.uri
-                    } as JsonMap
-                } as UpdateViewAction
-            };
-            languageClient.sendNotification(acceptMessageType, mes);
+    /**
+     * Notifies the language server that a textdocument has changed.
+     * @param changeEvent The change in the text document.
+     */
+    protected handleTextChangeEvent(changeEvent: vscode.TextDocumentChangeEvent): void {
+        // if the change should be ignored (e.g. for a redo/undo action), the language server is not notified.
+        if (this.ignoreNextTextChange) {
+            this.ignoreNextTextChange = false;
+            return;
+        }
+        // send the changes to the language server
+        const changes = changeEvent.contentChanges;
+        const uri = changeEvent.document.uri.toString();
+        // TODO: ID enforcer for FTA
+        if (uri.endsWith(".stpa")) {
+            this.languageClient.sendNotification("editor/textChange", { changes: changes, uri: uri });
         }
     }
+
+    createContextTable(context: vscode.ExtensionContext): void {
+        const extensionPath = this.options.extensionUri.fsPath;
+        const tablePanel = new ContextTablePanel(
+            "Context-Table",
+            [createFileUri(extensionPath, "pack")],
+            createFileUri(extensionPath, "pack", "context-table-panel.js")
+        );
+        this.contextTable = tablePanel;
+
+        // adds listener for mouse click on a cell
+        context.subscriptions.push(
+            this.contextTable.cellClicked((cell: { rowId: string; columnId: string; text?: string } | undefined) => {
+                if (cell?.text === "No") {
+                    // delete selection in the diagram
+                    this.endpoints[0].sendAction(SelectAction.create({ deselectedElementsIDs: this.lastSelectedUCA }));
+                    this.lastSelectedUCA = [];
+                } else if (cell?.text) {
+                    const texts = cell.text.split(",");
+                    // language server must determine the range of the selected uca in the editor in order to highlight it
+                    // when there are multiple UCAs in the cell only the first one is highlighted in the editor
+                    this.languageClient.sendNotification("contextTable/selected", texts[0]);
+                    // highlight corresponding node in the diagram and maybe deselect the last selected one
+                    this.endpoints[0].sendAction(
+                        SelectAction.create({ selectedElementsIDs: texts, deselectedElementsIDs: this.lastSelectedUCA })
+                    );
+                    this.lastSelectedUCA = texts;
+                }
+            })
+        );
+    }
+
+    protected override createEndpoint(identifier: SprottyDiagramIdentifier): LspWebviewEndpoint {
+        const webviewContainer = this.createWebview(identifier);
+        const participant = this.messenger.registerWebviewPanel(webviewContainer);
+        return new StpaLspWebview({
+            languageClient: this.languageClient,
+            webviewContainer,
+            messenger: this.messenger,
+            messageParticipant: participant,
+            identifier,
+        });
+    }
+
+    /**
+     * Triggers the creation of SVGs for the current model.
+     * @param uri The folder uri where to save the SVGs.
+     * @returns the widths of the resulting SVGs with the SVG name as the key.
+     */
+    async createSVGDiagrams(uri: string): Promise<Record<string, number>> {
+        if (this.endpoints.length !== 0) {
+            const activeWebview = this.endpoints[0];
+            if (activeWebview?.diagramIdentifier) {
+                // create GenerateSVGsAction
+                const mes: ActionMessage = {
+                    clientId: activeWebview.diagramIdentifier.clientId,
+                    action: {
+                        kind: GenerateSVGsAction.KIND,
+                        options: {
+                            diagramType: activeWebview.diagramIdentifier.diagramType,
+                            needsClientLayout: true,
+                            needsServerLayout: true,
+                            sourceUri: activeWebview.diagramIdentifier.uri,
+                        } as JsonMap,
+                        uri: uri,
+                    } as GenerateSVGsAction,
+                };
+                // send request
+                const diagramSize: Record<string, number> = await this.languageClient.sendRequest(
+                    "result/createDiagrams",
+                    mes
+                );
+                return diagramSize;
+            }
+    }
+}
+
+protected sendUpdateView(languageClient: LanguageClient) {
+    if (this.singleton) {
+        const mes: ActionMessage = {
+            clientId: this.singleton?.diagramIdentifier.clientId,
+            action: {
+                kind: UpdateViewAction.KIND,
+                options: {
+                    diagramType: this.singleton.diagramIdentifier.diagramType,
+                    needsClientLayout: true,
+                    needsServerLayout: true,
+                    sourceUri: this.singleton.diagramIdentifier.uri
+                } as JsonMap
+            } as UpdateViewAction
+        };
+        languageClient.sendNotification(acceptMessageType, mes);
+    }
+    return {};
 }

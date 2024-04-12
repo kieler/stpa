@@ -15,9 +15,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 import { ActionHandlerRegistry, IActionHandlerInitializer, ICommand } from "sprotty";
 import { Action } from "sprotty-protocol";
+import { ActionNotification } from 'sprotty-vscode-protocol';
+import { VsCodeMessenger } from "sprotty-vscode-webview/lib/services";
+import { HOST_EXTENSION } from 'vscode-messenger-common';
+import { Messenger } from 'vscode-messenger-webview';
 import { Registry } from "../base/registry";
 import {
     SetSynthesisOptionsAction,
@@ -26,7 +30,6 @@ import {
 import {
     SynthesisOption
 } from "./option-models";
-import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
 
 /**
  * {@link Registry} that stores and manages STPA-DSL options provided by the server.
@@ -36,6 +39,8 @@ import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
  */
 @injectable()
 export class OptionsRegistry extends Registry implements IActionHandlerInitializer {
+
+    @inject(VsCodeMessenger) protected messenger: Messenger;
 
     private _clientId = "";
     private _synthesisOptions: SynthesisOption[] = [];
@@ -81,14 +86,14 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
         this.notifyListeners();
     }
 
-    private handleSetSynthesisOptions(action: SetSynthesisOptionsAction) {
+    private handleSetSynthesisOptions(action: SetSynthesisOptionsAction): void {
         // Optimistic update. Replaces all changed options with the new options
         this._synthesisOptions = this._synthesisOptions.map(
             (option) => action.options.find((newOpt) => newOpt.id === option.id) ?? option
         );
         this.notifyListeners();
 
-        vscodeApi.postMessage({clientId: this._clientId, action: action});
+        this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: this._clientId, action: action});
     }
 
 }

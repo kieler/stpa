@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2021 by
+ * Copyright 2021-2023 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-/** DI Symbols for Services provided by the STPA-DSL DI container. */
+/** DI Symbols for Services provided by the PASTA DI container. */
 export const DISymbol = {
     Sidebar: Symbol("Sidebar"),
     SidebarPanel: Symbol("SidebarPanel"),

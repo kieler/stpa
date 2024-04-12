@@ -1,0 +1,44 @@
+thead,
+td,
+th {
+    border: 1px solid var(--vscode-input-foreground);
+}
+
+table {
+    margin-right: 10px;
+    border-spacing: 0px;
+    border-collapse: separate;
+}
+
+th,
+td {
+    padding: 7px;
+    cursor: pointer;
+}
+
+thead,
+th {
+    position: sticky;
+    background-color: var(--vscode-sideBar-background);
+}
+
+td {
+    text-align: center;
+}
+
+pre {
+    font-family: var(--vscode-font-family);
+}
+
+.contextTable {
+    overflow-y: scroll;
+    height: calc(100vh - 125px);
+}
+
+.contextTable .focused .context-variable {
+    background-color: var(--vscode-inputOption-hoverBackground);
+}
+
+.contextTable tr .selected {
+    background-color: var(--vscode-inputOption-hoverBackground);
+}

@@ -18,19 +18,21 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IActionDispatcher, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { IActionDispatcher, TYPES, html } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { UpdateModelAction } from 'sprotty-protocol';
 import {
     SetRenderOptionAction,
-    SetSynthesisOptionsAction,
+    SetSynthesisOptionsAction
 } from "./actions";
 import {
     CategoryOption,
-    CheckOption, ChoiceOption, RangeOption, SeparatorOption, TextOption,
+    CheckOption, ChoiceOption, DropDownMenuOption, RangeOption, SeparatorOption, TextOption,
 } from "./components/option-inputs";
 import {
     ChoiceRenderOption,
-    RenderOption,
+    DropDownOption,
     RangeOption as RangeOptionData,
+    RenderOption,
     SynthesisOption,
     TransformationOptionType
 } from "./option-models";
@@ -107,6 +109,7 @@ export class OptionsRenderer {
                                 stepSize={(option as RangeOptionData).stepSize}
                                 description={option.description}
                                 onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                                onInput={this.handleSynthesisOptionInput.bind(this, option)}
                             />
                         );
                     case TransformationOptionType.TEXT:
@@ -138,11 +141,31 @@ export class OptionsRenderer {
                                     : this.renderSynthesisOptions(synthesisOptions, option)}
                             </CategoryOption>
                         );
+                    case TransformationOptionType.DROPDOWN:
+                        return (
+                            <DropDownMenuOption
+                                key={option.id}
+                                id={option.id}
+                                currentId={(option as DropDownOption).currentId}
+                                name={option.name}
+                                value={option.currentValue}
+                                availableValues={(option as DropDownOption).availableValues}
+                                description={option.description}
+                                onChange={this.handleSynthesisOptionChange.bind(this, option)}
+                            />
+                        );
                     default:
                         console.error("Unsupported option type for option:", option.name);
                         return "";
                 }
             });
+    }
+
+    /** Handler for synthesis options onInput, e.g. while a slider is being dragged. */
+    private handleSynthesisOptionInput(option: SynthesisOption, newValue: any) {
+        this.actionDispatcher.dispatch(
+            SetSynthesisOptionsAction.create([{ ...option, currentValue: newValue }])
+        );
     }
 
     private handleSynthesisOptionChange(option: SynthesisOption, newValue: any) {
@@ -177,7 +200,20 @@ export class OptionsRenderer {
                             value={option.currentValue}
                             description={option.description}
                             onChange={this.handleRenderOptionChange.bind(this, option)}
-                            availableValues = {(option as ChoiceRenderOption).availableValues}
+                            availableValues={(option as ChoiceRenderOption).availableValues}
+                        />
+                    );
+                case TransformationOptionType.DROPDOWN:
+                    return (
+                        <DropDownMenuOption
+                            key={option.id}
+                            id={option.id}
+                            currentId={(option as DropDownOption).currentId}
+                            name={option.name}
+                            value={option.currentValue}
+                            availableValues={(option as DropDownOption).availableValues}
+                            description={option.description}
+                            onChange={this.setCurrentValueOnChange.bind(this, option)}
                         />
                     );
                 default:
@@ -189,5 +225,10 @@ export class OptionsRenderer {
 
     private handleRenderOptionChange(option: RenderOption, newValue: any) {
         this.actionDispatcher.dispatch(SetRenderOptionAction.create(option.id, newValue));
+    }
+
+    private setCurrentValueOnChange(option: RenderOption, newValue: any): void {
+        option.currentValue = { displayName: newValue, id: newValue };
+        this.actionDispatcher.dispatch(UpdateModelAction.create([], { animate: false }));
     }
 }

@@ -17,7 +17,7 @@
 
 import { injectable, multiInject, optional } from "inversify";
 import { ICommand } from "sprotty";
-import { Action } from "sprotty-protocol"
+import { Action } from "sprotty-protocol";
 import { Registry } from "../base/registry";
 import { DISymbol } from "../di.symbols";
 import { ToggleSidebarPanelAction } from "./actions";
@@ -46,8 +46,8 @@ export class SidebarPanelRegistry extends Registry {
     handle(action: Action): void | Action | ICommand {
         if (ToggleSidebarPanelAction.isThisAction(action)) {
             // Nothing to do if the panel should be shown/hidden and is already active/inactive.
-            if (this._currentPanelID === action.id && action.state === "show") return;
-            if (this._currentPanelID !== action.id && action.state === "hide") return;
+            if (this._currentPanelID === action.id && action.state === "show") {return;}
+            if (this._currentPanelID !== action.id && action.state === "hide") {return;}
 
             if (this._currentPanelID === action.id) {
                 // Panel is active so it should either be hidden explicitly or toggled to be hidden

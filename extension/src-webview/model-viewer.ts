@@ -19,7 +19,7 @@ import { inject, postConstruct } from "inversify";
 import { ModelViewer } from "sprotty";
 import { DISymbol } from "./di.symbols";
 
-export class StpaModelViewer extends ModelViewer {
+export class PastaModelViewer extends ModelViewer {
     // @ts-ignore
     @inject(DISymbol.Sidebar) private sidebar: unknown;
 

@@ -15,13 +15,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { injectable, postConstruct } from "inversify";
+import { inject, injectable, postConstruct } from "inversify";
 import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
+import { ActionNotification } from 'sprotty-vscode-protocol';
+import { VsCodeMessenger } from "sprotty-vscode-webview/lib/services";
+import { HOST_EXTENSION } from 'vscode-messenger-common';
+import { Messenger } from 'vscode-messenger-webview';
 import { Registry } from "../base/registry";
 import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
-import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
 
 /**
  * Diffrent options for the color style of the relationship graph.
@@ -50,32 +53,6 @@ export class DifferentFormsOption implements RenderOption {
     currentValue = false;
 }
 
-/**
- * Boolean option to enable and disable the visualization of the control structure.
- */
-export class ShowCSOption implements RenderOption {
-    static readonly ID: string = 'show-cs';
-    static readonly NAME: string = 'Show Control Structure';
-    readonly id: string = ShowCSOption.ID;
-    readonly name: string = ShowCSOption.NAME;
-    readonly type: TransformationOptionType = TransformationOptionType.CHECK;
-    readonly initialValue: boolean = true;
-    currentValue = true;
-}
-
-/**
- * Boolean option to enable and disable the visualization of the relationship graph.
- */
-export class ShowRelationshipGraphOption implements RenderOption {
-    static readonly ID: string = 'show-relations';
-    static readonly NAME: string = 'Show Relationship Graph';
-    readonly id: string = ShowRelationshipGraphOption.ID;
-    readonly name: string = ShowRelationshipGraphOption.NAME;
-    readonly type: TransformationOptionType = TransformationOptionType.CHECK;
-    readonly initialValue: boolean = true;
-    currentValue = true;
-}
-
 export interface RenderOptionType {
     readonly ID: string,
     readonly NAME: string,
@@ -91,21 +68,18 @@ export interface RenderOptionDefault extends RenderOptionType {
 export class RenderOptionsRegistry extends Registry {
     private _renderOptions: Map<string, RenderOption> = new Map();
 
+    @inject(VsCodeMessenger) protected messenger: Messenger;
 
     constructor() {
         super();
         // Add available render options to this registry
         this.register(DifferentFormsOption);
         this.register(ColorStyleOption);
-
-        this.register(ShowCSOption);
-        this.register(ShowRelationshipGraphOption);
-
-        vscodeApi.postMessage({ optionRegistryReadyMessage: "Option Registry ready" });
     }
 
     @postConstruct()
     init(): void {
+        this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: "", action: {kind: "optionRegistryReadyMessage"}});
     }
 
     register(Option: RenderOptionType): void {
@@ -115,12 +89,10 @@ export class RenderOptionsRegistry extends Registry {
     handle(action: Action): void | Action | ICommand {
         if (SetRenderOptionAction.isThisAction(action)) {
             const option = this._renderOptions.get(action.id);
-
-            if (!option) return;
-
+            if (!option) {return;}
             option.currentValue = action.value;
             const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
-            vscodeApi.postMessage({ action: sendAction });
+            this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: "", action: sendAction});
             this.notifyListeners();
 
         } else if (ResetRenderOptionsAction.isThisAction(action)) {
@@ -132,11 +104,11 @@ export class RenderOptionsRegistry extends Registry {
         } else if (SendConfigAction.isThisAction(action)) {
             action.options.forEach(element => {
                 const option = this._renderOptions.get(element.id);
-                if (!option) return;
+                if (!option) {return;}
                 option.currentValue = element.value;
             });
             this.notifyListeners();
-        }
+        } 
         return UpdateModelAction.create([], { animate: false, cause: action });
     }
 

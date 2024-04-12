@@ -20,22 +20,22 @@ import { SynthesisOption, ValuedSynthesisOption } from "./option-models";
 
 /** Request message from the server to update the diagram options widget on the client. */
 export interface UpdateOptionsAction extends Action {
-    kind: typeof UpdateOptionsAction.KIND;
-    valuedSynthesisOptions: ValuedSynthesisOption[];
-    clientId: string;
+    kind: typeof UpdateOptionsAction.KIND
+    valuedSynthesisOptions?: ValuedSynthesisOption[]
+    clientId: string
 }
 
 export namespace UpdateOptionsAction {
     export const KIND = "updateOptions";
 
     export function create(
-        valuedSynthesisOptions: ValuedSynthesisOption[],
         clientId: string,
+        valuedSynthesisOptions?: ValuedSynthesisOption[],
     ): UpdateOptionsAction {
         return {
             kind: KIND,
-            valuedSynthesisOptions,
             clientId,
+            valuedSynthesisOptions,
         };
     }
 

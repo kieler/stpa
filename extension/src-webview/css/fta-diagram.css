@@ -1,0 +1,67 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2023 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+ 
+@import "./theme.css";
+
+.vscode-dark .fta-node {
+    fill: var(--dark-node);
+    stroke: var(--light-node);
+    stroke-width: 2;
+}
+
+.vscode-dark .fta-edge {
+    stroke: var(--light-node);
+}
+
+.vscode-light .fta-node {
+    fill: var(--light-node);
+    stroke: black;
+    stroke-width: 2;
+}
+
+.vscode-light .fta-edge {
+    stroke: black;
+}
+
+.fta-text{
+    fill: dimgrey;
+    stroke-width: 0;
+    font-size: 10px;
+    cursor: default;
+}
+
+.fta-highlight-node{
+    stroke: var(--highlight-node);
+}
+
+.gate-description {
+    stroke: none;
+    fill: darkgrey;
+    fill-opacity: 20%;
+}
+
+.vertical-edge {
+    stroke: lightgray;
+}
+
+.description-border {
+    stroke: dimgray;
+}
+
+.top-event {
+    stroke: dodgerblue;
+}

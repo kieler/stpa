@@ -1,11 +1,18 @@
 {
-    "projectName": "Stpa",
+    "projectName": "Pasta",
     "languages": [{
         "id": "stpa",
-        "grammar": "src-language-server/stpa.langium",
+        "grammar": "src-language-server/stpa/stpa.langium",
         "fileExtensions": [".stpa"],
         "textMate": {
             "out": "syntaxes/stpa.tmLanguage.json"
+        }
+    },{
+        "id": "fta" ,
+        "grammar": "src-language-server/fta/fta.langium",
+        "fileExtensions": [".fta"],
+        "textMate": {
+            "out": "syntaxes/fta.tmLanguage.json"
         }
     }],
     "out": "src-language-server/generated"

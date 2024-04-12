@@ -63,6 +63,7 @@ export enum TransformationOptionType {
     TEXT = 3,
     SEPARATOR = 4,
     CATEGORY = 5,
+    DROPDOWN = 6
 }
 
 /**
@@ -79,4 +80,12 @@ export enum TransformationOptionType {
 export interface Pair<K, V> {
     k: K
     v: V
+}
+
+/**
+ * A SynthesisOption with the DROPDOWN type.
+ */
+export interface DropDownOption extends SynthesisOption {
+    currentId: string
+    availableValues: { displayName: string; id: string }[];
 }

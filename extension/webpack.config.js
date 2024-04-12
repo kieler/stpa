@@ -6,7 +6,8 @@ const path = require('path');
 /**@type {import('webpack').Configuration}*/
 const commonConfig = {
     target: 'node',
-    devtool: 'source-map',
+    mode: "none", // Leave source code as close as possible. Only set to production during distribution.
+    devtool: 'nosources-source-map',
     externals: {
         vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded
     },
@@ -26,7 +27,8 @@ const commonConfig = {
                 use: ['source-map-loader'],
             }
         ]
-    }
+    },
+    ignoreWarnings: [/Failed to parse source map/]
 }
 
 /**@type {import('webpack').Configuration}*/
@@ -51,9 +53,11 @@ const lsConfig = {
     },
 };
 
+
 /**@type {import('webpack').Configuration}*/
 const commonWebConfig = {
     target: 'web',
+    mode: "none", // Leave source code as close as possible. Only set to production during distribution.
     devtool: 'eval-source-map',
     resolve: {
         extensions: ['.ts', '.tsx', '.js']
@@ -85,6 +89,17 @@ const commonWebConfig = {
                 }
             },
         ]
+    },
+    ignoreWarnings: [/Failed to parse source map/]
+};
+
+/**@type {import('webpack').Configuration}*/
+const diagramWebviewConfig = {
+    ...commonWebConfig,
+    entry: path.resolve(__dirname, 'src-webview/main.ts'),
+    output: {
+		filename: 'webview.js',
+        path: path.resolve(__dirname, 'pack'),
     }
 }
 
@@ -99,6 +114,18 @@ const webviewConfig = {
 };
 
 /**@type {import('webpack').Configuration}*/
+const contextTableConfig = {
+    ...commonWebConfig,
+    entry: path.resolve(__dirname, 'src-context-table/main.ts'),
+    output: {
+		filename: 'context-table-panel.js',
+        path: path.resolve(__dirname, 'pack')
+    },
+
+    externals: {vscode: "commonjs vscode"}
+};
+
+/**@type {import('webpack').Configuration}*/
 const snippetConfig = {
     ...commonWebConfig,
     entry: path.resolve(__dirname, 'src-diagram-snippets/main.ts'),
@@ -108,5 +135,4 @@ const snippetConfig = {
     }
 };
 
-
-module.exports = [vscodeConfig, lsConfig, webviewConfig, snippetConfig];
+module.exports = [vscodeConfig, lsConfig, webviewConfig, contextTableConfig, snippetConfig];

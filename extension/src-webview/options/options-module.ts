@@ -18,12 +18,12 @@
 import { ContainerModule } from "inversify";
 import { configureActionHandler, TYPES } from "sprotty";
 import { DISymbol } from "../di.symbols";
-import { SetRenderOptionAction, ResetRenderOptionsAction, SendConfigAction } from "./actions";
-import { OptionsRenderer } from "./options-renderer";
+import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
 import { GeneralPanel } from "./general-panel";
-import { RenderOptionsRegistry } from "./render-options-registry";
-import { OptionsRegistry } from "./options-registry";
 import { OptionsPanel } from "./options-panel";
+import { OptionsRegistry } from "./options-registry";
+import { OptionsRenderer } from "./options-renderer";
+import { RenderOptionsRegistry } from "./render-options-registry";
 import { TemplateRenderer } from "../template/template-renderer";
 import { TemplateRegistry } from "../template/template-registry";
 

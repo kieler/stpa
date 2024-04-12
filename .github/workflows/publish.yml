@@ -1,0 +1,47 @@
+# Workflow that publishes the VS Code extension to the VS Marketplace and
+# Open VSX, and attaches assets to the new release.
+
+name: publish
+
+on:
+    workflow_dispatch:
+    release:
+        types: [published]
+
+jobs:
+    distribute:
+        name: "Distribute VSCode extension"
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: "14.x"
+                  registry-url: 'https://registry.npmjs.org'
+                  scope: '@kieler'
+            - run: yarn
+            - run: yarn distribute
+              env:
+                  VSCE_PAT: ${{ secrets.VSCE_PAT }}
+                  OVSX_PAT: ${{ secrets.OVSX_PAT }}
+    release-assets:
+        name: "Add assets to release"
+        runs-on: ubuntu-latest
+
+        # Github has no official action for this. Uses: https://github.com/JasonEtco/upload-to-release
+        # Uploads each CLI asset separately to create more targeted download options
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: "14.x"
+            - run: yarn
+            - run: yarn package
+
+            - name: Upload VSIX
+              uses: JasonEtco/upload-to-release@master
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  args: ./extension/pasta.vsix application/octet-stream
