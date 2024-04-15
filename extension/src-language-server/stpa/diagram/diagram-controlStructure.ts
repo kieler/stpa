@@ -16,9 +16,9 @@
  */
 
 import { AstNode } from "langium";
-import { GeneratorContext, IdCache } from "langium-sprotty";
+import { IdCache } from "langium-sprotty";
 import { SModelElement, SNode } from "sprotty-protocol";
-import { Command, Graph, Model, Node, Variable, VerticalEdge } from "../../generated/ast";
+import { Command, Graph, Node, Variable, VerticalEdge } from "../../generated/ast";
 import { createControlStructureEdge, createDummyNode, createLabel, createPort } from "./diagram-elements";
 import { CSEdge, CSNode, ParentNode } from "./stpa-interfaces";
 import {
@@ -47,17 +47,17 @@ export function createControlStructure(
     controlStructure: Graph,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): ParentNode {
     // set the level of the nodes in the control structure automatically
     setLevelOfCSNodes(controlStructure.nodes);
     // determine the nodes of the control structure graph
-    const csNodes = controlStructure.nodes.map(n => createControlStructureNode(n, idToSNode, options, args));
+    const csNodes = controlStructure.nodes.map(n => createControlStructureNode(n, idToSNode, options, idCache));
     // children (nodes and edges) of the control structure
     const CSChildren = [
         ...csNodes,
-        ...generateVerticalCSEdges(controlStructure.nodes, idToSNode, args),
-        //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, args)
+        ...generateVerticalCSEdges(controlStructure.nodes, idToSNode, idCache),
+        //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, idCache)
     ];
     // sort the ports in order to group edges based on the nodes they are connected to
     sortPorts(CSChildren.filter(node => node.type.startsWith("node")) as CSNode[]);
@@ -80,9 +80,8 @@ export function createControlStructureNode(
     node: Node,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): CSNode {
-    const idCache = args.idCache;
     const label = node.label ? node.label : node.name;
     const nodeId = idCache.uniqueId(node.name, node);
     const children: SModelElement[] = createLabel([label], nodeId, idCache);
@@ -107,7 +106,7 @@ export function createControlStructureNode(
         };
         // create the actual children
         node.children?.forEach(child => {
-            invisibleNode.children?.push(createControlStructureNode(child, idToSNode, options, args));
+            invisibleNode.children?.push(createControlStructureNode(child, idToSNode, options, idCache));
         });
         children.push(invisibleNode);
     }
@@ -185,21 +184,21 @@ export function createProcessModelNodes(variables: Variable[], idCache: IdCache<
 export function generateVerticalCSEdges(
     nodes: Node[],
     idToSNode: Map<string, SNode>,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): (CSNode | CSEdge)[] {
     const edges: (CSNode | CSEdge)[] = [];
     // for every control action and feedback of every a node, a edge should be created
     for (const node of nodes) {
         // create edges representing the control actions
-        edges.push(...translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, idToSNode, args));
+        edges.push(...translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, idToSNode, idCache));
         // create edges representing feedback
-        edges.push(...translateCommandsToEdges(node.feedbacks, EdgeType.FEEDBACK, idToSNode, args));
+        edges.push(...translateCommandsToEdges(node.feedbacks, EdgeType.FEEDBACK, idToSNode, idCache));
         // create edges representing the other inputs
-        edges.push(...translateIOToEdgeAndNode(node.inputs, node, EdgeType.INPUT, idToSNode, args));
+        edges.push(...translateIOToEdgeAndNode(node.inputs, node, EdgeType.INPUT, idToSNode, idCache));
         // create edges representing the other outputs
-        edges.push(...translateIOToEdgeAndNode(node.outputs, node, EdgeType.OUTPUT, idToSNode, args));
+        edges.push(...translateIOToEdgeAndNode(node.outputs, node, EdgeType.OUTPUT, idToSNode, idCache));
         // create edges for children and add the ones that must be added at the top level
-        edges.push(...generateVerticalCSEdges(node.children, idToSNode, args));
+        edges.push(...generateVerticalCSEdges(node.children, idToSNode, idCache));
     }
     return edges;
 }
@@ -215,9 +214,8 @@ export function translateCommandsToEdges(
     commands: VerticalEdge[],
     edgeType: EdgeType,
     idToSNode: Map<string, SNode>,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): CSEdge[] {
-    const idCache = args.idCache;
     const edges: CSEdge[] = [];
     for (const edge of commands) {
         // create edge id
@@ -244,7 +242,7 @@ export function translateCommandsToEdges(
                 edgeId,
                 edgeType,
                 idToSNode,
-                args,
+                idCache,
                 commonAncestor
             );
             // add edge between the two ports in the common ancestor
@@ -256,7 +254,7 @@ export function translateCommandsToEdges(
                 edgeType,
                 // if the common ancestor is the parent of the target we want an edge with an arrow otherwise an intermediate edge
                 target.$container === commonAncestor ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
-                args
+                idCache
             );
             if (commonAncestor?.$type === "Graph") {
                 // if the common ancestor is the graph, the edge must be added at the top level and hence have to be returned
@@ -286,10 +284,9 @@ export function translateIOToEdgeAndNode(
     node: Node,
     edgetype: EdgeType,
     idToSNode: Map<string, SNode>,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): (CSNode | CSEdge)[] {
     if (io.length !== 0) {
-        const idCache = args.idCache;
         const nodeId = idCache.getId(node);
 
         // create the label of the edge
@@ -316,7 +313,7 @@ export function translateIOToEdgeAndNode(
                     label,
                     edgetype,
                     CS_EDGE_TYPE,
-                    args
+                    idCache
                 );
                 graphComponents = [inputEdge, inputDummyNode];
                 break;
@@ -335,7 +332,7 @@ export function translateIOToEdgeAndNode(
                     label,
                     edgetype,
                     CS_EDGE_TYPE,
-                    args
+                    idCache
                 );
                 graphComponents = [outputEdge, outputDummyNode];
                 break;
@@ -370,7 +367,7 @@ export function generateIntermediateCSEdges(
     edgeId: string,
     edgeType: EdgeType,
     idToSNode: Map<string, SNode>,
-    args: GeneratorContext<Model>,
+    idCache: IdCache<AstNode>,
     ancestor?: Node | Graph
 ): { sourcePort: string; targetPort: string } {
     const assocEdge = { node1: source?.name ?? "", node2: target?.name ?? "" };
@@ -381,7 +378,7 @@ export function generateIntermediateCSEdges(
         edgeId,
         edgeType === EdgeType.CONTROL_ACTION ? PortSide.SOUTH : PortSide.NORTH,
         idToSNode,
-        args.idCache,
+        idCache,
         ancestor
     );
     const targets = generatePortsForCSHierarchy(
@@ -390,7 +387,7 @@ export function generateIntermediateCSEdges(
         edgeId,
         edgeType === EdgeType.CONTROL_ACTION ? PortSide.NORTH : PortSide.SOUTH,
         idToSNode,
-        args.idCache,
+        idCache,
         ancestor
     );
     // add edges between the ports of the source and its ancestors
@@ -398,13 +395,13 @@ export function generateIntermediateCSEdges(
         const sEdgeType = CS_INTERMEDIATE_EDGE_TYPE;
         sources.nodes[i + 1]?.children?.push(
             createControlStructureEdge(
-                args.idCache.uniqueId(edgeId),
+                idCache.uniqueId(edgeId),
                 sources.portIds[i],
                 sources.portIds[i + 1],
                 [],
                 edgeType,
                 sEdgeType,
-                args,
+                idCache,
                 false
             )
         );
@@ -414,13 +411,13 @@ export function generateIntermediateCSEdges(
         const sEdgeType = i === 0 ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE;
         targets.nodes[i + 1]?.children?.push(
             createControlStructureEdge(
-                args.idCache.uniqueId(edgeId),
+                idCache.uniqueId(edgeId),
                 targets.portIds[i + 1],
                 targets.portIds[i],
                 [],
                 edgeType,
                 sEdgeType,
-                args,
+                idCache,
                 false
             )
         );

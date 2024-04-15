@@ -16,7 +16,7 @@
  */
 
 import * as path from "path";
-import { registerDefaultCommands } from "sprotty-vscode";
+import { createFileUri, registerDefaultCommands } from "sprotty-vscode";
 import { LspSprottyEditorProvider, LspSprottyViewProvider } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
@@ -28,6 +28,7 @@ import { StpaResult } from "./report/utils";
 import { createSBMs } from "./sbm/sbm-generation";
 import { LTLFormula } from "./sbm/utils";
 import { createFile, createOutputChannel, createQuickPickForWorkspaceOptions } from "./utils";
+import { TemplateWebview } from './template-webview';
 
 let languageClient: LanguageClient;
 
@@ -45,32 +46,6 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!["panel", "editor", "view"].includes(diagramMode)) {
         throw new Error("The environment variable 'DIAGRAM_MODE' must be set to 'panel', 'editor' or 'view'.");
     }
-
-    const provider: vscode.WebviewViewProvider = {
-        resolveWebviewView: function (webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
-            const tWebview = new TemplateWebview(
-                "templates",
-                extension,
-                [
-                    extension.getExtensionFileUri('pack')
-                ],
-                extension.getExtensionFileUri('pack', 'tempWebview.js'),
-            );
-            tWebview.webview = webviewView.webview;
-            tWebview.webview.options = {
-                enableScripts: true
-            };
-            const title = tWebview.createTitle();
-            webviewView.title = title;
-            tWebview.initializeWebview(webviewView.webview, title);
-            tWebview.connect();
-
-            extension.languageClient.onReady().then(() => {
-                extension.languageClient.onNotification('templates/add', (msg) => tWebview.sendToWebview(msg));
-            });
-        }
-    };
-    vscode.window.registerWebviewViewProvider("stpa-templates", provider);
 
     languageClient = createLanguageClient(context);
     // Create context key of supported languages
@@ -92,7 +67,11 @@ export function activate(context: vscode.ExtensionContext): void {
         registerTextEditorSync(webviewPanelManager, context);
         registerSTPACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
         registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
+
+        registerTemplateWebview(webviewPanelManager, context);
+        
     }
+    
 
     if (diagramMode === "editor") {
         // Set up webview editor associated with file type
@@ -268,7 +247,7 @@ function registerFTACommands(
                     uri: uri.path,
                     startId,
                 });
-                await manager.openDiagram(uri);
+                await manager.openDiagram(uri, {preserveFocus: true});
                 handleCutSets(cutSets, false);
             }
         )
@@ -281,7 +260,7 @@ function registerFTACommands(
                     uri: uri.path,
                     startId,
                 });
-                await manager.openDiagram(uri);
+                await manager.openDiagram(uri, {preserveFocus: true});
                 handleCutSets(minimalCutSets, true);
             }
         )
@@ -350,7 +329,7 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
                 if (currentCursorPosition) {
                     await languageClient.sendNotification("editor/save", document.offsetAt(currentCursorPosition));
                 }
-                manager.openDiagram(document.uri);
+                manager.openDiagram(document.uri, {preserveFocus: true});
                 if (manager.contextTable) {
                     languageClient.sendNotification("contextTable/getData", document.uri.toString());
                 }
@@ -358,3 +337,35 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
         })
     );
 }
+function registerTemplateWebview(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
+    const provider: vscode.WebviewViewProvider = {
+        resolveWebviewView: function (webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
+            const tWebview = new TemplateWebview(
+                "templates",
+                manager,
+                createFileUri(manager.options.extensionUri.fsPath, 'pack', 'tempWebview.js')
+            );
+            tWebview.webview = webviewView.webview;
+            tWebview.webview.options = {
+                enableScripts: true
+            };
+            const title = tWebview.createTitle();
+            webviewView.title = title;
+            tWebview.initializeWebview(webviewView.webview, title);
+            tWebview.connect();
+
+            // await webviewPanelManager.lsReady;
+            languageClient.onNotification('templates/add', (msg: any) => tWebview.sendToWebview(msg));
+            languageClient.onNotification('editor/add', manager.handleWorkSpaceEdit.bind(this));
+            languageClient.onNotification('config/add', (temps: string[]) => manager.handleAddToConfig(temps));
+            languageClient.onNotification('templates/creationFailed', () => vscode.window.showWarningMessage("Template could not be created."));
+        }
+    };
+    vscode.window.registerWebviewViewProvider("stpa-templates", provider);
+    context.subscriptions.push(
+        vscode.commands.registerCommand("pasta" + '.templates.add', async (...commandArgs: any) => {
+        const uri = (commandArgs[0] as vscode.Uri);
+            manager.addTemplate(uri);
+        }));
+}
+

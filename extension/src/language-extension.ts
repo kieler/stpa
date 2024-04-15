@@ -18,9 +18,9 @@
 import { ActionMessage, JsonMap, SelectAction } from "sprotty-protocol";
 import { createFileUri } from "sprotty-vscode";
 import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
-import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from "sprotty-vscode/lib/lsp";
+import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions, acceptMessageType } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
-import { GenerateSVGsAction } from "./actions";
+import { AddTemplateAction, GenerateSVGsAction } from "./actions";
 import { ContextTablePanel } from "./context-table-panel";
 import { StpaFormattingEditProvider } from "./stpa-formatter";
 import { applyTextEdits, collectOptions, createFile } from "./utils";
@@ -40,13 +40,13 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
      * Sends an AddTemplateAction to the language server containing the selected text.
      * @param commandArgs 
      */
-    protected async addTemplate(commandArgs: any[]) {
+    async addTemplate(uri: vscode.Uri): Promise<void> {
         const activeEditor = vscode.window.activeTextEditor;
         const sel = activeEditor?.selection;
         const doc = activeEditor?.document;
         if (doc && sel) {
             if (!this.clientId) {
-                const identifier = await this.createDiagramIdentifier(commandArgs);
+                const identifier = await this.createDiagramIdentifier(uri);
                 this.clientId = identifier?.clientId;
             }
             const text = doc.getText().substring(doc.offsetAt(sel.start), doc.offsetAt(sel?.end));
@@ -65,7 +65,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
      * Adds the {@code temps} to the templates in the config file.
      * @param temps Text of templates.
      */
-    protected handleAddToConfig(temps: string[]) {
+    handleAddToConfig(temps: string[]): void {
         const configTemps = vscode.workspace.getConfiguration('stpa').get('templates');
         const newTemps = (configTemps as string[]).concat(temps);
         vscode.workspace.getConfiguration('stpa').update('templates', newTemps);
@@ -75,7 +75,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
      * Handle WorkSpaceEdit notifications form the langauge server
      * @param msg Message contianing the uri of the document, the text to insert, and the position in the document ot insert it to.
      */
-    protected async handleWorkSpaceEdit(msg: { uri: string, text: string, position: vscode.Position; }) {
+    async handleWorkSpaceEdit(msg: { uri: string, text: string, position: vscode.Position; }): Promise<void> {
         const textDocument = vscode.workspace.textDocuments.find(
             (doc) => doc.uri.toString() === vscode.Uri.parse(msg.uri).toString()
         );
@@ -109,20 +109,13 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         return;
     }
 
-    protected getDiagramType(commandArgs: any[]): string | undefined {
-        if (commandArgs.length === 0
-            || commandArgs[0] instanceof vscode.Uri && commandArgs[0].path.endsWith('.stpa')) {
-            return 'stpa-diagram';
-        }
-        return undefined;
-    }
-
     /** needed for undo/redo actions when ID enforcement is active*/
     ignoreNextTextChange: boolean = false;
 
     constructor(options: LspWebviewPanelManagerOptions, extensionPrefix: string) {
         super(options);
         this.extensionPrefix = extensionPrefix;
+
         // user changed configuration settings
         vscode.workspace.onDidChangeConfiguration(() => {
             // sends configuration of stpa to the language server
@@ -131,16 +124,6 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
                 collectOptions(vscode.workspace.getConfiguration("pasta"))
             );
         });
-        
-        this.languageClient.onReady().then(() => {
-            this.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
-            this.languageClient.onNotification('config/add', (temps) => this.handleAddToConfig(temps));
-            this.languageClient.onNotification('templates/creationFailed', () => vscode.window.showWarningMessage("Template could not be created."));
-        });
-        this.context.subscriptions.push(
-            vscode.commands.registerCommand(this.extensionPrefix + '.templates.add', async (...commandArgs: any) => {
-                this.addTemplate(commandArgs);
-            }));
 
         // add auto formatting provider
         const sel: vscode.DocumentSelector = { scheme: "file", language: "stpa" };
@@ -283,24 +266,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
                 );
                 return diagramSize;
             }
+        }
+        return {};
     }
-}
-
-protected sendUpdateView(languageClient: LanguageClient) {
-    if (this.singleton) {
-        const mes: ActionMessage = {
-            clientId: this.singleton?.diagramIdentifier.clientId,
-            action: {
-                kind: UpdateViewAction.KIND,
-                options: {
-                    diagramType: this.singleton.diagramIdentifier.diagramType,
-                    needsClientLayout: true,
-                    needsServerLayout: true,
-                    sourceUri: this.singleton.diagramIdentifier.uri
-                } as JsonMap
-            } as UpdateViewAction
-        };
-        languageClient.sendNotification(acceptMessageType, mes);
-    }
-    return {};
 }

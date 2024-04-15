@@ -18,19 +18,13 @@
 /** @jsx svg */
 import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
-import { IView, IViewArgs, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SLabel, SLabelView, SNode, SPort, svg, toDegrees } from 'sprotty';
+import { IView, IViewArgs, IActionDispatcher, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SLabel, SLabelView, SNode, SPort, svg, toDegrees, ModelRenderer, TYPES } from 'sprotty';
 import { DISymbol } from '../di.symbols';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
-import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
-import { Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SNode, svg, SPort, toDegrees, SGraphView, SGraph, TYPES, IActionDispatcher, ModelRenderer } from 'sprotty';
-import { injectable } from 'inversify';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE } from './stpa-model';
-import { renderCircle, renderDiamond, renderHexagon, renderMirroredTriangle, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from './views-rendering';
-import { inject } from 'inversify';
 import { collectAllChildren } from './helper-methods';
-import { DISymbol } from './di.symbols';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from './options/render-options-registry';
-import { SendModelRendererAction } from './template/actions';
+import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from '../options/render-options-registry';
+import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE, CSEdge, CS_INTERMEDIATE_EDGE_TYPE, EdgeType, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
+import { SendModelRendererAction } from '../template/actions';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
@@ -249,10 +243,12 @@ export class InvisibleNodeView extends RectangularNodeView {
 @injectable()
 export class STPAGraphView extends SGraphView {
 
+    @inject(TYPES.IActionDispatcher) private actionDispatcher: IActionDispatcher;
+
     render(model: Readonly<SGraph>, context: RenderingContext): VNode {
         // to render the template panel the modelrenderer and the canvasbounds are needed
         this.actionDispatcher.dispatch(SendModelRendererAction.create(context as ModelRenderer, model.canvasBounds));
-        let allNodes: SNode[] = [];
+        const allNodes: SNode[] = [];
         collectAllChildren(model.children as SNode[], allNodes);
         highlighting = allNodes.find(node => {
             return node instanceof STPANode && node.highlight;

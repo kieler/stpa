@@ -23,8 +23,9 @@ import { createControlStructure } from "./diagram-controlStructure";
 import { createRelationshipGraph } from "./diagram-relationshipGraph";
 import { filterModel } from "./filtering";
 import { StpaSynthesisOptions } from "./stpa-synthesis-options";
-import { LangiumParser, documentFromText, ParseResult, AstNode } from 'langium';
-import { TextDocument, CancellationToken } from 'vscode-languageserver';
+import { LangiumParser, ParseResult, AstNode, LangiumDocumentFactory } from 'langium';
+import { CancellationToken } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { StpaDocumentBuilder } from '../../stpa-document-builder';
 import { LanguageTemplate } from '../../templates/template-model';
 
@@ -32,6 +33,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
     protected readonly options: StpaSynthesisOptions;
     protected readonly parser: LangiumParser;
     protected readonly docBuilder: StpaDocumentBuilder;
+    protected readonly docFactory: LangiumDocumentFactory;
     protected readonly languageId: string;
 
     /** Saves the Ids of the generated SNodes */
@@ -44,6 +46,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         this.options = services.options.SynthesisOptions;
         this.parser = services.parser.LangiumParser;
         this.docBuilder = services.shared.workspace.DocumentBuilder as StpaDocumentBuilder;
+        this.docFactory = services.shared.workspace.LangiumDocumentFactory as LangiumDocumentFactory;
         this.languageId = services.LanguageMetaData.languageId;
     }
     /**
@@ -70,7 +73,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * @param template The template that should be parsed.
      * @returns The AST for {@code template}.
      */
-     protected async getTempalteAST(template: LanguageTemplate) {
+     protected async getTempalteAST(template: LanguageTemplate): Promise<Model | undefined> {
         // in order for the cross-references to be correctly evaluated, a document must be build
         const uri = 'file:///template.stpa';
         const textDocument = TextDocument.create(uri, this.languageId, 0, template.baseCode ?? '');
@@ -78,8 +81,9 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         if (parseResult.parserErrors.length > 0) {
             return undefined;
         }
-        const doc = documentFromText<Model>(textDocument, parseResult);
-        await this.docBuilder.buildDocuments([doc], CancellationToken.None);
+        // const doc = documentFromText<Model>(textDocument, parseResult);
+        const doc = this.docFactory.fromTextDocument<Model>(textDocument);
+        await this.docBuilder.buildDocuments([doc], {validationChecks: 'none'}, CancellationToken.None);
 
         return doc.parseResult.value;
     }
@@ -88,14 +92,14 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
      * Deletes the dangling edges in {@code template}.
      * @param template The template which edges should be inspected.
      */
-    async deleteDanglingEdges(template: LanguageTemplate) {
+    async deleteDanglingEdges(template: LanguageTemplate): Promise<void> {
         const model = await this.getTempalteAST(template);
         if (model) {
-            const nodes = model.controlStructure.nodes;
+            const nodes = model.controlStructure?.nodes;
             const nodeIDs = new Set<string>();
-            nodes.forEach(node => nodeIDs.add(node.name));
+            nodes?.forEach(node => nodeIDs.add(node.name));
             const danglingNodes = new Set<string>();
-            for (const node of nodes) {
+            for (const node of nodes ?? []) {
                 node.actions.filter(action => {
                     if (!nodeIDs.has(action.target.$refText)) {
                         danglingNodes.add(action.target.$refText);
@@ -111,7 +115,7 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
                     return true;
                 });
             }
-            danglingNodes.forEach((node, test) => {
+            danglingNodes.forEach((node) => {
                 const newString = template.baseCode.replace(/->( )*/, "-> ");
                 const endIndex = newString.indexOf("-> " + node) + 3 + node.length;
                 const startIndex = newString.substring(0, endIndex).lastIndexOf('[');
@@ -149,11 +153,11 @@ export class StpaDiagramGenerator extends LangiumDiagramGenerator {
         if (filteredModel.controlStructure) {
             // add control structure to roots children
             rootChildren.push(
-                createControlStructure(filteredModel.controlStructure, this.idToSNode, this.options, args)
+                createControlStructure(filteredModel.controlStructure, this.idToSNode, this.options, this.idCache)
             );
         }
         // add relationship graph to roots children
-        rootChildren.push(createRelationshipGraph(filteredModel, model, this.idToSNode, this.options, args));
+        rootChildren.push(createRelationshipGraph(filteredModel, model, this.idToSNode, this.options, this.idCache));
         // return root
         return {
             type: "graph",

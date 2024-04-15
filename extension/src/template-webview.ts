@@ -27,7 +27,6 @@ export class TemplateWebview {
 
     readonly extension: StpaLspVscodeExtension;
     readonly identifier: string;
-    readonly localResourceRoots: vscode.Uri[];
     readonly scriptUri: vscode.Uri;
     webview: vscode.Webview;
 
@@ -36,10 +35,9 @@ export class TemplateWebview {
     private resolveWebviewReady: () => void;
     private readonly webviewReady = new Promise<void>((resolve) => this.resolveWebviewReady = resolve);
 
-    constructor(identifier: string, extension: StpaLspVscodeExtension, localResourceRoots: vscode.Uri[], scriptUri: vscode.Uri) {
+    constructor(identifier: string, extension: StpaLspVscodeExtension, scriptUri: vscode.Uri) {
         this.extension = extension;
         this.identifier = identifier;
-        this.localResourceRoots = localResourceRoots;
         this.scriptUri = scriptUri;
     }
 
@@ -51,7 +49,7 @@ export class TemplateWebview {
         return this.identifier;
     }
 
-    async initializeWebview(webview: vscode.Webview, title?: string) {
+    async initializeWebview(webview: vscode.Webview, title?: string): Promise<void> {
         webview.html = `
             <!DOCTYPE html>
             <html lang="en">
@@ -75,7 +73,7 @@ export class TemplateWebview {
     /**
      * Registers listeners.
      */
-    async connect() {
+    async connect(): Promise<void> {
         this.disposables.push(this.webview.onDidReceiveMessage(message => this.receiveFromWebview(message)));
         /* this.disposables.push(vscode.window.onDidChangeActiveTextEditor(async editor => {
             if (editor) {
@@ -88,7 +86,7 @@ export class TemplateWebview {
     /**
      * Sends identifier to the webview.
      */
-    protected async sendDiagramIdentifier() {
+    protected async sendDiagramIdentifier(): Promise<void> {
         await this.ready();
         this.sendToWebview({ identifier: this.identifier });
     }
@@ -97,7 +95,7 @@ export class TemplateWebview {
      * Handles messages from the webview.
      * @param message The message received from the webview.
      */
-    protected async receiveFromWebview(message: any) {
+    protected async receiveFromWebview(message: any): Promise<void> {
         console.log("Received from template webview");
         if (message.readyMessage) {
             this.resolveWebviewReady();
@@ -123,7 +121,7 @@ export class TemplateWebview {
         }
     }
 
-    sendToWebview(message: any) {
+    sendToWebview(message: any): void {
         this.webview.postMessage(message);
     }
 

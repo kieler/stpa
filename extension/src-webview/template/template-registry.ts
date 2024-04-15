@@ -18,21 +18,24 @@
 import { inject, injectable } from "inversify";
 import { ActionHandlerRegistry, IActionHandlerInitializer, ICommand } from "sprotty";
 import { Action } from "sprotty-protocol";
+import { ActionNotification } from "sprotty-vscode-protocol";
+import { VsCodeMessenger } from "sprotty-vscode-webview/lib/services";
+import { HOST_EXTENSION } from "vscode-messenger-common";
+import { Messenger } from "vscode-messenger-webview";
 import { Registry } from "../base/registry";
 import { DISymbol } from "../di.symbols";
-import { SendModelRendererAction, RequestWebviewTemplatesAction, SendWebviewTemplatesAction } from "./actions";
+import { RequestWebviewTemplatesAction, SendModelRendererAction, SendWebviewTemplatesAction } from "./actions";
 import { TemplateRenderer } from "./template-renderer";
-import { vscodeApi } from 'sprotty-vscode-webview/lib/vscode-api';
 
 /**
  * {@link Registry} that stores and manages templates provided by the server.
  *
- * Acts as an action handler that handles UpdateTemplateActions. 
+ * Acts as an action handler that handles UpdateTemplateActions.
  */
 @injectable()
 export class TemplateRegistry extends Registry implements IActionHandlerInitializer {
     readonly position = -10;
-
+    @inject(VsCodeMessenger) protected messenger: Messenger;
     @inject(DISymbol.TemplateRenderer) private templateRenderer: TemplateRenderer;
 
     initialize(registry: ActionHandlerRegistry): void {
@@ -53,14 +56,16 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
         const response: SendWebviewTemplatesAction = {
             kind: SendWebviewTemplatesAction.KIND,
             templates: temps,
-            responseId: action.requestId
+            responseId: action.requestId,
         };
-        vscodeApi.postMessage({clientId: action.clientId, action: response});
+        this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {
+            clientId: action.clientId,
+            action: response,
+        });
     }
 
-    private handleSendModelRenderer(action: SendModelRendererAction) {
+    private handleSendModelRenderer(action: SendModelRendererAction): void {
         this.templateRenderer.setRenderer((action as SendModelRendererAction).renderer);
         this.templateRenderer.setBounds((action as SendModelRendererAction).bounds);
     }
-
 }

@@ -54,10 +54,12 @@ import {
     setSystemConstraintGraphOptions,
 } from "./stpa/result-report/svg-generator";
 import { SynthesisOptions } from "./synthesis-options";
+import { StpaTemplates } from './stpa-templates';
+import { LanguageTemplate } from './templates/template-model';
 
 export class PastaDiagramServer extends DiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;
-    protected stpaTemps: StpaTemplates;
+    protected stpaTemps: StpaTemplates | undefined;
     clientId: string;
     protected connection: Connection | undefined;
 
@@ -67,7 +69,7 @@ export class PastaDiagramServer extends DiagramServer {
         clientId: string,
         connection: Connection | undefined,
         synthesisOptions?: SynthesisOptions, 
-        stpaTemps: StpaTemplates
+        stpaTemps?: StpaTemplates
     ) {
         super(dispatch, services);
         this.stpaTemps = stpaTemps;
@@ -96,8 +98,8 @@ export class PastaDiagramServer extends DiagramServer {
         return super.handleAction(action);
     }
 
-    protected createTempFromString(text: string): LanguageTemplate {
-        return this.stpaTemps.createTemp(text);
+    protected createTempFromString(text: string): LanguageTemplate | undefined {
+        return this.stpaTemps?.createTemp(text);
     }
 
     /**
