@@ -32,7 +32,7 @@ export class Starter {
         vscode.postMessage({ readyMessage: 'Template Webview ready' });
         console.log('Waiting for diagram identifier...');
         // add listener for messages
-        const eventListener = (message: any) => {
+        const eventListener = (message: any): void => {
             this.handleMessages(message);
         };
         window.addEventListener('message', eventListener);
@@ -64,7 +64,7 @@ export class Starter {
     /**
      * Sends the text in the input field as a AddTemplateAction to the extension.
      */
-    protected addTemplate() {
+    protected addTemplate(): void {
         const text = document.getElementById(txtID);
         if (text) {
             const value = (text as HTMLInputElement).value;
@@ -80,7 +80,7 @@ export class Starter {
      * Handles incoming messages from the extension.
      * @param message The received Message.
      */
-    protected handleMessages(message: any) {
+    protected handleMessages(message: any): void {
         if (message.data.identifier) {
             this.initHtml(message.data.identifier);
         } else if (message.data.templates) {
@@ -94,7 +94,7 @@ export class Starter {
      * Adds the {@code templates} to the webview.
      * @param templates The Templates that should be shown.
      */
-    protected handleTemplates(templates: VNode[]) {
+    protected handleTemplates(templates: VNode[]): void {
         createTemps(templates);
     }
 }

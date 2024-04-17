@@ -17,16 +17,16 @@
 
 import {
     Action,
-    DiagramServer,
     DiagramServices,
     JsonMap,
     RequestAction,
     RequestModelAction,
-    ResponseAction,
+    ResponseAction
 } from "sprotty-protocol";
 import { Connection } from "vscode-languageserver";
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions";
 import { DropDownOption } from "./options/option-models";
+import { StpaTemplates } from './stpa-templates';
 import { GenerateSVGsAction, RequestSvgAction, SvgAction } from "./stpa/actions";
 import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/stpa-synthesis-options";
 import {
@@ -54,9 +54,8 @@ import {
     setSystemConstraintGraphOptions,
 } from "./stpa/result-report/svg-generator";
 import { SynthesisOptions } from "./synthesis-options";
-import { StpaTemplates } from './stpa-templates';
-import { LanguageTemplate } from './templates/template-model';
 import { TemplateDiagramServer } from './templates/template-diagram-server';
+import { LanguageTemplate } from './templates/template-model';
 
 export class PastaDiagramServer extends TemplateDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;

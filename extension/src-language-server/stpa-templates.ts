@@ -38,7 +38,7 @@ export class StpaTemplates {
      * Creates the default templates.
      * @returns A list with the default templates.
      */
-    protected generateDefaultTemplates() {
+    protected generateDefaultTemplates(): LanguageTemplate[] {
         return [
             new SimpleCSTemplate(this.langiumDocuments, "T0"),
             new SimpleCSWithAcsTemplate(this.langiumDocuments, "T1"),
@@ -48,13 +48,13 @@ export class StpaTemplates {
         ];
     }
 
-    createTemp(text: string) {
+    createTemp(text: string): LanguageTemplate {
         // TODO: currently only control structure
         this.customTempsNumber++;
         return new CustomCSTemplate(this.langiumDocuments, text, 'CS' + this.customTempsNumber, text);
     }
 
-    getTemplates() {
+    getTemplates(): LanguageTemplate[] {
         return this.templates;
     }
 
@@ -98,10 +98,10 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
  * @param id The id to append.
  * @returns The modified text.
  */
-function addNodeIDs(text: string, id: string) {
+function addNodeIDs(text: string, id: string): string {
     const splits = text.split(/[^a-zA-Z0-9\{\}]/);
     // collect node names
-    const names = [];
+    const names: string[] = [];
     for (let i = 3; i < splits.length; i++) {
         if (splits[i] === '{' && !isKeyWord(splits[i - 1])) {
             names.push(splits[i - 1]);
@@ -116,7 +116,7 @@ function addNodeIDs(text: string, id: string) {
     return text;
 }
 
-function isKeyWord(text: string) {
+function isKeyWord(text: string): boolean {
     return text === 'hierarchyLevel' || text === 'label' || text === 'processModel' || text === 'controlActions' || text === 'feedback';
 }
 
@@ -138,7 +138,7 @@ export class CustomCSTemplate implements LanguageTemplate {
     /**
      * Check whether the CS caption and graph name exists. If not, adds it.
      */
-    protected checkCaption() {
+    protected checkCaption(): void {
         const splits = this.baseCode.split(/[^a-zA-Z0-9\{\}]/);
         const words = splits.filter(child => child !== "");
         if (words[0] !== 'ControlStructure') {

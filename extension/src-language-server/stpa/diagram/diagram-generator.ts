@@ -15,21 +15,21 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { GeneratorContext, IdCache, IdCacheImpl, LangiumDiagramGenerator } from "langium-sprotty";
+import { AstNode, LangiumDocumentFactory, LangiumParser, ParseResult } from 'langium';
+import { GeneratorContext, IdCache, IdCacheImpl } from "langium-sprotty";
 import { SModelElement, SModelRoot, SNode } from "sprotty-protocol";
+import { CancellationToken } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { Model } from "../../generated/ast";
+import { StpaDocumentBuilder } from '../../stpa-document-builder';
+import { LanguageTemplate, TemplateGraphGenerator } from '../../templates/template-model';
 import { StpaServices } from "../stpa-module";
 import { createControlStructure } from "./diagram-controlStructure";
 import { createRelationshipGraph } from "./diagram-relationshipGraph";
 import { filterModel } from "./filtering";
 import { StpaSynthesisOptions } from "./stpa-synthesis-options";
-import { LangiumParser, ParseResult, AstNode, LangiumDocumentFactory } from 'langium';
-import { CancellationToken } from 'vscode-languageserver';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { StpaDocumentBuilder } from '../../stpa-document-builder';
-import { LanguageTemplate } from '../../templates/template-model';
 
-export class StpaDiagramGenerator extends LangiumDiagramGenerator {
+export class StpaDiagramGenerator extends TemplateGraphGenerator {
     protected readonly options: StpaSynthesisOptions;
     protected readonly parser: LangiumParser;
     protected readonly docBuilder: StpaDocumentBuilder;

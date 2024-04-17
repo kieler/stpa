@@ -31,6 +31,7 @@
         "dist",
         "**/*.d.ts",
         "webpack.config.js",
-        "pack"
+        "pack",
+        "**/generated/"
     ]
 }

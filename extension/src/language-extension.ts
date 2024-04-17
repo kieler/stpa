@@ -97,7 +97,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
             return;
         }
 
-        let activeEditor = vscode.window.activeTextEditor;
+        const activeEditor = vscode.window.activeTextEditor;
         if (activeEditor) {
             // TODO: endPos is not completly correct. maybe \n must be counted too?
             const endPos = textDocument.positionAt(textDocument.offsetAt(pos) + msg.text.length);

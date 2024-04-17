@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { VNodeData, JsxVNodeChildren, JsxVNodeChild, jsx, FunctionComponent } from "snabbdom";
+import { VNodeData, JsxVNodeChildren, JsxVNodeChild, jsx, FunctionComponent, VNode } from "snabbdom";
 
 
 declare global {
@@ -30,7 +30,7 @@ declare global {
 const modulesNS = ['hook', 'on', 'style', 'class', 'props', 'attrs', 'dataset'];
 const SVGNS = 'http://www.w3.org/2000/svg';
 
-function normalizeAttrs(source: VNodeData | null, defNS: string, namespace?: string) {
+function normalizeAttrs(source: VNodeData | null, defNS: string, namespace?: string): VNodeData {
   const data: VNodeData = {};
 
   if (namespace) {
@@ -46,16 +46,16 @@ function normalizeAttrs(source: VNodeData | null, defNS: string, namespace?: str
     }
   });
   Object.keys(source).forEach(key => {
-    if (key === 'key' || key === 'classNames' || key === 'selector') return;
+    if (key === 'key' || key === 'classNames' || key === 'selector') {return;}
     const idx = key.indexOf('-');
     if (idx > 0)
-      addAttr(key.slice(0, idx), key.slice(idx + 1), source[key]);
+      {addAttr(key.slice(0, idx), key.slice(idx + 1), source[key]);}
     else if (!data[key])
-      addAttr(defNS, key, source[key]);
+      {addAttr(defNS, key, source[key]);}
   });
   return data;
 
-  function addAttr(modname: string, key: string, val: JsxVNodeChildren) {
+  function addAttr(modname: string, key: string, val: JsxVNodeChildren): void {
     const mod = data[modname] || (data[modname] = {});
     mod[key] = val;
   }
@@ -63,7 +63,7 @@ function normalizeAttrs(source: VNodeData | null, defNS: string, namespace?: str
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function JSX(namespace?: string, defNS: string = 'props') {
-  return (tag: FunctionComponent | string, attrs: VNodeData | null, ...children: JsxVNodeChild[]) => jsx(tag, normalizeAttrs(attrs, defNS, namespace), children);
+  return (tag: FunctionComponent | string, attrs: VNodeData | null, ...children: JsxVNodeChild[]) : VNode => jsx(tag, normalizeAttrs(attrs, defNS, namespace), children);
 }
 
 const html = JSX();

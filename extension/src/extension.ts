@@ -339,7 +339,7 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
 }
 function registerTemplateWebview(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     const provider: vscode.WebviewViewProvider = {
-        resolveWebviewView: function (webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext<unknown>, token: vscode.CancellationToken): void | Thenable<void> {
+        resolveWebviewView: function (webviewView: vscode.WebviewView, _context: vscode.WebviewViewResolveContext<unknown>, _token: vscode.CancellationToken): void | Thenable<void> {
             const tWebview = new TemplateWebview(
                 "templates",
                 manager,
