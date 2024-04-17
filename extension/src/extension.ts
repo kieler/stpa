@@ -353,12 +353,7 @@ function registerTemplateWebview(manager: StpaLspVscodeExtension, context: vscod
             webviewView.title = title;
             tWebview.initializeWebview(webviewView.webview, title);
             tWebview.connect();
-
-            // await webviewPanelManager.lsReady;
             languageClient.onNotification('templates/add', (msg: any) => tWebview.sendToWebview(msg));
-            languageClient.onNotification('editor/add', manager.handleWorkSpaceEdit.bind(this));
-            languageClient.onNotification('config/add', (temps: string[]) => manager.handleAddToConfig(temps));
-            languageClient.onNotification('templates/creationFailed', () => vscode.window.showWarningMessage("Template could not be created."));
         }
     };
     vscode.window.registerWebviewViewProvider("stpa-templates", provider);

@@ -56,22 +56,24 @@ import {
 import { SynthesisOptions } from "./synthesis-options";
 import { StpaTemplates } from './stpa-templates';
 import { LanguageTemplate } from './templates/template-model';
+import { TemplateDiagramServer } from './templates/template-diagram-server';
 
-export class PastaDiagramServer extends DiagramServer {
+export class PastaDiagramServer extends TemplateDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;
     protected stpaTemps: StpaTemplates | undefined;
-    clientId: string;
+    // clientId: string;
     protected connection: Connection | undefined;
 
     constructor(
         dispatch: <A extends Action>(action: A) => Promise<void>,
         services: DiagramServices,
-        clientId: string,
+        clientId: string, 
+        options: JsonMap | undefined,
         connection: Connection | undefined,
         synthesisOptions?: SynthesisOptions, 
         stpaTemps?: StpaTemplates
     ) {
-        super(dispatch, services);
+        super(dispatch, services, clientId, stpaTemps?.getTemplates() ?? [], options, connection);
         this.stpaTemps = stpaTemps;
         this.synthesisOptions = synthesisOptions;
         this.clientId = clientId;
@@ -98,8 +100,8 @@ export class PastaDiagramServer extends DiagramServer {
         return super.handleAction(action);
     }
 
-    protected createTempFromString(text: string): LanguageTemplate | undefined {
-        return this.stpaTemps?.createTemp(text);
+    protected createTempFromString(text: string): LanguageTemplate {
+        return this.stpaTemps?.createTemp(text) ?? {} as LanguageTemplate;
     }
 
     /**

@@ -81,9 +81,10 @@ const pastaDiagramServerFactory = (
             },
             language.diagram,
             clientId,
+            options,
             connection,
             language.options.SynthesisOptions, 
-            // language instanceof StpaServices ? language.templates.StpaTemplates
+            language.templates.StpaTemplates
         );
     };
 };

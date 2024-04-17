@@ -30,6 +30,7 @@ import { FtaLayoutConfigurator } from "./diagram/fta-layout-config";
 import { FtaSynthesisOptions } from "./diagram/fta-synthesis-options";
 import { FtaScopeProvider } from "./fta-scopeProvider";
 import { FtaValidationRegistry, FtaValidator } from "./fta-validator";
+import { StpaTemplates } from '../stpa-templates';
 
 /**
  * Declaration of custom services.
@@ -48,6 +49,9 @@ export type FtaAddedServices = {
     };
     options: {
         SynthesisOptions: FtaSynthesisOptions;
+    };
+    templates: {
+        StpaTemplates: StpaTemplates;
     };
 };
 
@@ -88,4 +92,7 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
     options: {
         SynthesisOptions: () => new FtaSynthesisOptions(),
     },
+    templates: {
+        StpaTemplates: services => new StpaTemplates(services)
+    }
 };

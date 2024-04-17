@@ -129,6 +129,12 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         const sel: vscode.DocumentSelector = { scheme: "file", language: "stpa" };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
+        // handling notifications regarding the templates
+        options.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
+        options.languageClient.onNotification('config/add', (temps: string[]) => this.handleAddToConfig(temps));
+        options.languageClient.onNotification('templates/creationFailed', () => vscode.window.showWarningMessage("Template could not be created."));
+           
+
         // handling of notifications regarding the context table
         options.languageClient.onNotification("contextTable/data", (data) => this.contextTable.setData(data));
         options.languageClient.onNotification(
@@ -227,6 +233,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     protected override createEndpoint(identifier: SprottyDiagramIdentifier): LspWebviewEndpoint {
         const webviewContainer = this.createWebview(identifier);
         const participant = this.messenger.registerWebviewPanel(webviewContainer);
+        this.clientId = identifier.clientId;
         return new StpaLspWebview({
             languageClient: this.languageClient,
             webviewContainer,

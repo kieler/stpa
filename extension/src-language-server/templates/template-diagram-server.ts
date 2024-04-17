@@ -44,7 +44,7 @@ export abstract class TemplateDiagramServer extends DiagramServer {
     /**
      * Returns the templates that should be send to the webview for rendering.
      */
-    protected async getTemplates() {
+    protected async getTemplates(): Promise<WebviewTemplate[]> {
         const webviewTemplates: WebviewTemplate[] = [];
         for (const template of this.templates) {
             let graph = await this.templateGraphGenerator.generateTemplateRoot(template);
@@ -86,7 +86,7 @@ export abstract class TemplateDiagramServer extends DiagramServer {
      * @param action Action containing the text to create a template.
      * @returns 
      */
-    protected async handleAddTemplate(action: AddTemplateAction) {
+    protected async handleAddTemplate(action: AddTemplateAction): Promise<void> {
         const temp = this.createTempFromString(action.text);
         if (await this.parseable(temp)) {
             this.templateGraphGenerator.deleteDanglingEdges(temp);
@@ -98,8 +98,8 @@ export abstract class TemplateDiagramServer extends DiagramServer {
         return Promise.resolve();
     }
 
-    protected async parseable(template: LanguageTemplate) {
-        let graph = await this.templateGraphGenerator.generateTemplateRoot(template);
+    protected async parseable(template: LanguageTemplate): Promise<boolean> {
+        const graph = await this.templateGraphGenerator.generateTemplateRoot(template);
         if (graph) {
             return true;
         } else {
@@ -112,7 +112,7 @@ export abstract class TemplateDiagramServer extends DiagramServer {
      * @param action Action containing the template texts.
      * @returns 
      */
-    protected handleSendTemplates(action: SendTemplatesAction) {
+    protected handleSendTemplates(action: SendTemplatesAction): Promise<void> {
         // if no templates are in the config file, add the default ones
         if (action.temps.length === 0) {
             this.templates = this.defaultTemps;
@@ -126,12 +126,12 @@ export abstract class TemplateDiagramServer extends DiagramServer {
 
     protected abstract createTempFromString(text: string): LanguageTemplate;
 
-    addTemplates(temps: LanguageTemplate[]) {
+    addTemplates(temps: LanguageTemplate[]): void {
         this.templates.push(...temps);
         this.update();
     }
 
-    async update() {
+    async update(): Promise<void> {
         const temps = await this.getTemplates();
         // send the avaiable templates to the client
         const response = await this.request<SendWebviewTemplatesAction>({ kind: RequestWebviewTemplatesAction.KIND, templates: temps, clientId: this.clientId } as RequestWebviewTemplatesAction);
