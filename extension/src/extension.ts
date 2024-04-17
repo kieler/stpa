@@ -356,9 +356,9 @@ function registerTemplateWebview(manager: StpaLspVscodeExtension, context: vscod
             languageClient.onNotification('templates/add', (msg: any) => tWebview.sendToWebview(msg));
         }
     };
-    vscode.window.registerWebviewViewProvider("stpa-templates", provider);
+    vscode.window.registerWebviewViewProvider("stpa-snippets", provider);
     context.subscriptions.push(
-        vscode.commands.registerCommand("pasta" + '.stpa.templates.add', async (...commandArgs: any) => {
+        vscode.commands.registerCommand("pasta" + '.stpa.snippets.add', async (...commandArgs: any) => {
         const uri = (commandArgs[0] as vscode.Uri);
             manager.addTemplate(uri);
         }));

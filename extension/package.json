@@ -97,10 +97,10 @@
                     "default": true,
                     "description": "Check whether all UCAs are covered by safety requirements"
                 },
-                "stpa.templates": {
+                "pasta.stpa.snippets": {
                     "type": "string[]",
                     "default": [],
-                    "description": "Templates for STPA"
+                    "description": "Diagram snippets for STPA"
                 }
             }
         },
@@ -193,9 +193,9 @@
                 "category": "Cut Sets"
             },
             {
-                "command": "pasta.stpa.templates.add",
+                "command": "pasta.stpa.snippets.add",
                 "title": "Add STPA Template",
-                "category": "STPA Templates"
+                "category": "STPA Snippets"
             }
         ],
         "menus": {
@@ -257,7 +257,7 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.stpa.templates.add",
+                    "command": "pasta.stpa.snippets.add",
                     "when": "editorLangId == 'stpa'"
                 },
                 {
@@ -304,7 +304,7 @@
                     "group": "stpa"
                 },
                 {
-                    "command": "pasta.stpa.templates.add",
+                    "command": "pasta.stpa.snippets.add",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }
@@ -419,18 +419,18 @@
         "viewsContainers": {
             "activitybar": [
               {
-                "id": "stpa",
-                "title": "STPA",
+                "id": "pasta",
+                "title": "PASTA",
                 "icon": "./icon.png"
               }
             ]
           },
           "views": {
-            "stpa": [
+            "pasta": [
               {
                 "type": "webview",
-                "id": "stpa-templates",
-                "name": "STPA Templates"
+                "id": "stpa-snippets",
+                "name": "STPA Snippets"
               }
             ]
           }

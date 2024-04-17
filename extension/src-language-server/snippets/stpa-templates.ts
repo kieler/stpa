@@ -16,57 +16,57 @@
  */
 
 import { Position } from 'vscode-languageserver';
-import { LanguageTemplate } from './templates/template-model';
+import { LanguageSnippet } from './snippet-model';
 import { LangiumDocuments, LangiumServices } from 'langium';
 import { URI } from 'vscode-uri';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-export class StpaTemplates {
+export class StpaDiagramSnippets {
 
     protected readonly langiumDocuments: LangiumDocuments;
-    protected defaultTemplates: LanguageTemplate[];
-    protected templates: LanguageTemplate[];
+    protected defaultSnippets: LanguageSnippet[];
+    protected snippets: LanguageSnippet[];
     protected customTempsNumber: number = 0;
 
     constructor(services: LangiumServices) {
         this.langiumDocuments = services.shared.workspace.LangiumDocuments;
-        this.defaultTemplates = this.generateDefaultTemplates();
-        this.templates = this.defaultTemplates;
+        this.defaultSnippets = this.generateDefaultSnippets();
+        this.snippets = this.defaultSnippets;
     }
 
     /**
-     * Creates the default templates.
-     * @returns A list with the default templates.
+     * Creates the default snippets.
+     * @returns A list with the default snippets.
      */
-    protected generateDefaultTemplates(): LanguageTemplate[] {
+    protected generateDefaultSnippets(): LanguageSnippet[] {
         return [
-            new SimpleCSTemplate(this.langiumDocuments, "T0"),
-            new SimpleCSWithAcsTemplate(this.langiumDocuments, "T1"),
-            new ConsControllersTemplate(this.langiumDocuments, "T3"),
-            new ParallelContsTemplate(this.langiumDocuments, "T4"),
-            new ConsContsWithLoopTemplate(this.langiumDocuments, "T5")
+            new SimpleCSSnippet(this.langiumDocuments, "T0"),
+            new SimpleCSWithAcsSnippet(this.langiumDocuments, "T1"),
+            new ConsControllersSnippet(this.langiumDocuments, "T3"),
+            new ParallelContsSnippet(this.langiumDocuments, "T4"),
+            new ConsContsWithLoopSnippet(this.langiumDocuments, "T5")
         ];
     }
 
-    createTemp(text: string): LanguageTemplate {
+    createTemp(text: string): LanguageSnippet {
         // TODO: currently only control structure
         this.customTempsNumber++;
-        return new CustomCSTemplate(this.langiumDocuments, text, 'CS' + this.customTempsNumber, text);
+        return new CustomCSSnippet(this.langiumDocuments, text, 'CS' + this.customTempsNumber, text);
     }
 
-    getTemplates(): LanguageTemplate[] {
-        return this.templates;
+    getSnippets(): LanguageSnippet[] {
+        return this.snippets;
     }
 
 }
 
 /**
- * Calculates the actual text of templates for the control structure and theri position in the document.
- * @param document The document in which the template should be inserted.
- * @param template The template that should be inserted.
+ * Calculates the actual text of snippets for the control structure and theri position in the document.
+ * @param document The document in which the snippet should be inserted.
+ * @param snippet The snippet that should be inserted.
  * @returns The position where the tempalte should be added to the {@code document}.
  */
-function getPositionForCSTemplate(document: TextDocument, template: LanguageTemplate): Position {
+function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippet): Position {
     const docText = document.getText();
 
     // determine range of already existing definition of control structure
@@ -77,14 +77,14 @@ function getPositionForCSTemplate(document: TextDocument, template: LanguageTemp
     if (titleIndex === -1) {
         return document.positionAt(endIndex);
     } else {
-        template.insertText = template.insertText.substring(18, template.insertText.length);
+        snippet.insertText = snippet.insertText.substring(18, snippet.insertText.length);
         // check whether a graph ID already exist
         const csText = docText.substring(startIndex, endIndex);
         const graphIndex = csText.indexOf('{');
         if (graphIndex === -1) {
             return document.positionAt(endIndex);
         } else {
-            template.insertText = template.insertText.substring(template.insertText.indexOf('{') + 1, template.insertText.lastIndexOf('}'));
+            snippet.insertText = snippet.insertText.substring(snippet.insertText.indexOf('{') + 1, snippet.insertText.lastIndexOf('}'));
             const bracketIndex = csText.lastIndexOf('}');
             return document.positionAt(titleIndex + bracketIndex - 1);
         }
@@ -120,7 +120,7 @@ function isKeyWord(text: string): boolean {
     return text === 'hierarchyLevel' || text === 'label' || text === 'processModel' || text === 'controlActions' || text === 'feedback';
 }
 
-export class CustomCSTemplate implements LanguageTemplate {
+export class CustomCSSnippet implements LanguageSnippet {
     insertText: string;
     documents: LangiumDocuments;
     id: string;
@@ -154,18 +154,18 @@ export class CustomCSTemplate implements LanguageTemplate {
         this.insertText = addNodeIDs(this.baseCode, this.id + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSTemplate(document, this);
+        return getPositionForCSSnippet(document, this);
     }
 
 }
 
 /**
- * Template for a control structure with one controller and one controlled process.
+ * Snippet for a control structure with one controller and one controlled process.
  */
-export class SimpleCSTemplate implements LanguageTemplate {
+export class SimpleCSSnippet implements LanguageSnippet {
     insertText: string;
     documents: LangiumDocuments;
-    id: string = 'simpleCSTemplate';
+    id: string = 'simpleCSSnippet';
     protected counter: number = 0;
     protected shortId: string;
     baseCode: string = `
@@ -195,17 +195,17 @@ CS {
         this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSTemplate(document, this);
+        return getPositionForCSSnippet(document, this);
     }
 };
 
 /**
- * Template for a control structure with one controller, one controlled process, one actuator, and one sensor.
+ * Snippet for a control structure with one controller, one controlled process, one actuator, and one sensor.
  */
-export class SimpleCSWithAcsTemplate implements LanguageTemplate {
+export class SimpleCSWithAcsSnippet implements LanguageSnippet {
     insertText: string;
     documents: LangiumDocuments;
-    id: string = 'simpleCSWithAcsTemplate';
+    id: string = 'simpleCSWithAcsSnippet';
     protected counter: number = 0;
     protected shortId: string;
     baseCode: string = `
@@ -247,17 +247,17 @@ CS {
         this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSTemplate(document, this);
+        return getPositionForCSSnippet(document, this);
     }
 };
 
 /**
- * Template for a control structure with two consecutive controllers and one controlled process.
+ * Snippet for a control structure with two consecutive controllers and one controlled process.
  */
-export class ConsControllersTemplate implements LanguageTemplate {
+export class ConsControllersSnippet implements LanguageSnippet {
     insertText: string;
     documents: LangiumDocuments;
-    id: string = 'consControllerTemplate';
+    id: string = 'consControllerSnippet';
     protected counter: number = 0;
     protected shortId: string;
     baseCode: string = `
@@ -296,17 +296,17 @@ CS {
         this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSTemplate(document, this);
+        return getPositionForCSSnippet(document, this);
     }
 };
 
 /**
- * Template for a control structure with two parallel controllers and one controlled process.
+ * Snippet for a control structure with two parallel controllers and one controlled process.
  */
-export class ParallelContsTemplate implements LanguageTemplate {
+export class ParallelContsSnippet implements LanguageSnippet {
     insertText: string;
     documents: LangiumDocuments;
-    id: string = 'parallelContsTemplate';
+    id: string = 'parallelContsSnippet';
     protected counter: number = 0;
     protected shortId: string;
     baseCode: string = `
@@ -343,17 +343,17 @@ CS {
         this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSTemplate(document, this);
+        return getPositionForCSSnippet(document, this);
     }
 };
 
 /**
- * Template for a control structure with two consecutive controllers, one controlled process.
+ * Snippet for a control structure with two consecutive controllers, one controlled process.
  */
-export class ConsContsWithLoopTemplate implements LanguageTemplate {
+export class ConsContsWithLoopSnippet implements LanguageSnippet {
     insertText: string;
     documents: LangiumDocuments;
-    id: string = 'consContsWithLoopTemplate';
+    id: string = 'consContsWithLoopSnippet';
     protected counter: number = 0;
     protected shortId: string;
     baseCode: string = `
@@ -394,6 +394,6 @@ CS {
         this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
         this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSTemplate(document, this);
+        return getPositionForCSSnippet(document, this);
     }
 };

@@ -19,7 +19,7 @@ import { LangiumDiagramGenerator } from 'langium-sprotty';
 import { SModelElement, SModelRoot } from 'sprotty-protocol';
 import { Position } from 'vscode-languageserver';
 
-export interface LanguageTemplate {
+export interface LanguageSnippet {
     baseCode: string;
     insertText: string;
     id: string;
@@ -27,12 +27,12 @@ export interface LanguageTemplate {
     getPosition(uri: string): Position;
 }
 
-export interface WebviewTemplate {
+export interface WebviewSnippet {
     graph: Readonly<SModelElement>;
     id: string;
 }
 
-export abstract class TemplateGraphGenerator extends LangiumDiagramGenerator {
-    abstract deleteDanglingEdges(template: LanguageTemplate): void;
-    abstract generateTemplateRoot(template: LanguageTemplate): Promise<SModelRoot | undefined>;
+export abstract class SnippetGraphGenerator extends LangiumDiagramGenerator {
+    abstract deleteDanglingEdges(snippet: LanguageSnippet): void;
+    abstract generateSnippetRoot(snippet: LanguageSnippet): Promise<SModelRoot | undefined>;
 }

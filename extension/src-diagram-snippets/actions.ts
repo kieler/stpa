@@ -19,46 +19,44 @@ interface Action {
     kind: string;
 }
 
-export interface ExecuteTemplateAction extends Action {
-    kind: typeof ExecuteTemplateAction.KIND;
+/** Message to the language server to add definition of a selected snippet in the editor. */
+export interface ExecuteSnippetAction extends Action {
+    kind: typeof ExecuteSnippetAction.KIND;
     id: string;
 }
 
-export namespace ExecuteTemplateAction {
-    export const KIND = "executeTemplate";
+export namespace ExecuteSnippetAction {
+    export const KIND = "executeSnippet";
 
-    export function create(
-        id: string,
-    ): ExecuteTemplateAction {
+    export function create(id: string): ExecuteSnippetAction {
         return {
             kind: KIND,
             id,
         };
     }
 
-    export function isThisAction(action: Action): action is ExecuteTemplateAction {
-        return action.kind === ExecuteTemplateAction.KIND;
+    export function isThisAction(action: Action): action is ExecuteSnippetAction {
+        return action.kind === ExecuteSnippetAction.KIND;
     }
 }
 
-
-/** Message to the language server to add a template. */
-export interface AddTemplateAction extends Action {
-    kind: typeof AddTemplateAction.KIND;
+/** Message to the language server to add a snippet to the librabry. */
+export interface AddSnippetAction extends Action {
+    kind: typeof AddSnippetAction.KIND;
     text: string;
 }
 
-export namespace AddTemplateAction {
-    export const KIND = "addTemplate";
+export namespace AddSnippetAction {
+    export const KIND = "addSnippet";
 
-    export function create(text: string): AddTemplateAction {
+    export function create(text: string): AddSnippetAction {
         return {
             kind: KIND,
-            text
+            text,
         };
     }
 
-    export function isThisAction(action: Action): action is AddTemplateAction {
-        return action.kind === AddTemplateAction.KIND;
+    export function isThisAction(action: Action): action is AddSnippetAction {
+        return action.kind === AddSnippetAction.KIND;
     }
 }

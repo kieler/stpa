@@ -16,19 +16,25 @@
  */
 
 /** @jsx html */
-import { html } from './jsx';
 import { attributesModule, classModule, eventListenersModule, init, propsModule, styleModule, VNode } from 'snabbdom';
+import { html } from './jsx';
 
-const placeholderID = 'tempPlaceholder';
-export const txtID = 'tempAddTextField';
-export const bntID = 'tempAddBnt';
+/** IDs for the main elements in the panel. */
+const placeholderForSnippetsID = 'tempPlaceholder';
+export const textFieldID = 'tempAddTextField';
+export const buttonID = 'tempAddBnt';
 
 // TODO: instead of defining an input tag, a msg could be send to the extension when clicking on the button. the extension can call windows.showInputBox/createInputBox or using a QuickInput
+/**
+ * PASTA panel for the activity bar.
+ * Consists of a text field and button to add custom diagram snippets.
+ * The actual snippets are patched into the placeholder later.
+ */
 export const panel: VNode = <div class-sidebar__content="true">
-    <h3 class-sidebar__title="true">{"Templates"}</h3>
-    <input type="text" id={txtID} />
-    <button type="button" id={bntID}>Add Template</button>
-    <div class-sidebar__panel-content="true" id="templates"><div id={placeholderID}></div></div>
+    <h3 class-sidebar__title="true">{"Diagram Snippets"}</h3>
+    <input type="text" id={textFieldID} />
+    <button type="button" id={buttonID}>Add Diagram Snippet</button>
+    <div class-sidebar__panel-content="true" id="snippets"><div id={placeholderForSnippetsID}></div></div>
 </div>;
 
 export const patch = init([
@@ -41,13 +47,17 @@ export const patch = init([
     classModule // makes it easy to toggle classes
 ]);
 
-export function createTemps(templates: VNode[]) {
-    let placeholder = document.getElementById(placeholderID);
+/**
+ * Adds the given {@code snippets} to the panel by patching them into the placeholder.
+ * @param snippets The snippets to add to the panel.
+ */
+export function addSnippetsToPanel(snippets: VNode[]): void {
+    const placeholder = document.getElementById(placeholderForSnippetsID);
     if (placeholder) {
-        const temps = <div id={placeholderID}>{...templates}</div>;
+        const temps = <div id={placeholderForSnippetsID}>{...snippets}</div>;
         patch(placeholder, temps);
-        // add mouselistener for highlighting focused template
-        const curTemps = document.getElementById(placeholderID);
+        // add mouselistener for highlighting focused snippet
+        const curTemps = document.getElementById(placeholderForSnippetsID);
         if (curTemps) {
             curTemps.childNodes.forEach(child => {
                 (child as HTMLElement).addEventListener('mouseover', () => (child as HTMLElement).classList.add('focused'));

@@ -15,11 +15,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import './css/diagram.css';
-import { click } from './mouseListener';
-import { patch, panel, createTemps, bntID, txtID } from './html';
-import { VNode } from 'snabbdom';
-import { AddTemplateAction } from './actions';
+import { VNode } from "snabbdom";
+import { AddSnippetAction } from "./actions";
+import "./css/diagram.css";
+import { addSnippetsToPanel, buttonID, panel, patch, textFieldID } from "./html";
+import { click } from "./mouseListener";
 
 interface vscode {
     postMessage(message: any): void;
@@ -27,33 +27,35 @@ interface vscode {
 declare const vscode: vscode;
 
 export class Starter {
-
     constructor() {
-        vscode.postMessage({ readyMessage: 'Template Webview ready' });
-        console.log('Waiting for diagram identifier...');
+        vscode.postMessage({ readyMessage: "Diagram Snippet Webview ready" });
+        console.log("Waiting for diagram identifier...");
         // add listener for messages
         const eventListener = (message: any): void => {
             this.handleMessages(message);
         };
-        window.addEventListener('message', eventListener);
+        window.addEventListener("message", eventListener);
     }
 
     /**
-     * Initializes the webview with a header and a placeholder for the templates.
+     * Initializes the webview with a header and a placeholder for the snippets.
      * @param identifier The identifier of the element that should contain the webview.
      */
     protected initHtml(identifier: string): void {
-        const containerDiv = document.getElementById(identifier + '_container');
+        // initialize the panel
+        const containerDiv = document.getElementById(identifier + "_container");
         if (containerDiv) {
             const panelContainer = document.createElement("div");
             containerDiv.appendChild(panelContainer);
             patch(panelContainer, panel);
         }
-        const bnt = document.getElementById(bntID);
+        // event listener for button to add snippets
+        const bnt = document.getElementById(buttonID);
         if (bnt) {
-            bnt.addEventListener('click', () => this.addTemplate());
+            bnt.addEventListener("click", () => this.addSnippet());
         }
-        document.addEventListener('click', event => {
+        // event listener for clicking on snippets
+        document.addEventListener("click", event => {
             const action = click(event);
             if (action) {
                 vscode.postMessage({ action: action });
@@ -62,15 +64,15 @@ export class Starter {
     }
 
     /**
-     * Sends the text in the input field as a AddTemplateAction to the extension.
+     * Sends the text in the input field as an AddSnippetAction to the extension.
      */
-    protected addTemplate(): void {
-        const text = document.getElementById(txtID);
+    protected addSnippet(): void {
+        const text = document.getElementById(textFieldID);
         if (text) {
             const value = (text as HTMLInputElement).value;
             const action = {
-                kind: AddTemplateAction.KIND,
-                text: value
+                kind: AddSnippetAction.KIND,
+                text: value,
             };
             vscode.postMessage({ action: action });
         }
@@ -83,19 +85,19 @@ export class Starter {
     protected handleMessages(message: any): void {
         if (message.data.identifier) {
             this.initHtml(message.data.identifier);
-        } else if (message.data.templates) {
-            this.handleTemplates(message.data.templates);
+        } else if (message.data.snippets) {
+            this.handleAddSnippets(message.data.snippets);
         } else {
             console.log("Message not supported: " + message);
         }
     }
 
     /**
-     * Adds the {@code templates} to the webview.
-     * @param templates The Templates that should be shown.
+     * Adds the {@code snippets} to the panel.
+     * @param snippets The snippets that should be shown.
      */
-    protected handleTemplates(templates: VNode[]): void {
-        createTemps(templates);
+    protected handleAddSnippets(snippets: VNode[]): void {
+        addSnippetsToPanel(snippets);
     }
 }
 

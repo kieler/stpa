@@ -15,13 +15,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ExecuteTemplateAction } from "./actions";
+import { ExecuteSnippetAction } from "./actions";
 
-export function click(event: MouseEvent): ExecuteTemplateAction | undefined {
+/**
+ * Determines the snippet that was clicked on and creates an ExecuteSnippetAction with the snippet's id.
+ * @param event The mouse event that was triggered.
+ * @returns the action to execute the snippet or undefined if no snippet was clicked.
+ */
+export function click(event: MouseEvent): ExecuteSnippetAction | undefined {
     const node = event.target;
     const owner = (node as SVGElement).ownerSVGElement;
     if (owner) {
-        const action = { kind: ExecuteTemplateAction.KIND, id: owner.id } as ExecuteTemplateAction;
+        const action = { kind: ExecuteSnippetAction.KIND, id: owner.id } as ExecuteSnippetAction;
         return action;
     }
     return undefined;
