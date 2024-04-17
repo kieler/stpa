@@ -193,7 +193,7 @@
                 "category": "Cut Sets"
             },
             {
-                "command": "stpa.templates.add",
+                "command": "pasta.stpa.templates.add",
                 "title": "Add STPA Template",
                 "category": "STPA Templates"
             }
@@ -257,15 +257,16 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
+                    "command": "pasta.stpa.templates.add",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
                     "command": "pasta.fta.cutSets",
                     "when": "editorLangId == 'fta'"
                 },
                 {
                     "command": "pasta.fta.minimalCutSets",
                     "when": "editorLangId == 'fta'"
-                },
-                {
-                    "command": "stpa.templates.add"
                 }
             ],
             "editor/context": [
@@ -303,7 +304,7 @@
                     "group": "stpa"
                 },
                 {
-                    "command": "stpa.templates.add",
+                    "command": "pasta.stpa.templates.add",
                     "when": "editorLangId == 'stpa'",
                     "group": "navigation"
                 }

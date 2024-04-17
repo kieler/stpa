@@ -358,7 +358,7 @@ function registerTemplateWebview(manager: StpaLspVscodeExtension, context: vscod
     };
     vscode.window.registerWebviewViewProvider("stpa-templates", provider);
     context.subscriptions.push(
-        vscode.commands.registerCommand("pasta" + '.templates.add', async (...commandArgs: any) => {
+        vscode.commands.registerCommand("pasta" + '.stpa.templates.add', async (...commandArgs: any) => {
         const uri = (commandArgs[0] as vscode.Uri);
             manager.addTemplate(uri);
         }));
