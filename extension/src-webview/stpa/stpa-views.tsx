@@ -24,7 +24,7 @@ import { collectAllChildren } from './helper-methods';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from '../options/render-options-registry';
 import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE, CSEdge, CS_INTERMEDIATE_EDGE_TYPE, EdgeType, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
-import { SendModelRendererAction } from '../template/actions';
+import { SendModelRendererAction } from '../snippets/actions';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
@@ -246,7 +246,7 @@ export class STPAGraphView extends SGraphView {
     @inject(TYPES.IActionDispatcher) private actionDispatcher: IActionDispatcher;
 
     render(model: Readonly<SGraph>, context: RenderingContext): VNode {
-        // to render the template panel the modelrenderer and the canvasbounds are needed
+        // to render the snippet panel the modelrenderer and the canvasbounds are needed
         this.actionDispatcher.dispatch(SendModelRendererAction.create(context as ModelRenderer, model.canvasBounds));
         const allNodes: SNode[] = [];
         collectAllChildren(model.children as SNode[], allNodes);

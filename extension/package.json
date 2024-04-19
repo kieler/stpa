@@ -194,7 +194,7 @@
             },
             {
                 "command": "pasta.stpa.snippets.add",
-                "title": "Add STPA Template",
+                "title": "Add STPA Diagram Snippet",
                 "category": "STPA Snippets"
             }
         ],

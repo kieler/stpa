@@ -24,8 +24,8 @@ import { OptionsPanel } from "./options-panel";
 import { OptionsRegistry } from "./options-registry";
 import { OptionsRenderer } from "./options-renderer";
 import { RenderOptionsRegistry } from "./render-options-registry";
-import { TemplateRenderer } from "../template/template-renderer";
-import { TemplateRegistry } from "../template/template-registry";
+import { SnippetRenderer } from "../snippets/snippet-renderer";
+import { SnippetRegistry } from "../snippets/snippet-registry";
 
 /** Module that configures option related panels and registries. */
 export const optionsModule = new ContainerModule((bind, _, isBound) => {
@@ -41,11 +41,11 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
 
     bind(DISymbol.RenderOptionsRegistry).to(RenderOptionsRegistry).inSingletonScope();
 
-    // TODO: create module for templates
-    bind(DISymbol.TemplateRenderer).to(TemplateRenderer).inSingletonScope();
+    // TODO: create module for snippets
+    bind(DISymbol.SnippetRenderer).to(SnippetRenderer).inSingletonScope();
 
-    bind(DISymbol.TemplateRegistry).to(TemplateRegistry).inSingletonScope();
-    bind(TYPES.IActionHandlerInitializer).toService(DISymbol.TemplateRegistry);
+    bind(DISymbol.SnippetRegistry).to(SnippetRegistry).inSingletonScope();
+    bind(TYPES.IActionHandlerInitializer).toService(DISymbol.SnippetRegistry);
 
     const ctx = { bind, isBound };
     configureActionHandler(ctx, SetRenderOptionAction.KIND, DISymbol.RenderOptionsRegistry);

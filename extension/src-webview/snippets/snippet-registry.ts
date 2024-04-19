@@ -25,18 +25,18 @@ import { Messenger } from "vscode-messenger-webview";
 import { Registry } from "../base/registry";
 import { DISymbol } from "../di.symbols";
 import { RequestWebviewSnippetsAction, SendModelRendererAction, SendWebviewSnippetsAction } from "./actions";
-import { TemplateRenderer } from "./template-renderer";
+import { SnippetRenderer } from "./snippet-renderer";
 
 /**
- * {@link Registry} that stores and manages templates provided by the server.
+ * {@link Registry} that stores and manages snippets provided by the server.
  *
- * Acts as an action handler that handles UpdateTemplateActions.
+ * Acts as an action handler that handles UpdateSnippetActions.
  */
 @injectable()
-export class TemplateRegistry extends Registry implements IActionHandlerInitializer {
+export class SnippetRegistry extends Registry implements IActionHandlerInitializer {
     readonly position = -10;
     @inject(VsCodeMessenger) protected messenger: Messenger;
-    @inject(DISymbol.TemplateRenderer) private templateRenderer: TemplateRenderer;
+    @inject(DISymbol.SnippetRenderer) private snippetRenderer: SnippetRenderer;
 
     initialize(registry: ActionHandlerRegistry): void {
         registry.register(RequestWebviewSnippetsAction.KIND, this);
@@ -52,7 +52,7 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
     }
 
     private handleRequestWebviewTemps(action: RequestWebviewSnippetsAction): void {
-        const temps = this.templateRenderer.renderTemplates(action.snippets);
+        const temps = this.snippetRenderer.renderSnippets(action.snippets);
         const response: SendWebviewSnippetsAction = {
             kind: SendWebviewSnippetsAction.KIND,
             snippets: temps,
@@ -65,7 +65,7 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
     }
 
     private handleSendModelRenderer(action: SendModelRendererAction): void {
-        this.templateRenderer.setRenderer((action as SendModelRendererAction).renderer);
-        this.templateRenderer.setBounds((action as SendModelRendererAction).bounds);
+        this.snippetRenderer.setRenderer((action as SendModelRendererAction).renderer);
+        this.snippetRenderer.setBounds((action as SendModelRendererAction).bounds);
     }
 }

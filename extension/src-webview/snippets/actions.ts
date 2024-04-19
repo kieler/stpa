@@ -18,7 +18,7 @@
 import { VNode } from "snabbdom";
 import { ModelRenderer } from "sprotty";
 import { Action, Bounds, RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
-import { WebviewSnippet } from "./template-models";
+import { WebviewSnippet } from "./snippet-models";
 
 /** Sent from the view. */
 export interface SendModelRendererAction extends Action {

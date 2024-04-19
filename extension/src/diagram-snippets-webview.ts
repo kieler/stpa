@@ -21,7 +21,7 @@ import { StpaLspVscodeExtension } from './language-extension';
 import { acceptMessageType } from 'sprotty-vscode/lib/lsp';
 import { SendSnippetsAction } from './actions';
 
-export class TemplateWebview {
+export class DiagramSnippetWebview {
 
     static viewCount = 0;
 
@@ -77,7 +77,7 @@ export class TemplateWebview {
         this.disposables.push(this.webview.onDidReceiveMessage(message => this.receiveFromWebview(message)));
         /* this.disposables.push(vscode.window.onDidChangeActiveTextEditor(async editor => {
             if (editor) {
-                //TODO: templates may be needed to be updated
+                //TODO: snippets may be needed to be updated
             }
         })); */
         await this.ready();
@@ -96,14 +96,14 @@ export class TemplateWebview {
      * @param message The message received from the webview.
      */
     protected async receiveFromWebview(message: any): Promise<void> {
-        console.log("Received from template webview");
+        console.log("Received from diagram snippet webview");
         if (message.readyMessage) {
             this.resolveWebviewReady();
             this.sendDiagramIdentifier();
 
             // TODO: guarantee that sprotty webview exist
             if (this.extension.clientId) {
-                // send the templates saved in the config file to the language server
+                // send the snippets saved in the config file to the language server
                 const temps = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
                 const action = { kind: SendSnippetsAction.KIND, snippets: temps } as SendSnippetsAction;
                 const mes2: ActionMessage = {

@@ -37,10 +37,10 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     protected resolveLSReady: () => void;
     readonly lsReady = new Promise<void>((resolve) => (this.resolveLSReady = resolve));
     /**
-     * Sends an AddTemplateAction to the language server containing the selected text.
+     * Sends an AddSnippetAction to the language server containing the selected text.
      * @param commandArgs 
      */
-    async addTemplate(uri: vscode.Uri): Promise<void> {
+    async addSnippet(uri: vscode.Uri): Promise<void> {
         const activeEditor = vscode.window.activeTextEditor;
         const sel = activeEditor?.selection;
         const doc = activeEditor?.document;
@@ -62,8 +62,8 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     }
 
     /**
-     * Adds the {@code temps} to the templates in the config file.
-     * @param temps Text of templates.
+     * Adds the {@code temps} to the snippets in the config file.
+     * @param temps Text of snippets.
      */
     handleAddToConfig(temps: string[]): void {
         const configTemps = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
@@ -129,10 +129,10 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         const sel: vscode.DocumentSelector = { scheme: "file", language: "stpa" };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
-        // handling notifications regarding the templates
+        // handling notifications regarding the snippets
         options.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
         options.languageClient.onNotification('config/add', (temps: string[]) => this.handleAddToConfig(temps));
-        options.languageClient.onNotification('templates/creationFailed', () => vscode.window.showWarningMessage("Template could not be created."));
+        options.languageClient.onNotification('snippets/creationFailed', () => vscode.window.showWarningMessage("Snippet could not be created."));
            
 
         // handling of notifications regarding the context table

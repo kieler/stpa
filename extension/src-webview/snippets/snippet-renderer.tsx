@@ -18,46 +18,46 @@
 /** @jsx html */
 import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
-import { html, IModelFactory, ModelRenderer, SGraph, SNode, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { IModelFactory, ModelRenderer, SGraph, SNode, TYPES, html } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Bounds } from 'sprotty-protocol';
-import { WebviewSnippet } from "./template-models";
+import { WebviewSnippet } from "./snippet-models";
 
 
-/** Renderer that is capable of rendering templates to jsx. */
+/** Renderer that is capable of rendering snippets to jsx. */
 @injectable()
-export class TemplateRenderer {
+export class SnippetRenderer {
     @inject(TYPES.IModelFactory) protected modelFactory: IModelFactory;
     protected renderer: ModelRenderer;
     protected bounds: Bounds;
 
-    setRenderer(renderer: ModelRenderer) {
+    setRenderer(renderer: ModelRenderer): void {
         this.renderer = renderer;
     }
 
-    setBounds(bounds: Bounds) {
+    setBounds(bounds: Bounds): void {
         this.bounds = bounds;
     }
 
     /**
-     * Renders all templates provided by the server.
+     * Renders all snippets provided by the server.
      */
-    renderTemplates(templates: WebviewSnippet[]): VNode[] {
-        if (templates.length === 0) return <div></div>;
+    renderSnippets(snippets: WebviewSnippet[]): VNode[] {
+        if (snippets.length === 0) return <div></div>;
 
         // labels and edges are only visible if they are within the canvas bounds
-        for (const temp of templates) {
+        for (const temp of snippets) {
             (temp.graph as SGraph).canvasBounds = { width: this.bounds.width + 20, height: this.bounds.height, x: this.bounds.x, y: this.bounds.y };
         }
 
-        const res = templates.map(template => {
-            const graph = this.renderer?.renderElement(this.modelFactory.createRoot(template.graph));
+        const res = snippets.map(snippet => {
+            const graph = this.renderer?.renderElement(this.modelFactory.createRoot(snippet.graph));
             // padding of sidebar content is 16px
-            const width = ((template.graph as SGraph).children[0] as SNode).size.width + 30;
-            const height = ((template.graph as SGraph).children[0] as SNode).size.height + 30;
+            const width = ((snippet.graph as SGraph).children[0] as SNode).size.width + 30;
+            const height = ((snippet.graph as SGraph).children[0] as SNode).size.height + 30;
             if (graph?.data?.attrs) {
                 graph.data.attrs["width"] = width;
                 graph.data.attrs["height"] = height;
-                graph.data.attrs["id"] = template.id;
+                graph.data.attrs["id"] = snippet.id;
             }
             const result: VNode = <div>{graph}</div>;
             return result;

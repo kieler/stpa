@@ -28,7 +28,7 @@ import { StpaResult } from "./report/utils";
 import { createSBMs } from "./sbm/sbm-generation";
 import { LTLFormula } from "./sbm/utils";
 import { createFile, createOutputChannel, createQuickPickForWorkspaceOptions } from "./utils";
-import { TemplateWebview } from './template-webview';
+import { DiagramSnippetWebview } from './diagram-snippets-webview';
 
 let languageClient: LanguageClient;
 
@@ -68,7 +68,7 @@ export function activate(context: vscode.ExtensionContext): void {
         registerSTPACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
         registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
 
-        registerTemplateWebview(webviewPanelManager, context);
+        registerDiagramSnippetWebview(webviewPanelManager, context);
         
     }
     
@@ -337,11 +337,11 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
         })
     );
 }
-function registerTemplateWebview(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
+function registerDiagramSnippetWebview(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     const provider: vscode.WebviewViewProvider = {
         resolveWebviewView: function (webviewView: vscode.WebviewView, _context: vscode.WebviewViewResolveContext<unknown>, _token: vscode.CancellationToken): void | Thenable<void> {
-            const tWebview = new TemplateWebview(
-                "templates",
+            const tWebview = new DiagramSnippetWebview(
+                "snippets",
                 manager,
                 createFileUri(manager.options.extensionUri.fsPath, 'pack', 'tempWebview.js')
             );
@@ -360,7 +360,7 @@ function registerTemplateWebview(manager: StpaLspVscodeExtension, context: vscod
     context.subscriptions.push(
         vscode.commands.registerCommand("pasta" + '.stpa.snippets.add', async (...commandArgs: any) => {
         const uri = (commandArgs[0] as vscode.Uri);
-            manager.addTemplate(uri);
+            manager.addSnippet(uri);
         }));
 }
 
