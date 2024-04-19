@@ -89,7 +89,7 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
     } else {
         snippet.insertText = snippet.insertText.substring(18, snippet.insertText.length);
         // check whether a graph ID already exist
-        const csText = docText.substring(startIndex, endIndex);
+        const csText = docText.substring(startIndex, endIndex + 1);
         const graphIndex = csText.indexOf("{");
         if (graphIndex === -1) {
             return document.positionAt(endIndex);
@@ -99,7 +99,7 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
                 snippet.insertText.lastIndexOf("}")
             );
             const bracketIndex = csText.lastIndexOf("}");
-            return document.positionAt(titleIndex + bracketIndex - 1);
+            return document.positionAt(titleIndex + bracketIndex);
         }
     }
 }
