@@ -15,10 +15,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { VNode } from 'snabbdom';
-import { Action, Bounds, RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
+import { VNode } from "snabbdom";
 import { ModelRenderer } from "sprotty";
-import { WebviewTemplate } from "./template-models";
+import { Action, Bounds, RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
+import { WebviewSnippet } from "./template-models";
 
 /** Sent from the view. */
 export interface SendModelRendererAction extends Action {
@@ -28,13 +28,13 @@ export interface SendModelRendererAction extends Action {
 }
 
 export namespace SendModelRendererAction {
-    export const KIND = 'sendModelRendererAction';
+    export const KIND = "sendModelRendererAction";
 
     export function create(renderer: ModelRenderer, bounds: Bounds): SendModelRendererAction {
         return {
             kind: KIND,
             renderer,
-            bounds
+            bounds,
         };
     }
 
@@ -43,55 +43,50 @@ export namespace SendModelRendererAction {
     }
 }
 
-/** Request message from the server to get the svgs for the templates. */
-export interface RequestWebviewTemplatesAction extends RequestAction<SendWebviewTemplatesAction> {
-    kind: typeof RequestWebviewTemplatesAction.KIND;
-    templates: WebviewTemplate[];
+/** Request message from the server to the client to get the svgs of the snippets. */
+export interface RequestWebviewSnippetsAction extends RequestAction<SendWebviewSnippetsAction> {
+    kind: typeof RequestWebviewSnippetsAction.KIND;
+    snippets: WebviewSnippet[];
     clientId: string;
     requestId: string;
 }
 
-export namespace RequestWebviewTemplatesAction {
-    export const KIND = "updateTemplates";
+export namespace RequestWebviewSnippetsAction {
+    export const KIND = "updateSnippets";
 
-    export function create(
-        templates: WebviewTemplate[],
-        clientId: string
-    ): RequestWebviewTemplatesAction {
+    export function create(snippets: WebviewSnippet[], clientId: string): RequestWebviewSnippetsAction {
         return {
             kind: KIND,
-            templates,
+            snippets: snippets,
             clientId,
-            requestId: generateRequestId()
+            requestId: generateRequestId(),
         };
     }
 
-    export function isThisAction(action: Action): action is RequestWebviewTemplatesAction {
-        return action.kind === RequestWebviewTemplatesAction.KIND;
+    export function isThisAction(action: Action): action is RequestWebviewSnippetsAction {
+        return action.kind === RequestWebviewSnippetsAction.KIND;
     }
 }
 
-export interface SendWebviewTemplatesAction extends ResponseAction {
-    kind: typeof SendWebviewTemplatesAction.KIND;
-    templates: VNode[];
+/** Message to the language server containing the svgs of the snippets. */
+export interface SendWebviewSnippetsAction extends ResponseAction {
+    kind: typeof SendWebviewSnippetsAction.KIND;
+    snippets: VNode[];
     responseId: string;
 }
 
-export namespace SendWebviewTemplatesAction {
-    export const KIND = "updateTemplates";
+export namespace SendWebviewSnippetsAction {
+    export const KIND = "updateSnippets";
 
-    export function create(
-        templates: VNode[],
-        requestId: string = ''
-    ): SendWebviewTemplatesAction {
+    export function create(snippets: VNode[], requestId: string = ""): SendWebviewSnippetsAction {
         return {
             kind: KIND,
-            templates,
-            responseId: requestId
+            snippets: snippets,
+            responseId: requestId,
         };
     }
 
-    export function isThisAction(action: Action): action is SendWebviewTemplatesAction {
-        return action.kind === SendWebviewTemplatesAction.KIND;
+    export function isThisAction(action: Action): action is SendWebviewSnippetsAction {
+        return action.kind === SendWebviewSnippetsAction.KIND;
     }
 }

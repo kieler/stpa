@@ -15,13 +15,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode, BuildOptions, DefaultDocumentBuilder, LangiumDocument } from 'langium';
-import { CancellationToken } from 'vscode-languageserver';
+import { AstNode, BuildOptions, DefaultDocumentBuilder, LangiumDocument } from "langium";
+import { CancellationToken } from "vscode-languageserver";
 
+/**
+ * Custom document builder to make the buildDocuments method public.
+ */
 export class StpaDocumentBuilder extends DefaultDocumentBuilder {
-
-    async buildDocuments(documents: LangiumDocument<AstNode>[],  options: BuildOptions, cancelToken: CancellationToken): Promise<void> {
+    async buildDocuments(
+        documents: LangiumDocument<AstNode>[],
+        options: BuildOptions,
+        cancelToken: CancellationToken
+    ): Promise<void> {
         return super.buildDocuments(documents, options, cancelToken);
     }
-
 }

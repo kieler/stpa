@@ -20,7 +20,7 @@ import { createFileUri } from "sprotty-vscode";
 import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
 import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions, acceptMessageType } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
-import { AddTemplateAction, GenerateSVGsAction } from "./actions";
+import { AddSnippetAction, GenerateSVGsAction } from "./actions";
 import { ContextTablePanel } from "./context-table-panel";
 import { StpaFormattingEditProvider } from "./stpa-formatter";
 import { applyTextEdits, collectOptions, createFile } from "./utils";
@@ -53,9 +53,9 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
             const mes: ActionMessage = {
                 clientId: this.clientId!,
                 action: {
-                    kind: AddTemplateAction.KIND,
+                    kind: AddSnippetAction.KIND,
                     text: text
-                } as AddTemplateAction
+                } as AddSnippetAction
             };
             this.languageClient.sendNotification(acceptMessageType, mes);
         }
@@ -66,9 +66,9 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
      * @param temps Text of templates.
      */
     handleAddToConfig(temps: string[]): void {
-        const configTemps = vscode.workspace.getConfiguration('stpa').get('templates');
+        const configTemps = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
         const newTemps = (configTemps as string[]).concat(temps);
-        vscode.workspace.getConfiguration('stpa').update('templates', newTemps);
+        vscode.workspace.getConfiguration('pasta.stpa').update('snippets', newTemps);
     }
 
     /**

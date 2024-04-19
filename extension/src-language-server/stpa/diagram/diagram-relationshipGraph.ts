@@ -46,7 +46,7 @@ import {
  * @param model The STPA model.
  * @param idToSNode The map of the generated IDs to their generated SNodes.
  * @param options The synthesis options of the STPA model.
- * @param args The generator context of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns the relationship graph for the STPA model.
  */
 export function createRelationshipGraph(
@@ -82,7 +82,7 @@ export function createRelationshipGraph(
  * @param model The STPA model.
  * @param idToSNode The map of the generated IDs to their generated SNodes.
  * @param options The synthesis options of the STPA model.
- * @param args The generator context of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns the children of the relationship graph.
  */
 export function createRelationshipGraphChildren(
@@ -284,7 +284,7 @@ export function createRelationshipGraphChildren(
 /**
  * Generates a node and the edges for the given {@code node}.
  * @param node STPA component for which a node and edges should be generated.
- * @param args GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns A node representing {@code node} and edges representing the references {@code node} contains.
  */
 export function generateAspectWithEdges(
@@ -308,7 +308,7 @@ export function generateAspectWithEdges(
 /**
  * Generates a single STPANode for the given {@code node}.
  * @param node The STPA component the node should be created for.
- * @param args GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns A STPANode representing {@code node}.
  */
 export function generateSTPANode(
@@ -366,7 +366,7 @@ export function generateSTPANode(
 /**
  * Generates the edges for {@code node}.
  * @param node STPA component for which the edges should be created.
- * @param args GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns Edges representing the references {@code node} contains.
  */
 export function generateEdgesForSTPANode(

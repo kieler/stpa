@@ -99,44 +99,44 @@ export namespace MinimalCutSetAnalysisAction {
     }
 }
 
-/** Message to the language server to add a template. */
-export interface AddTemplateAction extends Action {
-    kind: typeof AddTemplateAction.KIND;
+/** Message to the language server to add a snippet to the librabry. */
+export interface AddSnippetAction extends Action {
+    kind: typeof AddSnippetAction.KIND;
     text: string;
 }
 
-export namespace AddTemplateAction {
-    export const KIND = "addTemplate";
+export namespace AddSnippetAction {
+    export const KIND = "addSnippet";
 
-    export function create(text: string): AddTemplateAction {
+    export function create(text: string): AddSnippetAction {
         return {
             kind: KIND,
-            text
+            text,
         };
     }
 
-    export function isThisAction(action: Action): action is AddTemplateAction {
-        return action.kind === AddTemplateAction.KIND;
+    export function isThisAction(action: Action): action is AddSnippetAction {
+        return action.kind === AddSnippetAction.KIND;
     }
 }
 
-/** Message containing templates as string. */
-export interface SendTemplatesAction extends Action {
-    kind: typeof SendTemplatesAction.KIND;
-    temps: string[];
+/** Message from extension to langauge server containing snippets as string. (Used to add default snippets) */
+export interface SendSnippetsAction extends Action {
+    kind: typeof SendSnippetsAction.KIND;
+    snippets: string[];
 }
 
-export namespace SendTemplatesAction {
-    export const KIND = "sendTemplates";
+export namespace SendSnippetsAction {
+    export const KIND = "sendSnippets";
 
-    export function create(temps: string[]): SendTemplatesAction {
+    export function create(temps: string[]): SendSnippetsAction {
         return {
             kind: KIND,
-            temps
+            snippets: temps,
         };
     }
 
-    export function isThisAction(action: Action): action is SendTemplatesAction {
-        return action.kind === SendTemplatesAction.KIND;
+    export function isThisAction(action: Action): action is SendSnippetsAction {
+        return action.kind === SendSnippetsAction.KIND;
     }
 }

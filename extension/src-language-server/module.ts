@@ -20,7 +20,7 @@ import {
     DefaultDiagramServerManager,
     DiagramActionNotification,
     LangiumSprottySharedServices,
-    SprottySharedServices
+    SprottySharedServices,
 } from "langium-sprotty";
 import { DiagramOptions } from "sprotty-protocol";
 import { URI } from "vscode-uri";
@@ -49,11 +49,7 @@ export function createServices(context: DefaultSharedModuleContext): {
     stpa: StpaServices;
     fta: FtaServices;
 } {
-    const shared = inject(
-        createDefaultSharedModule(context),
-        PastaGeneratedSharedModule,
-        PastaSprottySharedModule
-    );
+    const shared = inject(createDefaultSharedModule(context), PastaGeneratedSharedModule, PastaSprottySharedModule);
     const stpa = inject(createDefaultModule({ shared }), StpaGeneratedModule, STPAModule);
     const fta = inject(createDefaultModule({ shared }), FtaGeneratedModule, FtaModule);
     shared.ServiceRegistry.register(stpa);
@@ -71,20 +67,20 @@ const pastaDiagramServerFactory = (
         if (!sourceUri) {
             throw new Error("Missing 'sourceUri' option in request.");
         }
-        const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as (StpaServices | FtaServices);
+        const language = serviceRegistry.getServices(URI.parse(sourceUri as string)) as StpaServices | FtaServices;
         if (!language.diagram) {
             throw new Error(`The '${language.LanguageMetaData.languageId}' language does not support diagrams.`);
         }
         return new PastaDiagramServer(
-            async (action) => {
+            async action => {
                 connection?.sendNotification(DiagramActionNotification.type, { clientId, action });
             },
             language.diagram,
             clientId,
             options,
             connection,
-            language.options.SynthesisOptions, 
-            language.templates.StpaTemplates
+            language.options.SynthesisOptions,
+            language.snippets.StpaDiagramSnippets
         );
     };
 };
@@ -95,6 +91,6 @@ const pastaDiagramServerFactory = (
 const PastaSprottySharedModule: Module<LangiumSprottySharedServices, SprottySharedServices> = {
     diagram: {
         diagramServerFactory: pastaDiagramServerFactory,
-        DiagramServerManager: (services) => new DefaultDiagramServerManager(services),
+        DiagramServerManager: services => new DefaultDiagramServerManager(services),
     },
 };

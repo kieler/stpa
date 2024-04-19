@@ -15,26 +15,23 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode, LangiumDocumentFactory, LangiumParser, ParseResult } from 'langium';
+import { AstNode, LangiumDocumentFactory, LangiumParser, ParseResult } from "langium";
 import { GeneratorContext, IdCache, IdCacheImpl } from "langium-sprotty";
 import { SModelElement, SModelRoot, SNode } from "sprotty-protocol";
-import { CancellationToken } from 'vscode-languageserver';
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { CancellationToken } from "vscode-languageserver";
+import { TextDocument } from "vscode-languageserver-textdocument";
 import { Model } from "../../generated/ast";
-import { StpaDocumentBuilder } from '../../stpa-document-builder';
-import { LanguageTemplate, TemplateGraphGenerator } from '../../templates/template-model';
+import { LanguageSnippet, SnippetGraphGenerator } from "../../snippets/snippet-model";
+import { StpaDocumentBuilder } from "../../stpa-document-builder";
 import { StpaServices } from "../stpa-module";
 import { createControlStructure } from "./diagram-controlStructure";
 import { createRelationshipGraph } from "./diagram-relationshipGraph";
 import { filterModel } from "./filtering";
 import { StpaSynthesisOptions } from "./stpa-synthesis-options";
 
-export class StpaDiagramGenerator extends TemplateGraphGenerator {
+export class StpaDiagramGenerator extends SnippetGraphGenerator {
     protected readonly options: StpaSynthesisOptions;
-    protected readonly parser: LangiumParser;
-    protected readonly docBuilder: StpaDocumentBuilder;
-    protected readonly docFactory: LangiumDocumentFactory;
-    protected readonly languageId: string;
+    protected readonly services: StpaServices;
 
     /** Saves the Ids of the generated SNodes */
     protected idToSNode: Map<string, SNode> = new Map();
@@ -44,60 +41,73 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
     constructor(services: StpaServices) {
         super(services);
         this.options = services.options.SynthesisOptions;
-        this.parser = services.parser.LangiumParser;
-        this.docBuilder = services.shared.workspace.DocumentBuilder as StpaDocumentBuilder;
-        this.docFactory = services.shared.workspace.LangiumDocumentFactory as LangiumDocumentFactory;
-        this.languageId = services.LanguageMetaData.languageId;
+        this.services = services;
     }
     /**
-     * Generates an SGraph for the given {@code template}.
-     * @param template The template for which a graph should be generated.
-     * @returns the SGraph.
+     * Generates an SGraph for the given {@code snippet}.
+     * @param snippet The snippet for which a graph should be generated.
+     * @returns the SGraph for {@code snippet}.
      */
-    async generateTemplateRoot(template: LanguageTemplate): Promise<SModelRoot | undefined> {
+    async generateSnippetRoot(snippet: LanguageSnippet): Promise<SModelRoot | undefined> {
+        // id cache is needed
         if (!this.idCache) {
             this.idCache = new IdCacheImpl();
         }
-        const parseRes = await this.getTempalteAST(template);
+        // parse the snippet to an AST
+        const parseRes = await this.getSnippetAST(snippet);
         if (!parseRes) {
             return undefined;
         } else {
+            // create the SGraph
             const graph = this.generateGraph(parseRes);
-            graph.id = template.id;
+            graph.id = snippet.id;
             return graph;
         }
     }
 
-     /**
-     * Calculates the parse result for {@code template}.
-     * @param template The template that should be parsed.
-     * @returns The AST for {@code template}.
+    /**
+     * Calculates the parse result for {@code snippet}.
+     * @param snippet The snippet that should be parsed.
+     * @returns the AST for {@code snippet}.
      */
-     protected async getTempalteAST(template: LanguageTemplate): Promise<Model | undefined> {
+    protected async getSnippetAST(snippet: LanguageSnippet): Promise<Model | undefined> {
         // in order for the cross-references to be correctly evaluated, a document must be build
-        const uri = 'file:///template.stpa';
-        const textDocument = TextDocument.create(uri, this.languageId, 0, template.baseCode ?? '');
-        const parseResult: ParseResult<Model> = this.parser.parse<Model>(template.baseCode);
+        const uri = "file:///snippet.stpa";
+        const textDocument = TextDocument.create(
+            uri,
+            this.services.LanguageMetaData.languageId,
+            0,
+            snippet.baseCode ?? ""
+        );
+        const parseResult: ParseResult<Model> = this.services.parser.LangiumParser.parse<Model>(snippet.baseCode);
         if (parseResult.parserErrors.length > 0) {
             return undefined;
         }
         // const doc = documentFromText<Model>(textDocument, parseResult);
-        const doc = this.docFactory.fromTextDocument<Model>(textDocument);
-        await this.docBuilder.buildDocuments([doc], {validationChecks: 'none'}, CancellationToken.None);
+        const doc = (
+            this.services.shared.workspace.LangiumDocumentFactory as LangiumDocumentFactory
+        ).fromTextDocument<Model>(textDocument);
+        await (this.services.shared.workspace.DocumentBuilder as StpaDocumentBuilder).buildDocuments(
+            [doc],
+            { validationChecks: "none" },
+            CancellationToken.None
+        );
 
         return doc.parseResult.value;
     }
 
     /**
-     * Deletes the dangling edges in {@code template}.
-     * @param template The template which edges should be inspected.
+     * Deletes the dangling edges in {@code snippet}.
+     * @param snippet The snippet, which edges should be inspected.
      */
-    async deleteDanglingEdges(template: LanguageTemplate): Promise<void> {
-        const model = await this.getTempalteAST(template);
+    async deleteDanglingEdges(snippet: LanguageSnippet): Promise<void> {
+        const model = await this.getSnippetAST(snippet);
         if (model) {
+            // collect nodes and their ids
             const nodes = model.controlStructure?.nodes;
             const nodeIDs = new Set<string>();
             nodes?.forEach(node => nodeIDs.add(node.name));
+            // collect dangling node ids from control actions and feedbacks
             const danglingNodes = new Set<string>();
             for (const node of nodes ?? []) {
                 node.actions.filter(action => {
@@ -115,17 +125,19 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
                     return true;
                 });
             }
-            danglingNodes.forEach((node) => {
-                const newString = template.baseCode.replace(/->( )*/, "-> ");
+            // remove dangling edges
+            danglingNodes.forEach(node => {
+                const newString = snippet.baseCode.replace(/->( )*/, "-> ");
                 const endIndex = newString.indexOf("-> " + node) + 3 + node.length;
-                const startIndex = newString.substring(0, endIndex).lastIndexOf('[');
-                template.baseCode = newString.substring(0, startIndex).trimEnd() + newString.substring(endIndex + 1, newString.length);
+                const startIndex = newString.substring(0, endIndex).lastIndexOf("[");
+                snippet.baseCode =
+                    newString.substring(0, startIndex).trimEnd() + newString.substring(endIndex + 1, newString.length);
             });
         }
     }
 
     /**
-     * Generates a SGraph for the STPA model contained in {@code args}.
+     * Generates an SGraph for the STPA model contained in {@code args}.
      * @param args GeneratorContext for the STPA model.
      * @returns the root of the generated SGraph.
      */
@@ -138,14 +150,12 @@ export class StpaDiagramGenerator extends TemplateGraphGenerator {
         return this.generateGraph(model);
     }
 
-
     /**
      * Generates an SGraph for the given {@code model}.
      * @param model The Model for whcih a graph should be generated.
      * @returns an SGraph.
      */
     private generateGraph(model: Model): SModelRoot {
-
         // filter model based on the options set by the user
         const filteredModel = filterModel(model, this.options);
 

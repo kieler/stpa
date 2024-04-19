@@ -17,7 +17,12 @@
 
 import { SModelElement } from "sprotty";
 
-export interface WebviewTemplate {
+/**
+ * Represents a snippet that can be displayed in a webview.
+ */
+export interface WebviewSnippet {
+    /** the graph to display */
     graph: Readonly<SModelElement>;
+    /** unique id of the snippet */
     id: string;
 }

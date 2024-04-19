@@ -20,7 +20,7 @@ import { inject, injectable } from "inversify";
 import { VNode } from "snabbdom";
 import { html, IModelFactory, ModelRenderer, SGraph, SNode, TYPES } from "sprotty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { Bounds } from 'sprotty-protocol';
-import { WebviewTemplate } from "./template-models";
+import { WebviewSnippet } from "./template-models";
 
 
 /** Renderer that is capable of rendering templates to jsx. */
@@ -41,7 +41,7 @@ export class TemplateRenderer {
     /**
      * Renders all templates provided by the server.
      */
-    renderTemplates(templates: WebviewTemplate[]): VNode[] {
+    renderTemplates(templates: WebviewSnippet[]): VNode[] {
         if (templates.length === 0) return <div></div>;
 
         // labels and edges are only visible if they are within the canvas bounds

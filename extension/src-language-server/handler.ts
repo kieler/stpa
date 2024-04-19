@@ -17,10 +17,10 @@
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection, Range } from "vscode-languageserver";
+import { getRangeOfNodeFTA } from "./fta/utils";
 import { Model, isModel, isModelFTA } from "./generated/ast";
 import { getRangeOfNodeSTPA } from "./stpa/utils";
 import { getModel } from "./utils";
-import { getRangeOfNodeFTA } from "./fta/utils";
 
 /**
  * Adds handler for notifications.

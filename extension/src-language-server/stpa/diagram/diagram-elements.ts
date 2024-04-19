@@ -108,7 +108,7 @@ export function createSTPAEdge(
  * @param targetId The ID of the target of the edge.
  * @param label The labels of the edge.
  * @param edgeType The type of the edge (control action or feedback edge).
- * @param param5 GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns A control structure edge.
  */
 export function createControlStructureEdge(

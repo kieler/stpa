@@ -47,8 +47,8 @@ export namespace UpdateOptionsAction {
 
 /** Change the value of one or multiple synthesis options. */
 export interface SetSynthesisOptionsAction extends Action {
-    kind: typeof SetSynthesisOptionsAction.KIND;
-    options: SynthesisOption[];
+    kind: typeof SetSynthesisOptionsAction.KIND
+    options: SynthesisOption[]
 }
 
 export namespace SetSynthesisOptionsAction {

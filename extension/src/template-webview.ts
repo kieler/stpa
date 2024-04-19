@@ -19,7 +19,7 @@ import * as vscode from 'vscode';
 import { ActionMessage } from 'sprotty-protocol';
 import { StpaLspVscodeExtension } from './language-extension';
 import { acceptMessageType } from 'sprotty-vscode/lib/lsp';
-import { SendTemplatesAction } from './actions';
+import { SendSnippetsAction } from './actions';
 
 export class TemplateWebview {
 
@@ -104,8 +104,8 @@ export class TemplateWebview {
             // TODO: guarantee that sprotty webview exist
             if (this.extension.clientId) {
                 // send the templates saved in the config file to the language server
-                const temps = vscode.workspace.getConfiguration('stpa').get('templates');
-                const action = { kind: SendTemplatesAction.KIND, temps: temps } as SendTemplatesAction;
+                const temps = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
+                const action = { kind: SendSnippetsAction.KIND, snippets: temps } as SendSnippetsAction;
                 const mes2: ActionMessage = {
                     clientId: this.extension.clientId,
                     action: action

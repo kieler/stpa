@@ -40,7 +40,7 @@ import { getCommonAncestor, setLevelOfCSNodes, sortPorts } from "./utils";
  * @param controlStructure The control structure.
  * @param idToSNode The map of IDs to SNodes.
  * @param options The synthesis options of the STPA model.
- * @param args The GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns the generated control structure diagram.
  */
 export function createControlStructure(
@@ -178,7 +178,7 @@ export function createProcessModelNodes(variables: Variable[], idCache: IdCache<
 /**
  * Creates the edges for the control structure.
  * @param nodes The nodes of the control structure.
- * @param args GeneratorContext of the STPA model
+ * @param idCache The ID cache of the STPA model.
  * @returns A list of edges for the control structure.
  */
 export function generateVerticalCSEdges(
@@ -207,7 +207,7 @@ export function generateVerticalCSEdges(
  * Translates the commands (control action or feedback) of a node to (intermediate) edges and adds them to the correct nodes.
  * @param commands The control actions or feedback of a node.
  * @param edgeType The type of the edge (control action or feedback).
- * @param args GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns A list of edges representing the commands that should be added at the top level.
  */
 export function translateCommandsToEdges(
@@ -276,7 +276,7 @@ export function translateCommandsToEdges(
  * @param io The inputs or outputs of a node.
  * @param node The node of the inputs or outputs.
  * @param edgetype The type of the edge (input or output).
- * @param args GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns a list of edges representing the inputs or outputs that should be added at the top level.
  */
 export function translateIOToEdgeAndNode(
@@ -357,7 +357,7 @@ export function translateIOToEdgeAndNode(
  * @param target The target of the edge.
  * @param edgeId The ID of the original edge.
  * @param edgeType The type of the edge.
- * @param args The GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @param ancestor The common ancestor of the source and target.
  * @returns the IDs of the source and target port at the hierarchy level of the {@code ancestor}.
  */

@@ -19,7 +19,7 @@ import { VNode } from "snabbdom";
 import { Action, RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
 import { WebviewSnippet } from "./snippet-model";
 
-/** Request message from the server to get the svgs of the snippets. */
+/** Request message from the server to the client to get the svgs of the snippets. */
 export interface RequestWebviewSnippetsAction extends RequestAction<SendWebviewSnippetsAction> {
     kind: typeof RequestWebviewSnippetsAction.KIND;
     snippets: WebviewSnippet[];
@@ -88,10 +88,10 @@ export namespace ExecuteSnippetAction {
     }
 }
 
-/** Message containing snippets as string. */
+/** Message from extension to langauge server containing snippets as string. (Used to add default snippets) */
 export interface SendSnippetsAction extends Action {
     kind: typeof SendSnippetsAction.KIND;
-    temps: string[];
+    snippets: string[];
 }
 
 export namespace SendSnippetsAction {
@@ -100,7 +100,7 @@ export namespace SendSnippetsAction {
     export function create(temps: string[]): SendSnippetsAction {
         return {
             kind: KIND,
-            temps,
+            snippets: temps,
         };
     }
 

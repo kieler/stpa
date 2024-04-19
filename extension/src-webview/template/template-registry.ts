@@ -24,7 +24,7 @@ import { HOST_EXTENSION } from "vscode-messenger-common";
 import { Messenger } from "vscode-messenger-webview";
 import { Registry } from "../base/registry";
 import { DISymbol } from "../di.symbols";
-import { RequestWebviewTemplatesAction, SendModelRendererAction, SendWebviewTemplatesAction } from "./actions";
+import { RequestWebviewSnippetsAction, SendModelRendererAction, SendWebviewSnippetsAction } from "./actions";
 import { TemplateRenderer } from "./template-renderer";
 
 /**
@@ -39,23 +39,23 @@ export class TemplateRegistry extends Registry implements IActionHandlerInitiali
     @inject(DISymbol.TemplateRenderer) private templateRenderer: TemplateRenderer;
 
     initialize(registry: ActionHandlerRegistry): void {
-        registry.register(RequestWebviewTemplatesAction.KIND, this);
+        registry.register(RequestWebviewSnippetsAction.KIND, this);
         registry.register(SendModelRendererAction.KIND, this);
     }
 
     handle(action: Action): void | Action | ICommand {
-        if (RequestWebviewTemplatesAction.isThisAction(action)) {
+        if (RequestWebviewSnippetsAction.isThisAction(action)) {
             this.handleRequestWebviewTemps(action);
         } else if (SendModelRendererAction.isThisAction(action)) {
             this.handleSendModelRenderer(action);
         }
     }
 
-    private handleRequestWebviewTemps(action: RequestWebviewTemplatesAction): void {
-        const temps = this.templateRenderer.renderTemplates(action.templates);
-        const response: SendWebviewTemplatesAction = {
-            kind: SendWebviewTemplatesAction.KIND,
-            templates: temps,
+    private handleRequestWebviewTemps(action: RequestWebviewSnippetsAction): void {
+        const temps = this.templateRenderer.renderTemplates(action.snippets);
+        const response: SendWebviewSnippetsAction = {
+            kind: SendWebviewSnippetsAction.KIND,
+            snippets: temps,
             responseId: action.requestId,
         };
         this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {

@@ -353,7 +353,7 @@ function registerTemplateWebview(manager: StpaLspVscodeExtension, context: vscod
             webviewView.title = title;
             tWebview.initializeWebview(webviewView.webview, title);
             tWebview.connect();
-            languageClient.onNotification('templates/add', (msg: any) => tWebview.sendToWebview(msg));
+            languageClient.onNotification('snippets/add', (msg: any) => tWebview.sendToWebview(msg));
         }
     };
     vscode.window.registerWebviewViewProvider("stpa-snippets", provider);

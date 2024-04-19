@@ -26,7 +26,9 @@ import {
 import { Connection } from "vscode-languageserver";
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions";
 import { DropDownOption } from "./options/option-models";
-import { StpaDiagramSnippets } from './snippets/stpa-templates';
+import { SnippetDiagramServer } from './snippets/snippet-diagram-server';
+import { LanguageSnippet } from './snippets/snippet-model';
+import { StpaDiagramSnippets } from './snippets/stpa-snippets';
 import { GenerateSVGsAction, RequestSvgAction, SvgAction } from "./stpa/actions";
 import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/stpa-synthesis-options";
 import {
@@ -54,13 +56,10 @@ import {
     setSystemConstraintGraphOptions,
 } from "./stpa/result-report/svg-generator";
 import { SynthesisOptions } from "./synthesis-options";
-import { SnippetDiagramServer } from './snippets/snippet-diagram-server';
-import { LanguageSnippet } from './snippets/snippet-model';
 
 export class PastaDiagramServer extends SnippetDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;
-    protected stpaTemps: StpaDiagramSnippets | undefined;
-    // clientId: string;
+    protected stpaSnippets: StpaDiagramSnippets | undefined;
     protected connection: Connection | undefined;
 
     constructor(
@@ -70,10 +69,10 @@ export class PastaDiagramServer extends SnippetDiagramServer {
         options: JsonMap | undefined,
         connection: Connection | undefined,
         synthesisOptions?: SynthesisOptions, 
-        stpaTemps?: StpaDiagramSnippets
+        stpaSnippets?: StpaDiagramSnippets
     ) {
-        super(dispatch, services, clientId, stpaTemps?.getSnippets() ?? [], options, connection);
-        this.stpaTemps = stpaTemps;
+        super(dispatch, services, clientId, stpaSnippets?.getSnippets() ?? [], options, connection);
+        this.stpaSnippets = stpaSnippets;
         this.synthesisOptions = synthesisOptions;
         this.clientId = clientId;
         this.connection = connection;
@@ -99,8 +98,13 @@ export class PastaDiagramServer extends SnippetDiagramServer {
         return super.handleAction(action);
     }
 
-    protected createTempFromString(text: string): LanguageSnippet {
-        return this.stpaTemps?.createTemp(text) ?? {} as LanguageSnippet;
+    /**
+     * Creates a snippet from a string.
+     * @param text The text that should be inserted when clicking on the snippet.
+     * @returns a snippet for the given {@code text}
+     */
+    protected createSnippetFromString(text: string): LanguageSnippet {
+        return this.stpaSnippets?.createSnippet(text) ?? {} as LanguageSnippet;
     }
 
     /**
