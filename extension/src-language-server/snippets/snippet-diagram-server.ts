@@ -30,7 +30,7 @@ import {
     AddSnippetAction,
     ExecuteSnippetAction,
     RequestWebviewSnippetsAction,
-    SendSnippetsAction,
+    SendDefaultSnippetsAction,
     SendWebviewSnippetsAction,
 } from "./actions";
 import { LanguageSnippet, SnippetGraphGenerator, WebviewSnippet } from "./snippet-model";
@@ -93,8 +93,8 @@ export abstract class SnippetDiagramServer extends DiagramServer {
                 return this.handleExecuteSnippet(action as ExecuteSnippetAction);
             case AddSnippetAction.KIND:
                 return this.handleAddSnippet(action as AddSnippetAction);
-            case SendSnippetsAction.KIND:
-                return this.handleSendSnippets(action as SendSnippetsAction);
+            case SendDefaultSnippetsAction.KIND:
+                return this.handleSendSnippets(action as SendDefaultSnippetsAction);
         }
         return super.handleAction(action);
     }
@@ -109,7 +109,7 @@ export abstract class SnippetDiagramServer extends DiagramServer {
         if (await this.parseable(temp)) {
             this.snippetGraphGenerator.deleteDanglingEdges(temp);
             this.addSnippets([temp]);
-            this.connection?.sendNotification("config/add", [temp.baseCode]);
+            this.connection?.sendNotification("config/add", [temp.insertText]);
         } else {
             this.connection?.sendNotification("snippets/creationFailed");
         }
@@ -135,13 +135,13 @@ export abstract class SnippetDiagramServer extends DiagramServer {
      * @param action Action containing the snippets texts.
      * @returns
      */
-    protected handleSendSnippets(action: SendSnippetsAction): Promise<void> {
+    protected handleSendSnippets(action: SendDefaultSnippetsAction): Promise<void> {
         // if no snippets are in the config file, add the default ones
         if (action.snippets.length === 0) {
             this.snippets = this.defaultTemps;
             this.connection?.sendNotification(
                 "config/add",
-                this.defaultTemps.map(temp => temp.baseCode)
+                this.defaultTemps.map(temp => temp.insertText)
             );
         } else {
             this.snippets = action.snippets.map(temp => this.createSnippetFromString(temp));

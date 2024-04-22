@@ -121,22 +121,22 @@ export namespace AddSnippetAction {
 }
 
 /** Message from extension to langauge server containing snippets as string. (Used to add default snippets) */
-export interface SendSnippetsAction extends Action {
-    kind: typeof SendSnippetsAction.KIND;
+export interface SendDefaultSnippetsAction extends Action {
+    kind: typeof SendDefaultSnippetsAction.KIND;
     snippets: string[];
 }
 
-export namespace SendSnippetsAction {
+export namespace SendDefaultSnippetsAction {
     export const KIND = "sendSnippets";
 
-    export function create(temps: string[]): SendSnippetsAction {
+    export function create(temps: string[]): SendDefaultSnippetsAction {
         return {
             kind: KIND,
             snippets: temps,
         };
     }
 
-    export function isThisAction(action: Action): action is SendSnippetsAction {
-        return action.kind === SendSnippetsAction.KIND;
+    export function isThisAction(action: Action): action is SendDefaultSnippetsAction {
+        return action.kind === SendDefaultSnippetsAction.KIND;
     }
 }

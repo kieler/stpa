@@ -19,7 +19,7 @@ import * as vscode from 'vscode';
 import { ActionMessage } from 'sprotty-protocol';
 import { StpaLspVscodeExtension } from './language-extension';
 import { acceptMessageType } from 'sprotty-vscode/lib/lsp';
-import { SendSnippetsAction } from './actions';
+import { SendDefaultSnippetsAction } from './actions';
 
 export class DiagramSnippetWebview {
 
@@ -105,7 +105,7 @@ export class DiagramSnippetWebview {
             if (this.extension.clientId) {
                 // send the snippets saved in the config file to the language server
                 const temps = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
-                const action = { kind: SendSnippetsAction.KIND, snippets: temps } as SendSnippetsAction;
+                const action = { kind: SendDefaultSnippetsAction.KIND, snippets: temps } as SendDefaultSnippetsAction;
                 const mes2: ActionMessage = {
                     clientId: this.extension.clientId,
                     action: action
