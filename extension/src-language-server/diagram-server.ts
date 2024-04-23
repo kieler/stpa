@@ -56,6 +56,8 @@ import {
     setSystemConstraintGraphOptions,
 } from "./stpa/result-report/svg-generator";
 import { SynthesisOptions } from "./synthesis-options";
+import { StpaServices } from './stpa/stpa-module';
+import { FtaServices } from './fta/fta-module';
 
 export class PastaDiagramServer extends SnippetDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;
@@ -68,12 +70,11 @@ export class PastaDiagramServer extends SnippetDiagramServer {
         clientId: string, 
         options: JsonMap | undefined,
         connection: Connection | undefined,
-        synthesisOptions?: SynthesisOptions, 
-        stpaSnippets?: StpaDiagramSnippets
+        language: StpaServices | FtaServices,
     ) {
-        super(dispatch, services, clientId, stpaSnippets?.getSnippets() ?? [], options, connection);
-        this.stpaSnippets = stpaSnippets;
-        this.synthesisOptions = synthesisOptions;
+        super(dispatch, services, clientId, language.snippets.StpaDiagramSnippets.getSnippets() ?? [], options, connection);
+        this.stpaSnippets = language.snippets.StpaDiagramSnippets;
+        this.synthesisOptions = language.options.SynthesisOptions;
         this.clientId = clientId;
         this.connection = connection;
     }

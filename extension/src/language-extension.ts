@@ -62,13 +62,13 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     }
 
     /**
-     * Adds the {@code temps} to the snippets in the config file.
-     * @param temps Text of snippets.
+     * Adds the {@code snippets} to the snippets in the config file.
+     * @param snippets Text of snippets.
      */
-    handleAddToConfig(temps: string[]): void {
-        const configTemps = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
-        const newTemps = (configTemps as string[]).concat(temps);
-        vscode.workspace.getConfiguration('pasta.stpa').update('snippets', newTemps);
+    handleAddToConfig(snippets: string[]): void {
+        const configSnippets = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
+        const newSnippets = (configSnippets as string[]).concat(snippets);
+        vscode.workspace.getConfiguration('pasta.stpa').update('snippets', newSnippets);
     }
 
     /**
@@ -131,7 +131,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
 
         // handling notifications regarding the snippets
         options.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
-        options.languageClient.onNotification('config/add', (temps: string[]) => this.handleAddToConfig(temps));
+        options.languageClient.onNotification('config/add', (snippets: string[]) => this.handleAddToConfig(snippets));
         options.languageClient.onNotification('snippets/creationFailed', () => vscode.window.showWarningMessage("Snippet could not be created."));
            
 

@@ -79,8 +79,7 @@ const pastaDiagramServerFactory = (
             clientId,
             options,
             connection,
-            language.options.SynthesisOptions,
-            language.snippets.StpaDiagramSnippets
+            language
         );
     };
 };

@@ -20,9 +20,9 @@ import { attributesModule, classModule, eventListenersModule, init, propsModule,
 import { html } from './jsx';
 
 /** IDs for the main elements in the panel. */
-const placeholderForSnippetsID = 'tempPlaceholder';
-export const textFieldID = 'tempAddTextField';
-export const buttonID = 'tempAddBnt';
+const placeholderForSnippetsID = 'snippetPlaceholder';
+export const textFieldID = 'snippetAddTextField';
+export const buttonID = 'snippetAddBnt';
 
 // TODO: instead of defining an input tag, a msg could be send to the extension when clicking on the button. the extension can call windows.showInputBox/createInputBox or using a QuickInput
 /**
@@ -54,12 +54,12 @@ export const patch = init([
 export function addSnippetsToPanel(snippets: VNode[]): void {
     const placeholder = document.getElementById(placeholderForSnippetsID);
     if (placeholder) {
-        const temps = <div id={placeholderForSnippetsID}>{...snippets}</div>;
-        patch(placeholder, temps);
+        const divSnippets = <div id={placeholderForSnippetsID}>{...snippets}</div>;
+        patch(placeholder, divSnippets);
         // add mouselistener for highlighting focused snippet
-        const curTemps = document.getElementById(placeholderForSnippetsID);
-        if (curTemps) {
-            curTemps.childNodes.forEach(child => {
+        const curSnippets = document.getElementById(placeholderForSnippetsID);
+        if (curSnippets) {
+            curSnippets.childNodes.forEach(child => {
                 (child as HTMLElement).addEventListener('mouseover', () => (child as HTMLElement).classList.add('focused'));
                 (child as HTMLElement).addEventListener('mouseleave', () => (child as HTMLElement).classList.remove('focused'));
             });

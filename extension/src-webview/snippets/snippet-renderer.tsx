@@ -45,8 +45,8 @@ export class SnippetRenderer {
         if (snippets.length === 0) return <div></div>;
 
         // labels and edges are only visible if they are within the canvas bounds
-        for (const temp of snippets) {
-            (temp.graph as SGraph).canvasBounds = { width: this.bounds.width + 20, height: this.bounds.height, x: this.bounds.x, y: this.bounds.y };
+        for (const snippet of snippets) {
+            (snippet.graph as SGraph).canvasBounds = { width: this.bounds.width + 20, height: this.bounds.height, x: this.bounds.x, y: this.bounds.y };
         }
 
         const res = snippets.map(snippet => {

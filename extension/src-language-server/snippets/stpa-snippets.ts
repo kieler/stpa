@@ -87,6 +87,7 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
     if (titleIndex === -1) {
         return document.positionAt(endIndex);
     } else {
+        // delete the control structure keyword
         snippet.insertText = snippet.insertText.substring(18, snippet.insertText.length);
         // check whether a graph ID already exist
         const csText = docText.substring(startIndex, endIndex + 1);
@@ -94,6 +95,7 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
         if (graphIndex === -1) {
             return document.positionAt(endIndex);
         } else {
+            // delete the graph ID
             snippet.insertText = snippet.insertText.substring(
                 snippet.insertText.indexOf("{") + 1,
                 snippet.insertText.lastIndexOf("}")
@@ -144,26 +146,51 @@ function isKeyWord(text: string): boolean {
 }
 
 /**
- * Custom snippet for the control structure.
+ * Snippet language definition for STPA.
  */
-export class CustomCSSnippet implements LanguageSnippet {
+export class STPALanguageSnippet implements LanguageSnippet {
+    /** The text that should be inserted when clicking on the snippet */
     insertText: string;
     documents: LangiumDocuments;
+    /** The id of the snippet */
     id: string;
-    baseCode: string;
     /** Counts how many times the snippet was added already  */
     protected counter: number = 0;
+    /** A shorter ID used when executing the snippet */
+    protected shortId: string | undefined;
+    /** The base code of the snippet. Always starts with the header of the corresponding aspect. */
+    baseCode: string;
 
-    constructor(documents: LangiumDocuments, insertText: string, id: string, baseCode: string) {
+    constructor(documents: LangiumDocuments, id: string, shortId?: string) {
         this.documents = documents;
-        this.insertText = insertText.trim();
         this.id = id;
+        this.shortId = shortId;
+    }
+
+    getPosition(uri: string): Position {
+        this.insertText = addNodeIDs(
+            this.baseCode,
+            this.shortId ? this.shortId + this.counter : this.id + this.counter
+        );
+        this.counter++;
+        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        return getPositionForCSSnippet(document, this);
+    }
+}
+
+/**
+ * Custom stpa snippet for the control structure.
+ */
+export class CustomCSSnippet extends STPALanguageSnippet {
+    constructor(documents: LangiumDocuments, insertText: string, id: string, baseCode: string) {
+        super(documents, id);
+        this.insertText = insertText.trim();
         this.baseCode = baseCode.trim();
         this.checkCaption();
     }
 
     /**
-     * Check whether the CS caption and graph name exists. If not, adds it to the baseCode.
+     * Check whether the control structrue caption and graph name exists. If not, adds it to the baseCode.
      */
     protected checkCaption(): void {
         const splits = this.baseCode.split(/[^a-zA-Z0-9\{\}]/);
@@ -176,25 +203,15 @@ export class CustomCSSnippet implements LanguageSnippet {
             }
         }
     }
-
-    getPosition(uri: string): Position {
-        this.insertText = addNodeIDs(this.baseCode, this.id + this.counter);
-        this.counter++;
-        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSSnippet(document, this);
-    }
 }
 
 /**
  * Snippet for a control structure with one controller and one controlled process.
  */
-export class SimpleCSSnippet implements LanguageSnippet {
-    insertText: string;
-    documents: LangiumDocuments;
-    id: string = "simpleCSSnippet";
-    protected counter: number = 0;
-    protected shortId: string;
-    baseCode: string = `
+export class SimpleCSSnippet extends STPALanguageSnippet {
+    constructor(documents: LangiumDocuments, shortId?: string) {
+        super(documents, "simpleCSSnippet", shortId);
+        this.baseCode = `
 ControlStructure
 CS {
     Controller {
@@ -211,30 +228,17 @@ CS {
     }
 }
 `;
-
-    constructor(documents: LangiumDocuments, shortId: string) {
-        this.documents = documents;
-        this.shortId = shortId;
-    }
-
-    getPosition(uri: string): Position {
-        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
-        this.counter++;
-        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSSnippet(document, this);
+        this.insertText = this.baseCode;
     }
 }
 
 /**
  * Snippet for a control structure with one controller, one controlled process, one actuator, and one sensor.
  */
-export class SimpleCSWithAcsSnippet implements LanguageSnippet {
-    insertText: string;
-    documents: LangiumDocuments;
-    id: string = "simpleCSWithAcsSnippet";
-    protected counter: number = 0;
-    protected shortId: string;
-    baseCode: string = `
+export class SimpleCSWithAcsSnippet extends STPALanguageSnippet {
+    constructor(documents: LangiumDocuments, shortId?: string) {
+        super(documents, "simpleCSWithAcsSnippet", shortId);
+        this.baseCode = `
 ControlStructure
 CS {
     Controller {
@@ -263,30 +267,17 @@ CS {
     }
 }
 `;
-
-    constructor(documents: LangiumDocuments, shortId: string) {
-        this.documents = documents;
-        this.shortId = shortId;
-    }
-
-    getPosition(uri: string): Position {
-        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
-        this.counter++;
-        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSSnippet(document, this);
+        this.insertText = this.baseCode;
     }
 }
 
 /**
  * Snippet for a control structure with two consecutive controllers and one controlled process.
  */
-export class ConsControllersSnippet implements LanguageSnippet {
-    insertText: string;
-    documents: LangiumDocuments;
-    id: string = "consControllerSnippet";
-    protected counter: number = 0;
-    protected shortId: string;
-    baseCode: string = `
+export class ConsControllersSnippet extends STPALanguageSnippet {
+    constructor(documents: LangiumDocuments, shortId?: string) {
+        super(documents, "consControllerSnippet", shortId);
+        this.baseCode = `
 ControlStructure
 CS {
     ControllerA {
@@ -312,30 +303,18 @@ CS {
     }
 }
 `;
-
-    constructor(documents: LangiumDocuments, shortId: string) {
-        this.documents = documents;
-        this.shortId = shortId;
-    }
-
-    getPosition(uri: string): Position {
-        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
-        this.counter++;
-        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSSnippet(document, this);
+        this.insertText = this.baseCode;
     }
 }
 
 /**
  * Snippet for a control structure with two parallel controllers and one controlled process.
  */
-export class ParallelContsSnippet implements LanguageSnippet {
-    insertText: string;
-    documents: LangiumDocuments;
-    id: string = "parallelContsSnippet";
-    protected counter: number = 0;
-    protected shortId: string;
-    baseCode: string = `
+export class ParallelContsSnippet extends STPALanguageSnippet {
+    constructor(documents: LangiumDocuments, shortId?: string) {
+        super(documents, "parallelContsSnippet", shortId);
+        this.baseCode =
+            `
 ControlStructure
 CS {
     ControllerA {
@@ -359,30 +338,18 @@ CS {
     }
 }
 `;
-
-    constructor(documents: LangiumDocuments, shortId: string) {
-        this.documents = documents;
-        this.shortId = shortId;
-    }
-
-    getPosition(uri: string): Position {
-        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
-        this.counter++;
-        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSSnippet(document, this);
+        this.insertText = this.baseCode;
     }
 }
 
 /**
  * Snippet for a control structure with two consecutive controllers, one controlled process.
  */
-export class ConsContsWithLoopSnippet implements LanguageSnippet {
-    insertText: string;
-    documents: LangiumDocuments;
-    id: string = "consContsWithLoopSnippet";
-    protected counter: number = 0;
-    protected shortId: string;
-    baseCode: string = `
+export class ConsContsWithLoopSnippet extends STPALanguageSnippet {
+    constructor(documents: LangiumDocuments, shortId?: string) {
+        super(documents, "consContsWithLoopSnippet", shortId);
+        this.baseCode =
+            `
 ControlStructure
 CS {
     ControllerA {
@@ -410,16 +377,6 @@ CS {
     }
 }
 `;
-
-    constructor(documents: LangiumDocuments, shortId: string) {
-        this.documents = documents;
-        this.shortId = shortId;
-    }
-
-    getPosition(uri: string): Position {
-        this.insertText = addNodeIDs(this.baseCode, this.shortId + this.counter);
-        this.counter++;
-        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        return getPositionForCSSnippet(document, this);
+        this.insertText = this.baseCode;
     }
 }

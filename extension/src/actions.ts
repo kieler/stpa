@@ -129,10 +129,10 @@ export interface SendDefaultSnippetsAction extends Action {
 export namespace SendDefaultSnippetsAction {
     export const KIND = "sendSnippets";
 
-    export function create(temps: string[]): SendDefaultSnippetsAction {
+    export function create(snippets: string[]): SendDefaultSnippetsAction {
         return {
             kind: KIND,
-            snippets: temps,
+            snippets: snippets,
         };
     }
 

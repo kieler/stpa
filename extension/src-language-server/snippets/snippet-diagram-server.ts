@@ -37,12 +37,16 @@ import { LanguageSnippet, SnippetGraphGenerator, WebviewSnippet } from "./snippe
 
 export abstract class SnippetDiagramServer extends DiagramServer {
     protected clientId: string;
+    /** currently shown snippets */
     protected snippets: LanguageSnippet[] = [];
-    protected defaultTemps: LanguageSnippet[];
+    /** default snippets that are added if no snippets are in the config file */
+    protected defaultSnippets: LanguageSnippet[];
+    /** options for the current source model */
     protected options: JsonMap | undefined;
+    /** connection to the extension */
     protected connection: Connection | undefined;
+    /** generator for snippet sgraphs */
     protected snippetGraphGenerator: SnippetGraphGenerator;
-    protected tempRdy: boolean = false;
 
     constructor(
         dispatch: <A extends Action>(action: A) => Promise<void>,
@@ -56,30 +60,34 @@ export abstract class SnippetDiagramServer extends DiagramServer {
         this.clientId = clientId;
         this.options = options;
         this.connection = connection;
-        this.defaultTemps = snippets;
+        this.defaultSnippets = snippets;
         this.snippetGraphGenerator = services.DiagramGenerator as SnippetGraphGenerator;
     }
 
     /**
      * Returns the snippets that should be send to the webview for rendering.
      */
-    protected async getSnippets(): Promise<WebviewSnippet[]> {
+    protected async getSnippetsForWebview(): Promise<WebviewSnippet[]> {
         const webviewSnippets: WebviewSnippet[] = [];
         for (const snippet of this.snippets) {
+            // generate graph for snippet
             let graph = await this.snippetGraphGenerator.generateSnippetRoot(snippet);
             if (graph) {
+                // compute bounds for snippet graph
                 const request = RequestBoundsAction.create(graph);
                 const response = await this.request<ComputedBoundsAction>(request);
                 applyBounds(graph, response);
+                // layout snippet graph
                 const newRoot = await this.layoutEngine?.layout(graph);
                 if (newRoot) {
                     graph = newRoot;
                 }
-                const webTemp = {
+                // create webview snippet
+                const webviewSnippet = {
                     graph: graph,
                     id: snippet.id,
                 };
-                webviewSnippets.push(webTemp);
+                webviewSnippets.push(webviewSnippet);
             } else {
                 console.log("For snippet " + snippet.id + " no graph could be generated.");
             }
@@ -105,11 +113,11 @@ export abstract class SnippetDiagramServer extends DiagramServer {
      * @returns
      */
     protected async handleAddSnippet(action: AddSnippetAction): Promise<void> {
-        const temp = this.createSnippetFromString(action.text);
-        if (await this.parseable(temp)) {
-            this.snippetGraphGenerator.deleteDanglingEdges(temp);
-            this.addSnippets([temp]);
-            this.connection?.sendNotification("config/add", [temp.insertText]);
+        const snippet = this.createSnippetFromString(action.text);
+        if (await this.parseable(snippet)) {
+            this.snippetGraphGenerator.deleteDanglingEdges(snippet);
+            this.addSnippets([snippet]);
+            this.connection?.sendNotification("config/add", [snippet.insertText]);
         } else {
             this.connection?.sendNotification("snippets/creationFailed");
         }
@@ -138,13 +146,13 @@ export abstract class SnippetDiagramServer extends DiagramServer {
     protected handleSendSnippets(action: SendDefaultSnippetsAction): Promise<void> {
         // if no snippets are in the config file, add the default ones
         if (action.snippets.length === 0) {
-            this.snippets = this.defaultTemps;
+            this.snippets = this.defaultSnippets;
             this.connection?.sendNotification(
                 "config/add",
-                this.defaultTemps.map(temp => temp.insertText)
+                this.defaultSnippets.map(snippet => snippet.insertText)
             );
         } else {
-            this.snippets = action.snippets.map(temp => this.createSnippetFromString(temp));
+            this.snippets = action.snippets.map(snippet => this.createSnippetFromString(snippet));
         }
         this.update();
         return Promise.resolve();
@@ -159,10 +167,10 @@ export abstract class SnippetDiagramServer extends DiagramServer {
 
     /**
      * Adds the given snippets to the snippet list and updates the webview.
-     * @param temps The snippets to add.
+     * @param snippets The snippets to add.
      */
-    addSnippets(temps: LanguageSnippet[]): void {
-        this.snippets.push(...temps);
+    addSnippets(snippets: LanguageSnippet[]): void {
+        this.snippets.push(...snippets);
         this.update();
     }
 
@@ -170,11 +178,11 @@ export abstract class SnippetDiagramServer extends DiagramServer {
      * Updates the webview with the current snippets.
      */
     async update(): Promise<void> {
-        const temps = await this.getSnippets();
+        const snippets = await this.getSnippetsForWebview();
         // send the avaiable snippets to the client to get them rendered
         const response = await this.request<SendWebviewSnippetsAction>({
             kind: RequestWebviewSnippetsAction.KIND,
-            snippets: temps,
+            snippets: snippets,
             clientId: this.clientId,
         } as RequestWebviewSnippetsAction);
         // send graph svgs to extension
@@ -183,17 +191,17 @@ export abstract class SnippetDiagramServer extends DiagramServer {
 
     /**
      * Adds the text of the snippet in {@code action} to the editor.
-     * @param action 
+     * @param action
      */
     protected async handleExecuteSnippet(action: ExecuteSnippetAction): Promise<void> {
         // uri of the file in which the snippet should be inserted
         const uri = this.options?.sourceUri;
-        const temp = this.snippets.find(temp => temp.id === action.id);
-        if (temp) {
+        const snippet = this.snippets.find(snippet => snippet.id === action.id);
+        if (snippet) {
             // determine position where to add
-            const pos = temp.getPosition(uri as string);
+            const pos = snippet.getPosition(uri as string);
             // add the text of the snippet to the editor
-            this.connection?.sendNotification("editor/add", { uri: uri, text: temp.insertText, position: pos });
+            this.connection?.sendNotification("editor/add", { uri: uri, text: snippet.insertText, position: pos });
         } else {
             console.error("There is no Diagram Snippet with id " + action.id);
         }

@@ -45,17 +45,17 @@ export class SnippetRegistry extends Registry implements IActionHandlerInitializ
 
     handle(action: Action): void | Action | ICommand {
         if (RequestWebviewSnippetsAction.isThisAction(action)) {
-            this.handleRequestWebviewTemps(action);
+            this.handleRequestWebviewSnippets(action);
         } else if (SendModelRendererAction.isThisAction(action)) {
             this.handleSendModelRenderer(action);
         }
     }
 
-    private handleRequestWebviewTemps(action: RequestWebviewSnippetsAction): void {
-        const temps = this.snippetRenderer.renderSnippets(action.snippets);
+    private handleRequestWebviewSnippets(action: RequestWebviewSnippetsAction): void {
+        const snippets = this.snippetRenderer.renderSnippets(action.snippets);
         const response: SendWebviewSnippetsAction = {
             kind: SendWebviewSnippetsAction.KIND,
-            snippets: temps,
+            snippets: snippets,
             responseId: action.requestId,
         };
         this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {

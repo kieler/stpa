@@ -104,8 +104,8 @@ export class DiagramSnippetWebview {
             // TODO: guarantee that sprotty webview exist
             if (this.extension.clientId) {
                 // send the snippets saved in the config file to the language server
-                const temps = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
-                const action = { kind: SendDefaultSnippetsAction.KIND, snippets: temps } as SendDefaultSnippetsAction;
+                const snippets = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
+                const action = { kind: SendDefaultSnippetsAction.KIND, snippets: snippets } as SendDefaultSnippetsAction;
                 const mes2: ActionMessage = {
                     clientId: this.extension.clientId,
                     action: action

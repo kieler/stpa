@@ -26,7 +26,8 @@ export interface LanguageSnippet {
     /** the code that should be added when executing the snippet */
     baseCode: string;
     /** the text to insert, representing the snippet. 
-     * Varies from the base code by IDs to make severel insertions from the same snippet unique. */
+     * This may differ from the baseCode since the control structure keyword and graph ID are not necessarily added.
+     * Furthermore nodes need unique IDs each time the snippet is executed. */
     insertText: string;
     /** unique id of the snippet */
     id: string;
