@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode, LangiumDocumentFactory, LangiumParser, ParseResult } from "langium";
+import { AstNode, LangiumDocumentFactory, ParseResult } from "langium";
 import { GeneratorContext, IdCache, IdCacheImpl } from "langium-sprotty";
 import { SModelElement, SModelRoot, SNode } from "sprotty-protocol";
 import { CancellationToken } from "vscode-languageserver";
@@ -35,7 +35,7 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
 
     /** Saves the Ids of the generated SNodes */
     protected idToSNode: Map<string, SNode> = new Map();
-
+    
     protected idCache: IdCache<AstNode>;
 
     constructor(services: StpaServices) {
@@ -152,7 +152,7 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
 
     /**
      * Generates an SGraph for the given {@code model}.
-     * @param model The Model for whcih a graph should be generated.
+     * @param model The Model for which a graph should be generated.
      * @returns an SGraph.
      */
     private generateGraph(model: Model): SModelRoot {

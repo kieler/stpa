@@ -23,12 +23,6 @@ export interface SendConfigAction extends Action {
     options: { id: string; value: any }[];
 }
 
-/** Message to the language server to update the model and hence the view. */
-// export interface UpdateViewAction extends Action {
-//     kind: typeof UpdateViewAction.KIND;
-//     options?: JsonMap;
-// }
-
 export namespace SendConfigAction {
     export const KIND = "sendConfig";
 
@@ -120,7 +114,7 @@ export namespace AddSnippetAction {
     }
 }
 
-/** Message from extension to langauge server containing snippets as string. (Used to add default snippets) */
+/** Message from extension to langauge server containing the default snippets as string. */
 export interface SendDefaultSnippetsAction extends Action {
     kind: typeof SendDefaultSnippetsAction.KIND;
     snippets: string[];

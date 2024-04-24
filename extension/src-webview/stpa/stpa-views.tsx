@@ -18,13 +18,13 @@
 /** @jsx svg */
 import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
-import { IView, IViewArgs, IActionDispatcher, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SLabel, SLabelView, SNode, SPort, svg, toDegrees, ModelRenderer, TYPES } from 'sprotty';
+import { IActionDispatcher, IView, IViewArgs, ModelRenderer, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SLabel, SLabelView, SNode, SPort, TYPES, svg, toDegrees } from 'sprotty';
 import { DISymbol } from '../di.symbols';
-import { collectAllChildren } from './helper-methods';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry, ShowCSOption, ShowRelationshipGraphOption } from '../options/render-options-registry';
-import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
-import { STPANode, PARENT_TYPE, STPA_NODE_TYPE, CS_EDGE_TYPE, STPAAspect, STPAEdge, STPA_EDGE_TYPE, CS_NODE_TYPE, CSEdge, CS_INTERMEDIATE_EDGE_TYPE, EdgeType, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
+import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
 import { SendModelRendererAction } from '../snippets/actions';
+import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { collectAllChildren } from './helper-methods';
+import { CSEdge, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
@@ -205,15 +205,6 @@ export class CSNodeView extends RectangularNodeView {
     @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
     render(node: SNode, context: RenderingContext): VNode {
-        // hides the control structure and/or relationship graph if the corresponding option is set to false
-        if (context.targetKind !== 'hidden' &&
-            (!this.renderOptionsRegistry.getValue(ShowCSOption) && (node.type == CS_NODE_TYPE || node.type == PARENT_TYPE
-                && node.children.filter(child => child instanceof SNode).length !== 0 && node.children.filter(child => child instanceof SNode)[0].type == CS_NODE_TYPE)
-                || !this.renderOptionsRegistry.getValue(ShowRelationshipGraphOption) && (node.type == STPA_NODE_TYPE || node.type == PARENT_TYPE
-                    && node.children.filter(child => child instanceof SNode).length !== 0 && node.children.filter(child => child instanceof SNode)[0].type == STPA_NODE_TYPE))) {
-            return <g></g>;
-        }
-
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const sprottyNode = colorStyle === "standard";
         const printNode = !sprottyNode;
