@@ -18,12 +18,17 @@
 import { ActionMessage, JsonMap, SelectAction } from "sprotty-protocol";
 import { createFileUri } from "sprotty-vscode";
 import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
-import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions, acceptMessageType } from "sprotty-vscode/lib/lsp";
+import {
+    LspWebviewEndpoint,
+    LspWebviewPanelManager,
+    LspWebviewPanelManagerOptions,
+    acceptMessageType,
+} from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
 import { AddSnippetAction, GenerateSVGsAction } from "./actions";
 import { ContextTablePanel } from "./context-table-panel";
 import { StpaFormattingEditProvider } from "./stpa-formatter";
-import { applyTextEdits, collectOptions, createFile } from "./utils";
+import { addSnippetsToConfig, applyTextEdits, collectOptions, createFile, handleWorkSpaceEdit } from "./utils";
 import { StpaLspWebview } from "./wview";
 
 export class StpaLspVscodeExtension extends LspWebviewPanelManager {
@@ -35,79 +40,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     clientId: string | undefined;
 
     protected resolveLSReady: () => void;
-    readonly lsReady = new Promise<void>((resolve) => (this.resolveLSReady = resolve));
-    /**
-     * Sends an AddSnippetAction to the language server containing the selected text.
-     * @param commandArgs 
-     */
-    async addSnippet(uri: vscode.Uri): Promise<void> {
-        const activeEditor = vscode.window.activeTextEditor;
-        const sel = activeEditor?.selection;
-        const doc = activeEditor?.document;
-        if (doc && sel) {
-            if (!this.clientId) {
-                const identifier = await this.createDiagramIdentifier(uri);
-                this.clientId = identifier?.clientId;
-            }
-            const text = doc.getText().substring(doc.offsetAt(sel.start), doc.offsetAt(sel?.end));
-            const mes: ActionMessage = {
-                clientId: this.clientId!,
-                action: {
-                    kind: AddSnippetAction.KIND,
-                    text: text
-                } as AddSnippetAction
-            };
-            this.languageClient.sendNotification(acceptMessageType, mes);
-        }
-    }
-
-    /**
-     * Adds the {@code snippets} to the snippets in the config file.
-     * @param snippets Text of snippets.
-     */
-    handleAddToConfig(snippets: string[]): void {
-        const configSnippets = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
-        const newSnippets = (configSnippets as string[]).concat(snippets);
-        vscode.workspace.getConfiguration('pasta.stpa').update('snippets', newSnippets);
-    }
-
-    /**
-     * Handle WorkSpaceEdit notifications form the langauge server
-     * @param msg Message contianing the uri of the document, the text to insert, and the position in the document ot insert it to.
-     */
-    async handleWorkSpaceEdit(msg: { uri: string, text: string, position: vscode.Position; }): Promise<void> {
-        const textDocument = vscode.workspace.textDocuments.find(
-            (doc) => doc.uri.toString() === vscode.Uri.parse(msg.uri).toString()
-        );
-        if (!textDocument) {
-            console.error(
-                `Server requested a text edit but the requested uri was not found among the known documents: ${msg.uri}`
-            );
-            return;
-        }
-        const workSpaceEdit = new vscode.WorkspaceEdit();
-        const pos = this.languageClient.protocol2CodeConverter.asPosition(msg.position);
-        const edits: vscode.TextEdit[] = [vscode.TextEdit.insert(pos, msg.text)];
-        workSpaceEdit.set(textDocument.uri, edits);
-
-        // Apply and save the edit. Report possible failures.
-        const edited = await vscode.workspace.applyEdit(workSpaceEdit);
-        if (!edited) {
-            console.error("Workspace edit could not be applied!");
-            return;
-        }
-
-        const activeEditor = vscode.window.activeTextEditor;
-        if (activeEditor) {
-            // TODO: endPos is not completly correct. maybe \n must be counted too?
-            const endPos = textDocument.positionAt(textDocument.offsetAt(pos) + msg.text.length);
-            activeEditor.selections = [new vscode.Selection(pos, endPos)];
-            activeEditor.revealRange(new vscode.Range(pos, endPos));
-        }
-
-        //await textDocument.save();
-        return;
-    }
+    readonly lsReady = new Promise<void>(resolve => (this.resolveLSReady = resolve));
 
     /** needed for undo/redo actions when ID enforcement is active*/
     ignoreNextTextChange: boolean = false;
@@ -129,32 +62,11 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         const sel: vscode.DocumentSelector = { scheme: "file", language: "stpa" };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
-        // handling notifications regarding the snippets
-        options.languageClient.onNotification('editor/add', this.handleWorkSpaceEdit.bind(this));
-        options.languageClient.onNotification('config/add', (snippets: string[]) => this.handleAddToConfig(snippets));
-        options.languageClient.onNotification('snippets/creationFailed', () => vscode.window.showWarningMessage("Snippet could not be created."));
-           
-
-        // handling of notifications regarding the context table
-        options.languageClient.onNotification("contextTable/data", (data) => this.contextTable.setData(data));
-        options.languageClient.onNotification(
-            "editor/highlight",
-            (msg: { startLine: number; startChar: number; endLine: number; endChar: number; uri: string }) => {
-                // highlight and reveal the given range in the editor
-                const editor = vscode.window.visibleTextEditors.find(
-                    (visibleEditor) => visibleEditor.document.uri.toString() === msg.uri
-                );
-                if (editor) {
-                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
-                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
-                    editor.selection = new vscode.Selection(startPosition, endPosition);
-                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
-                }
-            }
-        );
+        this.addReactionsToSnippetCommands(options);
+        this.addReactionsToContextTableCommands(options);
 
         // textdocument has changed
-        vscode.workspace.onDidChangeTextDocument((changeEvent) => {
+        vscode.workspace.onDidChangeTextDocument(changeEvent => {
             this.handleTextChangeEvent(changeEvent);
         });
         // language client sent workspace edits
@@ -181,6 +93,48 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     }
 
     /**
+     * Adds reactions to the snippet commands.
+     * @param options The options of the language client.
+     */
+    protected addReactionsToSnippetCommands(options: LspWebviewPanelManagerOptions): void {
+        // handling notifications regarding the diagram snippets
+        options.languageClient.onNotification(
+            "editor/add",
+            (msg: { uri: string; text: string; position: vscode.Position }) => {
+                const pos = this.languageClient.protocol2CodeConverter.asPosition(msg.position);
+                handleWorkSpaceEdit(msg.uri, msg.text, pos);
+            }
+        );
+        options.languageClient.onNotification("config/add", (snippets: string[]) => addSnippetsToConfig(snippets));
+        options.languageClient.onNotification("snippets/creationFailed", () =>
+            vscode.window.showWarningMessage("Snippet could not be created.")
+        );
+    }
+
+    /**
+     * Adds reactions to the context table commands.
+     * @param options The options of the language client.
+     */
+    protected addReactionsToContextTableCommands(options: LspWebviewPanelManagerOptions): void {
+        options.languageClient.onNotification("contextTable/data", data => this.contextTable.setData(data));
+        options.languageClient.onNotification(
+            "editor/highlight",
+            (msg: { startLine: number; startChar: number; endLine: number; endChar: number; uri: string }) => {
+                // highlight and reveal the given range in the editor
+                const editor = vscode.window.visibleTextEditors.find(
+                    visibleEditor => visibleEditor.document.uri.toString() === msg.uri
+                );
+                if (editor) {
+                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+                    editor.selection = new vscode.Selection(startPosition, endPosition);
+                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+                }
+            }
+        );
+    }
+
+    /**
      * Notifies the language server that a textdocument has changed.
      * @param changeEvent The change in the text document.
      */
@@ -196,6 +150,33 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         // TODO: ID enforcer for FTA
         if (uri.endsWith(".stpa")) {
             this.languageClient.sendNotification("editor/textChange", { changes: changes, uri: uri });
+        }
+    }
+
+    /**
+     * Sends an AddSnippetAction to the language server containing the selected text.
+     * @param commandArgs
+     */
+    async addSnippet(uri: vscode.Uri): Promise<void> {
+        const activeEditor = vscode.window.activeTextEditor;
+        const selection = activeEditor?.selection;
+        const document = activeEditor?.document;
+        if (document && selection) {
+            if (!this.clientId) {
+                const identifier = await this.createDiagramIdentifier(uri);
+                this.clientId = identifier?.clientId;
+            }
+            const text = document
+                .getText()
+                .substring(document.offsetAt(selection.start), document.offsetAt(selection?.end));
+            const mes: ActionMessage = {
+                clientId: this.clientId!,
+                action: {
+                    kind: AddSnippetAction.KIND,
+                    text: text,
+                } as AddSnippetAction,
+            };
+            this.languageClient.sendNotification(acceptMessageType, mes);
         }
     }
 

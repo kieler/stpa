@@ -130,7 +130,7 @@ const snippetConfig = {
     ...commonWebConfig,
     entry: path.resolve(__dirname, 'src-diagram-snippets/main.ts'),
     output: {
-		filename: 'tempWebview.js',
+		filename: 'snippetWebview.js',
         path: path.resolve(__dirname, 'pack'),
     }
 };

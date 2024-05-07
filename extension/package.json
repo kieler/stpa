@@ -225,8 +225,7 @@
                     "when": "pasta-diagram-focused"
                 },
                 {
-                    "command": "pasta.diagram.export",
-                    "when": "pasta-diagram-focused"
+                    "command": "pasta.diagram.export"
                 },
                 {
                     "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",

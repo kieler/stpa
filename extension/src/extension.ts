@@ -22,13 +22,13 @@ import * as vscode from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
 import { Messenger } from "vscode-messenger";
 import { command } from "./constants";
+import { DiagramSnippetWebview } from "./diagram-snippets-webview";
 import { StpaLspVscodeExtension } from "./language-extension";
 import { createSTPAResultMarkdownFile } from "./report/md-export";
 import { StpaResult } from "./report/utils";
 import { createSBMs } from "./sbm/sbm-generation";
 import { LTLFormula } from "./sbm/utils";
 import { createFile, createOutputChannel, createQuickPickForWorkspaceOptions } from "./utils";
-import { DiagramSnippetWebview } from './diagram-snippets-webview';
 
 let languageClient: LanguageClient;
 
@@ -67,11 +67,8 @@ export function activate(context: vscode.ExtensionContext): void {
         registerTextEditorSync(webviewPanelManager, context);
         registerSTPACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
         registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
-
         registerDiagramSnippetWebview(webviewPanelManager, context);
-        
     }
-    
 
     if (diagramMode === "editor") {
         // Set up webview editor associated with file type
@@ -247,7 +244,7 @@ function registerFTACommands(
                     uri: uri.path,
                     startId,
                 });
-                await manager.openDiagram(uri, {preserveFocus: true});
+                await manager.openDiagram(uri, { preserveFocus: true });
                 handleCutSets(cutSets, false);
             }
         )
@@ -260,7 +257,7 @@ function registerFTACommands(
                     uri: uri.path,
                     startId,
                 });
-                await manager.openDiagram(uri, {preserveFocus: true});
+                await manager.openDiagram(uri, { preserveFocus: true });
                 handleCutSets(minimalCutSets, true);
             }
         )
@@ -269,7 +266,6 @@ function registerFTACommands(
 
 /**
  * Handles the result of the cut set analysis.
- * @param manager The manager that handles the webview panels.
  * @param cutSets The cut sets that should be handled.
  * @param minimal Determines whether the cut sets are minimal or not.
  */
@@ -302,7 +298,7 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: supportedFileEndings.map((ending) => ({
+        documentSelector: supportedFileEndings.map(ending => ({
             scheme: "file",
             language: ending,
         })),
@@ -322,14 +318,14 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
 
 function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     context.subscriptions.push(
-        vscode.workspace.onDidSaveTextDocument(async (document) => {
+        vscode.workspace.onDidSaveTextDocument(async document => {
             if (document) {
                 await languageClient.sendRequest("cutSets/reset");
                 const currentCursorPosition = vscode.window.activeTextEditor?.selection.active;
                 if (currentCursorPosition) {
                     await languageClient.sendNotification("editor/save", document.offsetAt(currentCursorPosition));
                 }
-                manager.openDiagram(document.uri, {preserveFocus: true});
+                manager.openDiagram(document.uri, { preserveFocus: true });
                 if (manager.contextTable) {
                     languageClient.sendNotification("contextTable/getData", document.uri.toString());
                 }
@@ -337,30 +333,44 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
         })
     );
 }
+
+/**
+ * Registers the webview for the diagram snippets.
+ * @param manager The manager that handles the webview panels.
+ * @param context The context of the extension.
+ */
 function registerDiagramSnippetWebview(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
+    // create a webview view provider for the snippets
     const provider: vscode.WebviewViewProvider = {
-        resolveWebviewView: function (webviewView: vscode.WebviewView, _context: vscode.WebviewViewResolveContext<unknown>, _token: vscode.CancellationToken): void | Thenable<void> {
-            const tWebview = new DiagramSnippetWebview(
+        resolveWebviewView: function (
+            webviewView: vscode.WebviewView,
+            _context: vscode.WebviewViewResolveContext<unknown>,
+            _token: vscode.CancellationToken
+        ): void | Thenable<void> {
+            const snippetWebview = new DiagramSnippetWebview(
                 "snippets",
                 manager,
-                createFileUri(manager.options.extensionUri.fsPath, 'pack', 'tempWebview.js')
+                createFileUri(manager.options.extensionUri.fsPath, "pack", "snippetWebview.js")
             );
-            tWebview.webview = webviewView.webview;
-            tWebview.webview.options = {
-                enableScripts: true
+            snippetWebview.webview = webviewView.webview;
+            snippetWebview.webview.options = {
+                enableScripts: true,
             };
-            const title = tWebview.createTitle();
+            const title = snippetWebview.createTitle();
             webviewView.title = title;
-            tWebview.initializeWebview(webviewView.webview, title);
-            tWebview.connect();
-            languageClient.onNotification('snippets/add', (msg: any) => tWebview.sendToWebview(msg));
-        }
+            snippetWebview.initializeWebview(webviewView.webview, title);
+            snippetWebview.connect();
+            // send snippets got from the language server to the webview
+            languageClient.onNotification("snippets/add", (msg: any) => snippetWebview.sendToWebview(msg));
+        },
     };
+    // register the webview view provider
     vscode.window.registerWebviewViewProvider("stpa-snippets", provider);
+    // register the command to add snippets
     context.subscriptions.push(
-        vscode.commands.registerCommand("pasta" + '.stpa.snippets.add', async (...commandArgs: any) => {
-        const uri = (commandArgs[0] as vscode.Uri);
+        vscode.commands.registerCommand("pasta" + ".stpa.snippets.add", async (...commandArgs: any) => {
+            const uri = commandArgs[0] as vscode.Uri;
             manager.addSnippet(uri);
-        }));
+        })
+    );
 }
-
