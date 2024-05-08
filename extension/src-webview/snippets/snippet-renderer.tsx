@@ -31,6 +31,8 @@ export class SnippetRenderer {
     protected modelRenderer: ModelRenderer;
     /** Needed to show labels and edges. */
     protected bounds: Bounds;
+    /** Scale factor for the snippet graphs. */
+    protected scale = 0.8;
 
     setModelRenderer(renderer: ModelRenderer): void {
         this.modelRenderer = renderer;
@@ -58,10 +60,15 @@ export class SnippetRenderer {
             const width = ((snippet.graph as SGraph).children[0] as SNode).size.width + 30;
             const height = ((snippet.graph as SGraph).children[0] as SNode).size.height + 30;
             if (graph?.data?.attrs) {
-                graph.data.attrs["width"] = width;
-                graph.data.attrs["height"] = height;
+                graph.data.attrs["width"] = width * this.scale;
+                graph.data.attrs["height"] = height * this.scale;
                 graph.data.attrs["id"] = snippet.id;
             }
+            // scale the graph to fit the sidebar better
+            if (graph?.children && (graph.children[0] as VNode).data?.attrs) {
+                (graph.children[0] as VNode).data!.attrs!["transform"] = `scale(${this.scale}) translate(0,0)`;
+            }
+
             const result: VNode = <div>{graph}</div>;
             return result;
         });
