@@ -19,6 +19,7 @@ import { AstNode, LangiumDocumentFactory, ParseResult } from "langium";
 import { GeneratorContext, IdCache, IdCacheImpl } from "langium-sprotty";
 import { SModelElement, SModelRoot, SNode } from "sprotty-protocol";
 import { CancellationToken } from "vscode-languageserver";
+import { URI } from 'vscode-uri';
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { Model } from "../../generated/ast";
 import { LanguageSnippet, SnippetGraphGenerator } from "../../snippets/snippet-model";
@@ -35,7 +36,7 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
 
     /** Saves the Ids of the generated SNodes */
     protected idToSNode: Map<string, SNode> = new Map();
-    
+
     protected idCache: IdCache<AstNode>;
 
     constructor(services: StpaServices) {
@@ -73,20 +74,9 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
     protected async getSnippetAST(snippet: LanguageSnippet): Promise<Model | undefined> {
         // in order for the cross-references to be correctly evaluated, a document must be build
         const uri = "file:///snippet.stpa";
-        const textDocument = TextDocument.create(
-            uri,
-            this.services.LanguageMetaData.languageId,
-            0,
-            snippet.baseCode ?? ""
-        );
-        const parseResult: ParseResult<Model> = this.services.parser.LangiumParser.parse<Model>(snippet.baseCode);
-        if (parseResult.parserErrors.length > 0) {
-            return undefined;
-        }
-        // const doc = documentFromText<Model>(textDocument, parseResult);
-        const doc = (
+        const doc= (
             this.services.shared.workspace.LangiumDocumentFactory as LangiumDocumentFactory
-        ).fromTextDocument<Model>(textDocument);
+        ).fromString<Model>(snippet.baseCode, URI.parse(uri));
         await (this.services.shared.workspace.DocumentBuilder as StpaDocumentBuilder).buildDocuments(
             [doc],
             { validationChecks: "none" },
