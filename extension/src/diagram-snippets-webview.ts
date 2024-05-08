@@ -96,28 +96,29 @@ export class DiagramSnippetWebview {
      * @param message The message received from the webview.
      */
     protected async receiveFromWebview(message: any): Promise<void> {
-        console.log("Received from diagram snippet webview");
         if (message.readyMessage) {
             this.resolveWebviewReady();
             this.sendDiagramIdentifier();
 
             // TODO: guarantee that sprotty webview exist
             if (this.extension.clientId) {
-                // send the snippets saved in the config file to the language server
+                // send the snippets saved in the config file to the language server, 
+                // which will send the rendered snippets back to the diagram snippets webview
                 const snippets = vscode.workspace.getConfiguration('pasta.stpa').get('snippets');
                 const action = { kind: SendDefaultSnippetsAction.KIND, snippets: snippets } as SendDefaultSnippetsAction;
-                const mes2: ActionMessage = {
+                const sendSnippetsActionMessage: ActionMessage = {
                     clientId: this.extension.clientId,
                     action: action
                 };
-                this.extension.languageClient.sendNotification(acceptMessageType, mes2);
+                this.extension.languageClient.sendNotification(acceptMessageType, sendSnippetsActionMessage);
             }
         } else if (message.action && this.extension.clientId) {
-            const mes: ActionMessage = {
+            // forward the action to the language server
+            const actionMessage: ActionMessage = {
                 clientId: this.extension.clientId,
                 action: message.action
             };
-            this.extension.languageClient.sendNotification(acceptMessageType, mes);
+            this.extension.languageClient.sendNotification(acceptMessageType, actionMessage);
         }
     }
 

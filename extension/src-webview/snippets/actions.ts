@@ -20,7 +20,7 @@ import { ModelRenderer } from "sprotty";
 import { Action, Bounds, RequestAction, ResponseAction, generateRequestId } from "sprotty-protocol";
 import { WebviewSnippet } from "./snippet-models";
 
-/** Sent from the view. */
+/** Sent from the view to set the renderer and canvas bounds used for the STPA diagram. */
 export interface SendModelRendererAction extends Action {
     kind: typeof SendModelRendererAction.KIND;
     renderer: ModelRenderer;

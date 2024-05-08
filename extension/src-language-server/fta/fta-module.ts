@@ -20,7 +20,6 @@ import { Module, PartialLangiumServices } from "langium";
 import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty";
 import { DefaultElementFilter, ElkFactory, IElementFilter, ILayoutConfigurator } from "sprotty-elk/lib/elk-layout";
 import { LayoutEngine } from "../layout-engine";
-import { StpaDiagramSnippets } from "../snippets/stpa-snippets";
 import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator";
 import { FtaLayoutConfigurator } from "./diagram/fta-layout-config";
 import { FtaSynthesisOptions } from "./diagram/fta-synthesis-options";
@@ -44,9 +43,6 @@ export type FtaAddedServices = {
     };
     options: {
         SynthesisOptions: FtaSynthesisOptions;
-    };
-    snippets: {
-        StpaDiagramSnippets: StpaDiagramSnippets;
     };
 };
 
@@ -86,8 +82,5 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
     },
     options: {
         SynthesisOptions: () => new FtaSynthesisOptions(),
-    },
-    snippets: {
-        StpaDiagramSnippets: services => new StpaDiagramSnippets(services),
     },
 };

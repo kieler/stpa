@@ -27,11 +27,13 @@ import { WebviewSnippet } from "./snippet-models";
 @injectable()
 export class SnippetRenderer {
     @inject(TYPES.IModelFactory) protected modelFactory: IModelFactory;
-    protected renderer: ModelRenderer;
+    /** Needed to render the snippet graph. */
+    protected modelRenderer: ModelRenderer;
+    /** Needed to show labels and edges. */
     protected bounds: Bounds;
 
-    setRenderer(renderer: ModelRenderer): void {
-        this.renderer = renderer;
+    setModelRenderer(renderer: ModelRenderer): void {
+        this.modelRenderer = renderer;
     }
 
     setBounds(bounds: Bounds): void {
@@ -42,7 +44,7 @@ export class SnippetRenderer {
      * Renders all snippets provided by the server.
      */
     renderSnippets(snippets: WebviewSnippet[]): VNode[] {
-        if (snippets.length === 0) return <div></div>;
+        if (snippets.length === 0) {return <div></div>;}
 
         // labels and edges are only visible if they are within the canvas bounds
         for (const snippet of snippets) {
@@ -50,7 +52,8 @@ export class SnippetRenderer {
         }
 
         const res = snippets.map(snippet => {
-            const graph = this.renderer?.renderElement(this.modelFactory.createRoot(snippet.graph));
+            // render the snippet graph
+            const graph = this.modelRenderer?.renderElement(this.modelFactory.createRoot(snippet.graph));
             // padding of sidebar content is 16px
             const width = ((snippet.graph as SGraph).children[0] as SNode).size.width + 30;
             const height = ((snippet.graph as SGraph).children[0] as SNode).size.height + 30;

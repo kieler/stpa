@@ -51,6 +51,10 @@ export class SnippetRegistry extends Registry implements IActionHandlerInitializ
         }
     }
 
+    /**
+     * Renders the given snippets and sends back.
+     * @param action The action containing the snippets to render.
+     */
     private handleRequestWebviewSnippets(action: RequestWebviewSnippetsAction): void {
         const snippets = this.snippetRenderer.renderSnippets(action.snippets);
         const response: SendWebviewSnippetsAction = {
@@ -64,8 +68,12 @@ export class SnippetRegistry extends Registry implements IActionHandlerInitializ
         });
     }
 
+    /**
+     * Sets the renderer and canvas bounds needed to render the snippets properly.
+     * @param action The action containing the renderer and bounds.
+     */
     private handleSendModelRenderer(action: SendModelRendererAction): void {
-        this.snippetRenderer.setRenderer((action as SendModelRendererAction).renderer);
+        this.snippetRenderer.setModelRenderer((action as SendModelRendererAction).renderer);
         this.snippetRenderer.setBounds((action as SendModelRendererAction).bounds);
     }
 }
