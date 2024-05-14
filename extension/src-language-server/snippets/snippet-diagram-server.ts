@@ -115,9 +115,9 @@ export abstract class SnippetDiagramServer extends DiagramServer {
     protected async handleAddSnippet(action: AddSnippetAction): Promise<void> {
         const snippet = this.createSnippetFromString(action.text);
         if (await this.parseable(snippet)) {
-            this.snippetGraphGenerator.deleteDanglingEdges(snippet);
+            await this.snippetGraphGenerator.deleteDanglingEdges(snippet);
             this.addSnippets([snippet]);
-            this.connection?.sendNotification("config/add", [snippet.insertText]);
+            this.connection?.sendNotification("config/add", [snippet.baseCode]);
         } else {
             this.connection?.sendNotification("snippets/creationFailed");
         }

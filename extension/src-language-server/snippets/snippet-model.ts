@@ -58,7 +58,7 @@ export abstract class SnippetGraphGenerator extends LangiumDiagramGenerator {
      * Deletes all edges that are not connected to a node.
      * @param snippet The snippet to clean up.
      */
-    abstract deleteDanglingEdges(snippet: LanguageSnippet): void;
+    abstract deleteDanglingEdges(snippet: LanguageSnippet): Promise<void>;
     /**
      * Generates the root element of the snippet diagram.
      * @param snippet The snippet to generate the diagram for.

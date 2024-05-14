@@ -117,9 +117,13 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
             }
             // remove dangling edges
             danglingNodes.forEach(node => {
+                // replace the arrow with an arrow followed by a whitespace (needed to determine the index in the next step)
                 const newString = snippet.baseCode.replace(/->( )*/, "-> ");
+                // index where the edge ends
                 const endIndex = newString.indexOf("-> " + node) + 3 + node.length;
+                // index where the edge starts
                 const startIndex = newString.substring(0, endIndex).lastIndexOf("[");
+                // adjust the base code of the snippet
                 snippet.baseCode =
                     newString.substring(0, startIndex).trimEnd() + newString.substring(endIndex + 1, newString.length);
             });
