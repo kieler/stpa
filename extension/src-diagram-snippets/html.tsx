@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -24,7 +24,6 @@ const placeholderForSnippetsID = 'snippetPlaceholder';
 export const textFieldID = 'snippetAddTextField';
 export const buttonID = 'snippetAddBnt';
 
-// TODO: instead of defining an input tag, a msg could be send to the extension when clicking on the button. the extension can call windows.showInputBox/createInputBox or using a QuickInput
 /**
  * PASTA panel for the activity bar.
  * Consists of a text field and button to add custom diagram snippets.

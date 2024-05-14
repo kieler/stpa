@@ -15,12 +15,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode, LangiumDocumentFactory, ParseResult } from "langium";
+import { AstNode, LangiumDocumentFactory } from "langium";
 import { GeneratorContext, IdCache, IdCacheImpl } from "langium-sprotty";
 import { SModelElement, SModelRoot, SNode } from "sprotty-protocol";
 import { CancellationToken } from "vscode-languageserver";
 import { URI } from 'vscode-uri';
-import { TextDocument } from "vscode-languageserver-textdocument";
 import { Model } from "../../generated/ast";
 import { LanguageSnippet, SnippetGraphGenerator } from "../../snippets/snippet-model";
 import { StpaDocumentBuilder } from "../../stpa-document-builder";

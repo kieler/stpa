@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -190,7 +190,7 @@ export class CustomCSSnippet extends STPALanguageSnippet {
     }
 
     /**
-     * Check whether the control structrue caption and graph name exists. If not, adds it to the baseCode.
+     * Check whether the control structure caption and graph name exist. If not, add them to the baseCode.
      */
     protected checkCaption(): void {
         const splits = this.baseCode.split(/[^a-zA-Z0-9\{\}]/);

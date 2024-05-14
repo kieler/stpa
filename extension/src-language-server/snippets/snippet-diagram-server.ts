@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022 by
+ * Copyright 2022-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -131,11 +131,7 @@ export abstract class SnippetDiagramServer extends DiagramServer {
      */
     protected async parseable(snippet: LanguageSnippet): Promise<boolean> {
         const graph = await this.snippetGraphGenerator.generateSnippetRoot(snippet);
-        if (graph) {
-            return true;
-        } else {
-            return false;
-        }
+        return graph ? true : false;
     }
 
     /**

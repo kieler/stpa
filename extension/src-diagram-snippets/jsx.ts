@@ -14,6 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+/** needed to directly define HTML elements (see html.tsx file) */
+
 import { VNodeData, JsxVNodeChildren, JsxVNodeChild, jsx, FunctionComponent, VNode } from "snabbdom";
 
 
