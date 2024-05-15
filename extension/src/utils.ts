@@ -125,7 +125,6 @@ export async function createFile(uri: string, text: string): Promise<void> {
     // insert the content
     const pos = new vscode.Position(0, 0);
     edit.insert(vscode.Uri.parse(uri), pos, text);
-    // }
     // Apply the edit. Report possible failures.
     const edited = await vscode.workspace.applyEdit(edit);
     if (!edited) {

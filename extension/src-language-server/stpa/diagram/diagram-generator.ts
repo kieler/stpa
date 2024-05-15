@@ -19,7 +19,7 @@ import { AstNode, LangiumDocumentFactory } from "langium";
 import { GeneratorContext, IdCache, IdCacheImpl } from "langium-sprotty";
 import { SModelElement, SModelRoot, SNode } from "sprotty-protocol";
 import { CancellationToken } from "vscode-languageserver";
-import { URI } from 'vscode-uri';
+import { URI } from "vscode-uri";
 import { Model } from "../../generated/ast";
 import { LanguageSnippet, SnippetGraphGenerator } from "../../snippets/snippet-model";
 import { StpaDocumentBuilder } from "../../stpa-document-builder";
@@ -73,9 +73,10 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
     protected async getSnippetAST(snippet: LanguageSnippet): Promise<Model | undefined> {
         // in order for the cross-references to be correctly evaluated, a document must be build
         const uri = "file:///snippet.stpa";
-        const doc= (
-            this.services.shared.workspace.LangiumDocumentFactory as LangiumDocumentFactory
-        ).fromString<Model>(snippet.baseCode, URI.parse(uri));
+        const doc = (this.services.shared.workspace.LangiumDocumentFactory as LangiumDocumentFactory).fromString<Model>(
+            snippet.baseCode,
+            URI.parse(uri)
+        );
         await (this.services.shared.workspace.DocumentBuilder as StpaDocumentBuilder).buildDocuments(
             [doc],
             { validationChecks: "none" },
@@ -116,15 +117,10 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
             }
             // remove dangling edges
             danglingNodes.forEach(node => {
-                // replace the arrow with an arrow followed by a whitespace (needed to determine the index in the next step)
-                const newString = snippet.baseCode.replace(/->( )*/, "-> ");
-                // index where the edge ends
-                const endIndex = newString.indexOf("-> " + node) + 3 + node.length;
-                // index where the edge starts
-                const startIndex = newString.substring(0, endIndex).lastIndexOf("[");
-                // adjust the base code of the snippet
-                snippet.baseCode =
-                    newString.substring(0, startIndex).trimEnd() + newString.substring(endIndex + 1, newString.length);
+                // regex matches the edges that have the dangling node as target
+                const regex = new RegExp(`\\[.*\\]\\s*->\\s*${node}`, "g");
+                // remove the edges from the base code
+                snippet.baseCode = snippet.baseCode.replace(regex, "");
             });
         }
     }
