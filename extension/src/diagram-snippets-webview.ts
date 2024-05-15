@@ -21,6 +21,9 @@ import { StpaLspVscodeExtension } from './language-extension';
 import { acceptMessageType } from 'sprotty-vscode/lib/lsp';
 import { SendDefaultSnippetsAction } from './actions';
 
+/**
+ * Initializes the diagram snippets webview and handles messages from and to it.
+ */
 export class DiagramSnippetWebview {
 
     static viewCount = 0;
@@ -77,7 +80,7 @@ export class DiagramSnippetWebview {
         this.disposables.push(this.webview.onDidReceiveMessage(message => this.receiveFromWebview(message)));
         /* this.disposables.push(vscode.window.onDidChangeActiveTextEditor(async editor => {
             if (editor) {
-                //TODO: snippets may be needed to be updated
+                //TODO: if snippets for more than one language exist, check if the current language is supported
             }
         })); */
         await this.ready();
@@ -100,7 +103,6 @@ export class DiagramSnippetWebview {
             this.resolveWebviewReady();
             this.sendDiagramIdentifier();
 
-            // TODO: guarantee that sprotty webview exist
             if (this.extension.clientId) {
                 // send the snippets saved in the config file to the language server, 
                 // which will send the rendered snippets back to the diagram snippets webview

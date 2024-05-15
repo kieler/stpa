@@ -59,8 +59,11 @@ export async function handleWorkSpaceEdit(uri: string, text: string, position: v
 
     const activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
-        // TODO: endPos is not completly correct. maybe \n must be counted too?
-        const endPos = textDocument.positionAt(textDocument.offsetAt(position) + text.length);
+        // count the line breaks to determine the end position
+        const lineBreaks = text.match(/\n/g);
+        const lines = lineBreaks ? lineBreaks.length : 1;
+        const endPos = { line: position.line + lines, character: 0} as vscode.Position;
+        // select and reveal the inserted text
         activeEditor.selections = [new vscode.Selection(position, endPos)];
         activeEditor.revealRange(new vscode.Range(position, endPos));
     }
