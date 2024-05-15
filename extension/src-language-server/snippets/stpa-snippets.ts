@@ -20,6 +20,7 @@ import { Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
 import { LanguageSnippet } from "./snippet-model";
+import * as defaultSnippets from "./default-stpa-snippets.json";
 
 /**
  * Class that handles snippets for the STPA diagram.
@@ -41,13 +42,11 @@ export class StpaDiagramSnippets {
      * @returns a list with the default snippets.
      */
     protected generateDefaultSnippets(): LanguageSnippet[] {
-        return [
-            new SimpleCSSnippet(this.langiumDocuments, "T0"),
-            new SimpleCSWithAcsSnippet(this.langiumDocuments, "T1"),
-            new ConsControllersSnippet(this.langiumDocuments, "T3"),
-            new ParallelContsSnippet(this.langiumDocuments, "T4"),
-            new ConsContsWithLoopSnippet(this.langiumDocuments, "T5"),
-        ];
+        const list: LanguageSnippet[] = [];
+        defaultSnippets.snippets.forEach((snippet: {name: string, code: string}) => {
+            list.push(new CustomCSSnippet(this.langiumDocuments, snippet.code, snippet.name));
+        });
+        return list;
     }
 
     /**
@@ -58,7 +57,7 @@ export class StpaDiagramSnippets {
     createSnippet(text: string): LanguageSnippet {
         // TODO: currently only control structure
         this.customSnippetsNumber++;
-        return new CustomCSSnippet(this.langiumDocuments, text, "CS" + this.customSnippetsNumber, text);
+        return new CustomCSSnippet(this.langiumDocuments, text, "CS" + this.customSnippetsNumber);
     }
 
     /**
@@ -107,7 +106,7 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
 }
 // TODO: maybe need adjustments since CS can be nested now
 /**
- * Adds {@code id} to the control structure node names in {@code text}.
+ * Adds {@code id} to the control structure node names in {@code text} to avoid name clashes.
  * @param text The control structure text.
  * @param id The id to append.
  * @returns The modified text.
@@ -161,10 +160,11 @@ export class STPALanguageSnippet implements LanguageSnippet {
     /** The base code of the snippet. Always starts with the header of the corresponding aspect. */
     baseCode: string;
 
-    constructor(documents: LangiumDocuments, id: string, shortId?: string) {
+    constructor(documents: LangiumDocuments, code: string, id: string) {
         this.documents = documents;
         this.id = id;
-        this.shortId = shortId;
+        this.insertText = code.trim();
+        this.baseCode = code.trim();
     }
 
     getPosition(uri: string): Position {
@@ -182,10 +182,8 @@ export class STPALanguageSnippet implements LanguageSnippet {
  * Custom stpa snippet for the control structure.
  */
 export class CustomCSSnippet extends STPALanguageSnippet {
-    constructor(documents: LangiumDocuments, insertText: string, id: string, baseCode: string) {
-        super(documents, id);
-        this.insertText = insertText.trim();
-        this.baseCode = baseCode.trim();
+    constructor(documents: LangiumDocuments, code: string, id: string) {
+        super(documents, code, id);
         this.checkCaption();
     }
 
@@ -202,181 +200,5 @@ export class CustomCSSnippet extends STPALanguageSnippet {
                 this.baseCode = "ControlStructure\r\n" + this.baseCode;
             }
         }
-    }
-}
-
-/**
- * Snippet for a control structure with one controller and one controlled process.
- */
-export class SimpleCSSnippet extends STPALanguageSnippet {
-    constructor(documents: LangiumDocuments, shortId?: string) {
-        super(documents, "simpleCSSnippet", shortId);
-        this.baseCode = `
-ControlStructure
-CS {
-    Controller {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> ControlledProcess
-        }
-    }
-    ControlledProcess {
-        hierarchyLevel 1
-        feedback {
-            [fb "feedback"] -> Controller
-        }
-    }
-}
-`;
-        this.insertText = this.baseCode;
-    }
-}
-
-/**
- * Snippet for a control structure with one controller, one controlled process, one actuator, and one sensor.
- */
-export class SimpleCSWithAcsSnippet extends STPALanguageSnippet {
-    constructor(documents: LangiumDocuments, shortId?: string) {
-        super(documents, "simpleCSWithAcsSnippet", shortId);
-        this.baseCode = `
-ControlStructure
-CS {
-    Controller {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> Actuator
-        }
-    }
-    Actuator {
-        hierarchyLevel 1
-        controlActions {
-            [caAc "control action"] -> ControlledProcess
-        }
-    }
-    Sensor {
-        hierarchyLevel 1
-        feedback {
-            [fbS "feedback"] -> Controller
-        }
-    }
-    ControlledProcess {
-        hierarchyLevel 2
-        feedback {
-            [fb "feedback"] -> Sensor
-        }
-    }
-}
-`;
-        this.insertText = this.baseCode;
-    }
-}
-
-/**
- * Snippet for a control structure with two consecutive controllers and one controlled process.
- */
-export class ConsControllersSnippet extends STPALanguageSnippet {
-    constructor(documents: LangiumDocuments, shortId?: string) {
-        super(documents, "consControllerSnippet", shortId);
-        this.baseCode = `
-ControlStructure
-CS {
-    ControllerA {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> ControllerB
-        }
-    }
-    ControllerB {
-        hierarchyLevel 1
-        controlActions {
-            [ca "control action"] -> ControlledProcess
-        }
-        feedback {
-            [fb "feedback"] -> ControllerA
-        }
-    }
-    ControlledProcess {
-        hierarchyLevel 2
-        feedback {
-            [fb "feedback"] -> ControllerB
-        }
-    }
-}
-`;
-        this.insertText = this.baseCode;
-    }
-}
-
-/**
- * Snippet for a control structure with two parallel controllers and one controlled process.
- */
-export class ParallelContsSnippet extends STPALanguageSnippet {
-    constructor(documents: LangiumDocuments, shortId?: string) {
-        super(documents, "parallelContsSnippet", shortId);
-        this.baseCode =
-            `
-ControlStructure
-CS {
-    ControllerA {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> ControlledProcess
-        }
-    }
-    ControllerB {
-        hierarchyLevel 0
-        controlActions {
-            [ca "control action"] -> ControlledProcess
-        }
-    }
-    ControlledProcess {
-        hierarchyLevel 1
-        feedback {
-            [fbA "feedback"] -> ControllerA
-            [fbB "feedback"] -> ControllerB
-        }
-    }
-}
-`;
-        this.insertText = this.baseCode;
-    }
-}
-
-/**
- * Snippet for a control structure with two consecutive controllers, one controlled process.
- */
-export class ConsContsWithLoopSnippet extends STPALanguageSnippet {
-    constructor(documents: LangiumDocuments, shortId?: string) {
-        super(documents, "consContsWithLoopSnippet", shortId);
-        this.baseCode =
-            `
-ControlStructure
-CS {
-    ControllerA {
-        hierarchyLevel 0
-        controlActions {
-            [caC "control action"] -> ControlledProcess
-            [caB "control action"] -> ControllerB
-        }
-    }
-    ControllerB {
-        hierarchyLevel 1
-        controlActions {
-            [ca "control action"] -> ControlledProcess
-        }
-        feedback {
-            [fb "feedback"] -> ControllerA
-        }
-    }
-    ControlledProcess {
-        hierarchyLevel 2
-        feedback {
-            [fbA "feedback"] -> ControllerA
-            [fbB "feedback"] -> ControllerB
-        }
-    }
-}
-`;
-        this.insertText = this.baseCode;
     }
 }

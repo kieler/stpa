@@ -9,6 +9,7 @@
       "sourceMap": true,
       "rootDir": "src",
       "strict": true, // enable all strict type-checking options
+      "resolveJsonModule": true, // Allow importing JSON files
       /* Additional Checks */
       "strictPropertyInitialization": false, // No need to initialize every variable
       "declaration": false,
