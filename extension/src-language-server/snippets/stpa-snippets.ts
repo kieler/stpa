@@ -43,7 +43,7 @@ export class StpaDiagramSnippets {
      */
     protected generateDefaultSnippets(): LanguageSnippet[] {
         const list: LanguageSnippet[] = [];
-        defaultSnippets.snippets.forEach((snippet: {name: string, code: string}) => {
+        defaultSnippets.snippets.forEach((snippet: { name: string; code: string }) => {
             list.push(new CustomCSSnippet(this.langiumDocuments, snippet.code, snippet.name));
         });
         return list;
@@ -194,7 +194,10 @@ export class CustomCSSnippet extends STPALanguageSnippet {
         const regex = /[\{\}a-zA-Z0-9_]*/g;
         const splits = this.baseCode.match(regex);
         // "{" and "}" get separated from the other words
-        const words = splits?.map(s => s.split(/([\{\}])/g)).flat().filter(child => child !== "");
+        const words = splits
+            ?.map(s => s.split(/([\{\}])/g))
+            .flat()
+            .filter(child => child !== "");
         if (words && words.length >= 1 && words[0] !== "ControlStructure") {
             if (words.length >= 3 && (isKeyWord(words[2]) || words[2] === "}")) {
                 this.baseCode = "ControlStructure\r\nCS {\r\n" + this.baseCode + "\r\n}";
