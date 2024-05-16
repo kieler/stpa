@@ -55,7 +55,7 @@ export async function handleWorkSpaceEdit(uri: string, text: string, position: v
     }
 
     const edits: vscode.TextEdit[] = [vscode.TextEdit.insert(position, text)];
-    applyTextEdits(edits, uri);
+    await applyTextEdits(edits, uri);
 
     const activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
