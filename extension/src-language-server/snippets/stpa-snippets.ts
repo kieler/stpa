@@ -103,7 +103,7 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
         }
     }
 }
-// TODO: maybe need adjustments since CS can be nested now
+
 /**
  * Adds {@code id} to the control structure node names in {@code text} to avoid name clashes.
  * @param text The control structure text.
@@ -111,12 +111,14 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
  * @returns The modified text.
  */
 function addNodeIDs(text: string, document: TextDocument): string {
-    const splits = text.split(/[^a-zA-Z0-9\{\}]/);
-    // collect node names in the given text
+    // collect the node names in the given text
+    const words = getWords(text);
     const names: string[] = [];
-    for (let i = 3; i < splits.length; i++) {
-        if (splits[i] === "{" && !isKeyWord(splits[i - 1])) {
-            names.push(splits[i - 1]);
+    if (words) {
+        for (let i = 3; i < words.length; i++) {
+            if (words[i] === "{" && !isKeyWord(words[i - 1])) {
+                names.push(words[i - 1]);
+            }
         }
     }
 
@@ -149,6 +151,23 @@ function isKeyWord(text: string): boolean {
         text === "controlActions" ||
         text === "feedback"
     );
+}
+
+/**
+ * Collects the words of the given {@code text}.
+ * @param text The text to collect the words from.
+ * @returns the words of the given {@code text}.
+ */
+function getWords(text: string): string[] {
+    const regex = /[\{\}a-zA-Z0-9_]*/g;
+    const splits = text.match(regex);
+    // in "splits "{" and "}" are not separated from the other words if no whitespace is used before them
+    // so this need to be split again
+    const words = splits
+        ?.map(s => s.split(/([\{\}])/g))
+        .flat()
+        .filter(child => child !== "");
+    return words ?? [];
 }
 
 /**
@@ -190,13 +209,8 @@ export class CustomCSSnippet extends STPALanguageSnippet {
      * Check whether the control structure caption and graph name exist. If not, add them to the baseCode.
      */
     protected checkCaption(): void {
-        const regex = /[\{\}a-zA-Z0-9_]*/g;
-        const splits = this.baseCode.match(regex);
-        // "{" and "}" get separated from the other words
-        const words = splits
-            ?.map(s => s.split(/([\{\}])/g))
-            .flat()
-            .filter(child => child !== "");
+        const words = getWords(this.baseCode);
+        // check whether the caption and graph name exist, add them if not
         if (words && words.length >= 1 && words[0] !== "ControlStructure") {
             if (words.length >= 3 && (isKeyWord(words[2]) || words[2] === "}")) {
                 this.baseCode = "ControlStructure\r\nCS {\r\n" + this.baseCode + "\r\n}";
