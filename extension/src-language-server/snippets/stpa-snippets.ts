@@ -77,7 +77,6 @@ export class StpaDiagramSnippets {
  */
 function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippet): Position {
     const docText = document.getText();
-
     // determine range of already existing definition of control structure
     const titleIndex = docText.indexOf("ControlStructure");
     const startIndex = titleIndex !== -1 ? titleIndex : 0;
@@ -108,12 +107,12 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
 /**
  * Adds {@code id} to the control structure node names in {@code text} to avoid name clashes.
  * @param text The control structure text.
- * @param id The id to append.
+ * @param document The document in which the text should be inserted.
  * @returns The modified text.
  */
-function addNodeIDs(text: string, id: string): string {
+function addNodeIDs(text: string, document: TextDocument): string {
     const splits = text.split(/[^a-zA-Z0-9\{\}]/);
-    // collect node names
+    // collect node names in the given text
     const names: string[] = [];
     for (let i = 3; i < splits.length; i++) {
         if (splits[i] === "{" && !isKeyWord(splits[i - 1])) {
@@ -121,11 +120,19 @@ function addNodeIDs(text: string, id: string): string {
         }
     }
 
-    // append ID to node names
-    for (const name of names) {
-        const regex = new RegExp(name, "g");
-        text = text.replace(regex, name + id);
-    }
+    const docText = document.getText();
+    // adjust the node names to be unique
+    names.forEach(name => {
+        // collect existing IDs starting with the node name
+        const existingIDsRegex = new RegExp(`${name}_[0-9]*`, "g");
+        // set is needed to avoid duplicates in the existing IDs
+        const existingIDs = new Set(docText.match(existingIDsRegex));
+        // replace the node name with the adjusted name,
+        // which consists of the name, "_", and a number depending on the number of already existing IDs
+        const nameRegex = new RegExp(name, "g");
+        text = text.replace(nameRegex, `${name}_${existingIDs?.size ?? 0}`);
+    });
+
     return text;
 }
 
@@ -148,15 +155,11 @@ function isKeyWord(text: string): boolean {
  * Snippet language definition for STPA.
  */
 export class STPALanguageSnippet implements LanguageSnippet {
-    /** The text that should be inserted when clicking on the snippet */
+    /** The text that should be inserted when clicking on the snippet. Contains unique names. */
     insertText: string;
     documents: LangiumDocuments;
     /** The id of the snippet */
     id: string;
-    /** Counts how many times the snippet was added already  */
-    protected counter: number = 0;
-    /** A shorter ID used when executing the snippet */
-    protected shortId: string | undefined;
     /** The base code of the snippet. Always starts with the header of the corresponding aspect. */
     baseCode: string;
 
@@ -168,12 +171,8 @@ export class STPALanguageSnippet implements LanguageSnippet {
     }
 
     getPosition(uri: string): Position {
-        this.insertText = addNodeIDs(
-            this.baseCode,
-            this.shortId ? this.shortId + this.counter : this.id + this.counter
-        );
-        this.counter++;
         const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        this.insertText = addNodeIDs(this.baseCode, document);
         return getPositionForCSSnippet(document, this);
     }
 }
