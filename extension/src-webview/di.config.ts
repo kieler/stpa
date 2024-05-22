@@ -97,6 +97,7 @@ import {
     STPAGraphView,
     STPANodeView,
 } from "./stpa/stpa-views";
+import { snippetModule } from './snippets/snippet-module';
 
 const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(TYPES.ILogger).to(ConsoleLogger).inSingletonScope();
@@ -150,7 +151,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
 export function createPastaDiagramContainer(widgetId: string): Container {
     const container = new Container();
     loadDefaultModules(container, { exclude: [contextMenuModule] });
-    container.load(pastaContextMenuModule, pastaDiagramModule, sidebarModule, optionsModule);
+    container.load(pastaContextMenuModule, pastaDiagramModule, sidebarModule, optionsModule, snippetModule);
     overrideViewerOptions(container, {
         needsClientLayout: true,
         needsServerLayout: true,

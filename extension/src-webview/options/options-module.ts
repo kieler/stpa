@@ -33,9 +33,9 @@ export const optionsModule = new ContainerModule((bind, _, isBound) => {
     bind(OptionsPanel).toSelf().inSingletonScope();
     bind(DISymbol.SidebarPanel).toService(OptionsPanel);
 
-    bind(DISymbol.OptionsRenderer).to(OptionsRenderer);
+    bind(DISymbol.OptionsRenderer).to(OptionsRenderer).inSingletonScope();
     bind(DISymbol.OptionsRegistry).to(OptionsRegistry).inSingletonScope();
-    bind(TYPES.IActionHandlerInitializer).toService(DISymbol.OptionsRegistry);
+    bind(TYPES.IActionHandlerInitializer).toService(DISymbol.OptionsRegistry);    
 
     bind(DISymbol.RenderOptionsRegistry).to(RenderOptionsRegistry).inSingletonScope();
 

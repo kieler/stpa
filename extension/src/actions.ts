@@ -3,7 +3,7 @@
  *
  * http://rtsys.informatik.uni-kiel.de/kieler
  *
- * Copyright 2022-2023 by
+ * Copyright 2022-2024 by
  * + Kiel University
  *   + Department of Computer Science
  *     + Real-Time and Embedded Systems Group
@@ -90,5 +90,47 @@ export namespace MinimalCutSetAnalysisAction {
             kind: KIND,
             startId,
         };
+    }
+}
+
+/** Message to the language server to add a snippet to the librabry. */
+export interface AddSnippetAction extends Action {
+    kind: typeof AddSnippetAction.KIND;
+    text: string;
+}
+
+export namespace AddSnippetAction {
+    export const KIND = "addSnippet";
+
+    export function create(text: string): AddSnippetAction {
+        return {
+            kind: KIND,
+            text,
+        };
+    }
+
+    export function isThisAction(action: Action): action is AddSnippetAction {
+        return action.kind === AddSnippetAction.KIND;
+    }
+}
+
+/** Message from extension to langauge server containing the default snippets as string. */
+export interface SendDefaultSnippetsAction extends Action {
+    kind: typeof SendDefaultSnippetsAction.KIND;
+    snippets: string[];
+}
+
+export namespace SendDefaultSnippetsAction {
+    export const KIND = "sendSnippets";
+
+    export function create(snippets: string[]): SendDefaultSnippetsAction {
+        return {
+            kind: KIND,
+            snippets: snippets,
+        };
+    }
+
+    export function isThisAction(action: Action): action is SendDefaultSnippetsAction {
+        return action.kind === SendDefaultSnippetsAction.KIND;
     }
 }

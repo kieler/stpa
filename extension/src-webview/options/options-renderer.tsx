@@ -44,7 +44,7 @@ interface AllOptions {
 /** Renderer that is capable of rendering different option models to jsx. */
 @injectable()
 export class OptionsRenderer {
-    @inject(TYPES.IActionDispatcher) actionDispatcher: IActionDispatcher;
+    @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;
 
     /**
      * Renders all diagram options that are provided by the server. This includes

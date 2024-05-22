@@ -19,8 +19,6 @@
 @import "./sidebar.css";
 @import "./theme.css";
 @import "./stpa-diagram.css";
-@import "./fta-diagram.css";
-@import "./context-menu.css";
 
 .header {
     text-decoration-line: underline;

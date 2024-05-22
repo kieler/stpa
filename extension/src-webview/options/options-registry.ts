@@ -28,7 +28,7 @@ import {
     UpdateOptionsAction,
 } from "./actions";
 import {
-    SynthesisOption,
+    SynthesisOption
 } from "./option-models";
 
 /**
@@ -83,7 +83,6 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
                 currentValue:
                     valuedOption.currentValue ?? valuedOption.synthesisOption.initialValue,
             }));
-
         this.notifyListeners();
     }
 

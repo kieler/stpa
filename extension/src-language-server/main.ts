@@ -39,7 +39,7 @@ addFTANotificationHandler(connection, fta, shared);
 addNotificationHandler(connection, shared);
 
 // handle configuration changes for the validation checks
-connection.onNotification("configuration", (options) => {
+connection.onNotification("configuration", options => {
     for (const option of options) {
         switch (option.id) {
             case "checkResponsibilitiesForConstraints":
