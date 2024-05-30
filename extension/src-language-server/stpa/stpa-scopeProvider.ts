@@ -40,6 +40,7 @@ import {
     Node,
     Rule,
     SystemConstraint,
+    SystemResponsibilities,
     UCA,
     Variable,
     VerticalEdge,
@@ -106,7 +107,14 @@ export class StpaScopeProvider extends DefaultScopeProvider {
                 return this.getCAs(node, precomputed);
             } else if ((isContext(node) || isDCAContext(node)) && referenceType === this.VAR_TYPE) {
                 return this.getVars(node, precomputed);
-            } else if (isVerticalEdge(node) && referenceType === this.NODE_TYPE) {
+            } else if (
+                (isVerticalEdge(node) ||
+                    isSystemResponsibilities(node) ||
+                    isActionUCAs(node) ||
+                    isRule(node) ||
+                    isDCARule(node)) &&
+                referenceType === this.NODE_TYPE
+            ) {
                 return this.getNodes(node, precomputed);
             } else {
                 return this.getStandardScope(node, referenceType, precomputed);
@@ -178,14 +186,28 @@ export class StpaScopeProvider extends DefaultScopeProvider {
      * @param precomputed Precomputed Scope of the document.
      * @returns scope containing all nodes of the control structure.
      */
-    protected getNodes(node: VerticalEdge, precomputed: PrecomputedScopes): Scope {
-        let graph: Node | Graph = node.$container;
-        while (graph && !isGraph(graph)) {
-            graph = graph.$container;
+    protected getNodes(
+        node: VerticalEdge | SystemResponsibilities | ActionUCAs | Rule | DCARule,
+        precomputed: PrecomputedScopes
+    ): Scope {
+        const graph = this.getGraph(node);
+        if (!graph) {
+            return EMPTY_SCOPE;
         }
-
         const allDescriptions = this.getChildrenNodes(graph.nodes, precomputed);
         return this.descriptionsToScope(allDescriptions);
+    }
+
+    protected getGraph(node: VerticalEdge | SystemResponsibilities | ActionUCAs | Rule | DCARule): Graph | undefined {
+        if (isVerticalEdge(node)) {
+            let graph: Node | Graph = node.$container;
+            while (graph && !isGraph(graph)) {
+                graph = graph.$container;
+            }
+            return graph as Graph;
+        } else if (isSystemResponsibilities(node) || isActionUCAs(node) || isRule(node) || isDCARule(node)) {
+            return node.$container.controlStructure;
+        }
     }
 
     /**
