@@ -405,7 +405,7 @@ export function getAncestors(node: Node): (Node | Graph)[] {
 export function sortPorts(nodes: CSNode[]): void {
     for (const node of nodes) {
         // sort the ports of the children
-        const children = node.children?.filter(child => child.type.startsWith("node")) as CSNode[] ?? [];
+        const children = (node.children?.filter(child => child.type.startsWith("node")) as CSNode[]) ?? [];
         sortPorts(children);
 
         // separate the ports from the other children
@@ -421,17 +421,23 @@ export function sortPorts(nodes: CSNode[]): void {
 
         // sort the ports based on their associated edges
         const newPorts: PastaPort[] = [];
-        for (const port of ports) {
+        for (let i = 0; i < ports.length; i++) {
+            const port = ports[i];
             newPorts.push(port);
             if (port.associatedEdge) {
-                for (const otherPort of ports) {
+                for (let j = i + 1; j < ports.length; j++) {
+                    const otherPort = ports[j];
                     if (
-                        port.associatedEdge.node1 === otherPort.associatedEdge?.node2 &&
-                        port.associatedEdge.node2 === otherPort.associatedEdge.node1
+                        (port.associatedEdge.node1 === otherPort.associatedEdge?.node2 &&
+                            port.associatedEdge.node2 === otherPort.associatedEdge.node1) ||
+                        // multiple edges between the same nodes may be defined
+                        (port.associatedEdge.node1 === otherPort.associatedEdge?.node1 &&
+                            port.associatedEdge.node2 === otherPort.associatedEdge.node2)
                     ) {
                         // associated edges connect the same nodes but in the opposite direction -> add the other port to the list to group them together
                         newPorts.push(otherPort);
-                        ports.splice(ports.indexOf(otherPort), 1);
+                        ports.splice(j, 1);
+                        j--;
                     }
                 }
             }
