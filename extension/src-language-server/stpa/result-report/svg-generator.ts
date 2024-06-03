@@ -89,12 +89,12 @@ export function setHazardGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(true);
-    options.setHideUCAs(true);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(false);
+    options.setShowUCAs(false);
+    options.setShowContCons(false);
+    options.setShowScenarios(false);
+    options.setShowSafetyConstraints(false);
 }
 
 /**
@@ -105,12 +105,12 @@ export function setSystemConstraintGraphOptions(options: StpaSynthesisOptions): 
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(false);
-    options.setHideResps(true);
-    options.setHideUCAs(true);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(true);
+    options.setShowResps(false);
+    options.setShowUCAs(false);
+    options.setShowContCons(false);
+    options.setShowScenarios(false);
+    options.setShowSafetyConstraints(false);
 }
 
 /**
@@ -121,12 +121,12 @@ export function setResponsibilityGraphOptions(options: StpaSynthesisOptions): vo
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(false);
-    options.setHideResps(false);
-    options.setHideUCAs(true);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(true);
+    options.setShowResps(true);
+    options.setShowUCAs(false);
+    options.setShowContCons(false);
+    options.setShowScenarios(false);
+    options.setShowSafetyConstraints(false);
 }
 
 /**
@@ -138,12 +138,12 @@ export function setFilteredUcaGraphOptions(options: StpaSynthesisOptions, value:
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs(value);
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(false);
+    options.setShowScenarios(false);
+    options.setShowSafetyConstraints(false);
 }
 
 /**
@@ -155,12 +155,12 @@ export function setControllerConstraintWithFilteredUcaGraphOptions(options: Stpa
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs(value);
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(false);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(true);
+    options.setShowScenarios(false);
+    options.setShowSafetyConstraints(false);
 }
 
 /**
@@ -172,13 +172,13 @@ export function setScenarioWithFilteredUCAGraphOptions(options: StpaSynthesisOpt
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs(value);
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(true);
-    options.setHideScenarios(false);
-    options.setHideScenariosWithHazard(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(false);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(false);
+    options.setShowSafetyConstraints(false);
 }
 
 /**
@@ -190,13 +190,13 @@ export function setScenarioWithNoUCAGraphOptions(options: StpaSynthesisOptions):
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(true);
-    options.setHideContCons(true);
-    options.setHideScenarios(false);
-    options.setHideScenariosWithHazard(false);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(false);
+    options.setShowContCons(false);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(true);
+    options.setShowSafetyConstraints(false);
 }
 
 /**
@@ -207,13 +207,13 @@ export function setSafetyRequirementGraphOptions(options: StpaSynthesisOptions):
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(false);
-    options.setHideScenarios(false);
-    options.setHideScenariosWithHazard(false);
-    options.setHideSafetyConstraints(false);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(true);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(true);
+    options.setShowSafetyConstraints(true);
 }
 
 /**
@@ -224,11 +224,11 @@ export function setRelationshipGraphOptions(options: StpaSynthesisOptions): void
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(false);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(false);
-    options.setHideScenarios(false);
-    options.setHideScenariosWithHazard(false);
-    options.setHideSafetyConstraints(false);
+    options.setShowSysCons(true);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(true);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(true);
+    options.setShowSafetyConstraints(true);
 }

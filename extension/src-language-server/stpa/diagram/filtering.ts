@@ -64,19 +64,19 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
         newModel.losses = model.losses;
         newModel.hazards = model.hazards;
 
-        newModel.systemLevelConstraints = options.getHideSysCons() ? [] : model.systemLevelConstraints;
+        newModel.systemLevelConstraints = !options.getShowSysCons() ? [] : model.systemLevelConstraints;
         newModel.responsibilities =
-            options.getHideSysCons() || options.getHideRespsCons() ? [] : model.responsibilities;
+            !options.getShowSysCons() || !options.getShowRespsCons() ? [] : model.responsibilities;
 
         // filter UCAs by the filteringUCA option
-        newModel.allUCAs = options.getHideUCAs()
+        newModel.allUCAs = !options.getShowUCAs()
             ? []
             : model.allUCAs?.filter(
                   (allUCA) =>
                       allUCA.system.ref?.name + "." + allUCA.action.ref?.name === options.getFilteringUCAs() ||
                       options.getFilteringUCAs() === "all UCAs"
               );
-        newModel.rules = options.getHideUCAs()
+        newModel.rules = !options.getShowUCAs()
             ? []
             : model.rules?.filter(
                   (rule) =>
@@ -84,7 +84,7 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
                       options.getFilteringUCAs() === "all UCAs"
               );
         newModel.controllerConstraints =
-            options.getHideUCAs() || options.getHideContCons()
+            !options.getShowUCAs() || !options.getShowContCons()
                 ? []
                 : model.controllerConstraints?.filter(
                       (cons) =>
@@ -96,12 +96,12 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
 
         // remaining scenarios must be saved to filter safety constraints
         const remainingScenarios = new Set<string>();
-        newModel.scenarios = options.getHideScenarios()
+        newModel.scenarios = !options.getShowScenarios()
             ? []
             : model.scenarios?.filter((scenario) => {
                   if (
-                      (!scenario.uca && !options.getHideScenariosWithHazard()) ||
-                      (scenario.uca && !options.getHideUCAs() &&
+                      (!scenario.uca && !options.getShowScenariosWithHazard()) ||
+                      (scenario.uca && !options.getShowUCAs() &&
                           (scenario.uca?.ref?.$container.system.ref?.name +
                               "." +
                               scenario.uca?.ref?.$container.action.ref?.name ===
@@ -114,7 +114,7 @@ export function filterModel(model: Model, options: StpaSynthesisOptions): Custom
               });
         // filter safety constraints by the remaining scenarios
         newModel.safetyCons =
-            options.getHideSafetyConstraints() || options.getHideScenarios()
+            !options.getShowSafetyConstraints() || !options.getShowScenarios()
                 ? []
                 : model.safetyCons?.filter(
                       (safetyCons) =>
