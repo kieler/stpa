@@ -15,6 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+
 /** Base option that can be rendered as an ui input*/
 export interface RenderOption {
     id: string;
@@ -34,24 +35,24 @@ export interface ChoiceRenderOption extends RenderOption {
  * This is the counterpart to the language server implementation of the SynthesisOption.
  */
  export interface SynthesisOption extends RenderOption {
-    values: any[]
-    category?: SynthesisOption
+    values: any[];
+    category?: SynthesisOption;
 }
 
 /**
  * This is just a SynthesisOption with the ability to represent its current value.
  */
 export interface ValuedSynthesisOption {
-    synthesisOption: SynthesisOption
-    currentValue: any
+    synthesisOption: SynthesisOption;
+    currentValue: any;
 }
 
 /**
  * A SynthesisOption with the RANGE type.
  */
 export interface RangeOption extends SynthesisOption {
-    range: Range
-    stepSize: number
+    range: Range;
+    stepSize: number;
 }
 
 /**
@@ -80,14 +81,14 @@ export enum TransformationOptionType {
  * A value range between a first and second value.
  */
  export interface Range {
-    first: number
-    second: number
+    first: number;
+    second: number;
 }
 
 /**
  * A key-value pair matching the interface of org.eclipse.xtext.xbase.lib.Pair
  */
 export interface Pair<K, V> {
-    k: K
-    v: V
+    k: K;
+    v: V;
 }

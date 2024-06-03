@@ -25,7 +25,7 @@ import * as vscode from "vscode";
 export function createQuickPickForWorkspaceOptions(id: string): void {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = [{ label: "true" }, { label: "false" }];
-    quickPick.onDidChangeSelection((selection) => {
+    quickPick.onDidChangeSelection(selection => {
         if (selection[0]?.label === "true") {
             vscode.workspace.getConfiguration("pasta").update(id, true);
         } else {
@@ -35,6 +35,41 @@ export function createQuickPickForWorkspaceOptions(id: string): void {
     });
     quickPick.onDidHide(() => quickPick.dispose());
     quickPick.show();
+}
+
+/**
+ * Handle WorkSpaceEdit notifications form the langauge server
+ * @param uri The uri of the document that should be edited.
+ * @param text The text to insert.
+ * @param position The position where the text should be inserted.
+ */
+export async function handleWorkSpaceEdit(uri: string, text: string, position: vscode.Position): Promise<void> {
+    const textDocument = vscode.workspace.textDocuments.find(
+        doc => doc.uri.toString() === vscode.Uri.parse(uri).toString()
+    );
+    if (!textDocument) {
+        console.error(
+            `Server requested a text edit but the requested uri was not found among the known documents: ${uri}`
+        );
+        return;
+    }
+
+    const edits: vscode.TextEdit[] = [vscode.TextEdit.insert(position, text)];
+    await applyTextEdits(edits, uri);
+
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+        // count the line breaks to determine the end position
+        const lineBreaks = text.match(/\n/g);
+        const lines = lineBreaks ? lineBreaks.length : 1;
+        const endPos = { line: position.line + lines, character: 0} as vscode.Position;
+        // select and reveal the inserted text
+        activeEditor.selections = [new vscode.Selection(position, endPos)];
+        activeEditor.revealRange(new vscode.Range(position, endPos));
+    }
+
+    //await textDocument.save();
+    return;
 }
 
 /**
@@ -72,6 +107,16 @@ export function collectOptions(configuration: vscode.WorkspaceConfiguration): { 
 }
 
 /**
+ * Adds the {@code snippets} to the snippets in the config file.
+ * @param snippets Text of snippets.
+ */
+export function addSnippetsToConfig(snippets: string[]): void {
+    const configSnippets = vscode.workspace.getConfiguration("pasta.stpa").get("snippets");
+    const newSnippets = (configSnippets as string[]).concat(snippets);
+    vscode.workspace.getConfiguration("pasta.stpa").update("snippets", newSnippets);
+}
+
+/**
  * Creates a file with the given {@code uri} containing the {@code text}.
  * @param uri The uri of the file to create.
  * @param text The content of the file.
@@ -83,7 +128,6 @@ export async function createFile(uri: string, text: string): Promise<void> {
     // insert the content
     const pos = new vscode.Position(0, 0);
     edit.insert(vscode.Uri.parse(uri), pos, text);
-    // }
     // Apply the edit. Report possible failures.
     const edited = await vscode.workspace.applyEdit(edit);
     if (!edited) {
@@ -91,7 +135,7 @@ export async function createFile(uri: string, text: string): Promise<void> {
         return;
     }
     // save the edit
-    const doc = vscode.workspace.textDocuments.find((doc) => doc.uri.toString() === vscode.Uri.parse(uri).toString());
+    const doc = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === vscode.Uri.parse(uri).toString());
     const saved = await doc?.save();
     if (!saved) {
         console.error(`TextDocument ${doc?.uri} could not be saved!`);

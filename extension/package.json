@@ -96,6 +96,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Check whether all UCAs are covered by safety requirements"
+                },
+                "pasta.stpa.snippets": {
+                    "type": "string[]",
+                    "default": [],
+                    "description": "Diagram snippets for STPA"
                 }
             }
         },
@@ -186,6 +191,11 @@
                 "command": "pasta.fta.minimalCutSets",
                 "title": "Generate the minimal cut sets",
                 "category": "Cut Sets"
+            },
+            {
+                "command": "pasta.stpa.snippets.add",
+                "title": "Add STPA Diagram Snippet",
+                "category": "STPA Snippets"
             }
         ],
         "menus": {
@@ -246,6 +256,10 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
+                    "command": "pasta.stpa.snippets.add",
+                    "when": "editorLangId == 'stpa'"
+                },
+                {
                     "command": "pasta.fta.cutSets",
                     "when": "editorLangId == 'fta'"
                 },
@@ -287,6 +301,11 @@
                     "command": "pasta.stpa.ft.generation",
                     "when": "editorLangId == 'stpa'",
                     "group": "stpa"
+                },
+                {
+                    "command": "pasta.stpa.snippets.add",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "navigation"
                 }
             ],
             "pasta.stpa.checks": [
@@ -395,7 +414,25 @@
                 "command": "pasta.IDs.redo",
                 "when": "editorTextFocus"
             }
-        ]
+        ],
+        "viewsContainers": {
+            "activitybar": [
+              {
+                "id": "pasta",
+                "title": "PASTA",
+                "icon": "./icon.png"
+              }
+            ]
+          },
+          "views": {
+            "pasta": [
+              {
+                "type": "webview",
+                "id": "stpa-snippets",
+                "name": "STPA Snippets"
+              }
+            ]
+          }
     },
     "activationEvents": [
         "onLanguage:stpa",

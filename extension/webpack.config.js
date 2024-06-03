@@ -101,6 +101,16 @@ const diagramWebviewConfig = {
 		filename: 'webview.js',
         path: path.resolve(__dirname, 'pack'),
     }
+}
+
+/**@type {import('webpack').Configuration}*/
+const webviewConfig = {
+    ...commonWebConfig,
+    entry: path.resolve(__dirname, 'src-webview/main.ts'),
+    output: {
+		filename: 'webview.js',
+        path: path.resolve(__dirname, 'pack'),
+    }
 };
 
 /**@type {import('webpack').Configuration}*/
@@ -115,5 +125,14 @@ const contextTableConfig = {
     externals: {vscode: "commonjs vscode"}
 };
 
+/**@type {import('webpack').Configuration}*/
+const snippetConfig = {
+    ...commonWebConfig,
+    entry: path.resolve(__dirname, 'src-diagram-snippets/main.ts'),
+    output: {
+		filename: 'snippetWebview.js',
+        path: path.resolve(__dirname, 'pack'),
+    }
+};
 
-module.exports = [vscodeConfig, lsConfig, diagramWebviewConfig, contextTableConfig];
+module.exports = [vscodeConfig, lsConfig, webviewConfig, contextTableConfig, snippetConfig];

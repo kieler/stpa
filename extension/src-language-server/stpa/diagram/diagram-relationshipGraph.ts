@@ -16,7 +16,7 @@
  */
 
 import { AstNode } from "langium";
-import { GeneratorContext, IdCache } from "langium-sprotty";
+import { IdCache } from "langium-sprotty";
 import { SModelElement, SNode } from "sprotty-protocol";
 import { Hazard, Model, SystemConstraint, isContext, isHazard, isSystemConstraint, isUCA } from "../../generated/ast";
 import { collectElementsWithSubComps, leafElement } from "../utils";
@@ -46,7 +46,7 @@ import {
  * @param model The STPA model.
  * @param idToSNode The map of the generated IDs to their generated SNodes.
  * @param options The synthesis options of the STPA model.
- * @param args The generator context of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns the relationship graph for the STPA model.
  */
 export function createRelationshipGraph(
@@ -54,9 +54,9 @@ export function createRelationshipGraph(
     model: Model,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): ParentNode {
-    const children = createRelationshipGraphChildren(filteredModel, model, idToSNode, options, args);
+    const children = createRelationshipGraphChildren(filteredModel, model, idToSNode, options, idCache);
 
     // filtering the nodes of the STPA graph
     const stpaNodes: STPANode[] = [];
@@ -82,7 +82,7 @@ export function createRelationshipGraph(
  * @param model The STPA model.
  * @param idToSNode The map of the generated IDs to their generated SNodes.
  * @param options The synthesis options of the STPA model.
- * @param args The generator context of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns the children of the relationship graph.
  */
 export function createRelationshipGraphChildren(
@@ -90,7 +90,7 @@ export function createRelationshipGraphChildren(
     model: Model,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): SModelElement[] {
     const showLabels = options.getShowLabels();
     // aspects that should have a description when showLabel option is set to automatic
@@ -106,7 +106,7 @@ export function createRelationshipGraphChildren(
                 (showLabels === showLabelsValue.AUTOMATIC && aspectsToShowDescriptions.includes(STPAAspect.LOSS)),
             idToSNode,
             options,
-            args
+            idCache
         )
     );
     // the hierarchy option determines whether subcomponents are contained in ther parent or not
@@ -125,7 +125,7 @@ export function createRelationshipGraphChildren(
                                 aspectsToShowDescriptions.includes(STPAAspect.HAZARD)),
                         idToSNode,
                         options,
-                        args
+                        idCache
                     )
                 )
                 .flat(1),
@@ -139,7 +139,7 @@ export function createRelationshipGraphChildren(
                                 aspectsToShowDescriptions.includes(STPAAspect.SYSTEMCONSTRAINT)),
                         idToSNode,
                         options,
-                        args
+                        idCache
                     )
                 )
                 .flat(1),
@@ -157,7 +157,7 @@ export function createRelationshipGraphChildren(
                                 aspectsToShowDescriptions.includes(STPAAspect.HAZARD)),
                         idToSNode,
                         options,
-                        args
+                        idCache
                     )
                 )
                 .flat(1),
@@ -171,14 +171,14 @@ export function createRelationshipGraphChildren(
                                 aspectsToShowDescriptions.includes(STPAAspect.SYSTEMCONSTRAINT)),
                         idToSNode,
                         options,
-                        args
+                        idCache
                     )
                 )
                 .flat(1),
             ...filteredModel.systemLevelConstraints
                 ?.map(systemConstraint =>
                     systemConstraint.subComponents?.map(subsystemConstraint =>
-                        generateEdgesForSTPANode(subsystemConstraint, idToSNode, options, args)
+                        generateEdgesForSTPANode(subsystemConstraint, idToSNode, options, idCache)
                     )
                 )
                 .flat(2),
@@ -196,7 +196,7 @@ export function createRelationshipGraphChildren(
                                 aspectsToShowDescriptions.includes(STPAAspect.RESPONSIBILITY)),
                         idToSNode,
                         options,
-                        args
+                        idCache
                     )
                 )
             )
@@ -214,7 +214,7 @@ export function createRelationshipGraphChildren(
                                     aspectsToShowDescriptions.includes(STPAAspect.UCA)),
                             idToSNode,
                             options,
-                            args
+                            idCache
                         )
                     )
             )
@@ -230,7 +230,7 @@ export function createRelationshipGraphChildren(
                                 aspectsToShowDescriptions.includes(STPAAspect.UCA)),
                         idToSNode,
                         options,
-                        args
+                        idCache
                     )
                 )
             )
@@ -245,7 +245,7 @@ export function createRelationshipGraphChildren(
                             aspectsToShowDescriptions.includes(STPAAspect.CONTROLLERCONSTRAINT)),
                     idToSNode,
                     options,
-                    args
+                    idCache
                 )
             )
             .flat(1),
@@ -259,7 +259,7 @@ export function createRelationshipGraphChildren(
                             aspectsToShowDescriptions.includes(STPAAspect.SCENARIO)),
                     idToSNode,
                     options,
-                    args
+                    idCache
                 )
             )
             .flat(1),
@@ -273,7 +273,7 @@ export function createRelationshipGraphChildren(
                             aspectsToShowDescriptions.includes(STPAAspect.SAFETYREQUIREMENT)),
                     idToSNode,
                     options,
-                    args
+                    idCache
                 )
             )
             .flat(1),
@@ -284,7 +284,7 @@ export function createRelationshipGraphChildren(
 /**
  * Generates a node and the edges for the given {@code node}.
  * @param node STPA component for which a node and edges should be generated.
- * @param args GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns A node representing {@code node} and edges representing the references {@code node} contains.
  */
 export function generateAspectWithEdges(
@@ -292,15 +292,15 @@ export function generateAspectWithEdges(
     showDescription: boolean,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): SModelElement[] {
     // node must be created first in order to access the id when creating the edges
-    const stpaNode = generateSTPANode(node, showDescription, idToSNode, options, args);
+    const stpaNode = generateSTPANode(node, showDescription, idToSNode, options, idCache);
     // uca nodes need to save their control action in order to be able to group them by the actions
     if ((isUCA(node) || isContext(node)) && node.$container.system.ref) {
         stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name;
     }
-    const elements: SModelElement[] = generateEdgesForSTPANode(node, idToSNode, options, args);
+    const elements: SModelElement[] = generateEdgesForSTPANode(node, idToSNode, options, idCache);
     elements.push(stpaNode);
     return elements;
 }
@@ -308,7 +308,7 @@ export function generateAspectWithEdges(
 /**
  * Generates a single STPANode for the given {@code node}.
  * @param node The STPA component the node should be created for.
- * @param args GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns A STPANode representing {@code node}.
  */
 export function generateSTPANode(
@@ -316,9 +316,8 @@ export function generateSTPANode(
     showDescription: boolean,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): STPANode {
-    const idCache = args.idCache;
     const nodeId = idCache.uniqueId(node.name, node);
     // determines the hierarchy level for subcomponents. For other components the value is 0.
     let lvl = 0;
@@ -333,21 +332,21 @@ export function generateSTPANode(
         nodeId,
         node.name,
         options,
-        args.idCache,
+        idCache,
         isContext(node) ? createUCAContextDescription(node) : node.description
     );
     // if the hierarchy option is true, the subcomponents are added as children to the parent
     if (options.getHierarchy() && isHazard(node) && node.subComponents.length !== 0) {
         // adds subhazards
         children = children.concat(
-            node.subComponents?.map((sc: Hazard) => generateSTPANode(sc, showDescription, idToSNode, options, args))
+            node.subComponents?.map((sc: Hazard) => generateSTPANode(sc, showDescription, idToSNode, options, idCache))
         );
     }
     if (options.getHierarchy() && isSystemConstraint(node) && node.subComponents.length !== 0) {
         // adds subconstraints
         children = children.concat(
             node.subComponents?.map((sc: SystemConstraint) =>
-                generateSTPANode(sc, showDescription, idToSNode, options, args)
+                generateSTPANode(sc, showDescription, idToSNode, options, idCache)
             )
         );
     }
@@ -367,21 +366,21 @@ export function generateSTPANode(
 /**
  * Generates the edges for {@code node}.
  * @param node STPA component for which the edges should be created.
- * @param args GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns Edges representing the references {@code node} contains.
  */
 export function generateEdgesForSTPANode(
     node: AstNode,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
-    args: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): SModelElement[] {
     const elements: SModelElement[] = [];
     // for every reference an edge is created
     // if hierarchy option is false, edges from subcomponents to parents are created too
     const targets = getTargets(node, options.getHierarchy());
     for (const target of targets) {
-        const edge = generateSTPAEdge(node, target, "", idToSNode, args);
+        const edge = generateSTPAEdge(node, target, "", idToSNode, idCache);
         if (edge) {
             elements.push(edge);
         }
@@ -402,7 +401,7 @@ export function generateSTPAEdge(
     target: AstNode,
     label: string,
     idToSNode: Map<string, SNode>,
-    { idCache }: GeneratorContext<Model>
+    idCache: IdCache<AstNode>
 ): STPAEdge | undefined {
     // get the IDs
     const targetId = idCache.getId(target);

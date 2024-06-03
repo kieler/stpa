@@ -18,12 +18,7 @@
 import ElkConstructor from "elkjs/lib/elk.bundled";
 import { Module, PartialLangiumServices } from "langium";
 import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty";
-import {
-    DefaultElementFilter,
-    ElkFactory,
-    IElementFilter,
-    ILayoutConfigurator
-} from "sprotty-elk/lib/elk-layout";
+import { DefaultElementFilter, ElkFactory, IElementFilter, ILayoutConfigurator } from "sprotty-elk/lib/elk-layout";
 import { LayoutEngine } from "../layout-engine";
 import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator";
 import { FtaLayoutConfigurator } from "./diagram/fta-layout-config";
@@ -64,8 +59,8 @@ export type FtaServices = LangiumSprottyServices & FtaAddedServices;
  */
 export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiagramServices & FtaAddedServices> = {
     diagram: {
-        DiagramGenerator: (services) => new FtaDiagramGenerator(services),
-        ModelLayoutEngine: (services) =>
+        DiagramGenerator: services => new FtaDiagramGenerator(services),
+        ModelLayoutEngine: services =>
             new LayoutEngine(
                 services.layout.ElkFactory,
                 services.layout.ElementFilter,
@@ -73,11 +68,11 @@ export const FtaModule: Module<FtaServices, PartialLangiumServices & SprottyDiag
             ) as any,
     },
     references: {
-        ScopeProvider: (services) => new FtaScopeProvider(services),
-        FtaScopeProvider: (services) => new FtaScopeProvider(services),
+        ScopeProvider: services => new FtaScopeProvider(services),
+        FtaScopeProvider: services => new FtaScopeProvider(services),
     },
     validation: {
-        ValidationRegistry: (services) => new FtaValidationRegistry(services),
+        ValidationRegistry: services => new FtaValidationRegistry(services),
         FtaValidator: () => new FtaValidator(),
     },
     layout: {

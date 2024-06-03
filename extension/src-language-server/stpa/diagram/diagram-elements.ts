@@ -16,9 +16,8 @@
  */
 
 import { AstNode } from "langium";
-import { GeneratorContext, IdCache } from "langium-sprotty";
+import { IdCache } from "langium-sprotty";
 import { SLabel, SModelElement } from "sprotty-protocol";
-import { Model } from "../../generated/ast";
 import { getDescription } from "../../utils";
 import { CSEdge, CSNode, PastaPort, STPAEdge, STPANode } from "./stpa-interfaces";
 import {
@@ -30,8 +29,8 @@ import {
     STPAAspect,
     STPA_NODE_TYPE,
 } from "./stpa-model";
-import { getAspect } from "./utils";
 import { StpaSynthesisOptions } from "./stpa-synthesis-options";
+import { getAspect } from "./utils";
 
 /**
  * Creates an STPANode.
@@ -117,7 +116,7 @@ export function createSTPAEdge(
  * @param targetId The ID of the target of the edge.
  * @param label The labels of the edge.
  * @param edgeType The type of the edge (control action or feedback edge).
- * @param param5 GeneratorContext of the STPA model.
+ * @param idCache The ID cache of the STPA model.
  * @returns A control structure edge.
  */
 export function createControlStructureEdge(
@@ -127,7 +126,7 @@ export function createControlStructureEdge(
     label: string[],
     edgeType: EdgeType,
     sedgeType: string,
-    args: GeneratorContext<Model>,
+    idCache: IdCache<AstNode>,
     dummyLabel: boolean = true
 ): CSEdge {
     return {
@@ -136,7 +135,7 @@ export function createControlStructureEdge(
         sourceId: sourceId!,
         targetId: targetId!,
         edgeType: edgeType,
-        children: createLabel(label, edgeId, args.idCache, undefined, dummyLabel),
+        children: createLabel(label, edgeId, idCache, undefined, dummyLabel),
     };
 }
 

@@ -18,12 +18,17 @@
 import { ActionMessage, JsonMap, SelectAction } from "sprotty-protocol";
 import { createFileUri } from "sprotty-vscode";
 import { SprottyDiagramIdentifier } from "sprotty-vscode-protocol";
-import { LspWebviewEndpoint, LspWebviewPanelManager, LspWebviewPanelManagerOptions } from "sprotty-vscode/lib/lsp";
+import {
+    LspWebviewEndpoint,
+    LspWebviewPanelManager,
+    LspWebviewPanelManagerOptions,
+    acceptMessageType,
+} from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
-import { GenerateSVGsAction } from "./actions";
+import { AddSnippetAction, GenerateSVGsAction } from "./actions";
 import { ContextTablePanel } from "./context-table-panel";
 import { StpaFormattingEditProvider } from "./stpa-formatter";
-import { applyTextEdits, collectOptions, createFile } from "./utils";
+import { addSnippetsToConfig, applyTextEdits, collectOptions, createFile, handleWorkSpaceEdit } from "./utils";
 import { StpaLspWebview } from "./wview";
 
 export class StpaLspVscodeExtension extends LspWebviewPanelManager {
@@ -32,9 +37,10 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     public contextTable: ContextTablePanel;
     /** Saves the last selected UCA in the context table. */
     protected lastSelectedUCA: string[];
+    clientId: string | undefined;
 
     protected resolveLSReady: () => void;
-    readonly lsReady = new Promise<void>((resolve) => (this.resolveLSReady = resolve));
+    readonly lsReady = new Promise<void>(resolve => (this.resolveLSReady = resolve));
 
     /** needed for undo/redo actions when ID enforcement is active*/
     ignoreNextTextChange: boolean = false;
@@ -42,6 +48,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     constructor(options: LspWebviewPanelManagerOptions, extensionPrefix: string) {
         super(options);
         this.extensionPrefix = extensionPrefix;
+
         // user changed configuration settings
         vscode.workspace.onDidChangeConfiguration(() => {
             // sends configuration of stpa to the language server
@@ -55,26 +62,11 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         const sel: vscode.DocumentSelector = { scheme: "file", language: "stpa" };
         vscode.languages.registerDocumentFormattingEditProvider(sel, new StpaFormattingEditProvider());
 
-        // handling of notifications regarding the context table
-        options.languageClient.onNotification("contextTable/data", (data) => this.contextTable.setData(data));
-        options.languageClient.onNotification(
-            "editor/highlight",
-            (msg: { startLine: number; startChar: number; endLine: number; endChar: number; uri: string }) => {
-                // highlight and reveal the given range in the editor
-                const editor = vscode.window.visibleTextEditors.find(
-                    (visibleEditor) => visibleEditor.document.uri.toString() === msg.uri
-                );
-                if (editor) {
-                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
-                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
-                    editor.selection = new vscode.Selection(startPosition, endPosition);
-                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
-                }
-            }
-        );
+        this.addReactionsToSnippetCommands(options);
+        this.addReactionsToContextTableCommands(options);
 
         // textdocument has changed
-        vscode.workspace.onDidChangeTextDocument((changeEvent) => {
+        vscode.workspace.onDidChangeTextDocument(changeEvent => {
             this.handleTextChangeEvent(changeEvent);
         });
         // language client sent workspace edits
@@ -101,6 +93,48 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     }
 
     /**
+     * Adds reactions to the snippet commands.
+     * @param options The options of the language client.
+     */
+    protected addReactionsToSnippetCommands(options: LspWebviewPanelManagerOptions): void {
+        // handling notifications regarding the diagram snippets
+        options.languageClient.onNotification(
+            "editor/add",
+            (msg: { uri: string; text: string; position: vscode.Position }) => {
+                const pos = this.languageClient.protocol2CodeConverter.asPosition(msg.position);
+                handleWorkSpaceEdit(msg.uri, msg.text, pos);
+            }
+        );
+        options.languageClient.onNotification("config/add", (snippets: string[]) => addSnippetsToConfig(snippets));
+        options.languageClient.onNotification("snippets/creationFailed", () =>
+            vscode.window.showWarningMessage("Snippet could not be created.")
+        );
+    }
+
+    /**
+     * Adds reactions to the context table commands.
+     * @param options The options of the language client.
+     */
+    protected addReactionsToContextTableCommands(options: LspWebviewPanelManagerOptions): void {
+        options.languageClient.onNotification("contextTable/data", data => this.contextTable.setData(data));
+        options.languageClient.onNotification(
+            "editor/highlight",
+            (msg: { startLine: number; startChar: number; endLine: number; endChar: number; uri: string }) => {
+                // highlight and reveal the given range in the editor
+                const editor = vscode.window.visibleTextEditors.find(
+                    visibleEditor => visibleEditor.document.uri.toString() === msg.uri
+                );
+                if (editor) {
+                    const startPosition = new vscode.Position(msg.startLine, msg.startChar);
+                    const endPosition = new vscode.Position(msg.endLine, msg.endChar);
+                    editor.selection = new vscode.Selection(startPosition, endPosition);
+                    editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenter);
+                }
+            }
+        );
+    }
+
+    /**
      * Notifies the language server that a textdocument has changed.
      * @param changeEvent The change in the text document.
      */
@@ -116,6 +150,33 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         // TODO: ID enforcer for FTA
         if (uri.endsWith(".stpa")) {
             this.languageClient.sendNotification("editor/textChange", { changes: changes, uri: uri });
+        }
+    }
+
+    /**
+     * Sends an AddSnippetAction to the language server containing the selected text.
+     * @param commandArgs
+     */
+    async addSnippet(uri: vscode.Uri): Promise<void> {
+        const activeEditor = vscode.window.activeTextEditor;
+        const selection = activeEditor?.selection;
+        const document = activeEditor?.document;
+        if (document && selection) {
+            if (!this.clientId) {
+                const identifier = await this.createDiagramIdentifier(uri);
+                this.clientId = identifier?.clientId;
+            }
+            const text = document
+                .getText()
+                .substring(document.offsetAt(selection.start), document.offsetAt(selection?.end));
+            const mes: ActionMessage = {
+                clientId: this.clientId!,
+                action: {
+                    kind: AddSnippetAction.KIND,
+                    text: text,
+                } as AddSnippetAction,
+            };
+            this.languageClient.sendNotification(acceptMessageType, mes);
         }
     }
 
@@ -153,6 +214,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     protected override createEndpoint(identifier: SprottyDiagramIdentifier): LspWebviewEndpoint {
         const webviewContainer = this.createWebview(identifier);
         const participant = this.messenger.registerWebviewPanel(webviewContainer);
+        this.clientId = identifier.clientId;
         return new StpaLspWebview({
             languageClient: this.languageClient,
             webviewContainer,

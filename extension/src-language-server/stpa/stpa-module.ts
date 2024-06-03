@@ -16,21 +16,11 @@
  */
 
 import ElkConstructor from "elkjs/lib/elk.bundled";
-import {
-    Module,
-    PartialLangiumServices
-} from "langium";
-import {
-    LangiumSprottyServices,
-    SprottyDiagramServices
-} from "langium-sprotty";
-import {
-    DefaultElementFilter,
-    ElkFactory,
-    IElementFilter,
-    ILayoutConfigurator
-} from "sprotty-elk/lib/elk-layout";
+import { Module, PartialLangiumServices } from "langium";
+import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty";
+import { DefaultElementFilter, ElkFactory, IElementFilter, ILayoutConfigurator } from "sprotty-elk/lib/elk-layout";
 import { LayoutEngine } from "../layout-engine";
+import { StpaDiagramSnippets } from "../snippets/stpa-snippets";
 import { IDEnforcer } from "./ID-enforcer";
 import { ContextTableProvider } from "./contextTable/context-dataProvider";
 import { StpaDiagramGenerator } from "./diagram/diagram-generator";
@@ -63,6 +53,9 @@ export type StpaAddedServices = {
     utility: {
         IDEnforcer: IDEnforcer;
     };
+    snippets: {
+        StpaDiagramSnippets: StpaDiagramSnippets;
+    };
 };
 
 /**
@@ -78,8 +71,8 @@ export type StpaServices = LangiumSprottyServices & StpaAddedServices;
  */
 export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDiagramServices & StpaAddedServices> = {
     diagram: {
-        DiagramGenerator: (services) => new StpaDiagramGenerator(services),
-        ModelLayoutEngine: (services) =>
+        DiagramGenerator: services => new StpaDiagramGenerator(services),
+        ModelLayoutEngine: services =>
             new LayoutEngine(
                 services.layout.ElkFactory,
                 services.layout.ElementFilter,
@@ -87,11 +80,11 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
             ) as any,
     },
     references: {
-        ScopeProvider: (services) => new StpaScopeProvider(services),
-        StpaScopeProvider: (services) => new StpaScopeProvider(services),
+        ScopeProvider: services => new StpaScopeProvider(services),
+        StpaScopeProvider: services => new StpaScopeProvider(services),
     },
     validation: {
-        ValidationRegistry: (services) => new StpaValidationRegistry(services),
+        ValidationRegistry: services => new StpaValidationRegistry(services),
         StpaValidator: () => new StpaValidator(),
     },
     layout: {
@@ -103,9 +96,12 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
         SynthesisOptions: () => new StpaSynthesisOptions(),
     },
     contextTable: {
-        ContextTableProvider: (services) => new ContextTableProvider(services),
+        ContextTableProvider: services => new ContextTableProvider(services),
     },
     utility: {
-        IDEnforcer: (services) => new IDEnforcer(services),
+        IDEnforcer: services => new IDEnforcer(services),
+    },
+    snippets: {
+        StpaDiagramSnippets: services => new StpaDiagramSnippets(services),
     },
 };

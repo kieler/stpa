@@ -1,0 +1,64 @@
+/*
+ * KIELER - Kiel Integrated Environment for Layout Eclipse RichClient
+ *
+ * http://rtsys.informatik.uni-kiel.de/kieler
+ *
+ * Copyright 2022 by
+ * + Kiel University
+ *   + Department of Computer Science
+ *     + Real-Time and Embedded Systems Group
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+ :root {
+    /* Behavior and sizing variables */
+    --stpa-transition: 200ms ease-in-out;
+    --stpa-border-radius-default: 4px;
+    --stpa-font-size-base: 16px;
+    --stpa-sidebar-shadow: 0 15px 25px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.05);
+    --stpa-sidebar-button-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+
+    /* Color semantic theme token (no "dump" token like gray100 etc.
+    but rather scoped to where they should be applied). Allows for finer theme control. */
+    --stpa-color-sidebar-background: var(--vscode-sideBar-background);
+    --stpa-color-sidebar-trigger-background: var(--vscode-sideBar-background);
+    
+    --stpa-color-sidebar-trigger-background-hover: var(--vscode-sideBar-background);
+    --stpa-color-sidebar-trigger-background-active: var(--vscode-sideBar-background);
+    --stpa-color-sidebar-hover-background: rgba(0, 0, 0, 0.15);
+    /* --stpa-color-sidebar-font-primary: hsl(0, 0%, 12%);
+    --stpa-color-sidebar-icon-primary: hsl(0, 0%, 24%);
+    --stpa-color-primary: #0552b5; */
+
+
+    /* black/white colors */
+    --dark-node: #ffffff00;
+    --light-node: white;
+    --highlight-node: #FF2828;
+
+    /* Colors for stpa aspects */
+    --stpa-loss-dark: #AD0000;
+    --stpa-hazard-dark: #A85400;
+    --stpa-sys-constraint-dark: #006600;
+    --stpa-responsibility-dark: purple;
+    --stpa-uca-dark: #0054A8;
+    --stpa-cont-constraint-dark: #006161;
+    --stpa-scenario-dark: #616100;
+    --stpa-safety-requirement-dark: #2f4f4f;
+
+    --stpa-loss-light: #FF2828;
+    --stpa-hazard-light: #ffa852;
+    --stpa-sys-constraint-light: #00eb00;
+    --stpa-responsibility-light: #ff6bff;
+    --stpa-uca-light: #66b3ff;
+    --stpa-cont-constraint-light: #00cccc;
+    --stpa-scenario-light: #cccc00;
+    --stpa-safety-requirement-light: #8fbcbc;
+
+    /* background: #feffe8 */
+}

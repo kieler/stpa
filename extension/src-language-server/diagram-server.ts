@@ -15,18 +15,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {
-    Action,
-    DiagramServer,
-    DiagramServices,
-    JsonMap,
-    RequestAction,
-    RequestModelAction,
-    ResponseAction,
-} from "sprotty-protocol";
+import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from "sprotty-protocol";
 import { Connection } from "vscode-languageserver";
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions";
 import { DropDownOption } from "./options/option-models";
+import { SnippetDiagramServer } from "./snippets/snippet-diagram-server";
+import { LanguageSnippet } from "./snippets/snippet-model";
+import { StpaDiagramSnippets } from "./snippets/stpa-snippets";
 import { GenerateSVGsAction, RequestSvgAction, SvgAction } from "./stpa/actions";
 import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/stpa-synthesis-options";
 import {
@@ -54,21 +49,37 @@ import {
     setSystemConstraintGraphOptions,
 } from "./stpa/result-report/svg-generator";
 import { SynthesisOptions } from "./synthesis-options";
+import { StpaServices } from "./stpa/stpa-module";
+import { FtaServices } from "./fta/fta-module";
 
-export class PastaDiagramServer extends DiagramServer {
+export class PastaDiagramServer extends SnippetDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;
-    clientId: string;
+    protected stpaSnippets: StpaDiagramSnippets | undefined;
     protected connection: Connection | undefined;
 
     constructor(
         dispatch: <A extends Action>(action: A) => Promise<void>,
         services: DiagramServices,
         clientId: string,
+        options: JsonMap | undefined,
         connection: Connection | undefined,
-        synthesisOptions?: SynthesisOptions
+        language: StpaServices | FtaServices
     ) {
-        super(dispatch, services);
-        this.synthesisOptions = synthesisOptions;
+        super(
+            dispatch,
+            services,
+            clientId,
+            language.hasOwnProperty("snippets") && (language as StpaServices).snippets.StpaDiagramSnippets.getSnippets()
+                ? (language as StpaServices).snippets.StpaDiagramSnippets.getSnippets()
+                : [],
+            options,
+            connection
+        );
+        // only STPAService has snippets
+        if (language.hasOwnProperty("snippets")) {
+            this.stpaSnippets = (language as StpaServices).snippets.StpaDiagramSnippets;
+        }
+        this.synthesisOptions = language.options.SynthesisOptions;
         this.clientId = clientId;
         this.connection = connection;
     }
@@ -94,6 +105,15 @@ export class PastaDiagramServer extends DiagramServer {
     }
 
     /**
+     * Creates a snippet from a string.
+     * @param text The text that should be inserted when clicking on the snippet.
+     * @returns a snippet for the given {@code text}
+     */
+    protected createSnippetFromString(text: string): LanguageSnippet {
+        return this.stpaSnippets?.createSnippet(text) ?? ({} as LanguageSnippet);
+    }
+
+    /**
      * Generates the diagrams for the STPA results by setting the synthesis options
      * accordingly and requesting the SVG from the client.
      *
@@ -105,7 +125,7 @@ export class PastaDiagramServer extends DiagramServer {
             diagramSizes = {};
             const setSynthesisOption = {
                 kind: SetSynthesisOptionsAction.KIND,
-                options: this.synthesisOptions.getSynthesisOptions().map((option) => option.synthesisOption),
+                options: this.synthesisOptions.getSynthesisOptions().map(option => option.synthesisOption),
             } as SetSynthesisOptionsAction;
             // save current option values
             saveOptions(this.synthesisOptions);
@@ -125,7 +145,7 @@ export class PastaDiagramServer extends DiagramServer {
             // filtered uca graph svg
             const filteringUcaOption = this.synthesisOptions
                 .getSynthesisOptions()
-                .find((option) => option.synthesisOption.id === filteringUCAsID);
+                .find(option => option.synthesisOption.id === filteringUCAsID);
             for (const value of (filteringUcaOption?.synthesisOption as DropDownOption).availableValues) {
                 setFilteredUcaGraphOptions(this.synthesisOptions, value.id);
                 await this.createSVG(setSynthesisOption, action.uri, FILTERED_UCA_PATH(value.id));
@@ -185,7 +205,7 @@ export class PastaDiagramServer extends DiagramServer {
             for (const option of action.options) {
                 const opt = this.synthesisOptions
                     .getSynthesisOptions()
-                    .find((synOpt) => synOpt.synthesisOption.id === option.id);
+                    .find(synOpt => synOpt.synthesisOption.id === option.id);
                 if (opt) {
                     opt.currentValue = option.currentValue;
                     opt.synthesisOption.currentValue = option.currentValue;
