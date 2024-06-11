@@ -33,6 +33,7 @@ import {
     Rule,
     DCARule,
     DCAContext,
+    isRule,
 } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
@@ -183,7 +184,16 @@ export class StpaValidator {
                 })
             )
         );
+        // check UCAs and DCAs
+        this.checkUCAsAndDCAs(model, accept);        
+    }
 
+    /**
+     * Checks the UCAs and DCAs for duplicates and conflicts.
+     * @param model The model containing the UCAs and DCAs.
+     * @param accept 
+     */
+    protected checkUCAsAndDCAs(model: Model, accept: ValidationAcceptor): void {
         // check for duplicate ActionUCA definition
         this.checkActionUcasForDuplicates(model, accept);
         // check for duplicate rule definition
@@ -198,9 +208,23 @@ export class StpaValidator {
             }
         }
         this.checkRulesForDuplicates(ruleMap, accept);
+        // check for duplicate dca rule definition
+        // group dca rules by action and system
+        const dcaRuleMap = new Map<string, DCARule[]>();
+        for (const dcaRule of model.allDCAs) {
+            const key = dcaRule.system?.ref?.name + "." + dcaRule.action?.ref?.name;
+            if (dcaRuleMap.has(key)) {
+                dcaRuleMap.get(key)?.push(dcaRule);
+            } else {
+                dcaRuleMap.set(key, [dcaRule]);
+            }
+        }
+        this.checkRulesForDuplicates(dcaRuleMap, accept);
+        // check for conflicting UCAs
         if (this.checkForConflictingUCAs) {
             this.checkForConflictingRules(ruleMap, accept);
         }
+        // check for conflicts between UCAs and DCAs
         this.checkForConflictsBetweenUCAsAndDCAs(model.rules, model.allDCAs, accept);
     }
 
@@ -226,12 +250,13 @@ export class StpaValidator {
      * @param ruleMap The rules mapped by their control action.
      * @param accept
      */
-    checkRulesForDuplicates(ruleMap: Map<string, Rule[]>, accept: ValidationAcceptor): void {
+    checkRulesForDuplicates(ruleMap: Map<string, Rule[]> | Map<string, DCARule[]>, accept: ValidationAcceptor): void {
         for (const rules of ruleMap.values()) {
             const types = new Set<string>();
             for (const rule of rules) {
                 if (types.has(rule.type)) {
-                    accept("warning", "This UCA type is already covered by another rule for the stated action", {
+                    const action = isRule(rule) ? "UCA" : "DCA";
+                    accept("warning", `This ${action} type is already covered by another rule for the stated action`, {
                         node: rule,
                         property: "type",
                     });
