@@ -115,7 +115,10 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             "org.eclipse.elk.direction": "DOWN",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
             "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
-            "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true"
+            "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true",
+            // nodes with many edges are streched
+            "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+            "org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default": "NODE_SIZE",
         };
     }
 
@@ -173,9 +176,12 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             // edges do no start at the border of the node
             "org.eclipse.elk.spacing.portsSurrounding": "[top=10.0,left=10.0,bottom=10.0,right=10.0]",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
+            // nodes with many edges are streched
+            "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+            "org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default": "NODE_SIZE",
         };
         if (node.children?.find(child => child.type.startsWith("node"))) {
-            // node hast children nodes
+            // node has children nodes
             options["org.eclipse.elk.nodeLabels.placement"] = "INSIDE V_TOP H_CENTER";
             options["org.eclipse.elk.direction"] = "DOWN";
             options["org.eclipse.elk.partitioning.activate"] = "true";
