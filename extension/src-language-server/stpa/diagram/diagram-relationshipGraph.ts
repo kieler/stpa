@@ -318,7 +318,7 @@ export function generateSTPANode(
     options: StpaSynthesisOptions,
     idCache: IdCache<AstNode>
 ): STPANode {
-    const nodeId = idCache.uniqueId(node.name, node);
+    const nodeId = idCache.uniqueId(node.name.replace(/[.]/g, "_"), node);
     // determines the hierarchy level for subcomponents. For other components the value is 0.
     let lvl = 0;
     let container = node.$container;
