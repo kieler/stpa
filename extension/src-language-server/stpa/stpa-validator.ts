@@ -284,12 +284,14 @@ export class StpaValidator {
     protected checkForConflictsBetweenUCAsAndDCAs(ucas: Rule[], dcas: DCARule[], accept: ValidationAcceptor): void {
         for (const dca of dcas) {
             for (const uca of ucas) {
-                // if they have different types, they cannot conflict
+                // if they have different types or different control actions, they cannot conflict
                 const ucaType = uca.type === UCA_TYPE.PROVIDED ? UCA_TYPE.PROVIDED : UCA_TYPE.NOT_PROVIDED;
-                if (dca.type === ucaType) {
+                const dcaAction = dca.system?.$refText + "." + dca.action?.$refText;
+                const ucaAction = uca.system?.$refText + "." + uca.action?.$refText;
+                if (dcaAction === ucaAction && dca.type === ucaType) {
                     for (const context of dca.contexts) {
                         for (const otherContext of uca.contexts) {
-                            // if they have the same type and context, they conflict
+                            // if they have the same type and context for same control action, they conflict
                             if (this.isSameContext(context, otherContext)) {
                                 accept("warning", "Conflict with " + uca.name + " " + otherContext.name + " detected", {
                                     node: context,
