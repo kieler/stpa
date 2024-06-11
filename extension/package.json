@@ -456,7 +456,7 @@
         "reflect-metadata": "^0.1.13",
         "feather-icons": "^4.28.0",
         "sprotty-vscode-webview": "^0.5.0",
-        "@kieler/table-webview": "^0.0.3",
+        "@kieler/table-webview": "^0.0.5",
         "snabbdom": "^3.5.1",
         "dayjs": "^1.11.8"
     },
