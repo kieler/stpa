@@ -29,7 +29,7 @@ export function createSBMs(
     controlActionsMap: Record<string, string[]>,
     formulaMap: Record<string, LTLFormula[]>
 ): void {
-    Object.keys(controlActionsMap).forEach((controller) =>
+    Object.keys(controlActionsMap).forEach(controller =>
         createControllerSBM(controller, controlActionsMap[controller], formulaMap[controller])
     );
 }
@@ -73,7 +73,7 @@ async function createControllerSBM(
     /* Must be done because the transitions to the empty state should only ensure that the state is left 
     (for types providing and applied-too-long). When another transition is possible, it should be taken. 
     When not using priorities, the triggers must be adjusted to be exclusive */
-    states.forEach((state) => {
+    states.forEach(state => {
         state.transitions.sort((a, _) => {
             if (a.target === EMPTY_STATE_NAME) {
                 return 1;
@@ -108,10 +108,10 @@ function collectContextVariables(ltlFormulas: LTLFormula[]): { variables: Variab
     const variableNames = new Set<string>();
     const variables: Variable[] = [];
     const enums: Enum[] = [];
-    ltlFormulas.forEach((ltlFormula) => {
+    ltlFormulas.forEach(ltlFormula => {
         // the variables are connected by logical ands
         const expressions = ltlFormula.contextVariables.split("&&");
-        expressions.forEach((expression) => {
+        expressions.forEach(expression => {
             const operands = expression.split(/>=|<=|>|<|==|!=/);
             if (operands.length === 1) {
                 // variable is a boolean
@@ -160,14 +160,14 @@ function addEnum(
     if (!variableNames.has(operand)) {
         const enumName = operand.substring(0, operand.indexOf("."));
         const enumValue = operand.substring(operand.indexOf(".") + 1);
-        const enumDeclaration = enums.find((enumElement) => enumElement.name === enumName);
+        const enumDeclaration = enums.find(enumElement => enumElement.name === enumName);
         if (enumDeclaration === undefined) {
             enums.push({ name: enumName, values: [enumValue] });
         } else {
             enumDeclaration.values.push(enumValue);
         }
         // update the type of the first operand to enum
-        const firstVariable = variables.find((variable) => variable.name === variableName);
+        const firstVariable = variables.find(variable => variable.name === variableName);
         if (firstVariable !== undefined && !firstVariable.type.startsWith("ref")) {
             firstVariable.type = "ref " + enumName;
         }
@@ -229,7 +229,7 @@ function groupFormulasByActionAndType(ltlFormulas: LTLFormula[]): {
     const providedMap = new Map<string, LTLFormula[]>();
     const appliedTooLongMap = new Map<string, LTLFormula[]>();
     const stoppedTooSoonMap = new Map<string, LTLFormula[]>();
-    ltlFormulas.forEach((formula) => {
+    ltlFormulas.forEach(formula => {
         const action = getControlActionFromLTL(formula);
         switch (formula.type) {
             case UCA_TYPE.NOT_PROVIDED:
@@ -274,7 +274,7 @@ function createStatesForActions(controlActions: string[]): State[] {
         },
     ];
     // adds a state for each control action
-    controlActions.forEach((controlAction) => {
+    controlActions.forEach(controlAction => {
         const state: State = {
             name: controlAction,
             controlAction: controlAction,
@@ -313,15 +313,15 @@ function addTransitions(
  */
 function addNotProvidedTransitions(notProvidedMap: Map<string, LTLFormula[]>, states: State[]): void {
     for (const controlAction of notProvidedMap.keys()) {
-        const controlActionStateIndex = states.findIndex((state) => state.name === controlAction);
+        const controlActionStateIndex = states.findIndex(state => state.name === controlAction);
         const controlActionState = states[controlActionStateIndex];
         states.forEach((state, index) => {
             if (index !== controlActionStateIndex) {
                 // transition from all other states to the controlaction state
-                notProvidedMap.get(controlAction)?.forEach((ltlFormula) => {
+                notProvidedMap.get(controlAction)?.forEach(ltlFormula => {
                     // prevent duplicates
                     const sameTransition = state.transitions.find(
-                        (transition) =>
+                        transition =>
                             transition.target === controlActionState.name &&
                             transition.trigger === ltlFormula.contextVariables
                     );
@@ -346,13 +346,13 @@ function addNotProvidedTransitions(notProvidedMap: Map<string, LTLFormula[]>, st
  */
 function addProvidedTransitions(providedMap: Map<string, LTLFormula[]>, states: State[]): void {
     for (const controlAction of providedMap.keys()) {
-        const controlActionState = states.find((state) => state.name === controlAction);
+        const controlActionState = states.find(state => state.name === controlAction);
         if (controlActionState) {
-            providedMap.get(controlAction)?.forEach((ltlFormula) => {
+            providedMap.get(controlAction)?.forEach(ltlFormula => {
                 // only add a transition if there not already exists one with the same trigger
                 // trigger still may be a subset of another trigger -> set priority or trigger accordingly
                 const sameTrigger = controlActionState.transitions.find(
-                    (transition) => transition.trigger === ltlFormula.contextVariables
+                    transition => transition.trigger === ltlFormula.contextVariables
                 );
                 if (sameTrigger === undefined) {
                     // transition from controlaction state to the empty state
@@ -374,9 +374,9 @@ function addProvidedTransitions(providedMap: Map<string, LTLFormula[]>, states: 
  */
 function addAppliedTooLongTransitions(appliedTooLongMap: Map<string, LTLFormula[]>, states: State[]): State[] {
     for (const controlAction of appliedTooLongMap.keys()) {
-        const controlActionState = states.find((state) => state.name === controlAction);
+        const controlActionState = states.find(state => state.name === controlAction);
         if (controlActionState) {
-            appliedTooLongMap.get(controlAction)?.forEach((ltlFormula) => {
+            appliedTooLongMap.get(controlAction)?.forEach(ltlFormula => {
                 const duplicateState = createDuplicateState(states, controlActionState, ltlFormula);
                 states.push(duplicateState);
                 // transition to initial state
@@ -398,12 +398,12 @@ function addAppliedTooLongTransitions(appliedTooLongMap: Map<string, LTLFormula[
  */
 function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[]>, states: State[]): State[] {
     for (const controlAction of stoppedTooSoonMap.keys()) {
-        const controlActionState = states.find((state) => state.name === controlAction);
+        const controlActionState = states.find(state => state.name === controlAction);
         if (controlActionState) {
             const newlyCreatedStates: Set<{ state: State; formula: LTLFormula }> = new Set();
-            stoppedTooSoonMap.get(controlAction)?.forEach((ltlFormula) => {
+            stoppedTooSoonMap.get(controlAction)?.forEach(ltlFormula => {
                 // there may be already a duplicate state created because of applied-too-long
-                let duplicateState = states.find((state) => state.name === getStateName(controlAction, ltlFormula));
+                let duplicateState = states.find(state => state.name === getStateName(controlAction, ltlFormula));
                 // create duplicate state if it does not exist
                 if (duplicateState === undefined) {
                     duplicateState = createDuplicateState(states, controlActionState, ltlFormula);
@@ -411,13 +411,13 @@ function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[
                     states.push(duplicateState);
                 }
                 // adjust trigger of outgoing transitions
-                duplicateState.transitions.forEach((transition) => {
+                duplicateState.transitions.forEach(transition => {
                     transition.trigger = transition.trigger + ` && !(${ltlFormula.contextVariables})`;
                 });
             });
             // add transitions from the newly created duplicate states to other duplicate states by copying
             // and adjusting the transitions from the original control action state to the duplicate states
-            newlyCreatedStates.forEach((duplicateState) => {
+            newlyCreatedStates.forEach(duplicateState => {
                 copyAndAdjustTransitionsToDuplicates(controlActionState, duplicateState.state, duplicateState.formula);
             });
         }
@@ -437,7 +437,7 @@ function copyAndAdjustTransitionsToDuplicates(
     duplicateState: State,
     ltlFormula: LTLFormula
 ): void {
-    originalState.transitions.forEach((transition) => {
+    originalState.transitions.forEach(transition => {
         if (transition.target !== duplicateState.name && transition.target.startsWith(originalState.name + "_")) {
             const newTransition = {
                 target: transition.target,
@@ -483,7 +483,7 @@ function copyOutgoingTransitions(originalState: State): Transition[] {
     // copy outgoing transitions from original state
     // transitions that are going to other duplicate states should not be copied!
     const duplicateTransitions: Transition[] = [];
-    originalState.transitions.forEach((transition) => {
+    originalState.transitions.forEach(transition => {
         if (!transition.target.startsWith(originalState.name + "_")) {
             duplicateTransitions.push({
                 target: transition.target,
@@ -508,30 +508,30 @@ function copyAndAdjustIncomingTransitions(
     duplicateState: State,
     ltlFormula: LTLFormula
 ): void {
-    states.forEach((state) => {
+    states.forEach(state => {
         const transitionsToDuplicate: Transition[] = [];
-        const transitionsToCA = state.transitions.filter((transition) => transition.target === originalState.name);
+        const transitionsToCA = state.transitions.filter(transition => transition.target === originalState.name);
         const deletTransitions: Transition[] = [];
-        transitionsToCA.forEach((transition) => {
+        transitionsToCA.forEach(transition => {
             if (transition.trigger) {
                 const newTriggers = createNewTriggersForIncomingTransitions(transition.trigger, ltlFormula);
                 // transition to duplicate state
                 if (newTriggers.duplicateTrigger !== "false") {
-                    transitionsToDuplicate.push({
-                        target: duplicateState.name,
-                        trigger: newTriggers.duplicateTrigger,
-                        effect: transition.effect,
-                    });
+                transitionsToDuplicate.push({
+                    target: duplicateState.name,
+                    trigger: newTriggers.duplicateTrigger,
+                    effect: transition.effect,
+                });
                 }
                 // adjust trigger of original transition
                 if (newTriggers.originalTrigger !== "false") {
-                    transition.trigger = newTriggers.originalTrigger;
+                transition.trigger = newTriggers.originalTrigger;
                 } else {
                     deletTransitions.push(transition);
                 }
             }
         });
-        state.transitions = state.transitions.filter((transition) => !deletTransitions.includes(transition));
+        state.transitions = state.transitions.filter(transition => !deletTransitions.includes(transition));
         state.transitions = state.transitions.concat(transitionsToDuplicate);
     });
 }
@@ -552,27 +552,38 @@ function createNewTriggersForIncomingTransitions(
     let triggerToDuplicateState = trigger;
     // the context variables of the ltl formula are connected by logical ands
     const contextVariables = ltlFormula.contextVariables.split("&&");
-    const equationsForOriginal: string[] = [];
-    contextVariables.forEach((variable) => {
+    const equationsForTriggerToOriginal: string[] = [];
+    let modifyTriggerToOriginalState = true;
+    contextVariables.forEach(variable => {
         const variableEquation = variable.trim();
+        const negatedVariableEquation = negateFormula(variableEquation);
+        const originTriggerContainsNegatedEquation = isEquationAlreadyContained(originTrigger, negatedVariableEquation);
         // we would want to add ` && variableEquation`, hence if the negated equation is already contained the trigger always evaluates to false
-        if (isEquationAlreadyContained(originTrigger, negateFormula(variableEquation))) {
+        if (originTriggerContainsNegatedEquation) {
             triggerToDuplicateState = "false";
-        } else if (triggerToDuplicateState !== "false" && !isEquationAlreadyContained(originTrigger, variableEquation)) {
+        } else if (
+            triggerToDuplicateState !== "false" &&
+            !isEquationAlreadyContained(originTrigger, variableEquation)
+        ) {
             triggerToDuplicateState += ` && ${variableEquation}`;
         }
-        if (!isEquationAlreadyContained(trigger, variableEquation)) {
-            // if the original trigger does not contain the negated equation (this would mean variableEquation cannot be true), add it
-            equationsForOriginal.push(variableEquation);
+        if (originTriggerContainsNegatedEquation) {
+            // this would mean '!(contextVariables)' is always true when the original trigger is true, hence we do not need to add this
+            modifyTriggerToOriginalState = false;
+        } else if (modifyTriggerToOriginalState && !isEquationAlreadyContained(trigger, variableEquation)) {
+            // if the original trigger does not contain the equation (this would mean !variableEquation cannot be true when original trigger is true), add it
+            equationsForTriggerToOriginal.push(variableEquation);
         }
     });
-    if (equationsForOriginal.length === 0) {
-        // if original was not modified, this means that the original trigger contains all negated equations of the ltl formula and hence is always false
-        triggerToOriginalState = "false";
-    } else {
-        triggerToOriginalState += ` && !(${equationsForOriginal.join(" && ")})`;
+    if (modifyTriggerToOriginalState) {
+        if (equationsForTriggerToOriginal.length === 0) {
+            // if original was not modified, this means '!(contextVariables)' is always false and hence the new trigger as well
+            triggerToOriginalState = "false";
+        } else {
+            triggerToOriginalState += ` && !(${equationsForTriggerToOriginal.join(" && ")})`;
+        }
     }
-    
+
     return { originalTrigger: triggerToOriginalState, duplicateTrigger: triggerToDuplicateState };
 }
 
@@ -586,7 +597,6 @@ function isEquationAlreadyContained(trigger: string, variableEquation: string): 
     return trigger.includes(variableEquation) && !trigger.includes(`!${variableEquation}`);
 }
 
-
 /**
  * Collects the reachable states of the SBM (including the initial one).
  * @param states The states of the SBM.
@@ -594,14 +604,14 @@ function isEquationAlreadyContained(trigger: string, variableEquation: string): 
  */
 function filterReachableStates(states: State[]): State[] {
     const reachableStates: State[] = [];
-    states.forEach((state) => {
+    states.forEach(state => {
         if (state.name === EMPTY_STATE_NAME) {
             reachableStates.push(state);
         } else if (
             states.find(
-                (otherState) =>
+                otherState =>
                     otherState.name !== state.name &&
-                    otherState.transitions.find((transition) => transition.target === state.name)
+                    otherState.transitions.find(transition => transition.target === state.name)
             )
         ) {
             reachableStates.push(state);
