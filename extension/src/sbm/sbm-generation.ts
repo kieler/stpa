@@ -516,11 +516,13 @@ function copyAndAdjustIncomingTransitions(
             if (transition.trigger) {
                 const newTriggers = createNewTriggersForIncomingTransitions(transition.trigger, ltlFormula);
                 // transition to duplicate state
-                transitionsToDuplicate.push({
-                    target: duplicateState.name,
-                    trigger: newTriggers.duplicateTrigger,
-                    effect: transition.effect,
-                });
+                if (newTriggers.duplicateTrigger !== "false") {
+                    transitionsToDuplicate.push({
+                        target: duplicateState.name,
+                        trigger: newTriggers.duplicateTrigger,
+                        effect: transition.effect,
+                    });
+                }
                 // adjust trigger of original transition
                 if (newTriggers.originalTrigger !== "false") {
                     transition.trigger = newTriggers.originalTrigger;
@@ -544,24 +546,46 @@ function createNewTriggersForIncomingTransitions(
     trigger: string,
     ltlFormula: LTLFormula
 ): { originalTrigger: string; duplicateTrigger: string } {
-    let originalTrigger = trigger;
-    let duplicateTrigger = trigger;
+    // we must ignore the negated equations we added to the trigger because of applied-too-long states
+    const originTrigger = trigger.split("&& !(")[0];
+    let triggerToOriginalState = originTrigger;
+    let triggerToDuplicateState = trigger;
+    // the context variables of the ltl formula are connected by logical ands
     const contextVariables = ltlFormula.contextVariables.split("&&");
+    const equationsForOriginal: string[] = [];
     contextVariables.forEach((variable) => {
-        const variableName = variable.trim();
-        if (trigger.includes(variableName)) {
-            // the new trigger for the duplicate transition would contain "variableName && variableName",
-            // so we do not need to modify the trigger
-            // the new trigger for the original transition would contain "variableName && !variableName",
-            // which is always false
-            originalTrigger = "false";
-        } else {
-            //TODO: trigger may already contain another value for the same variable in variableName
-            duplicateTrigger += ` && ${variableName}`;
+        const variableEquation = variable.trim();
+        // we would want to add ` && variableEquation`, hence if the negated equation is already contained the trigger always evaluates to false
+        if (isEquationAlreadyContained(originTrigger, negateFormula(variableEquation))) {
+            triggerToDuplicateState = "false";
+        } else if (triggerToDuplicateState !== "false" && !isEquationAlreadyContained(originTrigger, variableEquation)) {
+            triggerToDuplicateState += ` && ${variableEquation}`;
+        }
+        if (!isEquationAlreadyContained(trigger, variableEquation)) {
+            // if the original trigger does not contain the negated equation (this would mean variableEquation cannot be true), add it
+            equationsForOriginal.push(variableEquation);
         }
     });
-    return { originalTrigger, duplicateTrigger };
+    if (equationsForOriginal.length === 0) {
+        // if original was not modified, this means that the original trigger contains all negated equations of the ltl formula and hence is always false
+        triggerToOriginalState = "false";
+    } else {
+        triggerToOriginalState += ` && !(${equationsForOriginal.join(" && ")})`;
+    }
+    
+    return { originalTrigger: triggerToOriginalState, duplicateTrigger: triggerToDuplicateState };
 }
+
+/**
+ * Checks whether the {@code trigger} already contains the {@code variableEquation}.
+ * @param trigger The trigger to check whether {@code variableEquation} is contained.
+ * @param variableEquation The variable equation to check.
+ * @returns whether the {@code trigger} already contains the {@code variableEquation}.
+ */
+function isEquationAlreadyContained(trigger: string, variableEquation: string): boolean {
+    return trigger.includes(variableEquation) && !trigger.includes(`!${variableEquation}`);
+}
+
 
 /**
  * Collects the reachable states of the SBM (including the initial one).
@@ -593,7 +617,50 @@ function filterReachableStates(states: State[]): State[] {
  * @returns a unique name for a state.
  */
 function getStateName(controlAction: string, ltlFormula: LTLFormula): string {
-    return controlAction + "_" + ltlFormula.contextVariables.replace(/>=|<=|<|>|!=|=|!|&&|\|\||\s/g, translate);
+    return controlAction + "_" + ltlFormula.contextVariables.replace(/\.|>=|<=|<|>|!=|==|!|&&|\|\||\s/g, translate);
+}
+
+/**
+ * Negates the given {@code formula}.
+ * @param formula The formula to negate.
+ * @returns the negated formula.
+ */
+function negateFormula(formula: string): string {
+    const negatedFormula = formula.replace(/!|>=|<=|<|>|!=|==|&&|\|\|/g, negateOperator);
+    if (negatedFormula === formula) {
+        return "!" + formula;
+    } else {
+        return negatedFormula;
+    }
+}
+
+/**
+ * Negates the given operator.
+ * @param text The operator to negate.
+ */
+function negateOperator(text: string): string {
+    switch (text) {
+        case "<":
+            return ">=";
+        case "<=":
+            return ">";
+        case ">":
+            return "<=";
+        case ">=":
+            return "<";
+        case "==":
+            return "!=";
+        case "!=":
+            return "==";
+        case "&&":
+            return "||";
+        case "||":
+            return "&&";
+        case "!":
+            return "";
+        default:
+            return text;
+    }
 }
 
 /**
@@ -603,6 +670,8 @@ function getStateName(controlAction: string, ltlFormula: LTLFormula): string {
  */
 function translate(text: string): string {
     switch (text) {
+        case ".":
+            return "_";
         case "<":
             return "LessThan";
         case "<=":
@@ -611,7 +680,7 @@ function translate(text: string): string {
             return "GreaterThan";
         case ">=":
             return "GreaterOrEqualTo";
-        case "=":
+        case "==":
             return "EqualTo";
         case "!=":
             return "NotEqualTo";

@@ -95,7 +95,7 @@ export async function generateLTLFormulae(
 async function translateDCAsToLTLFormulas(model: Model, map: Record<string, LTLFormula[]>): Promise<void> {
     if (model.allDCAs.length > 0 && model.allDCAs) {
         for (const rule of model.allDCAs) {
-            translateRuleToLTLFormulas(rule, map);
+            await translateRuleToLTLFormulas(rule, map);
         }
     }
 }
@@ -108,7 +108,7 @@ async function translateDCAsToLTLFormulas(model: Model, map: Record<string, LTLF
 async function translateUCAsToLTLFormulas(model: Model, map: Record<string, LTLFormula[]>): Promise<void> {
     if (model.rules.length > 0 && model.rules) {
         for (const rule of model.rules) {
-            translateRuleToLTLFormulas(rule, map);
+            await translateRuleToLTLFormulas(rule, map);
         }
     }
 }
