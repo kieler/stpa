@@ -39,6 +39,7 @@ import {
     getTargets,
     setLevelsForSTPANodes,
 } from "./utils";
+import { labelManagementValue } from "../../synthesis-options";
 
 /**
  * Creates the relationship graph for the STPA model.
@@ -93,21 +94,27 @@ export function createRelationshipGraphChildren(
     idCache: IdCache<AstNode>
 ): SModelElement[] {
     const showLabels = options.getShowLabels();
+    const labelManagement = options.getLabelManagement();
     // aspects that should have a description when showLabel option is set to automatic
     const aspectsToShowDescriptions = getAspectsThatShouldHaveDesriptions(model);
     // determine the children for the STPA graph
     // for each component a node is generated with edges representing the references of the component
     // in order to be able to set the target IDs of the edges, the nodes must be created in the correct order
+    const showLossLabel = showLabelOfAspect(STPAAspect.LOSS, aspectsToShowDescriptions, showLabels, labelManagement);
     let stpaChildren: SModelElement[] = filteredModel.losses?.map(l =>
-        generateSTPANode(
-            l,
-            showLabels === showLabelsValue.ALL ||
-                showLabels === showLabelsValue.LOSSES ||
-                (showLabels === showLabelsValue.AUTOMATIC && aspectsToShowDescriptions.includes(STPAAspect.LOSS)),
-            idToSNode,
-            options,
-            idCache
-        )
+        generateSTPANode(l, showLossLabel, idToSNode, options, idCache)
+    );
+    const showHazardDescription = showLabelOfAspect(
+        STPAAspect.HAZARD,
+        aspectsToShowDescriptions,
+        showLabels,
+        labelManagement
+    );
+    const showSystemConstraintDescription = showLabelOfAspect(
+        STPAAspect.SYSTEMCONSTRAINT,
+        aspectsToShowDescriptions,
+        showLabels,
+        labelManagement
     );
     // the hierarchy option determines whether subcomponents are contained in ther parent or not
     if (!options.getHierarchy()) {
@@ -116,31 +123,11 @@ export function createRelationshipGraphChildren(
         const sysCons = collectElementsWithSubComps(filteredModel.systemLevelConstraints);
         stpaChildren = stpaChildren?.concat([
             ...hazards
-                .map(hazard =>
-                    generateAspectWithEdges(
-                        hazard,
-                        showLabels === showLabelsValue.ALL ||
-                            showLabels === showLabelsValue.HAZARDS ||
-                            (showLabels === showLabelsValue.AUTOMATIC &&
-                                aspectsToShowDescriptions.includes(STPAAspect.HAZARD)),
-                        idToSNode,
-                        options,
-                        idCache
-                    )
-                )
+                .map(hazard => generateAspectWithEdges(hazard, showHazardDescription, idToSNode, options, idCache))
                 .flat(1),
             ...sysCons
                 .map(systemConstraint =>
-                    generateAspectWithEdges(
-                        systemConstraint,
-                        showLabels === showLabelsValue.ALL ||
-                            showLabels === showLabelsValue.SYSTEM_CONSTRAINTS ||
-                            (showLabels === showLabelsValue.AUTOMATIC &&
-                                aspectsToShowDescriptions.includes(STPAAspect.SYSTEMCONSTRAINT)),
-                        idToSNode,
-                        options,
-                        idCache
-                    )
+                    generateAspectWithEdges(systemConstraint, showSystemConstraintDescription, idToSNode, options, idCache)
                 )
                 .flat(1),
         ]);
@@ -148,31 +135,11 @@ export function createRelationshipGraphChildren(
         // subcomponents are contained in the parent
         stpaChildren = stpaChildren?.concat([
             ...filteredModel.hazards
-                ?.map(hazard =>
-                    generateAspectWithEdges(
-                        hazard,
-                        showLabels === showLabelsValue.ALL ||
-                            showLabels === showLabelsValue.HAZARDS ||
-                            (showLabels === showLabelsValue.AUTOMATIC &&
-                                aspectsToShowDescriptions.includes(STPAAspect.HAZARD)),
-                        idToSNode,
-                        options,
-                        idCache
-                    )
-                )
+                ?.map(hazard => generateAspectWithEdges(hazard, showHazardDescription, idToSNode, options, idCache))
                 .flat(1),
             ...filteredModel.systemLevelConstraints
                 ?.map(systemConstraint =>
-                    generateAspectWithEdges(
-                        systemConstraint,
-                        showLabels === showLabelsValue.ALL ||
-                            showLabels === showLabelsValue.SYSTEM_CONSTRAINTS ||
-                            (showLabels === showLabelsValue.AUTOMATIC &&
-                                aspectsToShowDescriptions.includes(STPAAspect.SYSTEMCONSTRAINT)),
-                        idToSNode,
-                        options,
-                        idCache
-                    )
+                    generateAspectWithEdges(systemConstraint, showSystemConstraintDescription, idToSNode, options, idCache)
                 )
                 .flat(1),
             ...filteredModel.systemLevelConstraints
@@ -184,20 +151,36 @@ export function createRelationshipGraphChildren(
                 .flat(2),
         ]);
     }
+    const showResponsibilitiesDescription = showLabelOfAspect(
+        STPAAspect.RESPONSIBILITY,
+        aspectsToShowDescriptions,
+        showLabels,
+        labelManagement
+    );
+    const showUCAsDescription = showLabelOfAspect(STPAAspect.UCA, aspectsToShowDescriptions, showLabels, labelManagement);
+    const showControllerConstraintDescription = showLabelOfAspect(
+        STPAAspect.CONTROLLERCONSTRAINT,
+        aspectsToShowDescriptions,
+        showLabels,
+        labelManagement
+    );
+    const showScenarioDescription = showLabelOfAspect(
+        STPAAspect.SCENARIO,
+        aspectsToShowDescriptions,
+        showLabels,
+        labelManagement
+    );
+    const showSafetyConsDescription = showLabelOfAspect(
+        STPAAspect.SAFETYREQUIREMENT,
+        aspectsToShowDescriptions,
+        showLabels,
+        labelManagement
+    );
     stpaChildren = stpaChildren?.concat([
         ...filteredModel.responsibilities
             ?.map(r =>
                 r.responsiblitiesForOneSystem.map(resp =>
-                    generateAspectWithEdges(
-                        resp,
-                        showLabels === showLabelsValue.ALL ||
-                            showLabels === showLabelsValue.RESPONSIBILITIES ||
-                            (showLabels === showLabelsValue.AUTOMATIC &&
-                                aspectsToShowDescriptions.includes(STPAAspect.RESPONSIBILITY)),
-                        idToSNode,
-                        options,
-                        idCache
-                    )
+                    generateAspectWithEdges(resp, showResponsibilitiesDescription, idToSNode, options, idCache)
                 )
             )
             .flat(2),
@@ -205,80 +188,96 @@ export function createRelationshipGraphChildren(
             ?.map(sysUCA =>
                 sysUCA.providingUcas
                     .concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)
-                    .map(uca =>
-                        generateAspectWithEdges(
-                            uca,
-                            showLabels === showLabelsValue.ALL ||
-                                showLabels === showLabelsValue.UCAS ||
-                                (showLabels === showLabelsValue.AUTOMATIC &&
-                                    aspectsToShowDescriptions.includes(STPAAspect.UCA)),
-                            idToSNode,
-                            options,
-                            idCache
-                        )
-                    )
+                    .map(uca => generateAspectWithEdges(uca, showUCAsDescription, idToSNode, options, idCache))
             )
             .flat(2),
         ...filteredModel.rules
             ?.map(rule =>
                 rule.contexts.map(context =>
-                    generateAspectWithEdges(
-                        context,
-                        showLabels === showLabelsValue.ALL ||
-                            showLabels === showLabelsValue.UCAS ||
-                            (showLabels === showLabelsValue.AUTOMATIC &&
-                                aspectsToShowDescriptions.includes(STPAAspect.UCA)),
-                        idToSNode,
-                        options,
-                        idCache
-                    )
+                    generateAspectWithEdges(context, showUCAsDescription, idToSNode, options, idCache)
                 )
             )
             .flat(2),
         ...filteredModel.controllerConstraints
-            ?.map(c =>
-                generateAspectWithEdges(
-                    c,
-                    showLabels === showLabelsValue.ALL ||
-                        showLabels === showLabelsValue.CONTROLLER_CONSTRAINTS ||
-                        (showLabels === showLabelsValue.AUTOMATIC &&
-                            aspectsToShowDescriptions.includes(STPAAspect.CONTROLLERCONSTRAINT)),
-                    idToSNode,
-                    options,
-                    idCache
-                )
-            )
+            ?.map(c => generateAspectWithEdges(c, showControllerConstraintDescription, idToSNode, options, idCache))
             .flat(1),
         ...filteredModel.scenarios
-            ?.map(s =>
-                generateAspectWithEdges(
-                    s,
-                    showLabels === showLabelsValue.ALL ||
-                        showLabels === showLabelsValue.SCENARIOS ||
-                        (showLabels === showLabelsValue.AUTOMATIC &&
-                            aspectsToShowDescriptions.includes(STPAAspect.SCENARIO)),
-                    idToSNode,
-                    options,
-                    idCache
-                )
-            )
+            ?.map(s => generateAspectWithEdges(s, showScenarioDescription, idToSNode, options, idCache))
             .flat(1),
         ...filteredModel.safetyCons
-            ?.map(sr =>
-                generateAspectWithEdges(
-                    sr,
-                    showLabels === showLabelsValue.ALL ||
-                        showLabels === showLabelsValue.SAFETY_CONSTRAINTS ||
-                        (showLabels === showLabelsValue.AUTOMATIC &&
-                            aspectsToShowDescriptions.includes(STPAAspect.SAFETYREQUIREMENT)),
-                    idToSNode,
-                    options,
-                    idCache
-                )
-            )
+            ?.map(sr => generateAspectWithEdges(sr, showSafetyConsDescription, idToSNode, options, idCache))
             .flat(1),
     ]);
     return stpaChildren;
+}
+
+/**
+ * Determines whether the label of the given {@code aspect} should be shown based on the given {@code showLabels} and {@code labelManagement}.
+ * @param aspect The aspect for which the label should be shown.
+ * @param aspectsToShowDescriptions The aspects that should have a description when the showLabel option is set to automatic.
+ * @param showLabels The showLabel option of the STPA model.
+ * @param labelManagement The labelManagement option of the STPA model.
+ * @returns whether the label of the given {@code aspect} should be shown.
+ */
+function showLabelOfAspect(
+    aspect: STPAAspect,
+    aspectsToShowDescriptions: STPAAspect[],
+    showLabels: showLabelsValue,
+    labelManagement: labelManagementValue
+): boolean {
+    if (labelManagement === labelManagementValue.NO_LABELS) {
+        return false;
+    }
+    if (showLabels === showLabelsValue.ALL) {
+        return true;
+    }
+    switch (aspect) {
+        case STPAAspect.LOSS:
+            return (
+                showLabels === showLabelsValue.LOSSES ||
+                (showLabels === showLabelsValue.AUTOMATIC && aspectsToShowDescriptions.includes(STPAAspect.LOSS))
+            );
+        case STPAAspect.HAZARD:
+            return (
+                showLabels === showLabelsValue.HAZARDS ||
+                (showLabels === showLabelsValue.AUTOMATIC && aspectsToShowDescriptions.includes(STPAAspect.HAZARD))
+            );
+        case STPAAspect.SYSTEMCONSTRAINT:
+            return (
+                showLabels === showLabelsValue.SYSTEM_CONSTRAINTS ||
+                (showLabels === showLabelsValue.AUTOMATIC &&
+                    aspectsToShowDescriptions.includes(STPAAspect.SYSTEMCONSTRAINT))
+            );
+        case STPAAspect.RESPONSIBILITY:
+            return (
+                showLabels === showLabelsValue.RESPONSIBILITIES ||
+                (showLabels === showLabelsValue.AUTOMATIC &&
+                    aspectsToShowDescriptions.includes(STPAAspect.RESPONSIBILITY))
+            );
+        case STPAAspect.UCA:
+            return (
+                showLabels === showLabelsValue.UCAS ||
+                (showLabels === showLabelsValue.AUTOMATIC && aspectsToShowDescriptions.includes(STPAAspect.UCA))
+            );
+        case STPAAspect.CONTROLLERCONSTRAINT:
+            return (
+                showLabels === showLabelsValue.CONTROLLER_CONSTRAINTS ||
+                (showLabels === showLabelsValue.AUTOMATIC &&
+                    aspectsToShowDescriptions.includes(STPAAspect.CONTROLLERCONSTRAINT))
+            );
+        case STPAAspect.SCENARIO:
+            return (
+                showLabels === showLabelsValue.SCENARIOS ||
+                (showLabels === showLabelsValue.AUTOMATIC && aspectsToShowDescriptions.includes(STPAAspect.SCENARIO))
+            );
+        case STPAAspect.SAFETYREQUIREMENT:
+            return (
+                showLabels === showLabelsValue.SAFETY_CONSTRAINTS ||
+                (showLabels === showLabelsValue.AUTOMATIC &&
+                    aspectsToShowDescriptions.includes(STPAAspect.SAFETYREQUIREMENT))
+            );
+    }
+    return false;
 }
 
 /**
