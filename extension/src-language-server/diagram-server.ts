@@ -17,12 +17,13 @@
 
 import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from "sprotty-protocol";
 import { Connection } from "vscode-languageserver";
+import { FtaServices } from "./fta/fta-module";
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions";
 import { DropDownOption } from "./options/option-models";
 import { SnippetDiagramServer } from "./snippets/snippet-diagram-server";
 import { LanguageSnippet } from "./snippets/snippet-model";
 import { StpaDiagramSnippets } from "./snippets/stpa-snippets";
-import { GenerateSVGsAction, RequestSvgAction, SvgAction } from "./stpa/actions";
+import { GenerateSVGsAction, RequestSvgAction, SvgAction, UpdateDiagramAction } from "./stpa/actions";
 import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/stpa-synthesis-options";
 import {
     COMPLETE_GRAPH_PATH,
@@ -48,9 +49,8 @@ import {
     setScenarioWithNoUCAGraphOptions,
     setSystemConstraintGraphOptions,
 } from "./stpa/result-report/svg-generator";
-import { SynthesisOptions } from "./synthesis-options";
 import { StpaServices } from "./stpa/stpa-module";
-import { FtaServices } from "./fta/fta-module";
+import { SynthesisOptions } from "./synthesis-options";
 
 export class PastaDiagramServer extends SnippetDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;
@@ -100,6 +100,8 @@ export class PastaDiagramServer extends SnippetDiagramServer {
                 return this.handleSetSynthesisOption(action as SetSynthesisOptionsAction);
             case GenerateSVGsAction.KIND:
                 return this.handleGenerateSVGDiagrams(action as GenerateSVGsAction);
+            case UpdateDiagramAction.KIND:
+                return this.updateView(this.state.options);
         }
         return super.handleAction(action);
     }

@@ -16,8 +16,9 @@
  */
 
 import * as path from "path";
+import { ActionMessage } from "sprotty-protocol";
 import { createFileUri, registerDefaultCommands } from "sprotty-vscode";
-import { LspSprottyEditorProvider, LspSprottyViewProvider } from "sprotty-vscode/lib/lsp";
+import { LspSprottyEditorProvider, LspSprottyViewProvider, acceptMessageType } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
 import { Messenger } from "vscode-messenger";
@@ -29,6 +30,7 @@ import { StpaResult } from "./report/utils";
 import { createSBMs } from "./sbm/sbm-generation";
 import { LTLFormula } from "./sbm/utils";
 import { createFile, createOutputChannel, createQuickPickForWorkspaceOptions } from "./utils";
+import { UpdateDiagramAction } from './actions';
 
 let languageClient: LanguageClient;
 
@@ -325,7 +327,16 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
                 if (currentCursorPosition) {
                     await languageClient.sendNotification("editor/save", document.offsetAt(currentCursorPosition));
                 }
-                manager.openDiagram(document.uri, { preserveFocus: true });
+
+                // update diagram without reseting viewport
+                const mes: ActionMessage = {
+                    clientId: manager.clientId!,
+                    action: {
+                        kind: UpdateDiagramAction.KIND,
+                    } as UpdateDiagramAction,
+                };
+                languageClient.sendNotification(acceptMessageType, mes);
+
                 if (manager.contextTable) {
                     languageClient.sendNotification("contextTable/getData", document.uri.toString());
                 }

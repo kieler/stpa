@@ -134,3 +134,27 @@ export namespace SendDefaultSnippetsAction {
         return action.kind === SendDefaultSnippetsAction.KIND;
     }
 }
+
+/** Send to server to update the diagram. */
+export interface UpdateDiagramAction extends Action {
+    kind: typeof UpdateDiagramAction.KIND
+    options?: JsonMap;
+}
+
+export namespace UpdateDiagramAction {
+    export const KIND = "updateDiagram";
+    
+
+    export function create(
+        options?: JsonMap
+    ): UpdateDiagramAction {
+        return {
+            kind: KIND,
+            options
+        };
+    }
+
+    export function isThisAction(action: Action): action is UpdateDiagramAction {
+        return action.kind === UpdateDiagramAction.KIND;
+    }
+}
