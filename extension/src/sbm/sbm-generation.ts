@@ -93,7 +93,7 @@ async function createControllerSBM(
         variables,
         contextVariables.enums,
         ltlFormulas,
-        controlActions.concat(["NULL"])
+        ["NULL"].concat(controlActions)
     );
     createFile(uri.path, scchartText);
 }
