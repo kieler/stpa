@@ -323,6 +323,9 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
         vscode.workspace.onDidChangeTextDocument(async changeEvent => {
             const document = changeEvent.document;
             updateViews(manager, document);
+        }),
+        vscode.workspace.onDidOpenTextDocument(async document => {
+            manager.openDiagram(document.uri, { preserveFocus: true });
         })
     );
 }
