@@ -171,27 +171,42 @@ export class StpaValidator {
             ...model.allUCAs.map(alluca => alluca.system?.ref?.name + "." + alluca.action?.ref?.name),
             ...model.rules.map(rule => rule.system?.ref?.name + "." + rule.action?.ref?.name),
         ];
-        model.controlStructure?.nodes.forEach(node =>
+        this.checkControlActionsReferencedByUCA(model.controlStructure?.nodes ?? [], ucaActions, accept);
+        // check UCAs and DCAs
+        this.checkUCAsAndDCAs(model, accept);
+    }
+
+    /**
+     * Check whether the control actions of a node are referenced by at least one UCA.
+     * @param nodes The nodes to check.
+     * @param ucaActions The control actions that are referenced by a UCA.
+     * @param accept 
+     */
+    protected checkControlActionsReferencedByUCA(
+        nodes: Node[],
+        ucaActions: string[],
+        accept: ValidationAcceptor
+    ): void {
+        nodes.forEach(node => {
             node.actions.forEach(action =>
                 action.comms.forEach(command => {
                     const name = node.name + "." + command.name;
                     if (!ucaActions.includes(name)) {
-                        accept("warning", "This element is not referenced by a UCA", {
+                        accept("warning", "This action is not referenced by a UCA", {
                             node: command,
                             property: "name",
                         });
                     }
                 })
-            )
-        );
-        // check UCAs and DCAs
-        this.checkUCAsAndDCAs(model, accept);        
+            );
+            this.checkControlActionsReferencedByUCA(node.children, ucaActions, accept);
+        });
     }
 
     /**
      * Checks the UCAs and DCAs for duplicates and conflicts.
      * @param model The model containing the UCAs and DCAs.
-     * @param accept 
+     * @param accept
      */
     protected checkUCAsAndDCAs(model: Model, accept: ValidationAcceptor): void {
         // check for duplicate ActionUCA definition
