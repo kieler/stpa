@@ -39,7 +39,7 @@ Rule:
     '}';
 
 Context:
-    name=ID '['vars+=[Variable] '=' values+=QualifiedName (',' vars+=[Variable] '=' values+=QualifiedName)*']' 
+    name=ID '['assignedValues+=AssignedValue (',' assignedValues+=AssignedValue)*']' 
     list=HazardList;
 
 Loss:
@@ -122,7 +122,10 @@ DCARule:
     '}';
 
 DCAContext:
-    name=ID '['vars+=[Variable] '=' values+=QualifiedName (',' vars+=[Variable] '=' values+=QualifiedName)*']';
+    name=ID '[' assignedValues+=AssignedValue (',' assignedValues+=AssignedValue)*']';
+
+AssignedValue:
+    variable=[Variable] '=' value=[VariableValue:QualifiedName];
 
 ControllerConstraint:
     name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';

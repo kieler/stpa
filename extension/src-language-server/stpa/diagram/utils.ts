@@ -252,9 +252,9 @@ export function createUCAContextDescription(uca: Context): string {
             break;
     }
     description += " in the context of ";
-    for (let i = 0; i < uca.vars.length; i++) {
-        description += uca.vars[i].$refText + "=" + uca.values[i];
-        if (i < uca.vars.length - 1) {
+    for (let i = 0; i < uca.assignedValues.length; i++) {
+        description += uca.assignedValues[i].variable.$refText + "=" + uca.assignedValues[i].value.$refText;
+        if (i < uca.assignedValues.length - 1) {
             description += ", ";
         }
     }

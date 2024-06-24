@@ -53,7 +53,6 @@ export class StpaValidationRegistry extends ValidationRegistry {
             ControllerConstraint: validator.checkControllerConstraints,
             HazardList: validator.checkHazardList,
             Node: validator.checkNode,
-            Context: validator.checkContext,
             Graph: validator.checkControlStructure,
         };
         this.register(checks, validator);
@@ -353,9 +352,9 @@ export class StpaValidator {
     protected isSameContext(context1: Context | DCAContext, context2: Context | DCAContext): boolean {
         let isSame = true;
         // check whether context1 is a subset of context2
-        for (let i = 0; i < context1.vars.length; i++) {
-            const varIndex = context2.vars.findIndex(v => v.$refText === context1.vars[i].$refText);
-            if (varIndex === -1 || context2.values[varIndex] !== context1.values[i]) {
+        for (let i = 0; i < context1.assignedValues.length; i++) {
+            const varIndex = context2.assignedValues.findIndex(v => v.variable.$refText === context1.assignedValues[i].variable.$refText);
+            if (varIndex === -1 || context2.assignedValues[varIndex].value.$refText !== context1.assignedValues[i].value.$refText) {
                 isSame = false;
                 break;
             }
@@ -363,34 +362,15 @@ export class StpaValidator {
         if (!isSame) {
             isSame = true;
             // check whether context2 is a subset of context1
-            for (let i = 0; i < context2.vars.length; i++) {
-                const varIndex = context1.vars.findIndex(v => v.$refText === context2.vars[i].$refText);
-                if (varIndex === -1 || context1.values[varIndex] !== context2.values[i]) {
+            for (let i = 0; i < context2.assignedValues.length; i++) {
+                const varIndex = context1.assignedValues.findIndex(v => v.variable.$refText === context2.assignedValues[i].variable.$refText);
+                if (varIndex === -1 || context1.assignedValues[varIndex].value.$refText !== context2.assignedValues[i].value.$refText) {
                     isSame = false;
                     break;
                 }
             }
         }
         return isSame;
-    }
-
-    /**
-     * Validates the variable values of {@code context}.
-     * @param context The Context to check.
-     * @param accept
-     */
-    checkContext(context: Context, accept: ValidationAcceptor): void {
-        for (let i = 0; i < context.vars.length; i++) {
-            const variable = context.vars[i];
-            const variableValues = variable.ref?.values.map(value => value.name);
-            // the value of the variable in the context should be one of the values that are stated in the definition of the variable
-            if (!variableValues?.includes(context.values[i])) {
-                accept("error", "This variable has an invalid value.", {
-                    node: context,
-                    range: variable.$refNode?.range,
-                });
-            }
-        }
     }
 
     /**

@@ -104,9 +104,9 @@ export class ContextTableProvider {
             rule.contexts.forEach((context) => {
                 // determine context variables
                 const contextVariables: ContextTableVariable[] = [];
-                for (let i = 0; i < context.values.length; i++) {
-                    if (context.vars[i].ref?.name) {
-                        contextVariables.push({ name: context.vars[i].ref!.name, value: context.values[i] });
+                for (const assignedValue of context.assignedValues) {
+                    if (assignedValue.variable.ref?.name) {
+                        contextVariables.push({ name: assignedValue.variable.ref.name, value: assignedValue.value.$refText });
                     }
                 }
                 //determine hazards
