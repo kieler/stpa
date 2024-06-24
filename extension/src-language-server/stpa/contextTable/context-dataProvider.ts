@@ -25,7 +25,7 @@ import {
     ContextTableVariable,
     ContextTableVariableValues,
 } from "../../../src-context-table/utils";
-import { Model } from "../../generated/ast";
+import { Model, Node } from "../../generated/ast";
 import { getModel } from "../../utils";
 import { StpaServices } from "../stpa-module";
 
@@ -61,6 +61,29 @@ export class ContextTableProvider {
     }
 
     /**
+     * Collects all control actions and variables of the given system component and its sub-components.
+     * @param component The system component to collect the data from.
+     * @param actions The array to store the control actions.
+     * @param variables The array to store the system variables.
+     */
+    protected collectControlActionsAndVariables(component: Node, actions: ContextTableControlAction[], variables: ContextTableSystemVariables[]): void {
+        // control actions of the current system component
+        component.actions.forEach((action) => {
+            action.comms.forEach((command) => {
+                actions.push({ controller: component.name, action: command.name });
+            });
+        });
+        // variables of the current system component
+        const variableValues: ContextTableVariableValues[] = [];
+        component.variables.forEach((variable) => {
+            variableValues.push({ name: variable.name, values: variable.values.map((value) => value.name) });
+        });
+        variables.push({ system: component.name, variables: variableValues });
+        // recursive call for sub-components
+        component.children.forEach((subComponent) => this.collectControlActionsAndVariables(subComponent, actions, variables));
+    }
+
+    /**
      * Collects all the data needed for constructing the context table.
      * @returns The data in a set of arrays.
      */
@@ -74,18 +97,7 @@ export class ContextTableProvider {
 
         // collect control actions and variables
         model.controlStructure?.nodes.forEach((systemComponent) => {
-            // control actions of the current system component
-            systemComponent.actions.forEach((action) => {
-                action.comms.forEach((command) => {
-                    actions.push({ controller: systemComponent.name, action: command.name });
-                });
-            });
-            // variables of the current system component
-            const variableValues: ContextTableVariableValues[] = [];
-            systemComponent.variables.forEach((variable) => {
-                variableValues.push({ name: variable.name, values: variable.values.map((value) => value.name) });
-            });
-            variables.push({ system: systemComponent.name, variables: variableValues });
+            this.collectControlActionsAndVariables(systemComponent, actions, variables);
         });
         // collect rules
         model.rules.forEach((rule) => {

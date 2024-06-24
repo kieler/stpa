@@ -30,7 +30,7 @@ import { StpaResult } from "./report/utils";
 import { createSBMs } from "./sbm/sbm-generation";
 import { LTLFormula } from "./sbm/utils";
 import { createFile, createOutputChannel, createQuickPickForWorkspaceOptions } from "./utils";
-import { UpdateDiagramAction } from './actions';
+import { UpdateDiagramAction } from "./actions";
 
 let languageClient: LanguageClient;
 
@@ -322,28 +322,35 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
     context.subscriptions.push(
         vscode.workspace.onDidChangeTextDocument(async changeEvent => {
             const document = changeEvent.document;
-            if (document) {
-                await languageClient.sendRequest("cutSets/reset");
-                const currentCursorPosition = vscode.window.activeTextEditor?.selection.active;
-                if (currentCursorPosition) {
-                    await languageClient.sendNotification("editor/save", document.offsetAt(currentCursorPosition));
-                }
-
-                // update diagram without reseting viewport
-                const mes: ActionMessage = {
-                    clientId: manager.clientId!,
-                    action: {
-                        kind: UpdateDiagramAction.KIND,
-                    } as UpdateDiagramAction,
-                };
-                languageClient.sendNotification(acceptMessageType, mes);
-
-                if (manager.contextTable) {
-                    languageClient.sendNotification("contextTable/getData", document.uri.toString());
-                }
-            }
+            updateViews(manager, document);
         })
     );
+}
+
+async function updateViews(manager: StpaLspVscodeExtension, document: vscode.TextDocument): Promise<void> {
+    if (document) {
+        // reset cut sets
+        await languageClient.sendRequest("cutSets/reset");
+        // save the current cursor position
+        const currentCursorPosition = vscode.window.activeTextEditor?.selection.active;
+        if (currentCursorPosition) {
+            await languageClient.sendNotification("editor/change", document.offsetAt(currentCursorPosition));
+        }
+
+        // update diagram without reseting viewport
+        const mes: ActionMessage = {
+            clientId: manager.clientId!,
+            action: {
+                kind: UpdateDiagramAction.KIND,
+            } as UpdateDiagramAction,
+        };
+        languageClient.sendNotification(acceptMessageType, mes);
+
+        // update the context table
+        if (manager.contextTable) {
+            languageClient.sendNotification("contextTable/getData", document.uri.toString());
+        }
+    }
 }
 
 /**
