@@ -320,7 +320,8 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
 
 function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     context.subscriptions.push(
-        vscode.workspace.onDidSaveTextDocument(async document => {
+        vscode.workspace.onDidChangeTextDocument(async changeEvent => {
+            const document = changeEvent.document;
             if (document) {
                 await languageClient.sendRequest("cutSets/reset");
                 const currentCursorPosition = vscode.window.activeTextEditor?.selection.active;

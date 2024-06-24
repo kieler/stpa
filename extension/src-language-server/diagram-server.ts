@@ -234,15 +234,18 @@ export class PastaDiagramServer extends SnippetDiagramServer {
                 options: this.state.options ?? {},
                 state: this.state,
             });
-            newRoot.revision = ++this.state.revision;
-            this.state.currentRoot = newRoot;
-            await this.submitModel(this.state.currentRoot, true);
-            // ensures the the filterUCA option is correct
-            this.dispatch({
-                kind: UpdateOptionsAction.KIND,
-                valuedSynthesisOptions: this.synthesisOptions?.getSynthesisOptions() ?? [],
-                clientId: this.clientId,
-            });
+            // only update the view if the new root has children, otherwise an error occured
+            if (newRoot.children?.length !== 0) {
+                newRoot.revision = ++this.state.revision;
+                this.state.currentRoot = newRoot;
+                await this.submitModel(this.state.currentRoot, true);
+                // ensures the the filterUCA option is correct
+                this.dispatch({
+                    kind: UpdateOptionsAction.KIND,
+                    valuedSynthesisOptions: this.synthesisOptions?.getSynthesisOptions() ?? [],
+                    clientId: this.clientId,
+                });
+            }
         } catch (err) {
             this.rejectRemoteRequest(undefined, err as Error);
             console.error("Failed to generate diagram:", err);
