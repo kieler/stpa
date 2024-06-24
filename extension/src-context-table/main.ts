@@ -18,7 +18,7 @@
 import "./css/table.css";
 import { Table } from "@kieler/table-webview/lib/table";
 import { SendContextTableDataAction } from "./actions";
-import { createHeaderElement, createHeaderRow, createRow, createTable, createTHead, patch } from "./html";
+import { createHeaderElement, createHeaderRow, createRow, createTable, createTHead, initContextTable, patch } from "./html";
 import {
     addSelector,
     addText,
@@ -163,7 +163,7 @@ export class ContextTable extends Table {
             // create a table
             const placeholderTable = document.createElement("div");
             mainDiv.append(placeholderTable);
-            const table = createTable(this.tableId);
+            const table = initContextTable(this.tableId);
             patch(placeholderTable, table);
         }
     }
