@@ -63,7 +63,7 @@ const labelShorteningWidthOption: ValuedSynthesisOption = {
 
 /**
  * Option to determine the display of node labels.
- * It can be original labels (whole label in one line), wrapping (label is wrapped into multiple lines), 
+ * It can be original labels (whole label in one line), wrapping (label is wrapped into multiple lines),
  * truncate (label is truncated) or no labels.
  */
 const labelManagementOption: ValuedSynthesisOption = {
@@ -109,11 +109,7 @@ export class SynthesisOptions {
     protected options: ValuedSynthesisOption[];
 
     constructor() {
-        this.options = [
-            layoutCategoryOption,
-            labelManagementOption,
-            labelShorteningWidthOption,
-            modelOrderOption];
+        this.options = [layoutCategoryOption, labelManagementOption, labelShorteningWidthOption, modelOrderOption];
     }
 
     getSynthesisOptions(): ValuedSynthesisOption[] {
@@ -121,12 +117,12 @@ export class SynthesisOptions {
     }
 
     protected getOption(id: string): ValuedSynthesisOption | undefined {
-        const option = this.options.find((option) => option.synthesisOption.id === id);
+        const option = this.options.find(option => option.synthesisOption.id === id);
         return option;
     }
 
     getLabelManagement(): labelManagementValue {
-        const option = this.options.find((option) => option.synthesisOption.id === labelManagementID);
+        const option = this.options.find(option => option.synthesisOption.id === labelManagementID);
         switch (option?.currentValue) {
             case "Original Labels":
                 return labelManagementValue.ORIGINAL;
@@ -138,6 +134,26 @@ export class SynthesisOptions {
                 return labelManagementValue.NO_LABELS;
         }
         return option?.currentValue;
+    }
+
+    setLabelManagement(value: labelManagementValue): void {
+        const option = this.options.find(option => option.synthesisOption.id === labelManagementID);
+        if (option) {
+            switch (value) {
+                case labelManagementValue.ORIGINAL:
+                    option.currentValue = "Original Labels";
+                    break;
+                case labelManagementValue.WRAPPING:
+                    option.currentValue = "Wrapping";
+                    break;
+                case labelManagementValue.TRUNCATE:
+                    option.currentValue = "Truncate";
+                    break;
+                case labelManagementValue.NO_LABELS:
+                    option.currentValue = "No Labels";
+                    break;
+            }
+        }
     }
 
     getLabelShorteningWidth(): number {

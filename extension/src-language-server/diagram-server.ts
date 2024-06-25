@@ -38,6 +38,7 @@ import {
     SYSTEM_CONSTRAINT_PATH,
     resetOptions,
     saveOptions,
+    setAllScenariosOptions,
     setControlStructureOptions,
     setControllerConstraintWithFilteredUcaGraphOptions,
     setFilteredUcaGraphOptions,
@@ -167,6 +168,9 @@ export class PastaDiagramServer extends SnippetDiagramServer {
             // scenario with hazard svg graph
             setScenarioWithNoUCAGraphOptions(this.synthesisOptions);
             await this.createSVG(setSynthesisOption, action.uri, SCENARIO_WITH_HAZARDS_PATH);
+            // all scenarios svg graph
+            setAllScenariosOptions(this.synthesisOptions);
+            await this.createSVG(setSynthesisOption, action.uri, FILTERED_SCENARIO_PATH("all UCAs"));
 
             // safety requirement svg graph
             setSafetyRequirementGraphOptions(this.synthesisOptions);
