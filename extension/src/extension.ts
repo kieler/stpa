@@ -321,8 +321,14 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
 function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     context.subscriptions.push(
         vscode.workspace.onDidChangeTextDocument(async changeEvent => {
-            const document = changeEvent.document;
-            updateViews(manager, document);
+            const svgGeneration = changeEvent.contentChanges[0].text.startsWith(
+                '<svg xmlns="http://www.w3.org/2000/svg"'
+            );
+            // if the change event is triggered by the generation of an SVG, do not update the views
+            if (!svgGeneration) {
+                const document = changeEvent.document;
+                updateViews(manager, document);
+            }
         }),
         vscode.workspace.onDidOpenTextDocument(async document => {
             manager.openDiagram(document.uri, { preserveFocus: true });

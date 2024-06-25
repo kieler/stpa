@@ -153,6 +153,7 @@ export class SynthesisOptions {
                     option.currentValue = "No Labels";
                     break;
             }
+            option.synthesisOption.currentValue = option.currentValue;
         }
     }
 
