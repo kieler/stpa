@@ -99,6 +99,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
      */
     processModelParentNodeOptions(snode: SNode): LayoutOptions | undefined {
         return {
+            "org.eclipse.elk.alignment": "CENTER",
             "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
             "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true",
             // TODO: wait for node size fix in elkjs
@@ -111,6 +112,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
      */
     protected invisibleSubcomponentOptions(snode: SNode): LayoutOptions | undefined {
         return {
+            "org.eclipse.elk.alignment": "CENTER",
             "org.eclipse.elk.partitioning.activate": "true",
             "org.eclipse.elk.direction": "DOWN",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
@@ -131,6 +133,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             return this.parentSTPANodeOptions(node);
         } else {
             return {
+                "org.eclipse.elk.alignment": "CENTER",
                 "org.eclipse.elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
                 "org.eclipse.elk.partitioning.partition": "" + node.level,
                 "org.eclipse.elk.portConstraints": "FIXED_SIDE",
@@ -145,6 +148,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     protected parentSTPANodeOptions(node: STPANode): LayoutOptions {
         // options for nodes in the STPA graphs that have children
         const options: LayoutOptions = {
+            "org.eclipse.elk.alignment": "CENTER",
             "org.eclipse.elk.direction": "UP",
             "org.eclipse.elk.nodeLabels.placement": "INSIDE V_TOP H_CENTER",
             "org.eclipse.elk.partitioning.partition": "" + node.level,
@@ -171,6 +175,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
      */
     protected csNodeOptions(node: CSNode): LayoutOptions {
         const options: LayoutOptions = {
+            "org.eclipse.elk.alignment": "CENTER",
             "org.eclipse.elk.partitioning.partition": "" + node.level,
             "org.eclipse.elk.nodeSize.constraints": "NODE_LABELS",
             // edges do no start at the border of the node
