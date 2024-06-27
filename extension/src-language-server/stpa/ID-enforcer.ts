@@ -43,7 +43,6 @@ class IDPrefix {
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
-
     /** langium services for the stpa DSL */
     protected readonly stpaServices: StpaServices;
 
@@ -65,10 +64,15 @@ export class IDEnforcer {
     async enforceIDs(changes: TextDocumentContentChangeEvent[], uri: string): Promise<TextEdit[]> {
         // update current document information
         this.currentUri = uri;
-        this.currentDocument = this.stpaServices.shared.workspace.LangiumDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
+        this.currentDocument = this.stpaServices.shared.workspace.LangiumDocuments.getOrCreateDocument(
+            uri as any
+        ) as LangiumDocument<Model>;
 
         // ID enforcement can only be done if the parser has no errors. Otherwise other syntax elements than IDs are interpreted as IDs.
-        if (this.currentDocument.parseResult.lexerErrors.length !== 0 || this.currentDocument.parseResult.parserErrors.length !== 0) {
+        if (
+            this.currentDocument.parseResult.lexerErrors.length !== 0 ||
+            this.currentDocument.parseResult.parserErrors.length !== 0
+        ) {
             return [];
         }
 
@@ -84,7 +88,13 @@ export class IDEnforcer {
 
                 // rule IDs must be handled separately
                 if (modifiedAspect.ruleElements.length !== 0) {
-                    edits = edits.concat(await this.enforceIDsOnElements(modifiedAspect.ruleElements, isRule(modifiedAspect.ruleElements[0]) ? IDPrefix.Rule : IDPrefix.DCARule, change));
+                    edits = edits.concat(
+                        await this.enforceIDsOnElements(
+                            modifiedAspect.ruleElements,
+                            isRule(modifiedAspect.ruleElements[0]) ? IDPrefix.Rule : IDPrefix.DCARule,
+                            change
+                        )
+                    );
                 }
             }
         }
@@ -98,7 +108,11 @@ export class IDEnforcer {
      * @param change The text change that triggered the enforcing of IDs. Needed because only the elements below the modified one are checked.
      * @param edits The edits needed to enforce the calculated IDs.
      */
-    protected async enforceIDsOnElements(elements: elementWithName[], prefix: string, change: TextDocumentContentChangeEvent): Promise<TextEdit[]> {
+    protected async enforceIDsOnElements(
+        elements: elementWithName[],
+        prefix: string,
+        change: TextDocumentContentChangeEvent
+    ): Promise<TextEdit[]> {
         let edits: TextEdit[] = [];
         // index of the modified element
         let index = elements.findIndex(element => element.$cstNode && element.$cstNode.offset >= change.rangeOffset);
@@ -109,7 +123,7 @@ export class IDEnforcer {
             edits = edits.concat(this.deleteReferences(prefix + (index + 1)));
         } else {
             // compute edits for renaming the elements below the modified element
-            edits = await this.enforceIDsBelowModifiedElement(index, elements, prefix, change.text === '');
+            edits = await this.enforceIDsBelowModifiedElement(index, elements, prefix, change.text === "");
         }
 
         // create edit to rename the modified element
@@ -146,11 +160,16 @@ export class IDEnforcer {
      * @param index The index of the first element that should be checked.
      * @param elements The elements which IDs should be checked and possibley updated.
      * @param prefix The prefix for the new ID of the elements. The new ID will be the prefix + index of the element.
-     * @param decrease Determines where to start. If "false", the last element is the start element. 
+     * @param decrease Determines where to start. If "false", the last element is the start element.
      *      Otherwise the first element after the modified one is the start element.
      * @returns The edits for renaming the elements.
      */
-    protected async enforceIDsBelowModifiedElement(index: number, elements: elementWithName[], prefix: string, decrease: boolean): Promise<TextEdit[]> {
+    protected async enforceIDsBelowModifiedElement(
+        index: number,
+        elements: elementWithName[],
+        prefix: string,
+        decrease: boolean
+    ): Promise<TextEdit[]> {
         // guarantee that the index is not out of bounds
         if (index < 0) {
             index = 0;
@@ -180,7 +199,7 @@ export class IDEnforcer {
                         const renameEdits = await this.renameID(elementToRename, prefix, i + 1);
                         edits = edits.concat(renameEdits);
                     } else {
-                        // if the element to rename has the same name as the modified element it must be renamed manually 
+                        // if the element to rename has the same name as the modified element it must be renamed manually
                         // and the references are updated by calling the rename function with the modified element
                         if (elementToRename.$cstNode) {
                             // rename current element manually
@@ -195,7 +214,13 @@ export class IDEnforcer {
                         // delete the edit that renames the modified element (undo the renaming for this element)
                         if (modifiedElement.$cstNode) {
                             const range = modifiedElement.$cstNode.range;
-                            renameEdits = renameEdits.filter(edit => !(edit.range.start.line === range.start.line && edit.range.start.character === range.start.character));
+                            renameEdits = renameEdits.filter(
+                                edit =>
+                                    !(
+                                        edit.range.start.line === range.start.line &&
+                                        edit.range.start.character === range.start.character
+                                    )
+                            );
                         }
                         // add the edits to the list
                         edits = edits.concat(renameEdits);
@@ -217,7 +242,11 @@ export class IDEnforcer {
         const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
         const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
         const responsibilities = model.responsibilities?.map(r => r.responsiblitiesForOneSystem).flat(1);
-        const ucas = model.allUCAs?.map(sysUCA => sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)).flat(1);
+        const ucas = model.allUCAs
+            ?.map(sysUCA =>
+                sysUCA.providingUcas.concat(sysUCA.notProvidingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)
+            )
+            .flat(1);
         const contexts = model.rules?.map(rule => rule.contexts).flat(1);
         const scenarioHazards = model.scenarios.map(scenario => scenario.list);
         const scenarioUCAs = model.scenarios;
@@ -232,7 +261,7 @@ export class IDEnforcer {
             ...model.controllerConstraints,
             ...scenarioHazards,
             ...scenarioUCAs,
-            ...model.safetyCons
+            ...model.safetyCons,
         ];
 
         // compute edits to delete references to the given name
@@ -272,7 +301,7 @@ export class IDEnforcer {
             const params: RenameParams = {
                 textDocument: this.currentDocument.textDocument,
                 position: element.$cstNode.range.start,
-                newName: prefix + counter
+                newName: prefix + counter,
             };
             // compute the textedits for renaming
             const edit = await this.stpaServices.lsp.RenameProvider!.rename(this.currentDocument, params);
@@ -297,34 +326,63 @@ export class IDEnforcer {
      * @param offset Offset in the file, for which the corresponding aspect should be determined.
      * @returns the elements and prefix of the STPA aspect corresponding to the given offset.
      */
-    protected findModifiedAspect(offset: number): { elements: elementWithName[], prefix: string, ruleElements: elementWithName[]; } | undefined {
+    protected findModifiedAspect(
+        offset: number
+    ): { elements: elementWithName[]; prefix: string; ruleElements: elementWithName[] } | undefined {
         const model: Model = this.currentDocument.parseResult.value;
 
         let elements: elementWithName[] = [];
         let prefix = "";
         let ruleElements: elementWithName[] = [];
 
-        // offsets of the different aspects to determine the aspect for the given offset 
+        // offsets of the different aspects to determine the aspect for the given offset
         const subtractOffset = 5;
-        const dcaOffset = model.allDCAs.length !== 0 && model.allDCAs[0].$cstNode?.offset ? model.allDCAs[0].$cstNode.offset - subtractOffset : Number.MAX_VALUE;
-        const safetyConsOffset = model.safetyCons.length !== 0 && model.safetyCons[0].$cstNode?.offset ?
-            model.safetyCons[0].$cstNode.offset - subtractOffset : dcaOffset;
-        const scenarioOffset = model.scenarios.length !== 0 && model.scenarios[0].$cstNode?.offset ?
-            model.scenarios[0].$cstNode.offset - subtractOffset : safetyConsOffset;
-        const ucaConstraintOffset = model.controllerConstraints.length !== 0 && model.controllerConstraints[0].$cstNode?.offset ?
-            model.controllerConstraints[0].$cstNode.offset - subtractOffset : scenarioOffset;
-        const ucaOffset = model.rules.length !== 0 && model.rules[0].$cstNode?.offset ?
-            model.rules[0].$cstNode.offset - subtractOffset : (model.allUCAs.length !== 0 && model.allUCAs[0].$cstNode?.offset ?
-                model.allUCAs[0].$cstNode.offset - subtractOffset : ucaConstraintOffset);
-        const responsibilitiesOffset = model.responsibilities.length !== 0 && model.responsibilities[0].$cstNode?.offset ?
-            model.responsibilities[0].$cstNode.offset - subtractOffset : ucaOffset;
-        const constraintOffset = model.systemLevelConstraints.length !== 0 && model.systemLevelConstraints[0].$cstNode?.offset ?
-            model.systemLevelConstraints[0].$cstNode.offset - subtractOffset : responsibilitiesOffset;
-        const hazardOffset = model.hazards.length !== 0 && model.hazards[0].$cstNode?.offset ?
-            model.hazards[0].$cstNode.offset - subtractOffset : constraintOffset;
+        const dcaOffset =
+            model.allDCAs.length !== 0 && model.allDCAs[0].$cstNode?.offset
+                ? model.allDCAs[0].$cstNode.offset - subtractOffset
+                : Number.MAX_VALUE;
+        const safetyConsOffset =
+            model.safetyCons.length !== 0 && model.safetyCons[0].$cstNode?.offset
+                ? model.safetyCons[0].$cstNode.offset - subtractOffset
+                : dcaOffset;
+        const scenarioOffset =
+            model.scenarios.length !== 0 && model.scenarios[0].$cstNode?.offset
+                ? model.scenarios[0].$cstNode.offset - subtractOffset
+                : safetyConsOffset;
+        const ucaConstraintOffset =
+            model.controllerConstraints.length !== 0 && model.controllerConstraints[0].$cstNode?.offset
+                ? model.controllerConstraints[0].$cstNode.offset - subtractOffset
+                : scenarioOffset;
+        const ucaOffset =
+            model.rules.length !== 0 && model.rules[0].$cstNode?.offset
+                ? model.rules[0].$cstNode.offset - subtractOffset
+                : model.allUCAs.length !== 0 && model.allUCAs[0].$cstNode?.offset
+                ? model.allUCAs[0].$cstNode.offset - subtractOffset
+                : ucaConstraintOffset;
+        const responsibilitiesOffset =
+            model.responsibilities.length !== 0 && model.responsibilities[0].$cstNode?.offset
+                ? model.responsibilities[0].$cstNode.offset - subtractOffset
+                : ucaOffset;
+        const constraintOffset =
+            model.systemLevelConstraints.length !== 0 && model.systemLevelConstraints[0].$cstNode?.offset
+                ? model.systemLevelConstraints[0].$cstNode.offset - subtractOffset
+                : responsibilitiesOffset;
+        const hazardOffset =
+            model.hazards.length !== 0 && model.hazards[0].$cstNode?.offset
+                ? model.hazards[0].$cstNode.offset - subtractOffset
+                : constraintOffset;
 
         // determine the aspect for the given offset
-        if (!hazardOffset || !constraintOffset || !responsibilitiesOffset || !ucaOffset || !ucaConstraintOffset || !scenarioOffset || !safetyConsOffset || !dcaOffset) {
+        if (
+            !hazardOffset ||
+            !constraintOffset ||
+            !responsibilitiesOffset ||
+            !ucaOffset ||
+            !ucaConstraintOffset ||
+            !scenarioOffset ||
+            !safetyConsOffset ||
+            !dcaOffset
+        ) {
             console.log("Offset could not be determined for all aspects.");
             return undefined;
         } else if (offset < hazardOffset) {
@@ -337,14 +395,20 @@ export class IDEnforcer {
             prefix = modified.prefix;
         } else if (offset < responsibilitiesOffset && offset > constraintOffset) {
             // sub-components must be considered when determining the affected elements
-            const modified = this.findAffectedSubComponents(model.systemLevelConstraints, IDPrefix.SystemConstraint, offset);
+            const modified = this.findAffectedSubComponents(
+                model.systemLevelConstraints,
+                IDPrefix.SystemConstraint,
+                offset
+            );
             elements = modified.elements;
             prefix = modified.prefix;
         } else if (offset < ucaOffset && offset > responsibilitiesOffset) {
             elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
             prefix = IDPrefix.Responsibility;
         } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
-            elements = model.allUCAs.flatMap(sysUCA => sysUCA.notProvidingUcas.concat(sysUCA.providingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas));
+            elements = model.allUCAs.flatMap(sysUCA =>
+                sysUCA.notProvidingUcas.concat(sysUCA.providingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)
+            );
             elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
             prefix = IDPrefix.UCA;
             // rules must be handled separately since they are mixed with the UCAs
@@ -370,12 +434,16 @@ export class IDEnforcer {
 
     /**
      * Determines the elements affected by the given {@code offfset}.
-     * @param originalElements The top-level elements which may be affected by the offset. 
+     * @param originalElements The top-level elements which may be affected by the offset.
      * @param originalPrefix The prefix for the top-level elements.
      * @param offset Offset in the file for which the affected components should be determined.
      * @returns the elements affected by the offset and their prefix.
      */
-    protected findAffectedSubComponents(originalElements: Hazard[] | SystemConstraint[], originalPrefix: string, offset: number): { elements: Hazard[] | SystemConstraint[], prefix: string; } {
+    protected findAffectedSubComponents(
+        originalElements: Hazard[] | SystemConstraint[],
+        originalPrefix: string,
+        offset: number
+    ): { elements: Hazard[] | SystemConstraint[]; prefix: string } {
         let elements = originalElements;
         let prefix = originalPrefix;
         // index of the affected element
@@ -389,7 +457,11 @@ export class IDEnforcer {
         // check whether the children are affected
         // if the children are affected, it must be checked whether they have again affected children
         // otherwise the current elements are the affected ones
-        if (element.subComponents.length !== 0 && element.subComponents[0].$cstNode && element.subComponents[0].$cstNode.offset <= offset) {
+        if (
+            element.subComponents.length !== 0 &&
+            element.subComponents[0].$cstNode &&
+            element.subComponents[0].$cstNode.offset <= offset
+        ) {
             const modified = this.findAffectedSubComponents(element.subComponents, element.name + ".", offset);
             elements = modified.elements;
             prefix = modified.prefix;
