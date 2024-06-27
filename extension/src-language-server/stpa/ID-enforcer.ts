@@ -18,7 +18,7 @@
 import { isCompositeCstNode, LangiumDocument } from "langium";
 import { TextDocumentContentChangeEvent } from "vscode";
 import { Range, RenameParams, TextEdit } from "vscode-languageserver";
-import { Hazard, isHazard, isSystemConstraint, LossScenario, Model, SystemConstraint } from "../generated/ast";
+import { Hazard, isHazard, isRule, isSystemConstraint, LossScenario, Model, SystemConstraint } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
 
@@ -30,10 +30,13 @@ class IDPrefix {
     static Hazard = "H";
     static SystemConstraint = "SC";
     static Responsibility = "R";
+    static Rule = "RL";
     static UCA = "UCA";
     static ControllerConstraint = "C";
     static LossScenario = "Scenario";
     static SafetyRequirement = "SR";
+    static DCA = "DCA";
+    static DCARule = "DRL";
 }
 
 /**
@@ -81,7 +84,7 @@ export class IDEnforcer {
 
                 // rule IDs must be handled separately
                 if (modifiedAspect.ruleElements.length !== 0) {
-                    edits = edits.concat(await this.enforceIDsOnElements(modifiedAspect.ruleElements, "RL", change));
+                    edits = edits.concat(await this.enforceIDsOnElements(modifiedAspect.ruleElements, isRule(modifiedAspect.ruleElements[0]) ? IDPrefix.Rule : IDPrefix.DCARule, change));
                 }
             }
         }
@@ -303,8 +306,9 @@ export class IDEnforcer {
 
         // offsets of the different aspects to determine the aspect for the given offset 
         const subtractOffset = 5;
+        const dcaOffset = model.allDCAs.length !== 0 && model.allDCAs[0].$cstNode?.offset ? model.allDCAs[0].$cstNode.offset - subtractOffset : Number.MAX_VALUE;
         const safetyConsOffset = model.safetyCons.length !== 0 && model.safetyCons[0].$cstNode?.offset ?
-            model.safetyCons[0].$cstNode.offset - subtractOffset : Number.MAX_VALUE;
+            model.safetyCons[0].$cstNode.offset - subtractOffset : dcaOffset;
         const scenarioOffset = model.scenarios.length !== 0 && model.scenarios[0].$cstNode?.offset ?
             model.scenarios[0].$cstNode.offset - subtractOffset : safetyConsOffset;
         const ucaConstraintOffset = model.controllerConstraints.length !== 0 && model.controllerConstraints[0].$cstNode?.offset ?
@@ -320,7 +324,7 @@ export class IDEnforcer {
             model.hazards[0].$cstNode.offset - subtractOffset : constraintOffset;
 
         // determine the aspect for the given offset
-        if (!hazardOffset || !constraintOffset || !responsibilitiesOffset || !ucaOffset || !ucaConstraintOffset || !scenarioOffset || !safetyConsOffset) {
+        if (!hazardOffset || !constraintOffset || !responsibilitiesOffset || !ucaOffset || !ucaConstraintOffset || !scenarioOffset || !safetyConsOffset || !dcaOffset) {
             console.log("Offset could not be determined for all aspects.");
             return undefined;
         } else if (offset < hazardOffset) {
@@ -351,9 +355,14 @@ export class IDEnforcer {
         } else if (offset < safetyConsOffset && offset > scenarioOffset) {
             elements = model.scenarios;
             prefix = IDPrefix.LossScenario;
-        } else {
+        } else if (offset < dcaOffset && offset > safetyConsOffset) {
             elements = model.safetyCons;
             prefix = IDPrefix.SafetyRequirement;
+        } else {
+            elements = model.allDCAs.flatMap(dca => dca.contexts);
+            prefix = IDPrefix.DCA;
+            // rules must be handled separately since they are mixed with the DCAs
+            ruleElements = model.allDCAs;
         }
 
         return { elements, prefix, ruleElements };
