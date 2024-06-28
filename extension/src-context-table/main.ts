@@ -47,6 +47,10 @@ export class ContextTable extends Table {
     protected typeSelectorId = "select_type";
     protected tableId = "context_table";
 
+    /** Offsets for the selectors */
+    protected selectorControlActionOffset = { top: "13px", left: "170px" };
+    protected selectorTypeOffset = { top: "43px", left: "115px" };
+
     // data of the table
     protected rules: ContextTableRule[] = [];
     protected controlActions: ContextTableControlAction[] = [];
@@ -128,7 +132,7 @@ export class ContextTable extends Table {
         if (mainDiv) {
             // Create text and selector element for selecting a control action
             addText(mainDiv, "Choose a Control Action:");
-            addSelector(mainDiv, this.actionSelectorId, 0, [], "13px", "170px");
+            addSelector(mainDiv, this.actionSelectorId, 0, [], this.selectorControlActionOffset.top, this.selectorControlActionOffset.left);
 
             // Create text and selector element for selecting the action type
             addText(mainDiv, "Choose a Type:");
@@ -137,8 +141,8 @@ export class ContextTable extends Table {
                 this.typeSelectorId,
                 this.selectedType,
                 ["provided", "not provided", "both"],
-                "43px",
-                "115px"
+                this.selectorTypeOffset.top,
+                this.selectorTypeOffset.left
             );
 
             // add listener

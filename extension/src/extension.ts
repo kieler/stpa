@@ -347,13 +347,13 @@ async function updateViews(manager: StpaLspVscodeExtension, document: vscode.Tex
         }
 
         // update diagram without reseting viewport
-        const mes: ActionMessage = {
+        const message: ActionMessage = {
             clientId: manager.clientId!,
             action: {
                 kind: UpdateDiagramAction.KIND,
             } as UpdateDiagramAction,
         };
-        languageClient.sendNotification(acceptMessageType, mes);
+        languageClient.sendNotification(acceptMessageType, message);
 
         // update the context table
         if (manager.contextTable) {
