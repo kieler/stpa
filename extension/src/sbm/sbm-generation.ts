@@ -412,7 +412,13 @@ function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[
                 }
                 // adjust trigger of outgoing transitions
                 duplicateState.transitions.forEach(transition => {
-                    transition.trigger = transition.trigger + ` && !(${ltlFormula.contextVariables})`;
+                    if (transition.trigger) {
+                        const newTrigger = adjustTrigger(transition.trigger, ltlFormula);
+                        if (newTrigger.modify) {
+                            transition.trigger =
+                                transition.trigger + ` && !(${newTrigger.equationsToAdd.join(" && ")})`;
+                        }
+                    }
                 });
             });
             // add transitions from the newly created duplicate states to other duplicate states by copying
@@ -423,6 +429,35 @@ function addStoppedTooSoonTransitions(stoppedTooSoonMap: Map<string, LTLFormula[
         }
     }
     return states;
+}
+
+/**
+ * Determines which equations need to be added to the {@code trigger}.
+ * The ones that are always false when the {@code trigger} is true are removed.
+ * When one of the equations is always true when the {@code trigger} is true, the {@code trigger} is not modified.
+ * @param trigger The trigger to adjust.
+ * @param ltlFormula The LTL formula that contains the equations to add.
+ * @returns whether the {@code trigger} needs to be modified at all and the equations that need to be added.
+ */
+function adjustTrigger(trigger: string, ltlFormula: LTLFormula): { modify: boolean; equationsToAdd: string[] } {
+    const contextVariables = ltlFormula.contextVariables.split("&&");
+    const originTrigger = trigger.split("&& !(")[0];
+    let modifyTriggerToOriginalState = true;
+    const equationsForTriggerToOriginal: string[] = [];
+    contextVariables.forEach(variable => {
+        const variableEquation = variable.trim();
+        const negatedVariableEquation = negateFormula(variableEquation);
+        const originTriggerContainsNegatedEquation = isEquationAlreadyContained(originTrigger, negatedVariableEquation);
+
+        if (originTriggerContainsNegatedEquation) {
+            // this would mean '!(contextVariables)' is always true when the original trigger is true, hence we do not need to add this
+            modifyTriggerToOriginalState = false;
+        } else if (modifyTriggerToOriginalState && !isEquationAlreadyContained(trigger, variableEquation)) {
+            // if the original trigger does not contain the equation (this would mean !variableEquation cannot be true when original trigger is true), add it
+            equationsForTriggerToOriginal.push(variableEquation);
+        }
+    });
+    return { modify: modifyTriggerToOriginalState, equationsToAdd: equationsForTriggerToOriginal };
 }
 
 /**
@@ -517,15 +552,15 @@ function copyAndAdjustIncomingTransitions(
                 const newTriggers = createNewTriggersForIncomingTransitions(transition.trigger, ltlFormula);
                 // transition to duplicate state
                 if (newTriggers.duplicateTrigger !== "false") {
-                transitionsToDuplicate.push({
-                    target: duplicateState.name,
-                    trigger: newTriggers.duplicateTrigger,
-                    effect: transition.effect,
-                });
+                    transitionsToDuplicate.push({
+                        target: duplicateState.name,
+                        trigger: newTriggers.duplicateTrigger,
+                        effect: transition.effect,
+                    });
                 }
                 // adjust trigger of original transition
                 if (newTriggers.originalTrigger !== "false") {
-                transition.trigger = newTriggers.originalTrigger;
+                    transition.trigger = newTriggers.originalTrigger;
                 } else {
                     deletTransitions.push(transition);
                 }
