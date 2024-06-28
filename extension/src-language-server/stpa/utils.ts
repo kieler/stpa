@@ -22,6 +22,8 @@ import {
     Command,
     Context,
     ControllerConstraint,
+    DCAContext,
+    DCARule,
     Graph,
     Hazard,
     HazardList,
@@ -62,7 +64,9 @@ export type elementWithName =
     | Graph
     | Command
     | Context
-    | Rule;
+    | Rule
+    | DCAContext
+    | DCARule;
 export type elementWithRefs =
     | Hazard
     | SystemConstraint

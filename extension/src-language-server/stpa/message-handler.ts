@@ -110,8 +110,8 @@ function addTextChangeHandler(connection: Connection, stpaServices: StpaServices
             textChanges = [];
         }
     });
-    // update the cursor position on save
-    connection.onNotification("editor/save", async (offset) => {
+    // update the cursor position on editor change
+    connection.onNotification("editor/change", async (offset) => {
         setCurrentCursorOffset(offset);
     });
 }

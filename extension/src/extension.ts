@@ -16,8 +16,9 @@
  */
 
 import * as path from "path";
+import { ActionMessage } from "sprotty-protocol";
 import { createFileUri, registerDefaultCommands } from "sprotty-vscode";
-import { LspSprottyEditorProvider, LspSprottyViewProvider } from "sprotty-vscode/lib/lsp";
+import { LspSprottyEditorProvider, LspSprottyViewProvider, acceptMessageType } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
 import { Messenger } from "vscode-messenger";
@@ -29,6 +30,7 @@ import { StpaResult } from "./report/utils";
 import { createSBMs } from "./sbm/sbm-generation";
 import { LTLFormula } from "./sbm/utils";
 import { createFile, createOutputChannel, createQuickPickForWorkspaceOptions } from "./utils";
+import { UpdateDiagramAction } from "./actions";
 
 let languageClient: LanguageClient;
 
@@ -318,20 +320,46 @@ function createLanguageClient(context: vscode.ExtensionContext): LanguageClient 
 
 function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode.ExtensionContext): void {
     context.subscriptions.push(
-        vscode.workspace.onDidSaveTextDocument(async document => {
-            if (document) {
-                await languageClient.sendRequest("cutSets/reset");
-                const currentCursorPosition = vscode.window.activeTextEditor?.selection.active;
-                if (currentCursorPosition) {
-                    await languageClient.sendNotification("editor/save", document.offsetAt(currentCursorPosition));
-                }
-                manager.openDiagram(document.uri, { preserveFocus: true });
-                if (manager.contextTable) {
-                    languageClient.sendNotification("contextTable/getData", document.uri.toString());
-                }
+        vscode.workspace.onDidChangeTextDocument(async changeEvent => {
+            const svgGeneration = changeEvent.contentChanges[0].text.startsWith(
+                '<svg xmlns="http://www.w3.org/2000/svg"'
+            );
+            // if the change event is triggered by the generation of an SVG, do not update the views
+            if (!svgGeneration) {
+                const document = changeEvent.document;
+                updateViews(manager, document);
             }
+        }),
+        vscode.workspace.onDidOpenTextDocument(async document => {
+            manager.openDiagram(document.uri, { preserveFocus: true });
         })
     );
+}
+
+async function updateViews(manager: StpaLspVscodeExtension, document: vscode.TextDocument): Promise<void> {
+    if (document) {
+        // reset cut sets
+        await languageClient.sendRequest("cutSets/reset");
+        // save the current cursor position
+        const currentCursorPosition = vscode.window.activeTextEditor?.selection.active;
+        if (currentCursorPosition) {
+            await languageClient.sendNotification("editor/change", document.offsetAt(currentCursorPosition));
+        }
+
+        // update diagram without reseting viewport
+        const message: ActionMessage = {
+            clientId: manager.clientId!,
+            action: {
+                kind: UpdateDiagramAction.KIND,
+            } as UpdateDiagramAction,
+        };
+        languageClient.sendNotification(acceptMessageType, message);
+
+        // update the context table
+        if (manager.contextTable) {
+            languageClient.sendNotification("contextTable/getData", document.uri.toString());
+        }
+    }
 }
 
 /**

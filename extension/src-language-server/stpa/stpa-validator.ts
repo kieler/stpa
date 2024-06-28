@@ -30,9 +30,13 @@ import {
     SystemConstraint,
     isModel,
     Graph,
+    Rule,
+    DCARule,
+    DCAContext,
+    isRule,
 } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
-import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
+import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
 
 /**
  * Registry for validation checks.
@@ -49,7 +53,6 @@ export class StpaValidationRegistry extends ValidationRegistry {
             ControllerConstraint: validator.checkControllerConstraints,
             HazardList: validator.checkHazardList,
             Node: validator.checkNode,
-            Context: validator.checkContext,
             Graph: validator.checkControlStructure,
         };
         this.register(checks, validator);
@@ -71,6 +74,8 @@ export class StpaValidator {
 
     /** Boolean option to toggle the check whether all UCAs are covered by safety requirements. */
     checkSafetyRequirementsForUCAs = true;
+
+    checkForConflictingUCAs = true;
 
     /**
      * Executes validation checks for the whole model.
@@ -165,24 +170,76 @@ export class StpaValidator {
             ...model.allUCAs.map(alluca => alluca.system?.ref?.name + "." + alluca.action?.ref?.name),
             ...model.rules.map(rule => rule.system?.ref?.name + "." + rule.action?.ref?.name),
         ];
-        model.controlStructure?.nodes.forEach(node =>
+        this.checkControlActionsReferencedByUCA(model.controlStructure?.nodes ?? [], ucaActions, accept);
+        // check UCAs and DCAs
+        this.checkUCAsAndDCAs(model, accept);
+    }
+
+    /**
+     * Check whether the control actions of a node are referenced by at least one UCA.
+     * @param nodes The nodes to check.
+     * @param ucaActions The control actions that are referenced by a UCA.
+     * @param accept 
+     */
+    protected checkControlActionsReferencedByUCA(
+        nodes: Node[],
+        ucaActions: string[],
+        accept: ValidationAcceptor
+    ): void {
+        nodes.forEach(node => {
             node.actions.forEach(action =>
                 action.comms.forEach(command => {
                     const name = node.name + "." + command.name;
                     if (!ucaActions.includes(name)) {
-                        accept("warning", "This element is not referenced by a UCA", {
+                        accept("warning", "This action is not referenced by a UCA", {
                             node: command,
                             property: "name",
                         });
                     }
                 })
-            )
-        );
+            );
+            this.checkControlActionsReferencedByUCA(node.children, ucaActions, accept);
+        });
+    }
 
+    /**
+     * Checks the UCAs and DCAs for duplicates and conflicts.
+     * @param model The model containing the UCAs and DCAs.
+     * @param accept
+     */
+    protected checkUCAsAndDCAs(model: Model, accept: ValidationAcceptor): void {
         // check for duplicate ActionUCA definition
         this.checkActionUcasForDuplicates(model, accept);
         // check for duplicate rule definition
-        this.checkRulesForDuplicates(model, accept);
+        // group rules by action and system
+        const ruleMap = new Map<string, Rule[]>();
+        for (const rule of model.rules) {
+            const key = rule.system?.ref?.name + "." + rule.action?.ref?.name;
+            if (ruleMap.has(key)) {
+                ruleMap.get(key)?.push(rule);
+            } else {
+                ruleMap.set(key, [rule]);
+            }
+        }
+        this.checkRulesForDuplicates(ruleMap, accept);
+        // check for duplicate dca rule definition
+        // group dca rules by action and system
+        const dcaRuleMap = new Map<string, DCARule[]>();
+        for (const dcaRule of model.allDCAs) {
+            const key = dcaRule.system?.ref?.name + "." + dcaRule.action?.ref?.name;
+            if (dcaRuleMap.has(key)) {
+                dcaRuleMap.get(key)?.push(dcaRule);
+            } else {
+                dcaRuleMap.set(key, [dcaRule]);
+            }
+        }
+        this.checkRulesForDuplicates(dcaRuleMap, accept);
+        // check for conflicting UCAs
+        if (this.checkForConflictingUCAs) {
+            this.checkForConflictingRules(ruleMap, accept);
+        }
+        // check for conflicts between UCAs and DCAs
+        this.checkForConflictsBetweenUCAsAndDCAs(model.rules, model.allDCAs, accept);
     }
 
     /**
@@ -204,47 +261,116 @@ export class StpaValidator {
 
     /**
      * Validates that at most one UCA rule is defined for a control action and type.
-     * @param model The model containing the rules.
+     * @param ruleMap The rules mapped by their control action.
      * @param accept
      */
-    checkRulesForDuplicates(model: Model, accept: ValidationAcceptor): void {
-        const actionTypePairs = new Map<string, string[]>();
-        for (const rule of model.rules) {
-            const action = rule.system?.$refText + "." + rule.action?.$refText;
-            const type = rule.type;
-            if (actionTypePairs.has(action)) {
-                const definedTypes = actionTypePairs.get(action);
-                if (definedTypes?.includes(type)) {
-                    accept("warning", "This UCA type is already covered by another rule for the stated action", {
+    checkRulesForDuplicates(ruleMap: Map<string, Rule[]> | Map<string, DCARule[]>, accept: ValidationAcceptor): void {
+        for (const rules of ruleMap.values()) {
+            const types = new Set<string>();
+            for (const rule of rules) {
+                if (types.has(rule.type)) {
+                    const action = isRule(rule) ? "UCA" : "DCA";
+                    accept("warning", `This ${action} type is already covered by another rule for the stated action`, {
                         node: rule,
                         property: "type",
                     });
                 } else {
-                    definedTypes?.push(type);
+                    types.add(rule.type);
                 }
-            } else {
-                actionTypePairs.set(action, [type]);
             }
         }
     }
 
     /**
-     * Validates the variable values of {@code context}.
-     * @param context The Context to check.
+     * Validates that rules for the same control action and type do not conflict.
+     * @param ruleMap The rules mapped by their control action.
      * @param accept
      */
-    checkContext(context: Context, accept: ValidationAcceptor): void {
-        for (let i = 0; i < context.vars.length; i++) {
-            const variable = context.vars[i];
-            const variableValues = variable.ref?.values.map(value => value.name);
-            // the value of the variable in the context should be one of the values that are stated in the definition of the variable
-            if (!variableValues?.includes(context.values[i])) {
-                accept("error", "This variable has an invalid value.", {
-                    node: context,
-                    range: variable.$refNode?.range,
-                });
+    protected checkForConflictingRules(ruleMap: Map<string, Rule[]>, accept: ValidationAcceptor): void {
+        for (const rules of ruleMap.values()) {
+            // UCAs can only conflict if one of them is a provided UCA
+            const providedRule = rules.find(rule => rule.type === UCA_TYPE.PROVIDED);
+            if (providedRule) {
+                for (const rule of rules) {
+                    // check the UCAs of type provided against all other UCAs
+                    if (rule.type !== UCA_TYPE.PROVIDED) {
+                        for (const context of rule.contexts) {
+                            for (const otherContext of providedRule.contexts) {
+                                if (this.isSameContext(context, otherContext)) {
+                                    accept(
+                                        "warning",
+                                        "Conflict with " + providedRule.name + " " + otherContext.name + " detected",
+                                        {
+                                            node: context,
+                                        }
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * Validates that there are no conflicts between UCAs and DCAs.
+     * A DCA is not allowed to have the same type and context as a UCA.
+     * @param ucas The UCAs to check.
+     * @param dcas The DCAs to check.
+     * @param accept
+     */
+    protected checkForConflictsBetweenUCAsAndDCAs(ucas: Rule[], dcas: DCARule[], accept: ValidationAcceptor): void {
+        for (const dca of dcas) {
+            for (const uca of ucas) {
+                // if they have different types or different control actions, they cannot conflict
+                const ucaType = uca.type === UCA_TYPE.PROVIDED ? UCA_TYPE.PROVIDED : UCA_TYPE.NOT_PROVIDED;
+                const dcaAction = dca.system?.$refText + "." + dca.action?.$refText;
+                const ucaAction = uca.system?.$refText + "." + uca.action?.$refText;
+                if (dcaAction === ucaAction && dca.type === ucaType) {
+                    for (const context of dca.contexts) {
+                        for (const otherContext of uca.contexts) {
+                            // if they have the same type and context for same control action, they conflict
+                            if (this.isSameContext(context, otherContext)) {
+                                accept("warning", "Conflict with " + uca.name + " " + otherContext.name + " detected", {
+                                    node: context,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks whether the contexts of two rules are the same or whether one of them is a subset of the other.
+     * @param context1 The first context to compare.
+     * @param context2 The second context to compare.
+     * @returns true if the contexts are the same or one of them is a subset of the other, false otherwise.
+     */
+    protected isSameContext(context1: Context | DCAContext, context2: Context | DCAContext): boolean {
+        let isSame = true;
+        // check whether context1 is a subset of context2
+        for (let i = 0; i < context1.assignedValues.length; i++) {
+            const varIndex = context2.assignedValues.findIndex(v => v.variable.$refText === context1.assignedValues[i].variable.$refText);
+            if (varIndex === -1 || context2.assignedValues[varIndex].value.$refText !== context1.assignedValues[i].value.$refText) {
+                isSame = false;
+                break;
+            }
+        }
+        if (!isSame) {
+            isSame = true;
+            // check whether context2 is a subset of context1
+            for (let i = 0; i < context2.assignedValues.length; i++) {
+                const varIndex = context1.assignedValues.findIndex(v => v.variable.$refText === context2.assignedValues[i].variable.$refText);
+                if (varIndex === -1 || context1.assignedValues[varIndex].value.$refText !== context2.assignedValues[i].value.$refText) {
+                    isSame = false;
+                    break;
+                }
+            }
+        }
+        return isSame;
     }
 
     /**
@@ -292,7 +418,7 @@ export class StpaValidator {
     /**
      * Executes validation checks for the control structure.
      * @param graph The control structure to check.
-     * @param accept 
+     * @param accept
      */
     checkControlStructure(graph: Graph, accept: ValidationAcceptor): void {
         const nodes = [...graph.nodes, ...graph.nodes.map(node => this.getChildren(node)).flat(1)];

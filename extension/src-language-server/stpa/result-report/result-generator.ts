@@ -259,9 +259,9 @@ function translateRuleToUCAs(rule: Rule): StpaComponent[] {
 
     rule.contexts.forEach((context) => {
         let contextText = ``;
-        for (let i = 0; i < context.values.length; i++) {
-            contextText += `${context.vars[i].$refText} = ${context.values[i]}`;
-            if (i !== context.values.length - 1) {
+        for (let i = 0; i < context.assignedValues.length; i++) {
+            contextText += `${context.assignedValues[i].variable.$refText} = ${context.assignedValues[i].value.$refText}`;
+            if (i !== context.assignedValues.length - 1) {
                 contextText += ` and `;
             }
         }

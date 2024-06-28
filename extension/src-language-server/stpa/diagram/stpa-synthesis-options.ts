@@ -27,13 +27,13 @@ const hierarchyID = "hierarchy";
 const groupingUCAsID = "groupingUCAs";
 export const filteringUCAsID = "filteringUCAs";
 
-const hideSysConsID = "hideSysCons";
-const hideRespsID = "hideResps";
-const hideContConsID = "hideContCons";
-const hideScenariosID = "hideScenarios";
-const hideScenariosWithHazardID = "hideScenariosWithHazards";
-const hideUCAsID = "hideUCAs";
-const hideSafetyConstraintsID = "hideSafetyConstraints";
+const showSysConsID = "showSysCons";
+const showRespsID = "showResps";
+const showContConsID = "showContCons";
+const showScenariosID = "showScenarios";
+const showScenariosWithHazardID = "showScenariosWithHazards";
+const showUCAsID = "showUCAs";
+const showSafetyConstraintsID = "showSafetyConstraints";
 
 const showLabelsID = "showLabels";
 
@@ -69,7 +69,7 @@ const filterCategoryOption: ValuedSynthesisOption = {
 const showControlStructureOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showControlStructureID,
-        name: "Show Control Structure",
+        name: "Control Structure",
         type: TransformationOptionType.CHECK,
         initialValue: true,
         currentValue: true,
@@ -85,7 +85,7 @@ const showControlStructureOption: ValuedSynthesisOption = {
 const showProcessModelsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showProcessModelsID,
-        name: "Show Process Models",
+        name: "Process Models",
         type: TransformationOptionType.CHECK,
         initialValue: false,
         currentValue: false,
@@ -101,7 +101,7 @@ const showProcessModelsOption: ValuedSynthesisOption = {
 const showRelationshipGraphOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showRelationshipGraphID,
-        name: "Show Relationship Graph",
+        name: "Relationship Graph",
         type: TransformationOptionType.CHECK,
         initialValue: true,
         currentValue: true,
@@ -116,15 +116,15 @@ const showRelationshipGraphOption: ValuedSynthesisOption = {
  */
 const hideUCAsOption: ValuedSynthesisOption = {
     synthesisOption: {
-        id: hideUCAsID,
-        name: "Hide UCAs",
+        id: showUCAsID,
+        name: "UCAs",
         type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
+        initialValue: true,
+        currentValue: true,
         values: [true, false],
         category: filterCategory,
     },
-    currentValue: false,
+    currentValue: true,
 };
 
 /**
@@ -132,15 +132,15 @@ const hideUCAsOption: ValuedSynthesisOption = {
  */
 const hideSafetyConstraintsOption: ValuedSynthesisOption = {
     synthesisOption: {
-        id: hideSafetyConstraintsID,
-        name: "Hide Safety Constraints",
+        id: showSafetyConstraintsID,
+        name: "Safety Constraints",
         type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
+        initialValue: true,
+        currentValue: true,
         values: [true, false],
         category: filterCategory,
     },
-    currentValue: false,
+    currentValue: true,
 };
 
 /**
@@ -208,15 +208,15 @@ const filteringOfUCAs: ValuedSynthesisOption = {
  */
 const hideSysConsOption: ValuedSynthesisOption = {
     synthesisOption: {
-        id: hideSysConsID,
-        name: "Hide System-level Constraints",
+        id: showSysConsID,
+        name: "System-level Constraints",
         type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
+        initialValue: true,
+        currentValue: true,
         values: [true, false],
         category: filterCategory,
     },
-    currentValue: false,
+    currentValue: true,
 };
 
 /**
@@ -224,15 +224,15 @@ const hideSysConsOption: ValuedSynthesisOption = {
  */
 const hideRespsOption: ValuedSynthesisOption = {
     synthesisOption: {
-        id: hideRespsID,
-        name: "Hide Responsibilities",
+        id: showRespsID,
+        name: "Responsibilities",
         type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
+        initialValue: true,
+        currentValue: true,
         values: [true, false],
         category: filterCategory,
     },
-    currentValue: false,
+    currentValue: true,
 };
 
 /**
@@ -240,15 +240,15 @@ const hideRespsOption: ValuedSynthesisOption = {
  */
 const hideContConsOption: ValuedSynthesisOption = {
     synthesisOption: {
-        id: hideContConsID,
-        name: "Hide Controller Constraints",
+        id: showContConsID,
+        name: "Controller Constraints",
         type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
+        initialValue: true,
+        currentValue: true,
         values: [true, false],
         category: filterCategory,
     },
-    currentValue: false,
+    currentValue: true,
 };
 
 /**
@@ -256,15 +256,15 @@ const hideContConsOption: ValuedSynthesisOption = {
  */
 const hideScenariosOption: ValuedSynthesisOption = {
     synthesisOption: {
-        id: hideScenariosID,
-        name: "Hide Loss Scenarios",
+        id: showScenariosID,
+        name: "Loss Scenarios",
         type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
+        initialValue: true,
+        currentValue: true,
         values: [true, false],
         category: filterCategory,
     },
-    currentValue: false,
+    currentValue: true,
 };
 
 /**
@@ -272,15 +272,15 @@ const hideScenariosOption: ValuedSynthesisOption = {
  */
 const hideScenariosWithHazardsOption: ValuedSynthesisOption = {
     synthesisOption: {
-        id: hideScenariosWithHazardID,
-        name: "Hide Loss Scenarios Without UCAs",
+        id: showScenariosWithHazardID,
+        name: "Loss Scenarios Without UCAs",
         type: TransformationOptionType.CHECK,
-        initialValue: false,
-        currentValue: false,
+        initialValue: true,
+        currentValue: true,
         values: [true, false],
         category: filterCategory,
     },
-    currentValue: false,
+    currentValue: true,
 };
 
 /**
@@ -455,60 +455,60 @@ export class StpaSynthesisOptions extends SynthesisOptions {
         return this.getOption(filteringUCAsID)?.currentValue;
     }
 
-    setHideSysCons(value: boolean): void {
-        this.setOption(hideSysConsID, value);
+    setShowSysCons(value: boolean): void {
+        this.setOption(showSysConsID, value);
     }
 
-    getHideSysCons(): boolean {
-        return this.getOption(hideSysConsID)?.currentValue;
+    getShowSysCons(): boolean {
+        return this.getOption(showSysConsID)?.currentValue;
     }
 
-    setHideResps(value: boolean): void {
-        this.setOption(hideRespsID, value);
+    setShowResps(value: boolean): void {
+        this.setOption(showRespsID, value);
     }
 
-    getHideRespsCons(): boolean {
-        return this.getOption(hideRespsID)?.currentValue;
+    getShowRespsCons(): boolean {
+        return this.getOption(showRespsID)?.currentValue;
     }
 
-    setHideUCAs(value: boolean): void {
-        this.setOption(hideUCAsID, value);
+    setShowUCAs(value: boolean): void {
+        this.setOption(showUCAsID, value);
     }
 
-    getHideUCAs(): boolean {
-        return this.getOption(hideUCAsID)?.currentValue;
+    getShowUCAs(): boolean {
+        return this.getOption(showUCAsID)?.currentValue;
     }
 
-    setHideContCons(value: boolean): void {
-        this.setOption(hideContConsID, value);
+    setShowContCons(value: boolean): void {
+        this.setOption(showContConsID, value);
     }
 
-    getHideContCons(): boolean {
-        return this.getOption(hideContConsID)?.currentValue;
+    getShowContCons(): boolean {
+        return this.getOption(showContConsID)?.currentValue;
     }
 
-    setHideScenarios(value: boolean): void {
-        this.setOption(hideScenariosID, value);
+    setShowScenarios(value: boolean): void {
+        this.setOption(showScenariosID, value);
     }
 
-    getHideScenarios(): boolean {
-        return this.getOption(hideScenariosID)?.currentValue;
+    getShowScenarios(): boolean {
+        return this.getOption(showScenariosID)?.currentValue;
     }
 
-    setHideScenariosWithHazard(value: boolean): void {
-        this.setOption(hideScenariosWithHazardID, value);
+    setShowScenariosWithHazard(value: boolean): void {
+        this.setOption(showScenariosWithHazardID, value);
     }
 
-    getHideScenariosWithHazard(): boolean {
-        return this.getOption(hideScenariosWithHazardID)?.currentValue;
+    getShowScenariosWithHazard(): boolean {
+        return this.getOption(showScenariosWithHazardID)?.currentValue;
     }
 
-    setHideSafetyConstraints(value: boolean): void {
-        this.setOption(hideSafetyConstraintsID, value);
+    setShowSafetyConstraints(value: boolean): void {
+        this.setOption(showSafetyConstraintsID, value);
     }
 
-    getHideSafetyConstraints(): boolean {
-        return this.getOption(hideSafetyConstraintsID)?.currentValue;
+    getShowSafetyConstraints(): boolean {
+        return this.getOption(showSafetyConstraintsID)?.currentValue;
     }
 
     /**

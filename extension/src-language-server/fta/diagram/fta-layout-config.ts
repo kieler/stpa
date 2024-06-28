@@ -27,9 +27,8 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
             "org.eclipse.elk.direction": "DOWN",
             "org.eclipse.elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
-            "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN",
             "org.eclipse.elk.spacing.portPort": "0.0",
-            "org.eclipse.elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED"
+            "org.eclipse.elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED",
         };
 
         if (sgraph.modelOrder) {
@@ -53,13 +52,19 @@ export class FtaLayoutConfigurator extends DefaultLayoutConfigurator {
                         options["org.eclipse.elk.direction"] = "DOWN";
                         options["org.eclipse.elk.padding"] = "[top=0.0,left=0.0,bottom=10.0,right=0.0]";
                         options["org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers"] = "2";
-                        options["org.eclipse.elk.hierarchyHandling"] = "INCLUDE_CHILDREN";
                         break;
                     case FTNodeType.COMPONENT:
                     case FTNodeType.CONDITION:
                         options["org.eclipse.elk.nodeSize.constraints"] = "MINIMUM_SIZE, NODE_LABELS";
                         options["org.eclipse.elk.nodeSize.minimum"] = "(30, 30)";
                         options["org.eclipse.elk.spacing.labelNode"] = "20.0";
+                        break;
+                    case FTNodeType.AND:
+                    case FTNodeType.OR:
+                    case FTNodeType.KN:
+                    case FTNodeType.INHIBIT:
+                        options["org.eclipse.elk.nodeSize.constraints"] = "MINIMUM_SIZE";
+                        options["org.eclipse.elk.nodeSize.minimum"] = "(32.34, 35)";
                         break;
                 }
                 break;

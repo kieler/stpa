@@ -74,7 +74,7 @@ export async function generateLTLFormulae(
     let model = await getModel(uri, shared) as Model;
 
     // references are not found if the stpa file has not been opened since then the linter has not been activated yet
-    if (model.rules.length > 0 && model.rules[0]?.contexts[0]?.vars[0]?.ref === undefined) {
+    if (model.rules.length > 0 && model.rules[0]?.contexts[0]?.assignedValues[0]?.variable.ref === undefined) {
         // build document
         await shared.workspace.DocumentBuilder.update([URI.parse(uri)], []);
         // update the model
@@ -124,9 +124,9 @@ async function translateRuleToLTLFormulas(rule: Rule | DCARule, map: Record<stri
     const controlAction = controller + "." + rule.action.$refText;
     for (const uca of rule.contexts) {
         // calculate the contextVariable string
-        let contextVariables = await createLTLContextVariable(uca.vars[0], uca.values[0]);
-        for (let i = 1; i < uca.vars.length; i++) {
-            contextVariables += "&&" + (await createLTLContextVariable(uca.vars[i], uca.values[i]));
+        let contextVariables = await createLTLContextVariable(uca.assignedValues[0].variable, uca.assignedValues[0].value.$refText);
+        for (let i = 1; i < uca.assignedValues.length; i++) {
+            contextVariables += "&&" + (await createLTLContextVariable(uca.assignedValues[i].variable, uca.assignedValues[i].value.$refText));
         }
         // translate uca based on the rule type
         const ltlString = createLTLString(rule, contextVariables, controlAction);
