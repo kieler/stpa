@@ -17,12 +17,13 @@
 
 import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from "sprotty-protocol";
 import { Connection } from "vscode-languageserver";
+import { FtaServices } from "./fta/fta-module";
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions";
 import { DropDownOption } from "./options/option-models";
 import { SnippetDiagramServer } from "./snippets/snippet-diagram-server";
 import { LanguageSnippet } from "./snippets/snippet-model";
 import { StpaDiagramSnippets } from "./snippets/stpa-snippets";
-import { GenerateSVGsAction, RequestSvgAction, SvgAction } from "./stpa/actions";
+import { GenerateSVGsAction, RequestSvgAction, SvgAction, UpdateDiagramAction } from "./stpa/actions";
 import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/stpa-synthesis-options";
 import {
     COMPLETE_GRAPH_PATH,
@@ -37,6 +38,7 @@ import {
     SYSTEM_CONSTRAINT_PATH,
     resetOptions,
     saveOptions,
+    setAllScenariosOptions,
     setControlStructureOptions,
     setControllerConstraintWithFilteredUcaGraphOptions,
     setFilteredUcaGraphOptions,
@@ -48,9 +50,8 @@ import {
     setScenarioWithNoUCAGraphOptions,
     setSystemConstraintGraphOptions,
 } from "./stpa/result-report/svg-generator";
-import { SynthesisOptions } from "./synthesis-options";
 import { StpaServices } from "./stpa/stpa-module";
-import { FtaServices } from "./fta/fta-module";
+import { SynthesisOptions } from "./synthesis-options";
 
 export class PastaDiagramServer extends SnippetDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;
@@ -100,6 +101,8 @@ export class PastaDiagramServer extends SnippetDiagramServer {
                 return this.handleSetSynthesisOption(action as SetSynthesisOptionsAction);
             case GenerateSVGsAction.KIND:
                 return this.handleGenerateSVGDiagrams(action as GenerateSVGsAction);
+            case UpdateDiagramAction.KIND:
+                return this.updateView(this.state.options);
         }
         return super.handleAction(action);
     }
@@ -165,6 +168,9 @@ export class PastaDiagramServer extends SnippetDiagramServer {
             // scenario with hazard svg graph
             setScenarioWithNoUCAGraphOptions(this.synthesisOptions);
             await this.createSVG(setSynthesisOption, action.uri, SCENARIO_WITH_HAZARDS_PATH);
+            // all scenarios svg graph
+            setAllScenariosOptions(this.synthesisOptions);
+            await this.createSVG(setSynthesisOption, action.uri, FILTERED_SCENARIO_PATH("all UCAs"));
 
             // safety requirement svg graph
             setSafetyRequirementGraphOptions(this.synthesisOptions);
@@ -232,15 +238,18 @@ export class PastaDiagramServer extends SnippetDiagramServer {
                 options: this.state.options ?? {},
                 state: this.state,
             });
-            newRoot.revision = ++this.state.revision;
-            this.state.currentRoot = newRoot;
-            await this.submitModel(this.state.currentRoot, true);
-            // ensures the the filterUCA option is correct
-            this.dispatch({
-                kind: UpdateOptionsAction.KIND,
-                valuedSynthesisOptions: this.synthesisOptions?.getSynthesisOptions() ?? [],
-                clientId: this.clientId,
-            });
+            // only update the view if the new root has children, otherwise an error occured
+            if (newRoot.children?.length !== 0) {
+                newRoot.revision = ++this.state.revision;
+                this.state.currentRoot = newRoot;
+                await this.submitModel(this.state.currentRoot, true);
+                // ensures the the filterUCA option is correct
+                this.dispatch({
+                    kind: UpdateOptionsAction.KIND,
+                    valuedSynthesisOptions: this.synthesisOptions?.getSynthesisOptions() ?? [],
+                    clientId: this.clientId,
+                });
+            }
         } catch (err) {
             this.rejectRemoteRequest(undefined, err as Error);
             console.error("Failed to generate diagram:", err);

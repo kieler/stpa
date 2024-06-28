@@ -16,6 +16,7 @@
  */
 
 import { SetSynthesisOptionsAction } from "../../options/actions";
+import { labelManagementValue } from '../../synthesis-options';
 import { StpaSynthesisOptions } from "../diagram/stpa-synthesis-options";
 
 /* the paths for the several diagrams of the STPA aspects */
@@ -79,6 +80,7 @@ export function resetOptions(options: StpaSynthesisOptions): SetSynthesisOptions
 export function setControlStructureOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(false);
     options.setShowControlStructure(true);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -89,12 +91,14 @@ export function setHazardGraphOptions(options: StpaSynthesisOptions): void {
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(true);
-    options.setHideUCAs(true);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(false);
+    options.setShowUCAs(false);
+    options.setShowContCons(false);
+    options.setShowScenarios(false);
+    options.setShowScenariosWithHazard(false);
+    options.setShowSafetyConstraints(false);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -105,12 +109,14 @@ export function setSystemConstraintGraphOptions(options: StpaSynthesisOptions): 
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(false);
-    options.setHideResps(true);
-    options.setHideUCAs(true);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(true);
+    options.setShowResps(false);
+    options.setShowUCAs(false);
+    options.setShowContCons(false);
+    options.setShowScenarios(false);
+    options.setShowScenariosWithHazard(false);
+    options.setShowSafetyConstraints(false);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -121,12 +127,14 @@ export function setResponsibilityGraphOptions(options: StpaSynthesisOptions): vo
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(false);
-    options.setHideResps(false);
-    options.setHideUCAs(true);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(true);
+    options.setShowResps(true);
+    options.setShowUCAs(false);
+    options.setShowContCons(false);
+    options.setShowScenarios(false);
+    options.setShowScenariosWithHazard(false);
+    options.setShowSafetyConstraints(false);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -138,12 +146,14 @@ export function setFilteredUcaGraphOptions(options: StpaSynthesisOptions, value:
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs(value);
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(true);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(false);
+    options.setShowScenarios(false);
+    options.setShowScenariosWithHazard(false);
+    options.setShowSafetyConstraints(false);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -155,12 +165,14 @@ export function setControllerConstraintWithFilteredUcaGraphOptions(options: Stpa
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs(value);
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(false);
-    options.setHideScenarios(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(true);
+    options.setShowScenarios(false);
+    options.setShowScenariosWithHazard(false);
+    options.setShowSafetyConstraints(false);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -172,13 +184,14 @@ export function setScenarioWithFilteredUCAGraphOptions(options: StpaSynthesisOpt
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs(value);
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(true);
-    options.setHideScenarios(false);
-    options.setHideScenariosWithHazard(true);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(false);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(false);
+    options.setShowSafetyConstraints(false);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -190,13 +203,32 @@ export function setScenarioWithNoUCAGraphOptions(options: StpaSynthesisOptions):
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(true);
-    options.setHideContCons(true);
-    options.setHideScenarios(false);
-    options.setHideScenariosWithHazard(false);
-    options.setHideSafetyConstraints(true);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(false);
+    options.setShowContCons(false);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(true);
+    options.setShowSafetyConstraints(false);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
+}
+
+/**
+ * Sets the values of {@code options} such that the relationship graph is reduced to the loss scenarios without system-level constraints. 
+ * @param options The synthesis options.
+ */
+export function setAllScenariosOptions(options: StpaSynthesisOptions): void {
+    options.setShowRelationshipGraph(true);
+    options.setShowControlStructure(false);
+    options.setFilteringUCAs("all UCAs");
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(false);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(true);
+    options.setShowSafetyConstraints(false);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -207,13 +239,14 @@ export function setSafetyRequirementGraphOptions(options: StpaSynthesisOptions):
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(true);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(false);
-    options.setHideScenarios(false);
-    options.setHideScenariosWithHazard(false);
-    options.setHideSafetyConstraints(false);
+    options.setShowSysCons(false);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(true);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(true);
+    options.setShowSafetyConstraints(true);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }
 
 /**
@@ -224,11 +257,12 @@ export function setRelationshipGraphOptions(options: StpaSynthesisOptions): void
     options.setShowRelationshipGraph(true);
     options.setShowControlStructure(false);
     options.setFilteringUCAs("all UCAs");
-    options.setHideSysCons(false);
-    options.setHideResps(false);
-    options.setHideUCAs(false);
-    options.setHideContCons(false);
-    options.setHideScenarios(false);
-    options.setHideScenariosWithHazard(false);
-    options.setHideSafetyConstraints(false);
+    options.setShowSysCons(true);
+    options.setShowResps(true);
+    options.setShowUCAs(true);
+    options.setShowContCons(true);
+    options.setShowScenarios(true);
+    options.setShowScenariosWithHazard(true);
+    options.setShowSafetyConstraints(true);
+    options.setLabelManagement(labelManagementValue.NO_LABELS);
 }

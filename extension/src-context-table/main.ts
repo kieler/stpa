@@ -15,16 +15,26 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import './css/table.css';
-import { Table } from '@kieler/table-webview/lib/table';
-import { SendContextTableDataAction } from './actions';
-import { createHeaderElement, createHeaderRow, createRow, createTable, createTHead, patch } from './html';
+import "./css/table.css";
+import { Table } from "@kieler/table-webview/lib/table";
+import { SendContextTableDataAction } from "./actions";
+import { createHeaderElement, createHeaderRow, createRow, createTable, createTHead, initContextTable, patch } from "./html";
 import {
-    addSelector, addText, ContextCell, ContextTableControlAction, convertControlActionsToStrings, replaceSelector, ContextTableRule, ContextTableSystemVariables,
-    Type, ContextTableVariable, ContextTableVariableValues, Row
-} from './utils';
+    addSelector,
+    addText,
+    ContextCell,
+    ContextTableControlAction,
+    convertControlActionsToStrings,
+    replaceSelector,
+    ContextTableRule,
+    ContextTableSystemVariables,
+    Type,
+    ContextTableVariable,
+    ContextTableVariableValues,
+    Row,
+} from "./utils";
 import { VNode } from "snabbdom";
-import { createResults, determineUsedRules } from './context-table-logic';
+import { createResults, determineUsedRules } from "./context-table-logic";
 
 interface vscode {
     postMessage(message: any): void;
@@ -32,11 +42,14 @@ interface vscode {
 declare const vscode: vscode;
 
 export class ContextTable extends Table {
-
     /** Ids for the html elements */
     protected actionSelectorId = "select_action";
     protected typeSelectorId = "select_type";
     protected tableId = "context_table";
+
+    /** Offsets for the selectors */
+    protected selectorControlActionOffset = { top: "13px", left: "170px" };
+    protected selectorTypeOffset = { top: "43px", left: "115px" };
 
     // data of the table
     protected rules: ContextTableRule[] = [];
@@ -62,17 +75,17 @@ export class ContextTable extends Table {
 
     constructor() {
         super();
-        document.addEventListener('click', (event) => {
+        document.addEventListener("click", event => {
             const node = event.target;
             const owner = (node as HTMLElement).parentElement;
             if (owner) {
                 if (this.lastSelected) {
-                    this.lastSelected.parentElement?.classList.remove('focused');
-                    this.lastSelected.classList.remove('selected');
+                    this.lastSelected.parentElement?.classList.remove("focused");
+                    this.lastSelected.classList.remove("selected");
                 }
                 this.lastSelected = node as HTMLElement;
-                owner.classList.add('focused');
-                (node as HTMLElement).classList.add('selected');
+                owner.classList.add("focused");
+                (node as HTMLElement).classList.add("selected");
             }
         });
     }
@@ -115,19 +128,26 @@ export class ContextTable extends Table {
     protected initHtml(identifier: string): void {
         this.identifier = identifier;
         this.tableId = this.identifier + "_table";
-        const mainDiv = document.getElementById(identifier + '_container');
+        const mainDiv = document.getElementById(identifier + "_container");
         if (mainDiv) {
             // Create text and selector element for selecting a control action
             addText(mainDiv, "Choose a Control Action:");
-            addSelector(mainDiv, this.actionSelectorId, 0, [], "13px", "170px");
+            addSelector(mainDiv, this.actionSelectorId, 0, [], this.selectorControlActionOffset.top, this.selectorControlActionOffset.left);
 
             // Create text and selector element for selecting the action type
             addText(mainDiv, "Choose a Type:");
-            addSelector(mainDiv, this.typeSelectorId, this.selectedType, ["provided", "not provided", "both"], "43px", "115px");
+            addSelector(
+                mainDiv,
+                this.typeSelectorId,
+                this.selectedType,
+                ["provided", "not provided", "both"],
+                this.selectorTypeOffset.top,
+                this.selectorTypeOffset.left
+            );
 
             // add listener
             const htmlTypeSelector = document.getElementById(this.typeSelectorId) as HTMLSelectElement;
-            htmlTypeSelector.addEventListener('change', () => {
+            htmlTypeSelector.addEventListener("change", () => {
                 switch (htmlTypeSelector.selectedIndex) {
                     case 0:
                         this.selectedType = Type.PROVIDED;
@@ -147,7 +167,7 @@ export class ContextTable extends Table {
             // create a table
             const placeholderTable = document.createElement("div");
             mainDiv.append(placeholderTable);
-            const table = createTable(this.tableId);
+            const table = initContextTable(this.tableId);
             patch(placeholderTable, table);
         }
     }
@@ -160,14 +180,21 @@ export class ContextTable extends Table {
         if (selector) {
             // translate control actions to strings and add them to the selector
             const actions = convertControlActionsToStrings(this.controlActions);
-            replaceSelector(selector, actions, 0);
+            // set the selector to the previously selected action if it still exists
+            const currentSelected = selector.value;
+            const newIndex = actions.findIndex(action => action === currentSelected);
+            replaceSelector(selector, actions, newIndex === -1 ? 0 : newIndex);
 
             // update currently selected control action
-            this.updateControlActionSelection(0);
+            this.updateControlActionSelection(newIndex === -1 ? 0 : newIndex);
 
             // add listener
             const htmlActionSelector = document.getElementById(this.actionSelectorId) as HTMLSelectElement;
-            htmlActionSelector.addEventListener('change', () => {
+            if (newIndex !== -1) {
+                // update the selected control action to the one before the change
+                htmlActionSelector.value = actions[newIndex];
+            }
+            htmlActionSelector.addEventListener("change", () => {
                 this.updateControlActionSelection(htmlActionSelector.selectedIndex);
                 this.updateTable();
             });
@@ -178,7 +205,9 @@ export class ContextTable extends Table {
      * Sets the current variables based on the current controller.
      */
     protected setCurrentVariables(): void {
-        const variables = this.systemVariables.find(systemVariable => systemVariable.system === this.selectedControlAction.controller)?.variables;
+        const variables = this.systemVariables.find(
+            systemVariable => systemVariable.system === this.selectedControlAction.controller
+        )?.variables;
         if (variables) {
             this.currentVariables = variables;
         } else {
@@ -193,7 +222,12 @@ export class ContextTable extends Table {
         const headers: VNode[] = [];
         // the first header column is for the context and needs to span as many columns as there are context variables
         if (this.currentVariables.length > 0) {
-            const contextVariablesHeader = createHeaderElement("Context Variables", "0px", undefined, this.currentVariables.length);
+            const contextVariablesHeader = createHeaderElement(
+                "Context Variables",
+                "0px",
+                undefined,
+                this.currentVariables.length
+            );
             headers.push(contextVariablesHeader);
         }
 
@@ -295,8 +329,13 @@ export class ContextTable extends Table {
         for (let i = 0; i < this.contexts.length; i++) {
             const variables = this.contexts[i];
             // determine the used rules
-            const usedRules = determineUsedRules(variables, this.rules, this.selectedControlAction.controller,
-                this.selectedControlAction.action, this.selectedType);
+            const usedRules = determineUsedRules(
+                variables,
+                this.rules,
+                this.selectedControlAction.controller,
+                this.selectedControlAction.action,
+                this.selectedType
+            );
             // save them and map to the current context
             this.resultsRules.push(usedRules);
             this.resultRulesToContext.set(this.resultsRules.length - 1, i);
@@ -317,7 +356,7 @@ export class ContextTable extends Table {
     }
 
     /**
-     * Creates a row instance based on the {@code resultRulesIndex}. 
+     * Creates a row instance based on the {@code resultRulesIndex}.
      * @param resultRulesIndex Determines which resultsRule should be used.
      * @returns a row instance with the context and the result determines by {@code resultRulesIndex}.
      */
@@ -325,16 +364,15 @@ export class ContextTable extends Table {
         // get the context
         const context = this.contexts[this.resultRulesToContext.get(resultRulesIndex)!];
         // get the hazards and rules
-        const results: { hazards: string[], rules: ContextTableRule[]; }[] = [];
+        const results: { hazards: string[]; rules: ContextTableRule[] }[] = [];
         this.resultsRules[resultRulesIndex].forEach(resultRules => {
             results.push({ hazards: resultRules.map(rule => rule.hazards.toString()), rules: resultRules });
         });
         return { variables: context, results: results };
     }
 
-
     /**
-     * Creates and appends one non-header row to the table. 
+     * Creates and appends one non-header row to the table.
      * @param table The HTMLTableElement to apply the row to.
      * @param row The row to add.
      * @param id The id of the row.
@@ -347,7 +385,9 @@ export class ContextTable extends Table {
         let cells: ContextCell[] = [];
         if (row.variables.length > 0) {
             // values of the context variables
-            cells = row.variables.map(variable => { return { cssClass: "context-variable", value: variable.value, colSpan: 1 }; });
+            cells = row.variables.map(variable => {
+                return { cssClass: "context-variable", value: variable.value, colSpan: 1 };
+            });
             // append the result cells
             cells = cells.concat(createResults(row.results));
         } else {
@@ -372,7 +412,6 @@ export class ContextTable extends Table {
         patch(placeholderRow, htmlRow);
     }
 
-
     /**
      * Generates all possible value combinations of the given variables.
      * @param variableIndex Index to determine from which variable to apply a value next.
@@ -380,8 +419,12 @@ export class ContextTable extends Table {
      * @param determinedValues The already determined variable values.
      * @returns All possible value combinations of the given variables.
      */
-    protected createContexts(variableIndex: number, variableValues: ContextTableVariableValues[], determinedValues: ContextTableVariable[]): (ContextTableVariable[])[] {
-        let result: (ContextTableVariable[])[] = [];
+    protected createContexts(
+        variableIndex: number,
+        variableValues: ContextTableVariableValues[],
+        determinedValues: ContextTableVariable[]
+    ): ContextTableVariable[][] {
+        let result: ContextTableVariable[][] = [];
         // load the values of the current recursion's variable
         const currentValues = variableValues[variableIndex].values;
         const lastVariable = variableIndex === variableValues.length - 1;
@@ -403,8 +446,6 @@ export class ContextTable extends Table {
         }
         return result;
     }
-
-
 }
 
 new ContextTable();

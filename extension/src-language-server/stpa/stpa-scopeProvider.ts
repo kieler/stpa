@@ -29,9 +29,9 @@ import {
 } from "langium";
 import {
     ActionUCAs,
+    AssignedValue,
     Command,
     Context,
-    DCAContext,
     DCARule,
     Graph,
     Hazard,
@@ -43,11 +43,11 @@ import {
     SystemResponsibilities,
     UCA,
     Variable,
+    VariableValue,
     VerticalEdge,
     isActionUCAs,
-    isContext,
+    isAssignedValue,
     isControllerConstraint,
-    isDCAContext,
     isDCARule,
     isGraph,
     isHazardList,
@@ -58,7 +58,7 @@ import {
     isSafetyConstraint,
     isSystemConstraint,
     isSystemResponsibilities,
-    isVerticalEdge,
+    isVerticalEdge
 } from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 
@@ -69,8 +69,9 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     private SYS_CONSTRAINT_TYPE = SystemConstraint;
     private UCA_TYPE = UCA;
     private CONTEXT_TYPE = Context;
-    private VAR_TYPE = Variable;
+    private VARIABLE_TYPE = Variable;
     private NODE_TYPE = Node;
+    private VARIABLE_VALUE_TYPE = VariableValue;
 
     constructor(services: StpaServices) {
         super(services);
@@ -79,6 +80,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
     getScope(context: ReferenceInfo): Scope {
         const referenceType = this.reflection.getReferenceType(context);
         const node = context.container;
+
         const precomputed = getDocument(node).precomputedScopes;
         // get the root container which should be the Model
         let model = node.$container;
@@ -105,8 +107,10 @@ export class StpaScopeProvider extends DefaultScopeProvider {
                 return this.getHazards(model, precomputed);
             } else if ((isActionUCAs(node) || isRule(node) || isDCARule(node)) && referenceType === this.CA_TYPE) {
                 return this.getCAs(node, precomputed);
-            } else if ((isContext(node) || isDCAContext(node)) && referenceType === this.VAR_TYPE) {
-                return this.getVars(node, precomputed);
+            } else if (isAssignedValue(node) && referenceType === this.VARIABLE_TYPE) {
+                return this.getVariables(node, precomputed);
+            } else if (isAssignedValue(node) && referenceType === this.VARIABLE_VALUE_TYPE) {
+                return this.getVariableValues(node, precomputed);
             } else if (
                 (isVerticalEdge(node) ||
                     isSystemResponsibilities(node) ||
@@ -230,21 +234,40 @@ export class StpaScopeProvider extends DefaultScopeProvider {
 
     /**
      * Creates scope containing the variables of the system component referenced by {@code node}.
-     * @param node Current Rule.
+     * @param node Current AssignedValue.
      * @param precomputed Precomputed Scope of the document.
      * @returns Scope containing all variables.
      */
-    private getVars(node: Context | DCAContext, precomputed: PrecomputedScopes): Scope {
+    private getVariables(node: AssignedValue, precomputed: PrecomputedScopes): Scope {
         let allDescriptions: AstNodeDescription[] = [];
-        const varLists = node.$container.system.ref?.variables;
+        const varLists = node.$container.$container.system.ref?.variables;
 
         if (varLists) {
             for (const varList of varLists) {
                 const currentNode: AstNode | undefined = varList;
-                const descs = this.getDescriptions(currentNode, this.VAR_TYPE, precomputed);
+                const descs = this.getDescriptions(currentNode, this.VARIABLE_TYPE, precomputed);
                 allDescriptions = allDescriptions.concat(descs);
             }
         }
+        return this.descriptionsToScope(allDescriptions);
+    }
+
+    /**
+     * Creates scope containing the values of the variable referenced by {@code node}.
+     * @param node Current AssignedValue.
+     * @param precomputed Precomputed Scope of the document.
+     * @returns Scope containing all variable values.
+     */
+    private getVariableValues(
+        node: AssignedValue,
+        precomputed: PrecomputedScopes
+    ): Scope {
+        let allDescriptions: AstNodeDescription[] = [];
+        const variable = node.variable.ref;
+
+        const currentNode: AstNode | undefined = variable;
+        const descs = this.getDescriptions(currentNode, this.VARIABLE_VALUE_TYPE, precomputed);
+        allDescriptions = allDescriptions.concat(descs);
         return this.descriptionsToScope(allDescriptions);
     }
 
