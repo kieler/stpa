@@ -129,7 +129,7 @@ function collectContextVariables(ltlFormulas: LTLFormula[]): { variables: Variab
                 // two integer operands
                 const firstOperand = operands[0].trim();
                 const secondOperand = operands[1].trim();
-                addVariable(variableNames, variables, firstOperand, false);
+                addVariable(variableNames, variables, firstOperand, true);
                 if (secondOperand.indexOf(".") !== -1) {
                     // second operand is an enum
                     addEnum(variableNames, enums, secondOperand, variables, firstOperand);
