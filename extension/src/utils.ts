@@ -17,6 +17,7 @@
 
 import * as vscode from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
+import { StpaLspVscodeExtension } from "./language-extension";
 import { StorageService } from "./storage-service";
 
 /**
@@ -31,7 +32,8 @@ export function createQuickPickForStorageOptions(
     groupName: string,
     id: string,
     storage: StorageService,
-    languageClient: LanguageClient
+    languageClient: LanguageClient,
+    manager: StpaLspVscodeExtension
 ): void {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = [{ label: "true" }, { label: "false" }];
@@ -47,7 +49,7 @@ export function createQuickPickForStorageOptions(
         }
         storage.setItem(groupName, group);
         quickPick.hide();
-        updateLanguageServerConfig(languageClient, storage);
+        updateLanguageServerConfig(languageClient, storage, manager.clientId ?? "");
     });
     quickPick.onDidHide(() => quickPick.dispose());
     quickPick.show();
@@ -189,7 +191,12 @@ export function cutSetsToString(cutSets: string[], minimal?: boolean): string {
  * Sends the updated configuration to the language server.
  * @param languageClient The language client to send the updated configuration to.
  * @param storage The storage service to get the configuration from.
+ * @param clientId The client id to send the configuration to.
  */
-export function updateLanguageServerConfig(languageClient: LanguageClient, storage: StorageService): void {
-    languageClient.sendNotification("configuration", storage.getAllItems());
+export function updateLanguageServerConfig(
+    languageClient: LanguageClient,
+    storage: StorageService,
+    clientId: string
+): void {
+    languageClient.sendNotification("config/init", { clientId: clientId, options: storage.getAllItems() });
 }

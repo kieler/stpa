@@ -63,7 +63,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         // user changed configuration settings
         vscode.workspace.onDidChangeConfiguration(() => {
             // sends configuration of stpa to the language server
-            updateLanguageServerConfig(this.languageClient, this.storage);
+            updateLanguageServerConfig(this.languageClient, this.storage, this.clientId ?? "");
         });
 
         // add auto formatting provider
@@ -88,7 +88,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
                 vscode.window.activeTextEditor?.document.uri
             );
             // sends configuration of stpa to the language server
-            updateLanguageServerConfig(options.languageClient, this.storage);
+            updateLanguageServerConfig(options.languageClient, this.storage, this.clientId ?? "");
         });
 
         // server sent svg that should be saved

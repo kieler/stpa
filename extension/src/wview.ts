@@ -20,6 +20,7 @@ import { LspWebviewEndpoint, LspWebviewEndpointOptions } from "sprotty-vscode/li
 import * as vscode from "vscode";
 import { CutSetAnalysisAction, MinimalCutSetAnalysisAction, UpdateStorageAction } from "./actions";
 import { StorageService } from "./storage-service";
+import { updateLanguageServerConfig } from "./utils";
 
 export class StpaLspWebview extends LspWebviewEndpoint {
     // The storage service to store the configuration options.
@@ -73,6 +74,7 @@ export class StpaLspWebview extends LspWebviewEndpoint {
      * Sends the storage option values to the webview
      */
     protected sendStorageValues(): void {
+        // load the render options from the storage and send them to the webview
         const renderOptions: Record<string, any> = this.storage.getItem("renderOptions");
         if (renderOptions) {
             this.sendAction({
@@ -81,6 +83,8 @@ export class StpaLspWebview extends LspWebviewEndpoint {
                 options: renderOptions,
             } as UpdateStorageAction);
         }
+        // load the synthesis options from the storage and send them to the webview
+        updateLanguageServerConfig(this.languageClient, this.storage, this.diagramIdentifier?.clientId ?? "");
     }
 
     /**

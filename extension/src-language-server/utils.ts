@@ -129,18 +129,4 @@ export function updateValidationChecks(options: Record<string, any>, validator: 
                 break;
         }
     });
-    // reset options if they are not set
-    const keys = Object.keys(options);
-    if (!keys.includes("checkResponsibilitiesForConstraints")) {
-        validator.checkResponsibilitiesForConstraints = true;
-    }
-    if (!keys.includes("checkConstraintsForUCAs")) {
-        validator.checkConstraintsForUCAs = true;
-    }
-    if (!keys.includes("checkScenariosForUCAs")) {
-        validator.checkScenariosForUCAs = true;
-    }
-    if (!keys.includes("checkSafetyRequirementsForUCAs")) {
-        validator.checkSafetyRequirementsForUCAs = true;
-    }
 }

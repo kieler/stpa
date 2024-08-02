@@ -23,7 +23,6 @@ import { addFTANotificationHandler } from "./fta/fta-message-handler";
 import { addNotificationHandler } from "./handler";
 import { createServices } from "./module";
 import { addSTPANotificationHandler } from "./stpa/message-handler";
-import { updateValidationChecks } from "./utils";
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
@@ -38,11 +37,5 @@ addDiagramHandler(connection, shared);
 addSTPANotificationHandler(connection, stpa, shared);
 addFTANotificationHandler(connection, fta, shared);
 addNotificationHandler(connection, shared);
-
-// handle configuration/storage changes 
-connection.onNotification("configuration", (options: Record<string, any>) => {
-    updateValidationChecks(options["validation"], stpa.validation.StpaValidator);
-    // TODO: update synthesis options
-});
 
 connection.onInitialized(() => connection.sendNotification("ready"));

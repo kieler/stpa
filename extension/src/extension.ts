@@ -31,7 +31,7 @@ import { StpaResult } from "./report/utils";
 import { createSBMs } from "./sbm/sbm-generation";
 import { LTLFormula } from "./sbm/utils";
 import { StorageService } from "./storage-service";
-import { createFile, createOutputChannel, createQuickPickForStorageOptions, updateLanguageServerConfig } from "./utils";
+import { createFile, createOutputChannel, createQuickPickForStorageOptions } from "./utils";
 
 let languageClient: LanguageClient;
 
@@ -74,7 +74,7 @@ export function activate(context: vscode.ExtensionContext): void {
         registerSTPACommands(webviewPanelManager, context, storage, { extensionPrefix: "pasta" });
         registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
         registerDiagramSnippetWebview(webviewPanelManager, context);
-        registerPastaCommands(webviewPanelManager, context, storage, { extensionPrefix: "pasta" });
+        registerPastaCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
     }
 
     if (diagramMode === "editor") {
@@ -123,26 +123,25 @@ export async function deactivate(): Promise<void> {
  * Register all commands that are specific to PASTA.
  * @param manager The manager that handles the webview panels.
  * @param context The context of the extension.
- * @param storage The storage service for the extension.
  * @param options The options for the commands.
  */
 function registerPastaCommands(
     manager: StpaLspVscodeExtension,
     context: vscode.ExtensionContext,
-    storage: StorageService,
     options: { extensionPrefix: string }
 ): void {
     // Command for the user to remove all data stored by this extension. Allows
     // the user to reset changed synthesis options etc.
     context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + ".data.clear", () => {
+        vscode.commands.registerCommand(options.extensionPrefix + ".data.clear", async () => {
             StorageService.clearAll(context.workspaceState);
-            updateLanguageServerConfig(languageClient, storage);
+            // reset validation checks and synthesis options
+            await languageClient.sendRequest("config/reset", {});
+            // reset render options
             manager.endpoints.forEach(endpoint => {
                 endpoint.sendAction(ResetRenderOptionsAction.create());
             });
-            // TODO: reset synthesis options
-
+            updateViews(manager, vscode.window.activeTextEditor?.document);
             vscode.window.showInformationMessage("Stored data has been deleted.");
         })
     );
@@ -182,19 +181,32 @@ function registerSTPACommands(
                     validationGroupName,
                     "checkResponsibilitiesForConstraints",
                     storage,
-                    languageClient
+                    languageClient,
+                    manager
                 );
             }
         )
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".stpa.checks.checkConstraintsForUCAs", async () => {
-            createQuickPickForStorageOptions(validationGroupName, "checkConstraintsForUCAs", storage, languageClient);
+            createQuickPickForStorageOptions(
+                validationGroupName,
+                "checkConstraintsForUCAs",
+                storage,
+                languageClient,
+                manager
+            );
         })
     );
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".stpa.checks.checkScenariosForUCAs", async () => {
-            createQuickPickForStorageOptions(validationGroupName, "checkScenariosForUCAs", storage, languageClient);
+            createQuickPickForStorageOptions(
+                validationGroupName,
+                "checkScenariosForUCAs",
+                storage,
+                languageClient,
+                manager
+            );
         })
     );
     context.subscriptions.push(
@@ -205,7 +217,8 @@ function registerSTPACommands(
                     validationGroupName,
                     "checkSafetyRequirementsForUCAs",
                     storage,
-                    languageClient
+                    languageClient,
+                    manager
                 );
             }
         )
@@ -383,7 +396,7 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
     );
 }
 
-async function updateViews(manager: StpaLspVscodeExtension, document: vscode.TextDocument): Promise<void> {
+async function updateViews(manager: StpaLspVscodeExtension, document?: vscode.TextDocument): Promise<void> {
     if (document) {
         // reset cut sets
         await languageClient.sendRequest("cutSets/reset");
