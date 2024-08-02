@@ -35,6 +35,31 @@ export function addFTANotificationHandler(
     sharedServices: LangiumSprottySharedServices
 ): void {
     addCutSetsHandler(connection, ftaServices, sharedServices);
+    addStorageHandler(connection, ftaServices);
+}
+
+/**
+ * Adds handlers for notifications regarding the storage.
+ * @param connection
+ * @param ftaServices
+ */
+function addStorageHandler(connection: Connection, ftaServices: FtaServices): void {
+    // handle configuration/storage init
+    connection.onNotification("config/init", ({ clientId, options }) => {
+        // update synthesis options
+        if (options["synthesisOptions"] && clientId !== "") {
+            Object.entries(options["synthesisOptions"]).forEach(([key, value]) => {
+                ftaServices.options.SynthesisOptions.setOption(key, value);
+            });
+        }
+    });
+
+    // handle reset of the storage
+    connection.onRequest("config/reset", () => {
+        // reset synthesis options
+        ftaServices.options.SynthesisOptions.resetAll();
+        return;
+    });
 }
 
 /**
