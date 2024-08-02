@@ -27,11 +27,21 @@ import {
 import * as vscode from "vscode";
 import { AddSnippetAction, GenerateSVGsAction } from "./actions";
 import { ContextTablePanel } from "./context-table-panel";
+import { StorageService } from "./storage-service";
 import { StpaFormattingEditProvider } from "./stpa-formatter";
-import { addSnippetsToConfig, applyTextEdits, collectOptions, createFile, handleWorkSpaceEdit } from "./utils";
+import {
+    addSnippetsToConfig,
+    applyTextEdits,
+    createFile,
+    handleWorkSpaceEdit,
+    updateLanguageServerConfig,
+} from "./utils";
 import { StpaLspWebview } from "./wview";
 
 export class StpaLspVscodeExtension extends LspWebviewPanelManager {
+    // storage service for configuration options
+    readonly storage: StorageService;
+
     protected extensionPrefix: string;
 
     public contextTable: ContextTablePanel;
@@ -45,17 +55,15 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
     /** needed for undo/redo actions when ID enforcement is active*/
     ignoreNextTextChange: boolean = false;
 
-    constructor(options: LspWebviewPanelManagerOptions, extensionPrefix: string) {
+    constructor(options: LspWebviewPanelManagerOptions, extensionPrefix: string, storage: StorageService) {
         super(options);
         this.extensionPrefix = extensionPrefix;
+        this.storage = storage;
 
         // user changed configuration settings
         vscode.workspace.onDidChangeConfiguration(() => {
             // sends configuration of stpa to the language server
-            this.languageClient.sendNotification(
-                "configuration",
-                collectOptions(vscode.workspace.getConfiguration("pasta"))
-            );
+            updateLanguageServerConfig(this.languageClient, this.storage);
         });
 
         // add auto formatting provider
@@ -80,10 +88,7 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
                 vscode.window.activeTextEditor?.document.uri
             );
             // sends configuration of stpa to the language server
-            options.languageClient.sendNotification(
-                "configuration",
-                collectOptions(vscode.workspace.getConfiguration("pasta"))
-            );
+            updateLanguageServerConfig(options.languageClient, this.storage);
         });
 
         // server sent svg that should be saved
@@ -215,13 +220,16 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         const webviewContainer = this.createWebview(identifier);
         const participant = this.messenger.registerWebviewPanel(webviewContainer);
         this.clientId = identifier.clientId;
-        return new StpaLspWebview({
-            languageClient: this.languageClient,
-            webviewContainer,
-            messenger: this.messenger,
-            messageParticipant: participant,
-            identifier,
-        });
+        return new StpaLspWebview(
+            {
+                languageClient: this.languageClient,
+                webviewContainer,
+                messenger: this.messenger,
+                messageParticipant: participant,
+                identifier,
+            },
+            this.storage
+        );
     }
 
     /**

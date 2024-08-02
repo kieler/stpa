@@ -92,6 +92,7 @@ export class OptionsRegistry extends Registry implements IActionHandlerInitializ
             (option) => action.options.find((newOpt) => newOpt.id === option.id) ?? option
         );
         this.notifyListeners();
+        // TODO: sent an updateStorageAction to the extension
 
         this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: this._clientId, action: action});
     }

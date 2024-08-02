@@ -23,6 +23,7 @@ import { addFTANotificationHandler } from "./fta/fta-message-handler";
 import { addNotificationHandler } from "./handler";
 import { createServices } from "./module";
 import { addSTPANotificationHandler } from "./stpa/message-handler";
+import { updateValidationChecks } from "./utils";
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
@@ -38,24 +39,10 @@ addSTPANotificationHandler(connection, stpa, shared);
 addFTANotificationHandler(connection, fta, shared);
 addNotificationHandler(connection, shared);
 
-// handle configuration changes for the validation checks
-connection.onNotification("configuration", options => {
-    for (const option of options) {
-        switch (option.id) {
-            case "checkResponsibilitiesForConstraints":
-                stpa.validation.StpaValidator.checkResponsibilitiesForConstraints = option.value;
-                break;
-            case "checkConstraintsForUCAs":
-                stpa.validation.StpaValidator.checkConstraintsForUCAs = option.value;
-                break;
-            case "checkScenariosForUCAs":
-                stpa.validation.StpaValidator.checkScenariosForUCAs = option.value;
-                break;
-            case "checkSafetyRequirementsForUCAs":
-                stpa.validation.StpaValidator.checkSafetyRequirementsForUCAs = option.value;
-                break;
-        }
-    }
+// handle configuration/storage changes 
+connection.onNotification("configuration", (options: Record<string, any>) => {
+    updateValidationChecks(options["validation"], stpa.validation.StpaValidator);
+    // TODO: update synthesis options
 });
 
 connection.onInitialized(() => connection.sendNotification("ready"));
