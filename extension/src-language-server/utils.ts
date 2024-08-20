@@ -17,9 +17,10 @@
 
 import { AstNode, LangiumSharedServices } from "langium";
 import { IdCache, LangiumSprottySharedServices } from "langium-sprotty";
+import { SLabel } from "sprotty-protocol";
 import { URI } from "vscode-uri";
+import { StpaValidator } from "./stpa/stpa-validator";
 import { labelManagementValue } from "./synthesis-options";
-import { SLabel } from 'sprotty-protocol';
 
 /**
  * Determines the model for {@code uri}.
@@ -102,4 +103,30 @@ export function getDescription(
             break;
     }
     return labels;
+}
+
+/**
+ * Updates the validation checks for the STPA validator.
+ * @param options The validation options.
+ * @param validator The STPA validator.
+ */
+export function updateValidationChecks(options: Record<string, any>, validator: StpaValidator): void {
+    // TODO: save options alos in record and use them in the validator
+    // set options if they are set
+    Object.entries(options).forEach(([key, value]) => {
+        switch (key) {
+            case "checkResponsibilitiesForConstraints":
+                validator.checkResponsibilitiesForConstraints = value;
+                break;
+            case "checkConstraintsForUCAs":
+                validator.checkConstraintsForUCAs = value;
+                break;
+            case "checkScenariosForUCAs":
+                validator.checkScenariosForUCAs = value;
+                break;
+            case "checkSafetyRequirementsForUCAs":
+                validator.checkSafetyRequirementsForUCAs = value;
+                break;
+        }
+    });
 }

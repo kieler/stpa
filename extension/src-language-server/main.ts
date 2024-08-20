@@ -38,24 +38,4 @@ addSTPANotificationHandler(connection, stpa, shared);
 addFTANotificationHandler(connection, fta, shared);
 addNotificationHandler(connection, shared);
 
-// handle configuration changes for the validation checks
-connection.onNotification("configuration", options => {
-    for (const option of options) {
-        switch (option.id) {
-            case "checkResponsibilitiesForConstraints":
-                stpa.validation.StpaValidator.checkResponsibilitiesForConstraints = option.value;
-                break;
-            case "checkConstraintsForUCAs":
-                stpa.validation.StpaValidator.checkConstraintsForUCAs = option.value;
-                break;
-            case "checkScenariosForUCAs":
-                stpa.validation.StpaValidator.checkScenariosForUCAs = option.value;
-                break;
-            case "checkSafetyRequirementsForUCAs":
-                stpa.validation.StpaValidator.checkSafetyRequirementsForUCAs = option.value;
-                break;
-        }
-    }
-});
-
 connection.onInitialized(() => connection.sendNotification("ready"));

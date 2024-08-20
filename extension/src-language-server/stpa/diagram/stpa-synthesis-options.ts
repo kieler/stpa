@@ -529,12 +529,4 @@ export class StpaSynthesisOptions extends SynthesisOptions {
             }
         }
     }
-
-    protected setOption(id: string, value: any): void {
-        const option = this.getOption(id);
-        if (option) {
-            option.currentValue = value;
-            option.synthesisOption.currentValue = value;
-        }
-    }
 }

@@ -20,21 +20,21 @@
 .vscode-dark .fta-node {
     fill: var(--dark-node);
     stroke: var(--light-node);
-    stroke-width: 2;
 }
 
 .vscode-dark .fta-edge {
     stroke: var(--light-node);
+    stroke-width: 1;
 }
 
 .vscode-light .fta-node {
     fill: var(--light-node);
     stroke: black;
-    stroke-width: 2;
 }
 
 .vscode-light .fta-edge {
     stroke: black;
+    stroke-width: 1;
 }
 
 .fta-text{
