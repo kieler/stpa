@@ -32,7 +32,7 @@ export namespace SetRenderOptionAction {
         return {
             kind: KIND,
             id,
-            value
+            value,
         };
     }
 
@@ -70,10 +70,7 @@ export interface UpdateOptionsAction extends Action {
 export namespace UpdateOptionsAction {
     export const KIND = "updateOptions";
 
-    export function create(
-        valuedSynthesisOptions: ValuedSynthesisOption[],
-        clientId: string,
-    ): UpdateOptionsAction {
+    export function create(valuedSynthesisOptions: ValuedSynthesisOption[], clientId: string): UpdateOptionsAction {
         return {
             kind: KIND,
             valuedSynthesisOptions,
@@ -85,7 +82,6 @@ export namespace UpdateOptionsAction {
         return action.kind === UpdateOptionsAction.KIND;
     }
 }
-
 
 /** Change the value of one or multiple synthesis options. */
 export interface SetSynthesisOptionsAction extends Action {
@@ -108,23 +104,25 @@ export namespace SetSynthesisOptionsAction {
     }
 }
 
-/** Contains config option values */
-export interface SendConfigAction extends Action {
-    kind: typeof SendConfigAction.KIND;
-    options: { id: string, value: any; }[];
+/** Contains storage option values. Is sent between webview and extension. */
+export interface UpdateStorageAction extends Action {
+    kind: typeof UpdateStorageAction.KIND;
+    group: string;
+    options: Record<string, any>;
 }
 
-export namespace SendConfigAction {
-    export const KIND = "sendConfig";
+export namespace UpdateStorageAction {
+    export const KIND = "updateStorage";
 
-    export function create(options: { id: string, value: any; }[]): SendConfigAction {
+    export function create(group: string, options: Record<string, any>): UpdateStorageAction {
         return {
             kind: KIND,
-            options
+            group,
+            options,
         };
     }
 
-    export function isThisAction(action: Action): action is SendConfigAction {
-        return action.kind === SendConfigAction.KIND;
+    export function isThisAction(action: Action): action is UpdateStorageAction {
+        return action.kind === UpdateStorageAction.KIND;
     }
 }

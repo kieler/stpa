@@ -18,34 +18,34 @@
 import { inject, injectable, postConstruct } from "inversify";
 import { ICommand } from "sprotty";
 import { Action, UpdateModelAction } from "sprotty-protocol";
-import { ActionNotification } from 'sprotty-vscode-protocol';
+import { ActionNotification } from "sprotty-vscode-protocol";
 import { VsCodeMessenger } from "sprotty-vscode-webview/lib/services";
-import { HOST_EXTENSION } from 'vscode-messenger-common';
-import { Messenger } from 'vscode-messenger-webview';
+import { HOST_EXTENSION } from "vscode-messenger-common";
+import { Messenger } from "vscode-messenger-webview";
 import { Registry } from "../base/registry";
-import { ResetRenderOptionsAction, SendConfigAction, SetRenderOptionAction } from "./actions";
+import { ResetRenderOptionsAction, SetRenderOptionAction, UpdateStorageAction } from "./actions";
 import { ChoiceRenderOption, RenderOption, TransformationOptionType } from "./option-models";
 
 /**
  * Diffrent options for the color style of the relationship graph.
  */
 export class ColorStyleOption implements ChoiceRenderOption {
-    static readonly ID: string = 'colorStyle';
-    static readonly NAME: string = 'Color Style';
+    static readonly ID: string = "colorStyle";
+    static readonly NAME: string = "Color Style";
     readonly id: string = ColorStyleOption.ID;
     readonly name: string = ColorStyleOption.NAME;
     readonly type: TransformationOptionType = TransformationOptionType.CHOICE;
     readonly availableValues: string[] = ["colorful", "standard", "black & white", "fewer colors"];
-    readonly initialValue: string = "colorful";
-    currentValue = "colorful";
+    readonly initialValue: string = "fewer colors";
+    currentValue = "fewer colors";
 }
 
 /**
  * Boolean option to enable and disable different forms for the STPA aspects.
  */
 export class DifferentFormsOption implements RenderOption {
-    static readonly ID: string = 'differentForms';
-    static readonly NAME: string = 'Different Forms';
+    static readonly ID: string = "differentForms";
+    static readonly NAME: string = "Different Forms";
     readonly id: string = DifferentFormsOption.ID;
     readonly name: string = DifferentFormsOption.NAME;
     readonly type: TransformationOptionType = TransformationOptionType.CHECK;
@@ -54,13 +54,13 @@ export class DifferentFormsOption implements RenderOption {
 }
 
 export interface RenderOptionType {
-    readonly ID: string,
-    readonly NAME: string,
-    new(): RenderOption,
+    readonly ID: string;
+    readonly NAME: string;
+    new (): RenderOption;
 }
 
 export interface RenderOptionDefault extends RenderOptionType {
-    readonly DEFAULT: any,
+    readonly DEFAULT: any;
 }
 
 /** {@link Registry} that stores and updates different render options. */
@@ -79,7 +79,10 @@ export class RenderOptionsRegistry extends Registry {
 
     @postConstruct()
     init(): void {
-        this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: "", action: {kind: "optionRegistryReadyMessage"}});
+        this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {
+            clientId: "",
+            action: { kind: "optionRegistryReadyMessage" },
+        });
     }
 
     register(Option: RenderOptionType): void {
@@ -89,26 +92,36 @@ export class RenderOptionsRegistry extends Registry {
     handle(action: Action): void | Action | ICommand {
         if (SetRenderOptionAction.isThisAction(action)) {
             const option = this._renderOptions.get(action.id);
-            if (!option) {return;}
+            if (!option) {
+                return;
+            }
             option.currentValue = action.value;
-            const sendAction = { kind: SendConfigAction.KIND, options: [{ id: action.id, value: action.value }] };
-            this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, {clientId: "", action: sendAction});
+            // Send the new value to the extension to persist it
+            const newOption: Record<string, any> = {};
+            newOption[action.id] = action.value;
+            const sendAction = { kind: UpdateStorageAction.KIND, group: "renderOptions", options: newOption };
+            this.messenger.sendNotification(ActionNotification, HOST_EXTENSION, { clientId: "", action: sendAction });
             this.notifyListeners();
-
         } else if (ResetRenderOptionsAction.isThisAction(action)) {
-            this._renderOptions.forEach((option) => {
+            // Reset all render options to their initial values
+            this._renderOptions.forEach(option => {
                 option.currentValue = option.initialValue;
             });
             this.notifyListeners();
-
-        } else if (SendConfigAction.isThisAction(action)) {
-            action.options.forEach(element => {
-                const option = this._renderOptions.get(element.id);
-                if (!option) {return;}
-                option.currentValue = element.value;
+        } else if (UpdateStorageAction.isThisAction(action)) {
+            if (action.group !== "renderOptions") {
+                return;
+            }
+            // Update the render options with the new values
+            Object.entries(action.options).forEach(([key, value]) => {
+                const option = this._renderOptions.get(key);
+                if (!option) {
+                    return;
+                }
+                option.currentValue = value;
             });
             this.notifyListeners();
-        } 
+        }
         return UpdateModelAction.create([], { animate: false, cause: action });
     }
 

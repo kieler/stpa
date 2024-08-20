@@ -57,46 +57,6 @@
         "configuration": {
             "title": "pasta",
             "properties": {
-                "pasta.differentForms": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Different forms for STPA aspects"
-                },
-                "pasta.colorStyle": {
-                    "type": "string",
-                    "default": "fewer colors",
-                    "enum": [
-                        "colorful",
-                        "standard",
-                        "black & white",
-                        "fewer colors"
-                    ],
-                    "enumDescription": [
-                        "Each STPA aspect has a different color",
-                        "All nodes have the standard color (blue)",
-                        "The diagrams are colored in black and white"
-                    ]
-                },
-                "pasta.checkResponsibilitiesForConstraints": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Check whether all system-level constraints are covered by a responsibility"
-                },
-                "pasta.checkConstraintsForUCAs": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Check whether all UCAs are covered by constraints"
-                },
-                "pasta.checkScenariosForUCAs": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Check whether all UCAs are covered by scenarios"
-                },
-                "pasta.checkSafetyRequirementsForUCAs": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Check whether all UCAs are covered by safety requirements"
-                },
                 "pasta.stpa.snippets": {
                     "type": "string[]",
                     "default": [],
@@ -136,6 +96,11 @@
                 "command": "pasta.diagram.export",
                 "title": "Export diagram to SVG",
                 "category": "PASTA Diagram"
+            },
+            {
+                "command": "pasta.data.clear",
+                "title": "Clear the persisted data",
+                "category": "PASTA Data"
             },
             {
                 "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",
@@ -226,6 +191,10 @@
                 },
                 {
                     "command": "pasta.diagram.export"
+                },
+                {
+                    "command": "pasta.data.clear",
+                    "when": "editorLangId == 'stpa' || editorLangId == 'fta'"
                 },
                 {
                     "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",

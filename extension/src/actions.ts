@@ -17,24 +17,26 @@
 
 import { Action, JsonMap } from "sprotty-protocol";
 
-/** Contains config option values */
-export interface SendConfigAction extends Action {
-    kind: typeof SendConfigAction.KIND;
-    options: { id: string; value: any }[];
+/** Contains storage option values. Is sent between webview and extension. */
+export interface UpdateStorageAction extends Action {
+    kind: typeof UpdateStorageAction.KIND;
+    group: string;
+    options: Record<string, any>;
 }
 
-export namespace SendConfigAction {
-    export const KIND = "sendConfig";
+export namespace UpdateStorageAction {
+    export const KIND = "updateStorage";
 
-    export function create(options: { id: string; value: any }[]): SendConfigAction {
+    export function create(group: string, options: Record<string, any>): UpdateStorageAction {
         return {
             kind: KIND,
+            group,
             options,
         };
     }
 
-    export function isThisAction(action: Action): action is SendConfigAction {
-        return action.kind === SendConfigAction.KIND;
+    export function isThisAction(action: Action): action is UpdateStorageAction {
+        return action.kind === UpdateStorageAction.KIND;
     }
 }
 
@@ -64,12 +66,12 @@ export namespace GenerateSVGsAction {
 /** Send from client to server to start a cut set analysis with the start node given by the startId */
 export interface CutSetAnalysisAction extends Action {
     kind: typeof CutSetAnalysisAction.KIND;
-    startId: string
+    startId: string;
 }
 export namespace CutSetAnalysisAction {
-    export const KIND = 'cutSetAnalysis';
+    export const KIND = "cutSetAnalysis";
 
-    export function create(startId: string,): CutSetAnalysisAction {
+    export function create(startId: string): CutSetAnalysisAction {
         return {
             kind: KIND,
             startId,
@@ -80,12 +82,12 @@ export namespace CutSetAnalysisAction {
 /** Send from client to server to start a minimal cut set analysis with the start node given by the startId */
 export interface MinimalCutSetAnalysisAction extends Action {
     kind: typeof MinimalCutSetAnalysisAction.KIND;
-    startId: string
+    startId: string;
 }
 export namespace MinimalCutSetAnalysisAction {
-    export const KIND = 'minimalCutSetAnalysis';
+    export const KIND = "minimalCutSetAnalysis";
 
-    export function create(startId: string,): MinimalCutSetAnalysisAction {
+    export function create(startId: string): MinimalCutSetAnalysisAction {
         return {
             kind: KIND,
             startId,
@@ -137,24 +139,40 @@ export namespace SendDefaultSnippetsAction {
 
 /** Send to server to update the diagram. */
 export interface UpdateDiagramAction extends Action {
-    kind: typeof UpdateDiagramAction.KIND
+    kind: typeof UpdateDiagramAction.KIND;
     options?: JsonMap;
 }
 
 export namespace UpdateDiagramAction {
     export const KIND = "updateDiagram";
-    
 
-    export function create(
-        options?: JsonMap
-    ): UpdateDiagramAction {
+    export function create(options?: JsonMap): UpdateDiagramAction {
         return {
             kind: KIND,
-            options
+            options,
         };
     }
 
     export function isThisAction(action: Action): action is UpdateDiagramAction {
         return action.kind === UpdateDiagramAction.KIND;
+    }
+}
+
+/** Resets all render options to default. */
+export interface ResetRenderOptionsAction extends Action {
+    kind: typeof ResetRenderOptionsAction.KIND;
+}
+
+export namespace ResetRenderOptionsAction {
+    export const KIND = "resetRenderOptions";
+
+    export function create(): ResetRenderOptionsAction {
+        return {
+            kind: KIND,
+        };
+    }
+
+    export function isThisAction(action: Action): action is ResetRenderOptionsAction {
+        return action.kind === ResetRenderOptionsAction.KIND;
     }
 }
