@@ -249,12 +249,19 @@
                     "group": "navigation"
                 },
                 {
+                    "submenu": "pasta",
+                    "group": "pasta"
+                }
+            ],
+            "pasta": [
+                {
                     "submenu": "pasta.stpa.checks",
-                    "group": "checks"
+                    "group": "stpa"
                 },
                 {
-                    "submenu": "pasta.fta.generate",
-                    "group": "generate"
+                    "command": "pasta.stpa.snippets.add",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "stpa"
                 },
                 {
                     "command": "pasta.stpa.SBM.generation",
@@ -272,43 +279,36 @@
                     "group": "stpa"
                 },
                 {
-                    "command": "pasta.stpa.snippets.add",
-                    "when": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "command": "pasta.fta.cutSets",
+                    "when": "editorLangId == 'fta'",
+                    "group": "fta"
+                },
+                {
+                    "command": "pasta.fta.minimalCutSets",
+                    "when": "editorLangId == 'fta'",
+                    "group": "fta"
                 }
             ],
             "pasta.stpa.checks": [
                 {
                     "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",
                     "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "when": "editorLangId == 'stpa'"
                 },
                 {
                     "command": "pasta.stpa.checks.checkConstraintsForUCAs",
                     "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "when": "editorLangId == 'stpa'"
                 },
                 {
                     "command": "pasta.stpa.checks.checkScenariosForUCAs",
                     "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "when": "editorLangId == 'stpa'"
                 },
                 {
                     "command": "pasta.stpa.checks.checkSafetyRequirementsForUCAs",
                     "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
-                }
-            ],
-            "pasta.fta.generate": [
-                {
-                    "command": "pasta.fta.cutSets",
-                    "when": "editorLangId == 'fta'",
-                    "group": "navigation"
-                },
-                {
-                    "command": "pasta.fta.minimalCutSets",
-                    "when": "editorLangId == 'fta'",
-                    "group": "navigation"
+                    "when": "editorLangId == 'stpa'"
                 }
             ],
             "editor/title": [
@@ -337,6 +337,10 @@
             ]
         },
         "submenus": [
+            {
+                "id": "pasta",
+                "label": "PASTA"
+            },
             {
                 "id": "pasta.stpa.checks",
                 "label": "Validation Checks"
