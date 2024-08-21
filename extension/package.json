@@ -310,27 +310,27 @@
             "pasta": [
                 {
                     "submenu": "pasta.stpa.checks",
-                    "group": "stpa"
+                    "group": "stpa@2"
                 },
                 {
                     "command": "pasta.stpa.snippets.add",
                     "when": "editorLangId == 'stpa'",
-                    "group": "stpa"
+                    "group": "stpa@6"
                 },
                 {
                     "command": "pasta.stpa.SBM.generation",
                     "when": "editorLangId == 'stpa'",
-                    "group": "stpa"
+                    "group": "stpa@5"
                 },
                 {
                     "command": "pasta.stpa.md.creation",
                     "when": "editorLangId == 'stpa'",
-                    "group": "stpa"
+                    "group": "stpa@3"
                 },
                 {
                     "command": "pasta.stpa.ft.generation",
                     "when": "editorLangId == 'stpa'",
-                    "group": "stpa"
+                    "group": "stpa@4"
                 },
                 {
                     "command": "pasta.stpa.setIDGeneration",
@@ -345,12 +345,12 @@
                 {
                     "command": "pasta.fta.cutSets",
                     "when": "editorLangId == 'fta'",
-                    "group": "fta"
+                    "group": "fta@1"
                 },
                 {
                     "command": "pasta.fta.minimalCutSets",
                     "when": "editorLangId == 'fta'",
-                    "group": "fta"
+                    "group": "fta@2"
                 }
             ],
             "pasta.stpa.checks": [
