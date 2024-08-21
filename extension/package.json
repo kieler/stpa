@@ -181,6 +181,16 @@
                 "command": "pasta.stpa.snippets.add",
                 "title": "Add STPA Diagram Snippet",
                 "category": "STPA Snippets"
+            },
+            {
+                "command": "pasta.stpa.setIDGeneration",
+                "title": "Automatic ID Generation",
+                "category": "STPA ID Enforcement"
+            },
+            {
+                "command": "pasta.stpa.unsetIDGeneration",
+                "title": "✓ Automatic ID Generation",
+                "category": "STPA ID Enforcement"
             }
         ],
         "menus": {
@@ -265,6 +275,14 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
+                    "command": "pasta.stpa.setIDGeneration",
+                    "when": "editorLangId == 'stpa' && pasta.idGeneration == false"
+                },
+                {
+                    "command": "pasta.stpa.unsetIDGeneration",
+                    "when": "editorLangId == 'stpa' && pasta.idGeneration == true"
+                },
+                {
                     "command": "pasta.fta.cutSets",
                     "when": "editorLangId == 'fta'"
                 },
@@ -313,6 +331,16 @@
                     "command": "pasta.stpa.ft.generation",
                     "when": "editorLangId == 'stpa'",
                     "group": "stpa"
+                },
+                {
+                    "command": "pasta.stpa.setIDGeneration",
+                    "when": "editorLangId == 'stpa' && pasta.idGeneration == false",
+                    "group": "stpa@1"
+                },
+                {
+                    "command": "pasta.stpa.unsetIDGeneration",
+                    "when": "editorLangId == 'stpa' && pasta.idGeneration == true",
+                    "group": "stpa@1"
                 },
                 {
                     "command": "pasta.fta.cutSets",

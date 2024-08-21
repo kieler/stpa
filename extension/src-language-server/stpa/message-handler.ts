@@ -193,6 +193,18 @@ export function handleSTPAConfigInit(clientId: string, options: Record<string, a
             stpaServices.options.SynthesisOptions.setOption(key, value);
         });
     }
+    // update ID generation option
+    if (options["IDGeneration"]) {
+        Object.entries(options["IDGeneration"]).forEach(([key, value]) => {
+            if (key === "generateIDs") {
+                if (value) {
+                    stpaServices.utility.IDEnforcer.enable();
+                } else {
+                    stpaServices.utility.IDEnforcer.disable();
+                }
+            }
+        });
+    }
 }
 
 /**
@@ -208,4 +220,6 @@ export function handleSTPAConfigReset(stpaServices: StpaServices): void {
     validator.checkSafetyRequirementsForUCAs = true;
     // reset synthesis options
     stpaServices.options.SynthesisOptions.resetAll();
+    // reset ID generation option
+    stpaServices.utility.IDEnforcer.enable();
 }
