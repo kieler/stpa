@@ -51,41 +51,6 @@ export function addSTPANotificationHandler(
     addVerificationHandler(connection, sharedServices);
     addResultHandler(connection, sharedServices);
     addFTAGeneratorHandler(connection, sharedServices);
-    addStorageHandler(connection, stpaServices);
-}
-
-/**
- * Adds handlers for notifications regarding the storage.
- * @param connection
- * @param stpaServices
- */
-function addStorageHandler(connection: Connection, stpaServices: StpaServices): void {
-    // handle configuration/storage init
-    connection.onNotification("config/init", ({ clientId, options }) => {
-        // update validation checks
-        if (options["validation"]) {
-            updateValidationChecks(options["validation"], stpaServices.validation.StpaValidator);
-        }
-        // update synthesis options
-        if (options["synthesisOptions"] && clientId !== "") {
-            Object.entries(options["synthesisOptions"]).forEach(([key, value]) => {
-                stpaServices.options.SynthesisOptions.setOption(key, value);
-            });
-        }
-    });
-
-    // handle reset of the storage
-    connection.onRequest("config/reset", () => {
-        // reset validation checks
-        const validator = stpaServices.validation.StpaValidator;
-        validator.checkResponsibilitiesForConstraints = true;
-        validator.checkConstraintsForUCAs = true;
-        validator.checkScenariosForUCAs = true;
-        validator.checkSafetyRequirementsForUCAs = true;
-        // reset synthesis options
-        stpaServices.options.SynthesisOptions.resetAll();
-        return;
-    });
 }
 
 /**
@@ -209,4 +174,38 @@ function addFTAGeneratorHandler(connection: Connection, sharedServices: LangiumS
         const texts = models.map(model => serializeFTAAST(model));
         return texts;
     });
+}
+
+/**
+ * Handles the initialization of the STPA configuration.
+ * @param clientId The client id.
+ * @param options The options for the configuration.
+ * @param stpaServices The services for STPA.
+ */
+export function handleSTPAConfigInit(clientId: string, options: Record<string, any>, stpaServices: StpaServices): void {
+    // update validation checks
+    if (options["validation"]) {
+        updateValidationChecks(options["validation"], stpaServices.validation.StpaValidator);
+    }
+    // update synthesis options
+    if (options["synthesisOptions"] && clientId !== "") {
+        Object.entries(options["synthesisOptions"]).forEach(([key, value]) => {
+            stpaServices.options.SynthesisOptions.setOption(key, value);
+        });
+    }
+}
+
+/**
+ * Resets the STPA configuration.
+ * @param stpaServices The services for STPA.
+ */
+export function handleSTPAConfigReset(stpaServices: StpaServices): void {
+    // reset validation checks
+    const validator = stpaServices.validation.StpaValidator;
+    validator.checkResponsibilitiesForConstraints = true;
+    validator.checkConstraintsForUCAs = true;
+    validator.checkScenariosForUCAs = true;
+    validator.checkSafetyRequirementsForUCAs = true;
+    // reset synthesis options
+    stpaServices.options.SynthesisOptions.resetAll();
 }
