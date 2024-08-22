@@ -128,11 +128,11 @@ AssignedValue:
     variable=[Variable] '=' value=[VariableValue:QualifiedName];
 
 ControllerConstraint:
-    name=ID description=STRING '['refs+=[UCA] (',' refs+=[UCA])*']';
+    name=ID description=STRING '['(refs+=[UCA] | refs+=[Context]) (',' (refs+=[UCA] | refs+=[Context]))*']';
 
 LossScenario:
     (name=ID ('<' factor=CausalFactor '>')? description=STRING list=HazardList) |
-    (name=ID ('<' factor=CausalFactor '>')? 'for' uca=[UCA] description=STRING (list=HazardList)?);
+    (name=ID ('<' factor=CausalFactor '>')? 'for' (uca=[UCA] | uca=[Context]) description=STRING (list=HazardList)?);
 
 CausalFactor returns string:
     'controlAction' | 'inadequateOperation' | 'delayedOperation' | 'componentFailure' | 'changesOverTime' |
