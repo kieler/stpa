@@ -114,7 +114,7 @@ const showRelationshipGraphOption: ValuedSynthesisOption = {
 /**
  * Boolean option to toggle the visualization of UCAs.
  */
-const hideUCAsOption: ValuedSynthesisOption = {
+const showUCAsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showUCAsID,
         name: "UCAs",
@@ -130,7 +130,7 @@ const hideUCAsOption: ValuedSynthesisOption = {
 /**
  * Boolean option to toggle the visualization of safety constraints.
  */
-const hideSafetyConstraintsOption: ValuedSynthesisOption = {
+const showSafetyConstraintsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showSafetyConstraintsID,
         name: "Safety Constraints",
@@ -206,7 +206,7 @@ const filteringOfUCAs: ValuedSynthesisOption = {
 /**
  * Boolean option to toggle the visualization of system-level constraints.
  */
-const hideSysConsOption: ValuedSynthesisOption = {
+const showSysConsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showSysConsID,
         name: "System-level Constraints",
@@ -222,7 +222,7 @@ const hideSysConsOption: ValuedSynthesisOption = {
 /**
  * Boolean option to toggle the visualization of responsibilities.
  */
-const hideRespsOption: ValuedSynthesisOption = {
+const showRespsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showRespsID,
         name: "Responsibilities",
@@ -238,7 +238,7 @@ const hideRespsOption: ValuedSynthesisOption = {
 /**
  * Boolean option to toggle the visualization of controller constraints.
  */
-const hideContConsOption: ValuedSynthesisOption = {
+const showContConsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showContConsID,
         name: "Controller Constraints",
@@ -254,7 +254,7 @@ const hideContConsOption: ValuedSynthesisOption = {
 /**
  * Boolean option to toggle the visualization of loss scenarios.
  */
-const hideScenariosOption: ValuedSynthesisOption = {
+const showScenariosOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showScenariosID,
         name: "Loss Scenarios",
@@ -270,7 +270,7 @@ const hideScenariosOption: ValuedSynthesisOption = {
 /**
  * Boolean option to toggle the visualization of loss scenarios that are not associated with a UCA.
  */
-const hideScenariosWithHazardsOption: ValuedSynthesisOption = {
+const showScenariosWithHazardsOption: ValuedSynthesisOption = {
     synthesisOption: {
         id: showScenariosWithHazardID,
         name: "Loss Scenarios Without UCAs",
@@ -334,20 +334,20 @@ export class StpaSynthesisOptions extends SynthesisOptions {
         this.options.push(
             ...[
                 filterCategoryOption,
-                hierarchicalGraphOption,
-                groupingOfUCAs,
-                filteringOfUCAs,
-                hideSysConsOption,
-                hideRespsOption,
-                hideUCAsOption,
-                hideContConsOption,
-                hideScenariosOption,
-                hideScenariosWithHazardsOption,
-                hideSafetyConstraintsOption,
                 showLabelsOption,
+                groupingOfUCAs,
+                hierarchicalGraphOption,
+                filteringOfUCAs,
                 showControlStructureOption,
                 showProcessModelsOption,
                 showRelationshipGraphOption,
+                showSysConsOption,
+                showRespsOption,
+                showUCAsOption,
+                showContConsOption,
+                showScenariosOption,
+                showScenariosWithHazardsOption,
+                showSafetyConstraintsOption,
             ]
         );
     }
