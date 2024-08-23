@@ -194,7 +194,7 @@ export class IDEnforcer {
         let edits: TextEdit[] = [];
         // renaming is only needed, when elements not have the correct ID yet
         if (elements[elements.length - 1].name !== prefix + elements.length) {
-            const modifiedElement = elements[index - 1];
+            const modifiedElement = elements[index];
             if (decrease) {
                 // IDs of the elements are decreased so we must start with the lowest ID
 
@@ -424,7 +424,12 @@ export class IDEnforcer {
         return { elements, prefix, ruleElements };
     }
 
-    // TODO: modify this method to find also a node when the offset is not on a leaf node!!
+    /**
+     * Changes the method from sprotty to return the closest CstNode to the given offset.
+     * @param node The node to start the search from.
+     * @param offset The offset for which the closest node should be determined.
+     * @returns the closest node to the given offset.
+     */
     protected findLeafNodeAtOffset(node: CstNode, offset: number): CstNode | undefined {
         if (isCompositeCstNode(node)) {
             let firstChild = 0;
