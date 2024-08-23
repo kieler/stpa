@@ -26,7 +26,7 @@ import { ContextTableProvider } from "./contextTable/context-dataProvider";
 import { StpaDiagramGenerator } from "./diagram/diagram-generator";
 import { StpaLayoutConfigurator } from "./diagram/layout-config";
 import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options";
-import { ScenarioCompletionProvider } from "./scenario-generator";
+import { ScenarioCompletionProvider } from "./scenario-completion-provider";
 import { StpaScopeProvider } from "./stpa-scopeProvider";
 import { StpaValidationRegistry, StpaValidator } from "./stpa-validator";
 
