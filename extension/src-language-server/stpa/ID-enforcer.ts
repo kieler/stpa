@@ -372,7 +372,6 @@ export class IDEnforcer {
         let ruleElements: elementWithName[] = [];
 
         let node = this.findLeafNodeAtOffset(this.currentDocument.parseResult.value.$cstNode!, offset);
-        console.log(node);
         while (node && !isModel(node?.element) && !isModel(node?.element.$container)) {
             node = node?.parent;
         }

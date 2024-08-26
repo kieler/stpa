@@ -26,7 +26,7 @@ import { ContextTableProvider } from "./contextTable/context-dataProvider";
 import { StpaDiagramGenerator } from "./diagram/diagram-generator";
 import { StpaLayoutConfigurator } from "./diagram/layout-config";
 import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options";
-import { ScenarioCompletionProvider } from "./scenario-completion-provider";
+import { STPACompletionProvider } from "./scenario-completion-provider";
 import { StpaScopeProvider } from "./stpa-scopeProvider";
 import { StpaValidationRegistry, StpaValidator } from "./stpa-validator";
 
@@ -35,7 +35,7 @@ import { StpaValidationRegistry, StpaValidator } from "./stpa-validator";
  */
 export type StpaAddedServices = {
     lsp: {
-        ScenarioCompletionProvider: ScenarioCompletionProvider;
+        ScenarioCompletionProvider: STPACompletionProvider;
     };
     references: {
         StpaScopeProvider: StpaScopeProvider;
@@ -84,8 +84,8 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
             ) as any,
     },
     lsp: {
-        CompletionProvider: services => new ScenarioCompletionProvider(services),
-        ScenarioCompletionProvider: services => new ScenarioCompletionProvider(services),
+        CompletionProvider: services => new STPACompletionProvider(services),
+        ScenarioCompletionProvider: services => new STPACompletionProvider(services),
     },
     references: {
         ScopeProvider: services => new StpaScopeProvider(services),

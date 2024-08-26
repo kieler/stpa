@@ -15,14 +15,21 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { CompletionAcceptor, CompletionContext, DefaultCompletionProvider, MaybePromise, NextFeature } from "langium";
+import {
+    CompletionAcceptor,
+    CompletionContext,
+    CompletionValueItem,
+    DefaultCompletionProvider,
+    MaybePromise,
+    NextFeature,
+} from "langium";
 import { CompletionItemKind } from "vscode-languageserver";
-import { Context, LossScenario, UCA } from "../generated/ast";
+import { Context, isVerticalEdge, LossScenario, UCA } from "../generated/ast";
 
 /**
  * Generates UCA text for loss scenarios by providing an additional completion item.
  */
-export class ScenarioCompletionProvider extends DefaultCompletionProvider {
+export class STPACompletionProvider extends DefaultCompletionProvider {
     protected enabled: boolean = true;
 
     /**
@@ -38,17 +45,97 @@ export class ScenarioCompletionProvider extends DefaultCompletionProvider {
     ): MaybePromise<void> {
         super.completionFor(context, next, acceptor);
         if (this.enabled) {
-            if (context.node?.$type === LossScenario && next.property === "description") {
-                const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
-                if (generatedText !== "") {
-                    acceptor({
-                        label: "Generate UCA Text",
-                        kind: CompletionItemKind.Text,
-                        insertText: this.generateScenarioForUCA(context.node as LossScenario),
-                        detail: "Inserts the UCA text for this scenario.",
-                        sortText: "0",
-                    });
-                }
+            this.completionForScenario(context, next, acceptor);
+            this.completionForUCA(context, next, acceptor);
+        }
+    }
+
+    protected completionForUCA(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
+        if (context.node?.$type === UCA && next.property === "description") {
+            const generatedItems = this.generateTextForUCAWithPlainText(
+                context.node as UCA,
+                context.node.$containerProperty
+            );
+
+            if (generatedItems.length > 0) {
+                generatedItems.forEach(item => acceptor(item));
+            }
+        }
+    }
+
+    protected generateTextForUCAWithPlainText(uca: UCA, property?: string): CompletionValueItem[] {
+        const actionUca = uca.$container;
+        let controlAction = `the control action '${actionUca.action.ref?.label}'`;
+        const parent = actionUca.action.ref?.$container;
+        if (isVerticalEdge(parent)) {
+            controlAction += ` to ${parent.target.$refText}`;
+        }
+        switch (property) {
+            case "notProvidingUcas":
+                const notProvidedItem = {
+                    label: "Generate not provided UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: `${actionUca.system.$refText} did not provide ${controlAction}, `,
+                    detail: "Inserts the starting text for this UCA.",
+                    sortText: "0",
+                };
+                return [notProvidedItem];
+            case "providingUcas":
+                const providedItem = {
+                    label: "Generate provided UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: `${actionUca.system.$refText} provided ${controlAction}, `,
+                    detail: "Inserts the starting text for this UCA.",
+                    sortText: "0",
+                };
+                return [providedItem];
+            case "wrongTimingUcas":
+                const tooEarlyItem = {
+                    label: "Generate too-early UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: `${actionUca.system.$refText} provided ${controlAction} before`,
+                    detail: "Inserts the starting text for this UCA.",
+                    sortText: "0",
+                };
+                const tooLateItem = {
+                    label: "Generate too-late UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: `${actionUca.system.$refText} provided ${controlAction} after`,
+                    detail: "Inserts the starting text for this UCA.",
+                    sortText: "1",
+                };
+                return [tooEarlyItem, tooLateItem];
+            case "continousUcas":
+                const stoppedTooSoonItem = {
+                    label: "Generate stopped-too-soon UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: `${actionUca.system.$refText} stopped ${controlAction} before`,
+                    detail: "Inserts the starting text for this UCA.",
+                    sortText: "0",
+                };
+                const appliedTooLongItem = {
+                    label: "Generate applied-too-long UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: `${actionUca.system.$refText} still applied ${controlAction} after`,
+                    detail: "Inserts the starting text for this UCA.",
+                    sortText: "1",
+                };
+                return [stoppedTooSoonItem, appliedTooLongItem];
+        }
+        return [];
+    }
+
+    protected completionForScenario(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
+        if (context.node?.$type === LossScenario && next.property === "description") {
+            const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
+            if (generatedText !== "") {
+                acceptor({
+                    label: "Generate UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: generatedText,
+                    detail: "Inserts the UCA text for this scenario.",
+                    sortText: "0",
+                });
             }
         }
     }
