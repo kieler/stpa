@@ -108,18 +108,38 @@
                 "category": "STPA Checks"
             },
             {
-                "command": "pasta.stpa.checks.checkConstraintsForUCAs",
+                "command": "pasta.stpa.checks.unsetCheckResponsibilitiesForConstraints",
+                "title": "✓ Set the responsibilities for constraints check",
+                "category": "STPA Checks"
+            },
+            {
+                "command": "pasta.stpa.checks.setCheckConstraintsForUCAs",
                 "title": "Set the constraints for UCA check",
                 "category": "STPA Checks"
             },
             {
-                "command": "pasta.stpa.checks.checkScenariosForUCAs",
+                "command": "pasta.stpa.checks.unsetCheckConstraintsForUCAs",
+                "title": "✓ Set the constraints for UCA check",
+                "category": "STPA Checks"
+            },
+            {
+                "command": "pasta.stpa.checks.setCheckScenariosForUCAs",
                 "title": "Set the scenarios for UCA check",
                 "category": "STPA Checks"
             },
             {
-                "command": "pasta.stpa.checks.checkSafetyRequirementsForUCAs",
+                "command": "pasta.stpa.checks.unsetCheckScenariosForUCAs",
+                "title": "✓ Set the scenarios for UCA check",
+                "category": "STPA Checks"
+            },
+            {
+                "command": "pasta.stpa.checks.setCheckSafetyRequirementsForUCAs",
                 "title": "Set the safety requirements for UCA check",
+                "category": "STPA Checks"
+            },
+            {
+                "command": "pasta.stpa.checks.unsetCheckSafetyRequirementsForUCAs",
+                "title": "✓ Set the safety requirements for UCA check",
                 "category": "STPA Checks"
             },
             {
@@ -161,6 +181,16 @@
                 "command": "pasta.stpa.snippets.add",
                 "title": "Add STPA Diagram Snippet",
                 "category": "STPA Snippets"
+            },
+            {
+                "command": "pasta.stpa.setIDGeneration",
+                "title": "Automatic ID Generation",
+                "category": "STPA ID Enforcement"
+            },
+            {
+                "command": "pasta.stpa.unsetIDGeneration",
+                "title": "✓ Automatic ID Generation",
+                "category": "STPA ID Enforcement"
             }
         ],
         "menus": {
@@ -198,19 +228,35 @@
                 },
                 {
                     "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",
-                    "when": "editorLangId == 'stpa'"
+                    "when": "editorLangId == 'stpa' && checkResponsibilitiesForConstraints == false"
                 },
                 {
-                    "command": "pasta.stpa.checks.checkConstraintsForUCAs",
-                    "when": "editorLangId == 'stpa'"
+                    "command": "pasta.stpa.checks.unsetCheckResponsibilitiesForConstraints",
+                    "when": "editorLangId == 'stpa' && checkResponsibilitiesForConstraints == true"
                 },
                 {
-                    "command": "pasta.stpa.checks.checkScenariosForUCAs",
-                    "when": "editorLangId == 'stpa'"
+                    "command": "pasta.stpa.checks.setCheckConstraintsForUCAs",
+                    "when": "editorLangId == 'stpa' && checkConstraintsForUCAs == false"
                 },
                 {
-                    "command": "pasta.stpa.checks.checkSafetyRequirementsForUCAs",
-                    "when": "editorLangId == 'stpa'"
+                    "command": "pasta.stpa.checks.unsetCheckConstraintsForUCAs",
+                    "when": "editorLangId == 'stpa' && checkConstraintsForUCAs == true"
+                },
+                {
+                    "command": "pasta.stpa.checks.setCheckScenariosForUCAs",
+                    "when": "editorLangId == 'stpa' && checkScenariosForUCAs == false"
+                },
+                {
+                    "command": "pasta.stpa.checks.unsetCheckScenariosForUCAs",
+                    "when": "editorLangId == 'stpa' && checkScenariosForUCAs == true"
+                },
+                {
+                    "command": "pasta.stpa.checks.setCheckSafetyRequirementsForUCAs",
+                    "when": "editorLangId == 'stpa' && checkSafetyRequirementsForUCAs == false"
+                },
+                {
+                    "command": "pasta.stpa.checks.unsetCheckSafetyRequirementsForUCAs",
+                    "when": "editorLangId == 'stpa' && checkSafetyRequirementsForUCAs == true"
                 },
                 {
                     "command": "pasta.stpa.SBM.generation",
@@ -227,6 +273,14 @@
                 {
                     "command": "pasta.stpa.snippets.add",
                     "when": "editorLangId == 'stpa'"
+                },
+                {
+                    "command": "pasta.stpa.setIDGeneration",
+                    "when": "editorLangId == 'stpa' && pasta.idGeneration == false"
+                },
+                {
+                    "command": "pasta.stpa.unsetIDGeneration",
+                    "when": "editorLangId == 'stpa' && pasta.idGeneration == true"
                 },
                 {
                     "command": "pasta.fta.cutSets",
@@ -249,66 +303,104 @@
                     "group": "navigation"
                 },
                 {
+                    "submenu": "pasta",
+                    "group": "pasta"
+                }
+            ],
+            "pasta": [
+                {
                     "submenu": "pasta.stpa.checks",
-                    "group": "checks"
-                },
-                {
-                    "submenu": "pasta.fta.generate",
-                    "group": "generate"
-                },
-                {
-                    "command": "pasta.stpa.SBM.generation",
-                    "when": "editorLangId == 'stpa'",
-                    "group": "stpa"
-                },
-                {
-                    "command": "pasta.stpa.md.creation",
-                    "when": "editorLangId == 'stpa'",
-                    "group": "stpa"
-                },
-                {
-                    "command": "pasta.stpa.ft.generation",
-                    "when": "editorLangId == 'stpa'",
-                    "group": "stpa"
+                    "group": "stpa@2"
                 },
                 {
                     "command": "pasta.stpa.snippets.add",
                     "when": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "group": "stpa@6"
+                },
+                {
+                    "command": "pasta.stpa.SBM.generation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "stpa@5"
+                },
+                {
+                    "command": "pasta.stpa.md.creation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "stpa@3"
+                },
+                {
+                    "command": "pasta.stpa.ft.generation",
+                    "when": "editorLangId == 'stpa'",
+                    "group": "stpa@4"
+                },
+                {
+                    "command": "pasta.stpa.setIDGeneration",
+                    "when": "editorLangId == 'stpa' && pasta.idGeneration == false",
+                    "group": "stpa@1"
+                },
+                {
+                    "command": "pasta.stpa.unsetIDGeneration",
+                    "when": "editorLangId == 'stpa' && pasta.idGeneration == true",
+                    "group": "stpa@1"
+                },
+                {
+                    "command": "pasta.fta.cutSets",
+                    "when": "editorLangId == 'fta'",
+                    "group": "fta@1"
+                },
+                {
+                    "command": "pasta.fta.minimalCutSets",
+                    "when": "editorLangId == 'fta'",
+                    "group": "fta@2"
                 }
             ],
             "pasta.stpa.checks": [
                 {
                     "command": "pasta.stpa.checks.setCheckResponsibilitiesForConstraints",
                     "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "when": "editorLangId == 'stpa' && pasta.checkResponsibilitiesForConstraints == false",
+                    "group": "checks@1"
                 },
                 {
-                    "command": "pasta.stpa.checks.checkConstraintsForUCAs",
+                    "command": "pasta.stpa.checks.unsetCheckResponsibilitiesForConstraints",
                     "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "when": "editorLangId == 'stpa' && pasta.checkResponsibilitiesForConstraints == true",
+                    "group": "checks@1"
                 },
                 {
-                    "command": "pasta.stpa.checks.checkScenariosForUCAs",
+                    "command": "pasta.stpa.checks.setCheckConstraintsForUCAs",
                     "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
+                    "when": "editorLangId == 'stpa' && pasta.checkConstraintsForUCAs == false",
+                    "group": "checks@2"
                 },
                 {
-                    "command": "pasta.stpa.checks.checkSafetyRequirementsForUCAs",
+                    "command": "pasta.stpa.checks.unsetCheckConstraintsForUCAs",
                     "title": "editorLangId == 'stpa'",
-                    "group": "navigation"
-                }
-            ],
-            "pasta.fta.generate": [
-                {
-                    "command": "pasta.fta.cutSets",
-                    "when": "editorLangId == 'fta'",
-                    "group": "navigation"
+                    "when": "editorLangId == 'stpa' && pasta.checkConstraintsForUCAs == true",
+                    "group": "checks@2"
                 },
                 {
-                    "command": "pasta.fta.minimalCutSets",
-                    "when": "editorLangId == 'fta'",
-                    "group": "navigation"
+                    "command": "pasta.stpa.checks.setCheckScenariosForUCAs",
+                    "title": "editorLangId == 'stpa'",
+                    "when": "editorLangId == 'stpa' && pasta.checkScenariosForUCAs == false",
+                    "group": "checks@3"
+                },
+                {
+                    "command": "pasta.stpa.checks.unsetCheckScenariosForUCAs",
+                    "title": "editorLangId == 'stpa'",
+                    "when": "editorLangId == 'stpa' && pasta.checkScenariosForUCAs == true",
+                    "group": "checks@3"
+                },
+                {
+                    "command": "pasta.stpa.checks.setCheckSafetyRequirementsForUCAs",
+                    "title": "editorLangId == 'stpa'",
+                    "when": "editorLangId == 'stpa' && pasta.checkSafetyRequirementsForUCAs == false",
+                    "group": "checks@4"
+                },
+                {
+                    "command": "pasta.stpa.checks.unsetCheckSafetyRequirementsForUCAs",
+                    "title": "editorLangId == 'stpa'",
+                    "when": "editorLangId == 'stpa' && pasta.checkSafetyRequirementsForUCAs == true",
+                    "group": "checks@4"
                 }
             ],
             "editor/title": [
@@ -337,6 +429,10 @@
             ]
         },
         "submenus": [
+            {
+                "id": "pasta",
+                "label": "PASTA"
+            },
             {
                 "id": "pasta.stpa.checks",
                 "label": "Validation Checks"

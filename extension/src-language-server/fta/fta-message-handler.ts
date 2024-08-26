@@ -35,31 +35,6 @@ export function addFTANotificationHandler(
     sharedServices: LangiumSprottySharedServices
 ): void {
     addCutSetsHandler(connection, ftaServices, sharedServices);
-    addStorageHandler(connection, ftaServices);
-}
-
-/**
- * Adds handlers for notifications regarding the storage.
- * @param connection
- * @param ftaServices
- */
-function addStorageHandler(connection: Connection, ftaServices: FtaServices): void {
-    // handle configuration/storage init
-    connection.onNotification("config/init", ({ clientId, options }) => {
-        // update synthesis options
-        if (options["synthesisOptions"] && clientId !== "") {
-            Object.entries(options["synthesisOptions"]).forEach(([key, value]) => {
-                ftaServices.options.SynthesisOptions.setOption(key, value);
-            });
-        }
-    });
-
-    // handle reset of the storage
-    connection.onRequest("config/reset", () => {
-        // reset synthesis options
-        ftaServices.options.SynthesisOptions.resetAll();
-        return;
-    });
 }
 
 /**
@@ -104,7 +79,7 @@ async function cutSetsRequested(
     if (model.topEvent) {
         nodes.push(model.topEvent);
     }
-    const startNode = startId ? nodes.find((node) => node.name === startId) : undefined;
+    const startNode = startId ? nodes.find(node => node.name === startId) : undefined;
     const cutSets = minimal ? determineMinimalCutSets(nodes, startNode) : determineCutSetsForFT(nodes, startNode);
     // determine single points of failure
     const spofs: string[] = [];
@@ -116,7 +91,7 @@ async function cutSetsRequested(
     ftaServices.options.SynthesisOptions.setSpofs(spofs);
     // create dropdown values
     const cutSetsString = cutSetsToString(cutSets);
-    const dropdownValues = cutSetsString.map((cutSet) => {
+    const dropdownValues = cutSetsString.map(cutSet => {
         return { displayName: cutSet, id: cutSet };
     });
     ftaServices.options.SynthesisOptions.updateCutSetsOption(dropdownValues);
@@ -126,4 +101,26 @@ async function cutSetsRequested(
 function resetCutSets(ftaServices: FtaServices): void {
     ftaServices.options.SynthesisOptions.resetCutSets();
     return;
+}
+
+/**
+ * Handles the initialization of the FTA configuration.
+ * @param clientId The client id.
+ * @param options The options for the configuration.
+ * @param ftaServices The services for FTA.
+ */
+export function handleFTAConfigInit(clientId: string, options: Record<string, any>, ftaServices: FtaServices): void {
+    if (options["synthesisOptions"] && clientId !== "") {
+        Object.entries(options["synthesisOptions"]).forEach(([key, value]) => {
+            ftaServices.options.SynthesisOptions.setOption(key, value);
+        });
+    }
+}
+
+/**
+ * Resets the FTA configuration.
+ * @param ftaServices The services for FTA.
+ */
+export function handleFTAConfigReset(ftaServices: FtaServices): void {
+    ftaServices.options.SynthesisOptions.resetAll();
 }

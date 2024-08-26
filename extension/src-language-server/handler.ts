@@ -17,8 +17,12 @@
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection, Range } from "vscode-languageserver";
+import { handleFTAConfigInit, handleFTAConfigReset } from './fta/fta-message-handler';
+import { FtaServices } from './fta/fta-module';
 import { getRangeOfNodeFTA } from "./fta/utils";
 import { Model, isModel, isModelFTA } from "./generated/ast";
+import { handleSTPAConfigInit, handleSTPAConfigReset } from './stpa/message-handler';
+import { StpaServices } from './stpa/stpa-module';
 import { getRangeOfNodeSTPA } from "./stpa/utils";
 import { getModel } from "./utils";
 
@@ -27,7 +31,7 @@ import { getModel } from "./utils";
  * @param connection Connection to the extension.
  * @param shared Shared services containing the workspace.
  */
-export function addNotificationHandler(connection: Connection, shared: LangiumSprottySharedServices): void {
+export function addNotificationHandler(connection: Connection, shared: LangiumSprottySharedServices,stpaServices: StpaServices, ftaServices: FtaServices): void {
     // node selection in diagram
     connection.onNotification("diagram/selected", async (msg: { label: string; uri: string }) => {
         // get the current model
@@ -52,5 +56,16 @@ export function addNotificationHandler(connection: Connection, shared: LangiumSp
         } else {
             console.log("The selected element could not be found in the editor.");
         }
+    });
+    // handle configuration/storage init
+    connection.onNotification("config/init", ({ clientId, options }) => {
+        handleSTPAConfigInit(clientId, options, stpaServices);
+        handleFTAConfigInit(clientId, options, ftaServices);
+    });
+
+    // handle reset of the storage
+    connection.onRequest("config/reset", () => {
+        handleSTPAConfigReset(stpaServices);
+        handleFTAConfigReset(ftaServices);
     });
 }

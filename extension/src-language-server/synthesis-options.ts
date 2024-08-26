@@ -109,7 +109,7 @@ export class SynthesisOptions {
     protected options: ValuedSynthesisOption[];
 
     constructor() {
-        this.options = [layoutCategoryOption, labelManagementOption, labelShorteningWidthOption, modelOrderOption];
+        this.options = [layoutCategoryOption, modelOrderOption, labelManagementOption, labelShorteningWidthOption];
     }
 
     /**

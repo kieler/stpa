@@ -36,6 +36,6 @@ addDiagramHandler(connection, shared);
 
 addSTPANotificationHandler(connection, stpa, shared);
 addFTANotificationHandler(connection, fta, shared);
-addNotificationHandler(connection, shared);
+addNotificationHandler(connection, shared, stpa, fta);
 
 connection.onInitialized(() => connection.sendNotification("ready"));
