@@ -31,7 +31,7 @@ import { StpaResult } from "./report/utils";
 import { createSBMs } from "./sbm/sbm-generation";
 import { LTLFormula } from "./sbm/utils";
 import { StorageService } from "./storage-service";
-import { createFile, createOutputChannel, createQuickPickForStorageOptions, setStorageOption } from "./utils";
+import { createFile, createOutputChannel, setStorageOption } from "./utils";
 
 let languageClient: LanguageClient;
 const validationGroupName = "validation";
