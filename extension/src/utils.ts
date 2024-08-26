@@ -56,6 +56,32 @@ export function createQuickPickForStorageOptions(
 }
 
 /**
+ * Sets the value for the configuration option determined by {@code id} to the given {@code value}.
+ * @param groupName The name of the group in which the configuration option is stored.
+ * @param id The id of the configuration option that should be set.
+ * @param value The value to set for the configuration option.
+ * @param storage The storage service to store the value for the option.
+ * @param languageClient The language client to send the updated configuration to.
+ * @param manager The manager of the extension.
+ */
+export function setStorageOption(
+    groupName: string,
+    id: string,
+    value: any,
+    storage: StorageService,
+    languageClient: LanguageClient,
+    manager: StpaLspVscodeExtension
+): void {
+    let group = storage.getItem(groupName);
+    if (!group) {
+        group = {};
+    }
+    group[id] = value;
+    storage.setItem(groupName, group);
+    updateLanguageServerConfig(languageClient, storage, manager.clientId ?? "");
+}
+
+/**
  * Handle WorkSpaceEdit notifications form the langauge server
  * @param uri The uri of the document that should be edited.
  * @param text The text to insert.

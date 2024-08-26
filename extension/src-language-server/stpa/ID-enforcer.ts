@@ -59,6 +59,9 @@ class IDPrefix {
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
+    /** Determines whether ID enforcement is enabled. */
+    protected enabled: boolean = true;
+
     /** langium services for the stpa DSL */
     protected readonly stpaServices: StpaServices;
 
@@ -72,12 +75,29 @@ export class IDEnforcer {
     }
 
     /**
+     * Enables the ID enforcement.
+     */
+    enable(): void {
+        this.enabled = true;
+    }
+
+    /**
+     * Disables the ID enforcement.
+     */
+    disable(): void {
+        this.enabled = false;
+    }
+
+    /**
      * Checks and enforces IDs for STPA components belonging to the same aspect where the given change happened.
      * @param changes The text document changes.
      * @param uri The uri of the document that has changed.
      * @returns the text edits needed to enforce the correct IDs.
      */
     async enforceIDs(changes: TextDocumentContentChangeEvent[], uri: string): Promise<TextEdit[]> {
+        if (!this.enabled) {
+            return [];
+        }
         // update current document information
         this.currentUri = uri;
         this.currentDocument = this.stpaServices.shared.workspace.LangiumDocuments.getOrCreateDocument(
