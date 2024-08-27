@@ -24,7 +24,7 @@ import {
     NextFeature,
 } from "langium";
 import { CompletionItemKind } from "vscode-languageserver";
-import { Context, isVerticalEdge, LossScenario, UCA } from "../generated/ast";
+import { Context, isModel, isVerticalEdge, LossScenario, Model, Node, Rule, UCA, VerticalEdge } from "../generated/ast";
 
 /**
  * Generates UCA text for loss scenarios by providing an additional completion item.
@@ -47,9 +47,150 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
         if (this.enabled) {
             this.completionForScenario(context, next, acceptor);
             this.completionForUCA(context, next, acceptor);
+            this.completionForUCARule(context, next, acceptor);
         }
     }
 
+    /**
+     * Adds completion items for generating rules for UCAs if the current context is a rule.
+     * @param context The completion context.
+     * @param next The next feature of the current rule to be called.
+     * @param acceptor The completion acceptor to add the completion items.
+     */
+    protected completionForUCARule(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
+        if ((context.node?.$type === Rule || next.type === Rule) && next.property === "name") {
+            const templateRuleItem = this.generateTemplateRuleItem();
+            acceptor(templateRuleItem);
+            const model = context.node?.$type === Model ? context.node : context.node?.$container;
+            if (isModel(model)) {
+                const controlActions = this.collectControlActions(model);
+                const rulesForEverythingItem = this.generateRulesForEverythingItem(controlActions);
+                acceptor(rulesForEverythingItem);
+                const ruleForSpecificControlActionItems =
+                    this.generateRuleForSpecificControlActionItems(controlActions);
+                ruleForSpecificControlActionItems.forEach(item => acceptor(item));
+            }
+        }
+    }
+
+    /**
+     * Determines all control actions in the given model.
+     * @param model The model for which the control actions should be collected.
+     */
+    protected collectControlActions(model: Model): VerticalEdge[] {
+        const actions: VerticalEdge[] = [];
+        model.controlStructure?.nodes.forEach(node => {
+            actions.push(...this.getControlActions(node));
+        });
+        return actions;
+    }
+
+    /**
+     * Gets all control actions for the given node and its children.
+     * @param node The node for which the control actions should be collected.
+     * @returns the control actions for the given node and its children.
+     */
+    protected getControlActions(node: Node): VerticalEdge[] {
+        const actions = node.actions;
+        node.children.forEach(child => {
+            actions.push(...this.getControlActions(child));
+        });
+        return actions;
+    }
+
+    /**
+     * Creates for each control action a completion item for generating a rule for this control action.
+     * @param controlActions The control actions for which the rules should be generated.
+     */
+    protected generateRuleForSpecificControlActionItems(controlActions: VerticalEdge[]): CompletionValueItem[] {
+        const items: CompletionValueItem[] = [];
+        let counter = 3;
+        for (const controlAction of controlActions) {
+            for (const action of controlAction.comms) {
+                const item: CompletionValueItem = {
+                    label: `Generate a rule for ${controlAction.$container.name}.${action.name}`,
+                    kind: CompletionItemKind.Snippet,
+                    insertText: `RL {
+    controlAction: ${controlAction.$container.name}.${action.name}
+    type: 
+    contexts: {
+    }
+}`,
+                    detail: `Inserts a rule for ${controlAction.$container.name}.${action.name} with missing content.`,
+                    sortText: `${counter}`,
+                };
+                items.push(item);
+                counter++;
+            }
+        }
+        return items;
+    }
+
+    /**
+     * Creates a completion item for generating a rule for every possible control action and type combination.
+     * @param controlActions The control actions for which the rules should be generated.
+     * @returns a completion item for generating a rule for every possible control action and type combination.
+     */
+    protected generateRulesForEverythingItem(controlActions: VerticalEdge[]): CompletionValueItem {
+        let insertText = ``;
+        let counter = 0;
+        for (const controlAction of controlActions) {
+            for (const action of controlAction.comms) {
+                for (const type of [
+                    "not-provided",
+                    "provided",
+                    "too-early",
+                    "too-late",
+                    "wrong-time",
+                    "applied-too-long",
+                    "stopped-too-soon",
+                ]) {
+                    insertText += `RL${counter} {
+    controlAction: ${controlAction.$container.name}.${action.name}
+    type: ${type}
+    contexts: {
+    }
+}
+`;
+                    counter++;
+                }
+            }
+        }
+        const item: CompletionValueItem = {
+            label: `Generate rules for every control action and type combination`,
+            kind: CompletionItemKind.Snippet,
+            insertText: insertText,
+            detail: "Inserts for every control action rules for every UCA type.",
+            sortText: "1",
+        };
+        return item;
+    }
+
+    /**
+     * Creates a completion item for generating a template rule.
+     * @returns a completion item for generating a template rule.
+     */
+    protected generateTemplateRuleItem(): CompletionValueItem {
+        return {
+            label: "Generate template Rule",
+            kind: CompletionItemKind.Snippet,
+            insertText: `RL {
+    controlAction: 
+    type: 
+    contexts: {
+    }
+}`,
+            detail: "Inserts a rule with missing content.",
+            sortText: "0",
+        };
+    }
+
+    /**
+     * Adds completion items for generating UCA text for a UCA if the current context is a UCA.
+     * @param context The completion context.
+     * @param next The next feature of the current rule to be called.
+     * @param acceptor The completion acceptor to add the completion items.
+     */
     protected completionForUCA(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
         if (context.node?.$type === UCA && next.property === "description") {
             const generatedItems = this.generateTextForUCAWithPlainText(
@@ -63,6 +204,12 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
         }
     }
 
+    /**
+     * Generates completion items for the given UCA {@code uca}.
+     * @param uca The UCA for which the completion items should be generated.
+     * @param property The property in which the UCA is contained. Should be one of "notProvidingUcas", "providingUcas", "wrongTimingUcas", or "continousUcas".
+     * @returns completion items for the given UCA.
+     */
     protected generateTextForUCAWithPlainText(uca: UCA, property?: string): CompletionValueItem[] {
         const actionUca = uca.$container;
         let controlAction = `the control action '${actionUca.action.ref?.label}'`;
@@ -125,6 +272,12 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
         return [];
     }
 
+    /**
+     * Adds a completion item for generating UCA text for a scenario if the current context is a loss scenario.
+     * @param context The completion context.
+     * @param next The next feature of the current rule to be called.
+     * @param acceptor The completion acceptor to add the completion items.
+     */
     protected completionForScenario(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
         if (context.node?.$type === LossScenario && next.property === "description") {
             const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
