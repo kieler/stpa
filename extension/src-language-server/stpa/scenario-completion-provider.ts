@@ -45,9 +45,40 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
     ): MaybePromise<void> {
         super.completionFor(context, next, acceptor);
         if (this.enabled) {
+            this.completionForSystemComponent(next, acceptor);
             this.completionForScenario(context, next, acceptor);
             this.completionForUCA(context, next, acceptor);
             this.completionForUCARule(context, next, acceptor);
+        }
+    }
+
+    /**
+     * Adds a completion item for generating a system component if the current context is a system component.
+     * @param next The next feature of the current rule to be called.
+     * @param acceptor The completion acceptor to add the completion items.
+     */
+    protected completionForSystemComponent(
+        next: NextFeature,
+        acceptor: CompletionAcceptor
+    ): void {
+        if (next.type === Node && next.property === "name") {
+            const generatedText = `Comp {
+    hierarchyLevel 0
+    label "Component"
+    processModel {
+    }
+    controlActions {
+    }
+    feedback {
+    }
+}`;
+            acceptor({
+                label: "Generate System Component",
+                kind: CompletionItemKind.Text,
+                insertText: generatedText,
+                detail: "Inserts a system component.",
+                sortText: "0",
+            });
         }
     }
 
@@ -212,17 +243,18 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
      */
     protected generateTextForUCAWithPlainText(uca: UCA, property?: string): CompletionValueItem[] {
         const actionUca = uca.$container;
+        const system = actionUca.system.ref?.label ?? actionUca.system.$refText;
         let controlAction = `the control action '${actionUca.action.ref?.label}'`;
         const parent = actionUca.action.ref?.$container;
         if (isVerticalEdge(parent)) {
-            controlAction += ` to ${parent.target.$refText}`;
+            controlAction += ` to ${parent.target.ref?.label ?? parent.target.$refText}`;
         }
         switch (property) {
             case "notProvidingUcas":
                 const notProvidedItem = {
                     label: "Generate not provided UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${actionUca.system.$refText} did not provide ${controlAction}, `,
+                    insertText: `${system} did not provide ${controlAction}, `,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "0",
                 };
@@ -231,7 +263,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 const providedItem = {
                     label: "Generate provided UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${actionUca.system.$refText} provided ${controlAction}, `,
+                    insertText: `${system} provided ${controlAction}, `,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "0",
                 };
@@ -240,14 +272,14 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 const tooEarlyItem = {
                     label: "Generate too-early UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${actionUca.system.$refText} provided ${controlAction} before`,
+                    insertText: `${system} provided ${controlAction} before`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "0",
                 };
                 const tooLateItem = {
                     label: "Generate too-late UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${actionUca.system.$refText} provided ${controlAction} after`,
+                    insertText: `${system} provided ${controlAction} after`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "1",
                 };
@@ -256,14 +288,14 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 const stoppedTooSoonItem = {
                     label: "Generate stopped-too-soon UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${actionUca.system.$refText} stopped ${controlAction} before`,
+                    insertText: `${system} stopped ${controlAction} before`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "0",
                 };
                 const appliedTooLongItem = {
                     label: "Generate applied-too-long UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${actionUca.system.$refText} still applied ${controlAction} after`,
+                    insertText: `${system} still applied ${controlAction} after`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "1",
                 };
