@@ -251,7 +251,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 const notProvidedItem = {
                     label: "Generate not provided UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${system} did not provide ${controlAction}, `,
+                    insertText: `${system} did not provide ${controlAction}, TODO`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "0",
                 };
@@ -260,7 +260,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 const providedItem = {
                     label: "Generate provided UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${system} provided ${controlAction}, `,
+                    insertText: `${system} provided ${controlAction}, TODO`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "0",
                 };
@@ -269,14 +269,14 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 const tooEarlyItem = {
                     label: "Generate too-early UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${system} provided ${controlAction} before`,
+                    insertText: `${system} provided ${controlAction} before TODO`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "0",
                 };
                 const tooLateItem = {
                     label: "Generate too-late UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${system} provided ${controlAction} after`,
+                    insertText: `${system} provided ${controlAction} after TODO`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "1",
                 };
@@ -285,14 +285,14 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 const stoppedTooSoonItem = {
                     label: "Generate stopped-too-soon UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${system} stopped ${controlAction} before`,
+                    insertText: `${system} stopped ${controlAction} before TODO`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "0",
                 };
                 const appliedTooLongItem = {
                     label: "Generate applied-too-long UCA Text",
                     kind: CompletionItemKind.Text,
-                    insertText: `${system} still applied ${controlAction} after`,
+                    insertText: `${system} still applied ${controlAction} after TODO`,
                     detail: "Inserts the starting text for this UCA.",
                     sortText: "1",
                 };
@@ -367,29 +367,29 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                         scenario += ` stopped ${controlAction} in time, while ${contextText}, but it is executed too long.`;
                         break;
                 }
-                text += `S for ${context.name} "${scenario}"\n`;
+                text += `S for ${context.name} "${scenario} TODO"\n`;
                 // add scenarios for incorrect process model values
                 const scenarioStart = this.generateScenarioForUCAWithContextTable(context);
                 switch (rule.type) {
                     case "not-provided":
                     case "provided":
                         context.assignedValues.forEach(assignedValue => {
-                            text += `S for ${context.name} "${scenarioStart} Because ${system} incorrectly believes that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText}."\n`;
+                            text += `S for ${context.name} "${scenarioStart} Because ${system} incorrectly believes that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText}. TODO"\n`;
                         });
                         break;
                     case "too-late":
                         context.assignedValues.forEach(assignedValue => {
-                            text += `S for ${context.name} "${scenarioStart} Because ${system} realized too late that ${assignedValue.variable.$refText} is ${assignedValue.value.$refText}."\n`;
+                            text += `S for ${context.name} "${scenarioStart} Because ${system} realized too late that ${assignedValue.variable.$refText} is ${assignedValue.value.$refText}. TODO"\n`;
                         });
                         break;
                     case "stopped-too-soon":
                         context.assignedValues.forEach(assignedValue => {
-                            text += `S for ${context.name} "${scenarioStart} Because ${system} incorrectly believes that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText} anymore."\n`;
+                            text += `S for ${context.name} "${scenarioStart} Because ${system} incorrectly believes that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText} anymore. TODO"\n`;
                         });
                         break;
                     case "applied-too-long":
                         context.assignedValues.forEach(assignedValue => {
-                            text += `S for ${context.name} "${scenarioStart} Because ${system} realized too late that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText} anymore."\n`;
+                            text += `S for ${context.name} "${scenarioStart} Because ${system} realized too late that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText} anymore. TODO"\n`;
                         });
                         break;
                 }
@@ -451,7 +451,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
 
         text += `, while`;
         text += this.createContextText(context);
-        text += ".";
+        text += ". TODO";
 
         return text;
     }
@@ -481,6 +481,6 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
      * @returns the generated scenario text.
      */
     protected generateScenarioForUCAWithPlainText(uca: UCA): string {
-        return uca.description;
+        return `${uca.description} TODO`;
     }
 }
