@@ -57,10 +57,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
      * @param next The next feature of the current rule to be called.
      * @param acceptor The completion acceptor to add the completion items.
      */
-    protected completionForSystemComponent(
-        next: NextFeature,
-        acceptor: CompletionAcceptor
-    ): void {
+    protected completionForSystemComponent(next: NextFeature, acceptor: CompletionAcceptor): void {
         if (next.type === Node && next.property === "name") {
             const generatedText = `Comp {
     hierarchyLevel 0
@@ -305,24 +302,100 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
     }
 
     /**
-     * Adds a completion item for generating UCA text for a scenario if the current context is a loss scenario.
+     * Adds a completion item for generating UCA text for a scenario and completion items to generate basic scenarios if the current context is a loss scenario.
      * @param context The completion context.
      * @param next The next feature of the current rule to be called.
      * @param acceptor The completion acceptor to add the completion items.
      */
     protected completionForScenario(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
-        if (context.node?.$type === LossScenario && next.property === "description") {
-            const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
-            if (generatedText !== "") {
-                acceptor({
-                    label: "Generate UCA Text",
-                    kind: CompletionItemKind.Text,
-                    insertText: generatedText,
-                    detail: "Inserts the UCA text for this scenario.",
-                    sortText: "0",
-                });
+        if (context.node?.$type === LossScenario) {
+            if (next.property === "description") {
+                const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
+                if (generatedText !== "") {
+                    acceptor({
+                        label: "Generate UCA Text",
+                        kind: CompletionItemKind.Text,
+                        insertText: generatedText,
+                        detail: "Inserts the UCA text for this scenario.",
+                        sortText: "0",
+                    });
+                }
+            }
+            if (next.type === LossScenario && next.property === "name") {
+                const generatedBasicScenariosText = this.generateBasicScenarios(context.node.$container as Model);
+                if (generatedBasicScenariosText !== "") {
+                    acceptor({
+                        label: "Generate Basic Scenarios",
+                        kind: CompletionItemKind.Snippet,
+                        insertText: generatedBasicScenariosText,
+                        detail: "Creates basic scenarios for all UCAs.",
+                        sortText: "0",
+                    });
+                }
             }
         }
+    }
+
+    /**
+     * Creates text for basic scenarios for all UCAs in the given {@code model}.
+     * @param model The model for which the basic scenarios should be generated.
+     * @returns the generated basic scenarios as text.
+     */
+    protected generateBasicScenarios(model: Model): string {
+        let text = ``;
+        model.rules.forEach(rule => {
+            const system = rule.system.ref?.label ?? rule.system.$refText;
+            const controlAction = `the control action '${rule.action.ref?.label}'`;
+            rule.contexts.forEach(context => {
+                // add scenario for actuator/controlled process failure
+                let scenario = `${system}`;
+                const contextText = this.createContextText(context);
+                switch (rule.type) {
+                    case "not-provided":
+                        scenario += ` provided ${controlAction}, while ${contextText}, but it is not executed.`;
+                        break;
+                    case "provided":
+                        scenario += ` not provided ${controlAction}, while ${contextText}, but it is executed.`;
+                        break;
+                    case "too-late":
+                        scenario += ` provided ${controlAction} in time, while ${contextText}, but it is executed too late.`;
+                        break;
+                    case "stopped-too-soon":
+                        scenario += ` applied ${controlAction} long enough, while ${contextText}, but execution is stopped too soon.`;
+                        break;
+                    case "applied-too-long":
+                        scenario += ` stopped ${controlAction} in time, while ${contextText}, but it is executed too long.`;
+                        break;
+                }
+                text += `S for ${context.name} "${scenario}"\n`;
+                // add scenarios for incorrect process model values
+                const scenarioStart = this.generateScenarioForUCAWithContextTable(context);
+                switch (rule.type) {
+                    case "not-provided":
+                    case "provided":
+                        context.assignedValues.forEach(assignedValue => {
+                            text += `S for ${context.name} "${scenarioStart} Because ${system} incorrectly believes that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText}."\n`;
+                        });
+                        break;
+                    case "too-late":
+                        context.assignedValues.forEach(assignedValue => {
+                            text += `S for ${context.name} "${scenarioStart} Because ${system} realized too late that ${assignedValue.variable.$refText} is ${assignedValue.value.$refText}."\n`;
+                        });
+                        break;
+                    case "stopped-too-soon":
+                        context.assignedValues.forEach(assignedValue => {
+                            text += `S for ${context.name} "${scenarioStart} Because ${system} incorrectly believes that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText} anymore."\n`;
+                        });
+                        break;
+                    case "applied-too-long":
+                        context.assignedValues.forEach(assignedValue => {
+                            text += `S for ${context.name} "${scenarioStart} Because ${system} realized too late that ${assignedValue.variable.$refText} is not ${assignedValue.value.$refText} anymore."\n`;
+                        });
+                        break;
+                }
+            });
+        });
+        return text;
     }
 
     /**
@@ -344,48 +417,61 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
 
     /**
      * Generates a scenario text for a UCA defined with a context table.
-     * @param uca The UCA for which the scenario should be generated.
+     * @param context The UCA context for which the scenario should be generated.
      * @returns the generated scenario text.
      */
-    protected generateScenarioForUCAWithContextTable(uca: Context): string {
-        const rule = uca.$container;
-        let text = `${rule.system.$refText}`;
+    protected generateScenarioForUCAWithContextTable(context: Context): string {
+        const rule = context.$container;
+        const system = rule.system.ref?.label ?? rule.system.$refText;
+        let text = `${system}`;
+        const controlAction = `the control action '${rule.action.ref?.label}'`;
         switch (rule.type) {
             case "not-provided":
-                text += ` did not provide the control action ${rule.action.ref?.label}`;
+                text += ` did not provide ${controlAction}`;
                 break;
             case "provided":
-                text += ` provided the control action ${rule.action.ref?.label}`;
+                text += ` provided ${controlAction}`;
                 break;
             case "stopped-too-soon":
-                text += ` stopped the control action ${rule.action.ref?.label} too soon`;
+                text += ` stopped ${controlAction} too soon`;
                 break;
             case "applied-too-long":
-                text += ` applied the control action ${rule.action.ref?.label} too long`;
+                text += ` applied ${controlAction} too long`;
                 break;
             case "too-early":
-                text += ` provided the control action ${rule.action.ref?.label} too early`;
+                text += ` provided ${controlAction} too early`;
                 break;
             case "too-late":
-                text += ` provided the control action ${rule.action.ref?.label} too late`;
+                text += ` provided ${controlAction} too late`;
                 break;
             case "wrong-time":
-                text += ` provided the control action ${rule.action.ref?.label} at the wrong time`;
+                text += ` provided ${controlAction} at the wrong time`;
                 break;
         }
 
         text += `, while`;
-        uca.assignedValues.forEach((assignedValue, index) => {
+        text += this.createContextText(context);
+        text += ".";
+
+        return text;
+    }
+
+    /**
+     * Creates a text for the given context {@code context}.
+     * @param context The context for which the text should be generated.
+     * @returns the generated text.
+     */
+    protected createContextText(context: Context): string {
+        let text = ``;
+        context.assignedValues.forEach((assignedValue, index) => {
             if (index > 0) {
                 text += ", ";
             }
-            if ((index += uca.assignedValues.length - 1)) {
+            if ((index += context.assignedValues.length - 1)) {
                 text += ", and";
             }
             text += ` ${assignedValue.variable.$refText} was ${assignedValue.value.$refText}`;
         });
-        text += ".";
-
         return text;
     }
 

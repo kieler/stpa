@@ -78,7 +78,10 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
             this.handleTextChangeEvent(changeEvent);
         });
         // language client sent workspace edits
-        options.languageClient.onNotification("editor/workspaceedit", ({ edits, uri }) => applyTextEdits(edits, uri));
+        options.languageClient.onNotification("editor/workspaceedit", ({ edits, uri }) => {
+            this.ignoreNextTextChange = true;
+            applyTextEdits(edits, uri);
+        });
         // laguage server is ready
         options.languageClient.onNotification("ready", () => {
             this.resolveLSReady();
