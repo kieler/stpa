@@ -15,10 +15,26 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { isCompositeCstNode, LangiumDocument } from "langium";
+import { CstNode, isCompositeCstNode, LangiumDocument } from "langium";
 import { TextDocumentContentChangeEvent } from "vscode";
 import { Range, RenameParams, TextEdit } from "vscode-languageserver";
-import { Hazard, isHazard, isRule, isSystemConstraint, LossScenario, Model, SystemConstraint } from "../generated/ast";
+import {
+    ActionUCAs,
+    ControllerConstraint,
+    DCARule,
+    Hazard,
+    isHazard,
+    isModel,
+    isRule,
+    isSystemConstraint,
+    Loss,
+    LossScenario,
+    Model,
+    Rule,
+    SafetyConstraint,
+    SystemConstraint,
+    SystemResponsibilities
+} from "../generated/ast";
 import { StpaServices } from "./stpa-module";
 import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
 
@@ -43,6 +59,9 @@ class IDPrefix {
  * Contains methods to enforce correct IDs on STPA components.
  */
 export class IDEnforcer {
+    /** Determines whether ID enforcement is enabled. */
+    protected enabled: boolean = true;
+
     /** langium services for the stpa DSL */
     protected readonly stpaServices: StpaServices;
 
@@ -56,12 +75,29 @@ export class IDEnforcer {
     }
 
     /**
+     * Enables the ID enforcement.
+     */
+    enable(): void {
+        this.enabled = true;
+    }
+
+    /**
+     * Disables the ID enforcement.
+     */
+    disable(): void {
+        this.enabled = false;
+    }
+
+    /**
      * Checks and enforces IDs for STPA components belonging to the same aspect where the given change happened.
      * @param changes The text document changes.
      * @param uri The uri of the document that has changed.
      * @returns the text edits needed to enforce the correct IDs.
      */
     async enforceIDs(changes: TextDocumentContentChangeEvent[], uri: string): Promise<TextEdit[]> {
+        if (!this.enabled) {
+            return [];
+        }
         // update current document information
         this.currentUri = uri;
         this.currentDocument = this.stpaServices.shared.workspace.LangiumDocuments.getOrCreateDocument(
@@ -178,7 +214,7 @@ export class IDEnforcer {
         let edits: TextEdit[] = [];
         // renaming is only needed, when elements not have the correct ID yet
         if (elements[elements.length - 1].name !== prefix + elements.length) {
-            const modifiedElement = elements[index - 1];
+            const modifiedElement = elements[index];
             if (decrease) {
                 // IDs of the elements are decreased so we must start with the lowest ID
 
@@ -335,101 +371,104 @@ export class IDEnforcer {
         let prefix = "";
         let ruleElements: elementWithName[] = [];
 
-        // offsets of the different aspects to determine the aspect for the given offset
-        const subtractOffset = 5;
-        const dcaOffset =
-            model.allDCAs.length !== 0 && model.allDCAs[0].$cstNode?.offset
-                ? model.allDCAs[0].$cstNode.offset - subtractOffset
-                : Number.MAX_VALUE;
-        const safetyConsOffset =
-            model.safetyCons.length !== 0 && model.safetyCons[0].$cstNode?.offset
-                ? model.safetyCons[0].$cstNode.offset - subtractOffset
-                : dcaOffset;
-        const scenarioOffset =
-            model.scenarios.length !== 0 && model.scenarios[0].$cstNode?.offset
-                ? model.scenarios[0].$cstNode.offset - subtractOffset
-                : safetyConsOffset;
-        const ucaConstraintOffset =
-            model.controllerConstraints.length !== 0 && model.controllerConstraints[0].$cstNode?.offset
-                ? model.controllerConstraints[0].$cstNode.offset - subtractOffset
-                : scenarioOffset;
-        const ucaOffset =
-            model.rules.length !== 0 && model.rules[0].$cstNode?.offset
-                ? model.rules[0].$cstNode.offset - subtractOffset
-                : model.allUCAs.length !== 0 && model.allUCAs[0].$cstNode?.offset
-                ? model.allUCAs[0].$cstNode.offset - subtractOffset
-                : ucaConstraintOffset;
-        const responsibilitiesOffset =
-            model.responsibilities.length !== 0 && model.responsibilities[0].$cstNode?.offset
-                ? model.responsibilities[0].$cstNode.offset - subtractOffset
-                : ucaOffset;
-        const constraintOffset =
-            model.systemLevelConstraints.length !== 0 && model.systemLevelConstraints[0].$cstNode?.offset
-                ? model.systemLevelConstraints[0].$cstNode.offset - subtractOffset
-                : responsibilitiesOffset;
-        const hazardOffset =
-            model.hazards.length !== 0 && model.hazards[0].$cstNode?.offset
-                ? model.hazards[0].$cstNode.offset - subtractOffset
-                : constraintOffset;
+        let node = this.findLeafNodeAtOffset(this.currentDocument.parseResult.value.$cstNode!, offset);
+        while (node && !isModel(node?.element) && !isModel(node?.element.$container)) {
+            node = node?.parent;
+        }
 
         // determine the aspect for the given offset
-        if (
-            !hazardOffset ||
-            !constraintOffset ||
-            !responsibilitiesOffset ||
-            !ucaOffset ||
-            !ucaConstraintOffset ||
-            !scenarioOffset ||
-            !safetyConsOffset ||
-            !dcaOffset
-        ) {
-            console.log("Offset could not be determined for all aspects.");
+        if (!node) {
             return undefined;
-        } else if (offset < hazardOffset) {
-            elements = model.losses;
-            prefix = IDPrefix.Loss;
-        } else if (offset < constraintOffset && offset > hazardOffset) {
-            // sub-components must be considered when determining the affected elements
-            const modified = this.findAffectedSubComponents(model.hazards, IDPrefix.Hazard, offset);
-            elements = modified.elements;
-            prefix = modified.prefix;
-        } else if (offset < responsibilitiesOffset && offset > constraintOffset) {
-            // sub-components must be considered when determining the affected elements
-            const modified = this.findAffectedSubComponents(
-                model.systemLevelConstraints,
-                IDPrefix.SystemConstraint,
-                offset
-            );
-            elements = modified.elements;
-            prefix = modified.prefix;
-        } else if (offset < ucaOffset && offset > responsibilitiesOffset) {
-            elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
-            prefix = IDPrefix.Responsibility;
-        } else if (offset < ucaConstraintOffset && offset > ucaOffset) {
-            elements = model.allUCAs.flatMap(sysUCA =>
-                sysUCA.notProvidingUcas.concat(sysUCA.providingUcas, sysUCA.wrongTimingUcas, sysUCA.continousUcas)
-            );
-            elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
-            prefix = IDPrefix.UCA;
-            // rules must be handled separately since they are mixed with the UCAs
-            ruleElements = model.rules;
-        } else if (offset < scenarioOffset && offset > ucaConstraintOffset) {
-            elements = model.controllerConstraints;
-            prefix = IDPrefix.ControllerConstraint;
-        } else if (offset < safetyConsOffset && offset > scenarioOffset) {
-            elements = model.scenarios;
-            prefix = IDPrefix.LossScenario;
-        } else if (offset < dcaOffset && offset > safetyConsOffset) {
-            elements = model.safetyCons;
-            prefix = IDPrefix.SafetyRequirement;
         } else {
-            elements = model.allDCAs.flatMap(dca => dca.contexts);
-            prefix = IDPrefix.DCA;
-            // rules must be handled separately since they are mixed with the DCAs
-            ruleElements = model.allDCAs;
+            switch (node.element.$type) {
+                case Loss:
+                    elements = model.losses;
+                    prefix = IDPrefix.Loss;
+                    break;
+                case Hazard:
+                    // sub-components must be considered when determining the affected elements
+                    const modifiedHazard = this.findAffectedSubComponents(model.hazards, IDPrefix.Hazard, offset);
+                    elements = modifiedHazard.elements;
+                    prefix = modifiedHazard.prefix;
+                    break;
+                case SystemConstraint:
+                    // sub-components must be considered when determining the affected elements
+                    const modifiedSystemConstraint = this.findAffectedSubComponents(
+                        model.systemLevelConstraints,
+                        IDPrefix.SystemConstraint,
+                        offset
+                    );
+                    elements = modifiedSystemConstraint.elements;
+                    prefix = modifiedSystemConstraint.prefix;
+                    break;
+                case SystemResponsibilities:
+                    elements = model.responsibilities.flatMap(resp => resp.responsiblitiesForOneSystem);
+                    prefix = IDPrefix.Responsibility;
+                    break;
+                case ActionUCAs:
+                case Rule:
+                    elements = model.allUCAs.flatMap(sysUCA =>
+                        sysUCA.notProvidingUcas.concat(
+                            sysUCA.providingUcas,
+                            sysUCA.wrongTimingUcas,
+                            sysUCA.continousUcas
+                        )
+                    );
+                    elements = elements.concat(model.rules.flatMap(rule => rule.contexts));
+                    prefix = IDPrefix.UCA;
+                    // rules must be handled separately since they are mixed with the UCAs
+                    ruleElements = model.rules;
+                    break;
+                case ControllerConstraint:
+                    elements = model.controllerConstraints;
+                    prefix = IDPrefix.ControllerConstraint;
+                    break;
+                case LossScenario:
+                    elements = model.scenarios;
+                    prefix = IDPrefix.LossScenario;
+                    break;
+                case SafetyConstraint:
+                    elements = model.safetyCons;
+                    prefix = IDPrefix.SafetyRequirement;
+                    break;
+                case DCARule:
+                    elements = model.allDCAs.flatMap(dca => dca.contexts);
+                    prefix = IDPrefix.DCA;
+                    // rules must be handled separately since they are mixed with the DCAs
+                    ruleElements = model.allDCAs;
+                    break;
+            }
         }
 
         return { elements, prefix, ruleElements };
+    }
+
+    /**
+     * Changes the method from sprotty to return the closest CstNode to the given offset.
+     * @param node The node to start the search from.
+     * @param offset The offset for which the closest node should be determined.
+     * @returns the closest node to the given offset.
+     */
+    protected findLeafNodeAtOffset(node: CstNode, offset: number): CstNode | undefined {
+        if (isCompositeCstNode(node)) {
+            let firstChild = 0;
+            let lastChild = node.children.length - 1;
+            while (firstChild < lastChild) {
+                const middleChild = Math.floor((firstChild + lastChild) / 2);
+                const n = node.children[middleChild];
+                if (n.offset > offset) {
+                    lastChild = middleChild - 1;
+                } else if (n.end <= offset) {
+                    firstChild = middleChild + 1;
+                } else {
+                    return this.findLeafNodeAtOffset(n, offset);
+                }
+            }
+            if (firstChild === lastChild) {
+                return this.findLeafNodeAtOffset(node.children[firstChild], offset);
+            }
+        }
+        return node;
     }
 
     /**

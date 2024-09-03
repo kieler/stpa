@@ -16,18 +16,29 @@
  */
 
 import { isActionMessage, SelectAction } from "sprotty-protocol";
-import { LspWebviewEndpoint } from "sprotty-vscode/lib/lsp";
+import { LspWebviewEndpoint, LspWebviewEndpointOptions } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
-import { CutSetAnalysisAction, MinimalCutSetAnalysisAction, SendConfigAction } from "./actions";
+import { CutSetAnalysisAction, MinimalCutSetAnalysisAction, UpdateStorageAction } from "./actions";
+import { StorageService } from "./storage-service";
+import { updateLanguageServerConfig } from "./utils";
 
 export class StpaLspWebview extends LspWebviewEndpoint {
+    // The storage service to store the configuration options.
+    readonly storage: StorageService;
+
+    constructor(options: LspWebviewEndpointOptions, storage: StorageService) {
+        super(options);
+        this.storage = storage;
+    }
+
     receiveAction(message: any): Promise<void> {
         if (isActionMessage(message)) {
             switch (message.action.kind) {
                 case "optionRegistryReadyMessage":
-                    this.sendConfigValues();
-                case SendConfigAction.KIND:
-                    this.updateConfigValues(message.action as SendConfigAction);
+                    this.sendStorageValues();
+                    break;
+                case UpdateStorageAction.KIND:
+                    this.updateStorageValues(message.action as UpdateStorageAction);
                     break;
                 case SelectAction.KIND:
                     this.handleSelectAction(message.action as SelectAction);
@@ -35,7 +46,7 @@ export class StpaLspWebview extends LspWebviewEndpoint {
                 case CutSetAnalysisAction.KIND:
                     this.handleCutSetAnalysisAction(message.action as CutSetAnalysisAction);
                     break;
-                    case MinimalCutSetAnalysisAction.KIND:
+                case MinimalCutSetAnalysisAction.KIND:
                     this.handleMinimalCutSetAnalysisAction(message.action as MinimalCutSetAnalysisAction);
                     break;
             }
@@ -60,24 +71,35 @@ export class StpaLspWebview extends LspWebviewEndpoint {
     }
 
     /**
-     * Sends the config option values to the webview
+     * Sends the storage option values to the webview
      */
-    protected sendConfigValues(): void {
-        const renderOptions: { id: string; value: any }[] = [];
-        const configOptions = vscode.workspace.getConfiguration("pasta");
-        renderOptions.push({ id: "colorStyle", value: configOptions.get("colorStyle") });
-        renderOptions.push({ id: "differentForms", value: configOptions.get("differentForms") });
-
-        this.sendAction({ kind: SendConfigAction.KIND, options: renderOptions } as SendConfigAction);
+    protected sendStorageValues(): void {
+        // load the render options from the storage and send them to the webview
+        const renderOptions: Record<string, any> = this.storage.getItem("renderOptions");
+        if (renderOptions) {
+            this.sendAction({
+                kind: UpdateStorageAction.KIND,
+                group: "renderOptions",
+                options: renderOptions,
+            } as UpdateStorageAction);
+        }
+        // load the synthesis options from the storage and send them to the webview
+        updateLanguageServerConfig(this.languageClient, this.storage, this.diagramIdentifier?.clientId ?? "");
     }
 
     /**
-     * Updates the configuration of the PASTA extension.
+     * Updates the storage of the PASTA extension.
      * @param action The action containing the configuration options.
      */
-    protected updateConfigValues(action: SendConfigAction): void {
-        const configOptions = vscode.workspace.getConfiguration("pasta");
-        action.options.forEach((element) => configOptions.update(element.id, element.value));
+    protected updateStorageValues(action: UpdateStorageAction): void {
+        let group = this.storage.getItem(action.group);
+        if (!group) {
+            group = {};
+        }
+        Object.entries(action.options).forEach(([key, value]) => {
+            group[key] = value;
+        });
+        this.storage.setItem(action.group, group);
     }
 
     /**

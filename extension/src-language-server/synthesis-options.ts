@@ -109,9 +109,33 @@ export class SynthesisOptions {
     protected options: ValuedSynthesisOption[];
 
     constructor() {
-        this.options = [layoutCategoryOption, labelManagementOption, labelShorteningWidthOption, modelOrderOption];
+        this.options = [layoutCategoryOption, modelOrderOption, labelManagementOption, labelShorteningWidthOption];
     }
 
+    /**
+     * Resets all synthesis options to their initial values.
+     */
+    resetAll(): void {
+        this.options.forEach(option => (option.currentValue = option.synthesisOption.initialValue));
+    }
+
+    /**
+     * Sets the value of the synthesis option with the given id.
+     * @param id The id of the synthesis option.
+     * @param value The new value of the synthesis option.
+     */
+    setOption(id: string, value: any): void {
+        const option = this.getOption(id);
+        if (option) {
+            option.currentValue = value;
+            option.synthesisOption.currentValue = value;
+        }
+    }
+
+    /**
+     * Returns all synthesis options.
+     * @returns all synthesis options.
+     */
     getSynthesisOptions(): ValuedSynthesisOption[] {
         return this.options;
     }

@@ -16,25 +16,69 @@
  */
 
 import * as vscode from "vscode";
+import { LanguageClient } from "vscode-languageclient/node";
+import { StpaLspVscodeExtension } from "./language-extension";
+import { StorageService } from "./storage-service";
 
 /**
  * Creates a quickpick containing the values "true" and "false". The selected value is set for the
  * configuration option determined by {@code id}.
+ * @param groupName The name of the group in which the configuration option is stored.
  * @param id The id of the configuration option that should be set.
+ * @param storage The storage service to store the value for the option.
+ * @param languageClient The language client to send the updated configuration to.
  */
-export function createQuickPickForWorkspaceOptions(id: string): void {
+export function createQuickPickForStorageOptions(
+    groupName: string,
+    id: string,
+    storage: StorageService,
+    languageClient: LanguageClient,
+    manager: StpaLspVscodeExtension
+): void {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = [{ label: "true" }, { label: "false" }];
     quickPick.onDidChangeSelection(selection => {
-        if (selection[0]?.label === "true") {
-            vscode.workspace.getConfiguration("pasta").update(id, true);
-        } else {
-            vscode.workspace.getConfiguration("pasta").update(id, false);
+        let group = storage.getItem(groupName);
+        if (!group) {
+            group = {};
         }
+        if (selection[0]?.label === "true") {
+            group[id] = true;
+        } else {
+            group[id] = false;
+        }
+        storage.setItem(groupName, group);
         quickPick.hide();
+        updateLanguageServerConfig(languageClient, storage, manager.clientId ?? "");
     });
     quickPick.onDidHide(() => quickPick.dispose());
     quickPick.show();
+}
+
+/**
+ * Sets the value for the configuration option determined by {@code id} to the given {@code value}.
+ * @param groupName The name of the group in which the configuration option is stored.
+ * @param id The id of the configuration option that should be set.
+ * @param value The value to set for the configuration option.
+ * @param storage The storage service to store the value for the option.
+ * @param languageClient The language client to send the updated configuration to.
+ * @param manager The manager of the extension.
+ */
+export function setStorageOption(
+    groupName: string,
+    id: string,
+    value: any,
+    storage: StorageService,
+    languageClient: LanguageClient,
+    manager: StpaLspVscodeExtension
+): void {
+    let group = storage.getItem(groupName);
+    if (!group) {
+        group = {};
+    }
+    group[id] = value;
+    storage.setItem(groupName, group);
+    updateLanguageServerConfig(languageClient, storage, manager.clientId ?? "");
 }
 
 /**
@@ -62,7 +106,7 @@ export async function handleWorkSpaceEdit(uri: string, text: string, position: v
         // count the line breaks to determine the end position
         const lineBreaks = text.match(/\n/g);
         const lines = lineBreaks ? lineBreaks.length : 1;
-        const endPos = { line: position.line + lines, character: 0} as vscode.Position;
+        const endPos = { line: position.line + lines, character: 0 } as vscode.Position;
         // select and reveal the inserted text
         activeEditor.selections = [new vscode.Selection(position, endPos)];
         activeEditor.revealRange(new vscode.Range(position, endPos));
@@ -87,23 +131,6 @@ export async function applyTextEdits(edits: vscode.TextEdit[], uri: string): Pro
         console.error("Workspace edit could not be applied!");
         return;
     }
-}
-
-/**
- * Collects the STPA options of the configuration settings and returns them as a list of their ids and values.
- * @param configuration The workspace configuration options.
- * @returns A list of the workspace options, whereby a option is represented with an id and its value.
- */
-export function collectOptions(configuration: vscode.WorkspaceConfiguration): { id: string; value: any }[] {
-    const values: { id: string; value: any }[] = [];
-    values.push({
-        id: "checkResponsibilitiesForConstraints",
-        value: configuration.get("checkResponsibilitiesForConstraints"),
-    });
-    values.push({ id: "checkConstraintsForUCAs", value: configuration.get("checkConstraintsForUCAs") });
-    values.push({ id: "checkScenariosForUCAs", value: configuration.get("checkScenariosForUCAs") });
-    values.push({ id: "checkSafetyRequirementsForUCAs", value: configuration.get("checkSafetyRequirementsForUCAs") });
-    return values;
 }
 
 /**
@@ -184,4 +211,18 @@ export function cutSetsToString(cutSets: string[], minimal?: boolean): string {
     text += ` cut sets are:\n`;
     text += `[${cutSets.join(",\n")}]`;
     return text;
+}
+
+/**
+ * Sends the updated configuration to the language server.
+ * @param languageClient The language client to send the updated configuration to.
+ * @param storage The storage service to get the configuration from.
+ * @param clientId The client id to send the configuration to.
+ */
+export function updateLanguageServerConfig(
+    languageClient: LanguageClient,
+    storage: StorageService,
+    clientId: string
+): void {
+    languageClient.sendNotification("config/init", { clientId: clientId, options: storage.getAllItems() });
 }
