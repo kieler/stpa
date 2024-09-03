@@ -360,6 +360,9 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                     case "too-late":
                         scenario += ` provided ${controlAction} in time, while ${contextText}, but it is executed too late.`;
                         break;
+                    case "too-early":
+                        scenario += ` provided ${controlAction} in time, while ${contextText}, but it is already executed before.`;
+                        break;
                     case "stopped-too-soon":
                         scenario += ` applied ${controlAction} long enough, while ${contextText}, but execution is stopped too soon.`;
                         break;
@@ -407,7 +410,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
         const uca = scenario.uca?.ref;
         if (uca) {
             if (uca.$type === Context) {
-                return this.generateScenarioForUCAWithContextTable(uca);
+                return this.generateScenarioForUCAWithContextTable(uca) + " TODO";
             } else {
                 return this.generateScenarioForUCAWithPlainText(uca);
             }
@@ -451,7 +454,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
 
         text += `, while`;
         text += this.createContextText(context);
-        text += ". TODO";
+        text += ".";
 
         return text;
     }
