@@ -26,6 +26,7 @@ import { ContextTableProvider } from "./contextTable/context-dataProvider";
 import { StpaDiagramGenerator } from "./diagram/diagram-generator";
 import { StpaLayoutConfigurator } from "./diagram/layout-config";
 import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options";
+import { STPACompletionProvider } from "./stpa-completion-provider";
 import { StpaScopeProvider } from "./stpa-scopeProvider";
 import { StpaValidationRegistry, StpaValidator } from "./stpa-validator";
 
@@ -33,6 +34,9 @@ import { StpaValidationRegistry, StpaValidator } from "./stpa-validator";
  * Declaration of custom services - add your own service classes here.
  */
 export type StpaAddedServices = {
+    lsp: {
+        ScenarioCompletionProvider: STPACompletionProvider;
+    };
     references: {
         StpaScopeProvider: StpaScopeProvider;
     };
@@ -78,6 +82,10 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
                 services.layout.ElementFilter,
                 services.layout.LayoutConfigurator
             ) as any,
+    },
+    lsp: {
+        CompletionProvider: services => new STPACompletionProvider(services),
+        ScenarioCompletionProvider: services => new STPACompletionProvider(services),
     },
     references: {
         ScopeProvider: services => new StpaScopeProvider(services),

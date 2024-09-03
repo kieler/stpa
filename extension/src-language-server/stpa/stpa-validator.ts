@@ -84,6 +84,7 @@ export class StpaValidator {
      */
     checkModel(model: Model, accept: ValidationAcceptor): void {
         this.checkAllAspectsPresent(model, accept);
+        this.checkForTODOs(model, accept);
 
         const hazards = collectElementsWithSubComps(model.hazards) as Hazard[];
         const sysCons = collectElementsWithSubComps(model.systemLevelConstraints) as SystemConstraint[];
@@ -179,7 +180,7 @@ export class StpaValidator {
      * Check whether the control actions of a node are referenced by at least one UCA.
      * @param nodes The nodes to check.
      * @param ucaActions The control actions that are referenced by a UCA.
-     * @param accept 
+     * @param accept
      */
     protected checkControlActionsReferencedByUCA(
         nodes: Node[],
@@ -353,8 +354,13 @@ export class StpaValidator {
         let isSame = true;
         // check whether context1 is a subset of context2
         for (let i = 0; i < context1.assignedValues.length; i++) {
-            const varIndex = context2.assignedValues.findIndex(v => v.variable.$refText === context1.assignedValues[i].variable.$refText);
-            if (varIndex === -1 || context2.assignedValues[varIndex].value.$refText !== context1.assignedValues[i].value.$refText) {
+            const varIndex = context2.assignedValues.findIndex(
+                v => v.variable.$refText === context1.assignedValues[i].variable.$refText
+            );
+            if (
+                varIndex === -1 ||
+                context2.assignedValues[varIndex].value.$refText !== context1.assignedValues[i].value.$refText
+            ) {
                 isSame = false;
                 break;
             }
@@ -363,8 +369,13 @@ export class StpaValidator {
             isSame = true;
             // check whether context2 is a subset of context1
             for (let i = 0; i < context2.assignedValues.length; i++) {
-                const varIndex = context1.assignedValues.findIndex(v => v.variable.$refText === context2.assignedValues[i].variable.$refText);
-                if (varIndex === -1 || context1.assignedValues[varIndex].value.$refText !== context2.assignedValues[i].value.$refText) {
+                const varIndex = context1.assignedValues.findIndex(
+                    v => v.variable.$refText === context2.assignedValues[i].variable.$refText
+                );
+                if (
+                    varIndex === -1 ||
+                    context1.assignedValues[varIndex].value.$refText !== context2.assignedValues[i].value.$refText
+                ) {
                     isSame = false;
                     break;
                 }
@@ -543,6 +554,73 @@ export class StpaValidator {
         if (missing) {
             accept("info", text, { node: model, range: { start: start, end: end } });
         }
+    }
+
+    /**
+     * Checks whether the model contains any TODOs.
+     * @param model The model to check.
+     * @param accept 
+     */
+    protected checkForTODOs(model: Model, accept: ValidationAcceptor): void {
+        model.losses.forEach(loss => {
+            if (loss.description && loss.description.includes("TODO")) {
+                accept("info", "This element contains a TODO", { node: loss, property: "description" });
+            }
+        });
+        model.hazards.forEach(hazard => {
+            if (hazard.description && hazard.description.includes("TODO")) {
+                accept("info", "This element contains a TODO", { node: hazard, property: "description" });
+            }
+        });
+        model.systemLevelConstraints.forEach(sysCon => {
+            if (sysCon.description && sysCon.description.includes("TODO")) {
+                accept("info", "This element contains a TODO", { node: sysCon, property: "description" });
+            }
+        });
+        model.responsibilities.forEach(resp => {
+            resp.responsiblitiesForOneSystem.forEach(responsibility => {
+                if (responsibility.description && responsibility.description.includes("TODO")) {
+                    accept("info", "This element contains a TODO", { node: responsibility, property: "description" });
+                }
+            });
+        });
+        model.allUCAs.forEach(uca => {
+            uca.providingUcas.forEach(providingUca => {
+                if (providingUca.description && providingUca.description.includes("TODO")) {
+                    accept("info", "This element contains a TODO", { node: providingUca, property: "description" });
+                }
+            });
+            uca.notProvidingUcas.forEach(notProvidingUca => {
+                if (notProvidingUca.description && notProvidingUca.description.includes("TODO")) {
+                    accept("info", "This element contains a TODO", { node: notProvidingUca, property: "description" });
+                }
+            });
+            uca.wrongTimingUcas.forEach(wrongTimingUca => {
+                if (wrongTimingUca.description && wrongTimingUca.description.includes("TODO")) {
+                    accept("info", "This element contains a TODO", { node: wrongTimingUca, property: "description" });
+                }
+            });
+            uca.continousUcas.forEach(continousUca => {
+                if (continousUca.description && continousUca.description.includes("TODO")) {
+                    accept("info", "This element contains a TODO", { node: continousUca, property: "description" });
+                }
+            });
+        });
+        model.controllerConstraints.forEach(constraint => {
+            if (constraint.description && constraint.description.includes("TODO")) {
+                accept("info", "This element contains a TODO", { node: constraint, property: "description" });
+            }
+        });
+        model.scenarios.forEach(scenario => {
+            if (scenario.description && scenario.description.includes("TODO")) {
+                accept("info", "This element contains a TODO", { node: scenario, property: "description" });
+            }
+        });
+        model.safetyCons.forEach(safetyReq => {
+            if (safetyReq.description && safetyReq.description.includes("TODO")) {
+                accept("info", "This element contains a TODO", { node: safetyReq, property: "description" });
+            }
+        });
     }
 
     /**
