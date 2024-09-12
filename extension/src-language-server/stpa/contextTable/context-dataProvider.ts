@@ -105,7 +105,7 @@ export class ContextTableProvider {
                 // determine context variables
                 const contextVariables: ContextTableVariable[] = [];
                 for (const assignedValue of context.assignedValues) {
-                    if (assignedValue.variable.ref?.name) {
+                    if (assignedValue.variable?.ref?.name && assignedValue.value?.$refText) {
                         contextVariables.push({ name: assignedValue.variable.ref.name, value: assignedValue.value.$refText });
                     }
                 }
