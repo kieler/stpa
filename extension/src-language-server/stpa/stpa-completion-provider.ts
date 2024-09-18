@@ -308,21 +308,23 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
      * @param acceptor The completion acceptor to add the completion items.
      */
     protected completionForScenario(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
-        if (context.node?.$type === LossScenario) {
-            if (next.property === "description") {
-                const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
-                if (generatedText !== "") {
-                    acceptor({
-                        label: "Generate UCA Text",
-                        kind: CompletionItemKind.Text,
-                        insertText: generatedText,
-                        detail: "Inserts the UCA text for this scenario.",
-                        sortText: "0",
-                    });
-                }
+        if (context.node?.$type === LossScenario && next.property === "description") {
+            const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
+            if (generatedText !== "") {
+                acceptor({
+                    label: "Generate UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: generatedText,
+                    detail: "Inserts the UCA text for this scenario.",
+                    sortText: "0",
+                });
             }
-            if (next.type === LossScenario && next.property === "name") {
-                const generatedBasicScenariosText = this.generateBasicScenarios(context.node.$container as Model);
+        }
+        if (next.type === LossScenario && next.property === "name") {
+            const model =
+                context.node?.$type === LossScenario ? context.node.$container : context.node?.$container?.$container;
+            if (isModel(model)) {
+                const generatedBasicScenariosText = this.generateBasicScenarios(model);
                 if (generatedBasicScenariosText !== "") {
                     acceptor({
                         label: "Generate Basic Scenarios",
@@ -468,10 +470,10 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
         let text = ``;
         context.assignedValues.forEach((assignedValue, index) => {
             if (index > 0) {
-                text += ", ";
+                text += ",";
             }
-            if ((index += context.assignedValues.length - 1)) {
-                text += ", and";
+            if (context.assignedValues.length > 1 && index === context.assignedValues.length - 1) {
+                text += " and";
             }
             text += ` ${assignedValue.variable.$refText} was ${assignedValue.value.$refText}`;
         });
