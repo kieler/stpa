@@ -4,7 +4,7 @@
     "description": "A DSL for STPA. Includes an automatic visualization of the defined relationships and control structure.",
     "version": "0.5.0",
     "publisher": "kieler",
-    "author": "Kiel University <rt-kieler-devel@informatik.uni-kiel.de>",
+    "author": "KIELER <kieler@rtsys.informatik.uni-kiel.de>",
     "icon": "icon.png",
     "license": "EPL-2.0",
     "repository": {
