@@ -34,9 +34,9 @@ import {
     DCARule,
     DCAContext,
     isRule,
-} from "../generated/ast";
-import { StpaServices } from "./stpa-module";
-import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
+} from "../../generated/ast";
+import { StpaServices } from "../stpa-module";
+import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils";
 
 /**
  * Registry for validation checks.

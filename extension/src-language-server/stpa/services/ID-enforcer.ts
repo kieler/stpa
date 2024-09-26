@@ -34,9 +34,9 @@ import {
     SafetyConstraint,
     SystemConstraint,
     SystemResponsibilities
-} from "../generated/ast";
-import { StpaServices } from "./stpa-module";
-import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "./utils";
+} from "../../generated/ast";
+import { StpaServices } from "../stpa-module";
+import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils";
 
 /**
  * Default prefixes for the different STPA aspects.
