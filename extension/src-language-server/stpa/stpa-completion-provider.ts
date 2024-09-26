@@ -24,7 +24,18 @@ import {
     NextFeature,
 } from "langium";
 import { CompletionItemKind } from "vscode-languageserver";
-import { Context, isModel, isVerticalEdge, LossScenario, Model, Node, Rule, UCA, VerticalEdge } from "../generated/ast";
+import {
+    Context,
+    ControllerConstraint,
+    isModel,
+    isVerticalEdge,
+    LossScenario,
+    Model,
+    Node,
+    Rule,
+    UCA,
+    VerticalEdge,
+} from "../generated/ast";
 
 /**
  * Generates UCA text for loss scenarios by providing an additional completion item.
@@ -49,6 +60,70 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
             this.completionForScenario(context, next, acceptor);
             this.completionForUCA(context, next, acceptor);
             this.completionForUCARule(context, next, acceptor);
+            this.completionForControllerConstraints(context, next, acceptor);
+        }
+    }
+
+    /**
+     * Adds a completion item for generating controller constraints if the current context is a controller constraint.
+     * @param context The completion context.
+     * @param next The next feature of the current rule to be called.
+     * @param acceptor The completion acceptor to add the completion items.
+     */
+    protected completionForControllerConstraints(
+        context: CompletionContext,
+        next: NextFeature,
+        acceptor: CompletionAcceptor
+    ): void {
+        if (next.type === ControllerConstraint && next.property === "name") {
+            // get the model for the current controller constraint
+            let model = context.node;
+            while (model && !isModel(model)) {
+                model = model.$container;
+            }
+            if (isModel(model)) {
+                let generatedText = ``;
+                model.rules.forEach(rule => {
+                    const system = rule.system.ref?.label ?? rule.system.$refText;
+                    const controlAction = `the control action '${rule.action.ref?.label}'`;
+                    rule.contexts.forEach(context => {
+                        // create constraint text for each context
+                        generatedText += `C "${system}`;
+                        const contextText = this.createContextText(context, true);
+                        switch (rule.type) {
+                            case "not-provided":
+                                generatedText += ` must provide ${controlAction}, while ${contextText}.`;
+                                break;
+                            case "provided":
+                                generatedText += ` must not provided ${controlAction}, while ${contextText}.`;
+                                break;
+                            case "too-late":
+                                generatedText += ` must provide ${controlAction} in time, while ${contextText}.`;
+                                break;
+                            case "too-early":
+                                generatedText += ` must not provide ${controlAction} before ${contextText}.`;
+                                break;
+                            case "stopped-too-soon":
+                                generatedText += ` must not stop ${controlAction} too soon, while ${contextText}.`;
+                                break;
+                            case "applied-too-long":
+                                generatedText += ` must not apply ${controlAction} too long, while ${contextText}.`;
+                                break;
+                        }
+                        // add reference to the UCA
+                        generatedText += `" [${context.name}]\n`;
+                    });
+                });
+
+                // add the generated text as completion item
+                acceptor({
+                    label: "Generate Constraints for the UCAs",
+                    kind: CompletionItemKind.Snippet,
+                    insertText: generatedText,
+                    detail: "Inserts a controller constraint for each UCA.",
+                    sortText: "0",
+                });
+            }
         }
     }
 
@@ -308,21 +383,23 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
      * @param acceptor The completion acceptor to add the completion items.
      */
     protected completionForScenario(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
-        if (context.node?.$type === LossScenario) {
-            if (next.property === "description") {
-                const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
-                if (generatedText !== "") {
-                    acceptor({
-                        label: "Generate UCA Text",
-                        kind: CompletionItemKind.Text,
-                        insertText: generatedText,
-                        detail: "Inserts the UCA text for this scenario.",
-                        sortText: "0",
-                    });
-                }
+        if (context.node?.$type === LossScenario && next.property === "description") {
+            const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
+            if (generatedText !== "") {
+                acceptor({
+                    label: "Generate UCA Text",
+                    kind: CompletionItemKind.Text,
+                    insertText: generatedText,
+                    detail: "Inserts the UCA text for this scenario.",
+                    sortText: "0",
+                });
             }
-            if (next.type === LossScenario && next.property === "name") {
-                const generatedBasicScenariosText = this.generateBasicScenarios(context.node.$container as Model);
+        }
+        if (next.type === LossScenario && next.property === "name") {
+            const model =
+                context.node?.$type === LossScenario ? context.node.$container : context.node?.$container?.$container;
+            if (isModel(model)) {
+                const generatedBasicScenariosText = this.generateBasicScenarios(model);
                 if (generatedBasicScenariosText !== "") {
                     acceptor({
                         label: "Generate Basic Scenarios",
@@ -349,7 +426,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
             rule.contexts.forEach(context => {
                 // add scenario for actuator/controlled process failure
                 let scenario = `${system}`;
-                const contextText = this.createContextText(context);
+                const contextText = this.createContextText(context, false);
                 switch (rule.type) {
                     case "not-provided":
                         scenario += ` provided ${controlAction}, while ${contextText}, but it is not executed.`;
@@ -453,7 +530,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
         }
 
         text += `, while`;
-        text += this.createContextText(context);
+        text += this.createContextText(context, false);
         text += ".";
 
         return text;
@@ -462,18 +539,20 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
     /**
      * Creates a text for the given context {@code context}.
      * @param context The context for which the text should be generated.
+     * @param present If true the text is generated in present tense, otherwise in past tense.
      * @returns the generated text.
      */
-    protected createContextText(context: Context): string {
+    protected createContextText(context: Context, present: boolean): string {
         let text = ``;
+        const tense = present ? "is" : "was";
         context.assignedValues.forEach((assignedValue, index) => {
             if (index > 0) {
-                text += ", ";
+                text += ",";
             }
-            if ((index += context.assignedValues.length - 1)) {
-                text += ", and";
+            if (context.assignedValues.length > 1 && index === context.assignedValues.length - 1) {
+                text += " and";
             }
-            text += ` ${assignedValue.variable.$refText} was ${assignedValue.value.$refText}`;
+            text += ` ${assignedValue.variable.$refText} ${tense} ${assignedValue.value.$refText}`;
         });
         return text;
     }

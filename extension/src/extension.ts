@@ -537,7 +537,9 @@ async function updateViews(manager: StpaLspVscodeExtension, document?: vscode.Te
 
         // update the context table
         if (manager.contextTable) {
-            languageClient.sendNotification("contextTable/getData", document.uri.toString());
+            if (document.uri.toString().endsWith(".stpa")) {
+                languageClient.sendNotification("contextTable/getData", document.uri.toString());
+            }
         }
     }
 }
