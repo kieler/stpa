@@ -19,7 +19,7 @@ import { AstNode, LangiumSharedServices } from "langium";
 import { IdCache, LangiumSprottySharedServices } from "langium-sprotty";
 import { SLabel } from "sprotty-protocol";
 import { URI } from "vscode-uri";
-import { StpaValidator } from "./stpa/stpa-validator";
+import { StpaValidator } from "./stpa/services/stpa-validator";
 import { labelManagementValue } from "./synthesis-options";
 
 /**
