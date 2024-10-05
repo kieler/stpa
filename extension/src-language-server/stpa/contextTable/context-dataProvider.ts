@@ -105,20 +105,20 @@ export class ContextTableProvider {
                 // determine context variables
                 const contextVariables: ContextTableVariable[] = [];
                 for (const assignedValue of context.assignedValues) {
-                    if (assignedValue.variable.ref?.name) {
+                    if (assignedValue.variable?.ref?.name && assignedValue.value?.$refText) {
                         contextVariables.push({ name: assignedValue.variable.ref.name, value: assignedValue.value.$refText });
                     }
                 }
                 //determine hazards
                 const hazards: string[] = [];
-                const hazardList = context.list.refs;
-                hazardList.forEach((hazard) => {
+                const hazardList = context.list?.refs;
+                hazardList?.forEach((hazard) => {
                     if (hazard.ref?.name) {
                         hazards.push(hazard.ref.name);
                     }
                 });
                 // create rule/uca
-                if (rule.action.ref?.name && rule.system.ref?.name) {
+                if (rule.action?.ref?.name && rule.system?.ref?.name) {
                     rules.push({
                         id: context.name,
                         controlAction: { controller: rule.system.ref!.name, action: rule.action.ref!.name },

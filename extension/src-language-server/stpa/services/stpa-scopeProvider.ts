@@ -59,8 +59,8 @@ import {
     isSystemConstraint,
     isSystemResponsibilities,
     isVerticalEdge
-} from "../generated/ast";
-import { StpaServices } from "./stpa-module";
+} from "../../generated/ast";
+import { StpaServices } from "../stpa-module";
 
 export class StpaScopeProvider extends DefaultScopeProvider {
     /* the types of the different aspects */

@@ -14,8 +14,8 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version: "16.x"
                   registry-url: 'https://registry.npmjs.org'
@@ -32,8 +32,8 @@ jobs:
         # Github has no official action for this. Uses: https://github.com/JasonEtco/upload-to-release
         # Uploads each CLI asset separately to create more targeted download options
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
               with:
                   node-version: "16.x"
             - run: yarn
