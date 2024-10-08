@@ -28,10 +28,11 @@ Alternatively the textual representation can be entered in the diagram snippets 
 
 Instead of informal UCA definitions a context table may be used. This is done by using the section `Context-Table` instead of `UCAs`. A context table can then be generated automatically and shown alongside the diagram by selecting `Show Context Tables` in the editor context menu or the corresponding icon right above the editor. Clicking on a UCA in the context table highlights the corresponding node in the diagram and its definition in the editor. In the context table view a control action can be selected in order to inspect it. 
 
-### Completion Item
+### Automation through Completion Item
 
 Partly information is repeated in STPA e.g. when defining a scenario for a UCA, the UCA itself is written down again. 
-To reduce the time effort, PASTA offers completion items, which generate text automatically based on the informations already stated in other components. 
+To reduce the time effort, PASTA offers completion items, which generate text automatically based on the informations already stated in other components.
+To access completion items, press `ctrl` + `space`.
 The following completion items are provided:
 * create system component
 * create starting text for a plain text UCA
@@ -51,7 +52,19 @@ The markdown file can easily be exported to a PDF file.
 
 ### Safe Behavioral Model Generation
 
-In the context menu an option to automatically generate a safe behavioral model as an SCChart is provided. For that the defined UCAs are translated to LTL formulas, which are further used to create the SCChart. This guarantees that the identified UCAs cannot occur since the LTL formulas are respected except the ones for the UCA type too early. 
+In the context menu an option to automatically generate a safe behavioral model as an SCChart is provided. 
+For that the defined UCAs are translated to LTL formulas, which are further used to create the SCChart.
+This guarantees that the identified UCAs cannot occur since the LTL formulas are respected except the ones for the UCA type too early.
+For the generation you can define ranges for the process model variable values with standard range notation and the keywords `MIN` and `MAX`.
+Example process model:
+```
+processModel {
+    currentSpeed: [desiredSpeed=[desiredSpeed], lessDesiredSpeed = [MIN, desiredSpeed), greaterDesiredSpeed=(desiredSpeed, MAX]]
+}
+```
+In this case the controller has the process model variable `currentSpeed` which can take the values `desiredSpeed`, `lessDesiredSpeed`, and `greaterDesiredSpeed`.
+For each of these values, the range it covers is defined.
+`lessDesiredSpeed` covers every speed under the desired one, `greaterDesiredSpeed` every speed above the desired speed, and `desiredSpeed` only the desired speed.
 
 The SCChart language and an automatic visualization is provided by the two KIELER extensions [KLighD Diagrams](https://marketplace.visualstudio.com/items?itemName=kieler.klighd-vscode) and [KIELER VS Code](https://marketplace.visualstudio.com/items?itemName=kieler.keith-vscode).
 
@@ -65,7 +78,12 @@ Furthermore, after an STPA is done, a corresponding Fault Tree can be generated 
 
 ### STPA
 
-To use the extension for an analysis, the file in which the analysis is done must have `.stpa` as its file ending. Each STPA aspect has its own section in the DSL. Components for each aspect are defined with an ID, a description, and a reference list. In order to define a new component, the prefix of the corresponding aspect must be stated, for example "L", and afterwards a string with the description. The numbering of the IDs is adjusted automatically. For Hazards and system-level constraints subcomponents can be defined.
+To use the extension for an analysis, the file in which the analysis is done must have `.stpa` as its file ending. 
+Each STPA aspect has its own section in the DSL. Components for each aspect are defined with an ID, a description, and a reference list. 
+In order to define a new component, the prefix of the corresponding aspect must be stated, for example "L", and afterwards a string with the description. 
+The numbering of the IDs is adjusted automatically. 
+For Hazards and system-level constraints subcomponents can be defined.
+For scenarios the causal factor can stated.
 
 In the control structure, system components can be stated, which can contain a process model, input, output, control actions, feedback, and further system components. The visualization of input and output edges is in an experimental state at the moment and will be improved in the future.
 
@@ -137,7 +155,7 @@ ControllerConstraints
 C1 "ControlCentre must provide the Manual setting control action during VC malfunctioning and vessel too close to No Go Area" [UCA1]
 
 LossScenarios
-Scenario1 for UCA1 "Abnormal vessel behavior occurs. Vessel comes too close to a No Go Area and ControlCentre does not manual set the parameters of the engine, causing the entering of a No Go Area." [H1]
+Scenario1 <componentFailure> for UCA1 "Abnormal vessel behavior occurs. Vessel comes too close to a No Go Area and ControlCentre does not manual set the parameters of the engine, causing the entering of a No Go Area." [H1]
 Scenario2 "Virtual Captain sends the Set parameters command upon coming too close to a No Go Area, but decceleration is not applied due to actuator failure." [H1]
 
 SafetyRequirements
