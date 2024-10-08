@@ -291,9 +291,10 @@ const showLabelsOption: ValuedSynthesisOption = {
         id: showLabelsID,
         name: "Show Labels of",
         type: TransformationOptionType.DROPDOWN,
-        currentId: "losses",
+        currentId: "automatic",
         availableValues: [
             { displayName: "All", id: "all" },
+            { displayName: "Automatic", id: "automatic" },
             { displayName: "Losses", id: "losses" },
             { displayName: "Hazards", id: "hazards" },
             { displayName: "System Constraints", id: "systemConstraints" },
@@ -302,14 +303,13 @@ const showLabelsOption: ValuedSynthesisOption = {
             { displayName: "Controller Constraints", id: "controllerConstraints" },
             { displayName: "Scenarios", id: "scenarios" },
             { displayName: "Safety Constraints", id: "safetyConstraints" },
-            { displayName: "Automatic", id: "automatic" },
         ],
-        initialValue: "losses",
-        currentValue: "losses",
+        initialValue: "automatic",
+        currentValue: "automatic",
         values: [],
         category: layoutCategory,
     } as DropDownOption,
-    currentValue: "losses",
+    currentValue: "automatic",
 };
 
 /**
@@ -317,6 +317,7 @@ const showLabelsOption: ValuedSynthesisOption = {
  */
 export enum showLabelsValue {
     ALL,
+    AUTOMATIC,
     LOSSES,
     HAZARDS,
     SYSTEM_CONSTRAINTS,
@@ -325,7 +326,6 @@ export enum showLabelsValue {
     CONTROLLER_CONSTRAINTS,
     SCENARIOS,
     SAFETY_CONSTRAINTS,
-    AUTOMATIC,
 }
 
 export class StpaSynthesisOptions extends SynthesisOptions {
