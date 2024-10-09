@@ -41,6 +41,7 @@ const filterCategoryID = "filterCategory";
 
 const showControlStructureID = "showControlStructure";
 const showProcessModelsID = "showProcessModels";
+const showUnclosedFeedbackLoopsID = "showUnclosedFeedbackLoops";
 const showRelationshipGraphID = "showRelationshipGraph";
 
 /**
@@ -313,6 +314,22 @@ const showLabelsOption: ValuedSynthesisOption = {
 };
 
 /**
+ * Boolean option to toggle the visualization of missing feedback in the control structure.
+ */
+const showUnclosedFeedbackLoopsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showUnclosedFeedbackLoopsID,
+        name: "Missing Feedback Loops",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false],
+        category: filterCategory,
+    },
+    currentValue: true,
+};
+
+/**
  * Values for filtering the node labels.
  */
 export enum showLabelsValue {
@@ -340,6 +357,7 @@ export class StpaSynthesisOptions extends SynthesisOptions {
                 filteringOfUCAs,
                 showControlStructureOption,
                 showProcessModelsOption,
+                showUnclosedFeedbackLoopsOption,
                 showRelationshipGraphOption,
                 showSysConsOption,
                 showRespsOption,
@@ -509,6 +527,14 @@ export class StpaSynthesisOptions extends SynthesisOptions {
 
     getShowSafetyConstraints(): boolean {
         return this.getOption(showSafetyConstraintsID)?.currentValue;
+    }
+
+    setShowUnclosedFeedbackLoops(value: boolean): void {
+        this.setOption(showUnclosedFeedbackLoopsID, value);
+    }
+
+    getShowUnclosedFeedbackLoopsOption(): boolean {
+        return this.getOption(showUnclosedFeedbackLoopsID)?.currentValue;
     }
 
     /**

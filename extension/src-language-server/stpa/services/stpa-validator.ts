@@ -20,19 +20,19 @@ import { Position } from "vscode-languageserver-types";
 import {
     Context,
     ControllerConstraint,
+    DCAContext,
+    DCARule,
+    Graph,
     Hazard,
     HazardList,
     Loss,
     Model,
     Node,
-    Responsibility,
     PastaAstType,
+    Responsibility,
+    Rule,
     SystemConstraint,
     isModel,
-    Graph,
-    Rule,
-    DCARule,
-    DCAContext,
     isRule,
 } from "../../generated/ast";
 import { StpaServices } from "../stpa-module";
@@ -76,6 +76,11 @@ export class StpaValidator {
     checkSafetyRequirementsForUCAs = true;
 
     checkForConflictingUCAs = true;
+
+    /**
+     * Map from node ID to a list of nodes to which a feedback is missing.
+     */
+    missingFeedback: Map<string, Node[]> = new Map();
 
     /**
      * Executes validation checks for the whole model.
@@ -434,6 +439,37 @@ export class StpaValidator {
     checkControlStructure(graph: Graph, accept: ValidationAcceptor): void {
         const nodes = [...graph.nodes, ...graph.nodes.map(node => this.getChildren(node)).flat(1)];
         this.checkIDsAreUnique(nodes, accept);
+        this.checkForMissingFeedback(nodes, accept);
+    }
+
+    /**
+     * Checks whether feedback is missing in the control structure and fills the missingFeedback map.
+     * @param nodes The nodes of the control structure.
+     * @param accept 
+     */
+    protected checkForMissingFeedback(nodes: Node[], accept: ValidationAcceptor): void {
+        // TODO: show missing feedback as warning in editor??
+        this.missingFeedback.clear();
+        for (const node of nodes) {
+            const nodeID = node.name;
+            // check for each action of the node whether feedback is missing
+            node.actions.forEach(action => {
+                const target = action.target.ref;
+                if (target) {
+                    // check if target sents feedback back
+                    const sentFeedback = target.feedbacks.find(feedback => feedback.target.$refText === nodeID);
+                    if (!sentFeedback) {
+                        // add the missing feedback to the map
+                        const targetID = target.name;
+                        if (!this.missingFeedback.has(targetID)) {
+                            this.missingFeedback.set(targetID, [node]);
+                        } else {
+                            this.missingFeedback.get(targetID)?.push(node);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -559,7 +595,7 @@ export class StpaValidator {
     /**
      * Checks whether the model contains any TODOs.
      * @param model The model to check.
-     * @param accept 
+     * @param accept
      */
     protected checkForTODOs(model: Model, accept: ValidationAcceptor): void {
         model.losses.forEach(loss => {

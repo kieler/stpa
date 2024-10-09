@@ -161,7 +161,14 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
         if (filteredModel.controlStructure) {
             // add control structure to roots children
             rootChildren.push(
-                createControlStructure(filteredModel.controlStructure, this.idToSNode, this.options, this.idCache)
+                createControlStructure(
+                    filteredModel.controlStructure,
+                    this.idToSNode,
+                    this.options,
+                    this.idCache,
+                    this.options.getShowUnclosedFeedbackLoopsOption(),
+                    this.services.validation.StpaValidator.missingFeedback
+                )
             );
         }
         // add relationship graph to roots children
