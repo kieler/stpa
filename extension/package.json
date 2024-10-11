@@ -193,12 +193,12 @@
                 "category": "STPA Snippets"
             },
             {
-                "command": "pasta.stpa.setIDGeneration",
+                "command": "pasta.stpa.setGenerateIDs",
                 "title": "Automatic ID Generation",
                 "category": "STPA ID Enforcement"
             },
             {
-                "command": "pasta.stpa.unsetIDGeneration",
+                "command": "pasta.stpa.unsetGenerateIDs",
                 "title": "✓ Automatic ID Generation",
                 "category": "STPA ID Enforcement"
             }
@@ -293,12 +293,12 @@
                     "when": "editorLangId == 'stpa'"
                 },
                 {
-                    "command": "pasta.stpa.setIDGeneration",
-                    "when": "editorLangId == 'stpa' && pasta.idGeneration == false"
+                    "command": "pasta.stpa.setGenerateIDs",
+                    "when": "editorLangId == 'stpa' && pasta.generateIDs == false"
                 },
                 {
-                    "command": "pasta.stpa.unsetIDGeneration",
-                    "when": "editorLangId == 'stpa' && pasta.idGeneration == true"
+                    "command": "pasta.stpa.unsetGenerateIDs",
+                    "when": "editorLangId == 'stpa' && pasta.generateIDs == true"
                 },
                 {
                     "command": "pasta.fta.cutSets",
@@ -351,13 +351,13 @@
                     "group": "stpa@4"
                 },
                 {
-                    "command": "pasta.stpa.setIDGeneration",
-                    "when": "editorLangId == 'stpa' && pasta.idGeneration == false",
+                    "command": "pasta.stpa.setGenerateIDs",
+                    "when": "editorLangId == 'stpa' && pasta.generateIDs == false",
                     "group": "stpa@1"
                 },
                 {
-                    "command": "pasta.stpa.unsetIDGeneration",
-                    "when": "editorLangId == 'stpa' && pasta.idGeneration == true",
+                    "command": "pasta.stpa.unsetGenerateIDs",
+                    "when": "editorLangId == 'stpa' && pasta.generateIDs == true",
                     "group": "stpa@1"
                 },
                 {
