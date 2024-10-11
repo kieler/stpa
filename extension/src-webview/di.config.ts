@@ -95,6 +95,7 @@ import {
     PolylineArrowEdgeView,
     PortView,
     STPAGraphView,
+    PastaLabelView,
     STPANodeView,
 } from "./stpa/stpa-views";
 import { snippetModule } from './snippets/snippet-module';
@@ -119,8 +120,8 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
-    configureModelElement(context, "label", SLabel, SLabelView);
-    configureModelElement(context, "label:xref", SLabel, SLabelView);
+    configureModelElement(context, "label", SLabel, PastaLabelView);
+    configureModelElement(context, "label:xref", SLabel, PastaLabelView);
     configureModelElement(context, HEADER_LABEL_TYPE, SLabel, HeaderLabelView);
     configureModelElement(context, "html", HtmlRoot, HtmlRootView);
     configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);

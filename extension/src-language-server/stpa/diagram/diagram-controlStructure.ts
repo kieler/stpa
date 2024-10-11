@@ -264,19 +264,27 @@ export function translateCommandsToEdges(
     // add missing feedback edges
     if (addMissing && missingFeedback) {
         // add feedback edge to each node to which a feedback is missing
+        let hasMissingFeedback = false;
         for (const target of missingFeedback.get(source?.name ?? "") ?? []) {
             if (source && target) {
+                hasMissingFeedback = true;
                 createEdgeForCommand(
                     source,
                     target,
                     idCache.uniqueId(`${source?.name}_missingFeedback_${target}`),
-                    EdgeType.FEEDBACK,
-                    // TODO: mark edge as missing to render it red
-                    ["MISSING FEEDBACK"],
+                    EdgeType.MISSING_FEEDBACK,
+                    ["MISSING"],
                     idToSNode,
                     idCache,
                     edges
                 );
+            }
+        }
+        // set flag for missing feedback to the source node
+        if (hasMissingFeedback) {
+            const sourceNode = idToSNode.get(idCache.getId(source) ?? "");
+            if (sourceNode && sourceNode.type === CS_NODE_TYPE) {
+                (sourceNode as CSNode).hasMissingFeedback = true;
             }
         }
     }

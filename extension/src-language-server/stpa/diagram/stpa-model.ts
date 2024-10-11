@@ -52,6 +52,7 @@ export enum STPAAspect {
 export enum EdgeType {
     CONTROL_ACTION,
     FEEDBACK,
+    MISSING_FEEDBACK,
     INPUT,
     OUTPUT,
     UNDEFINED

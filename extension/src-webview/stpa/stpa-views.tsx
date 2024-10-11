@@ -24,7 +24,7 @@ import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '.
 import { SendModelRendererAction } from '../snippets/actions';
 import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
-import { CSEdge, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
+import { CSEdge, CSNode, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, CS_NODE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
 /** Determines if path/aspect highlighting is currently on. */
 let highlighting: boolean;
@@ -46,6 +46,8 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const hidden = (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) && highlighting && !(edge as STPAEdge).highlight;
         // feedback edges in the control structure should be dashed
         const feedbackEdge = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
+        // edges that represent missing edges should be highlighted
+        const missing = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.MISSING_FEEDBACK;
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const printEdge = colorStyle === "black & white";
@@ -57,7 +59,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
         }
         return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge}
-            class-feedback-edge={feedbackEdge} class-greyed-out={hidden} aspect={aspect} d={path} />;
+            class-feedback-edge={feedbackEdge} class-missing-edge={missing} class-greyed-out={hidden} aspect={aspect} d={path} />;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
@@ -76,8 +78,11 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         if (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) {
             aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
         }
+        // edges that represent missing edges should be highlighted
+        const missing = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.MISSING_FEEDBACK;
+
         return [
-            <path class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-greyed-out={hidden} aspect={aspect}
+            <path  class-missing-edge-arrow={missing} class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-greyed-out={hidden} aspect={aspect}
                 class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
                 transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} />
         ];
@@ -208,8 +213,10 @@ export class CSNodeView extends RectangularNodeView {
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const sprottyNode = colorStyle === "standard";
         const printNode = !sprottyNode;
+        const missingFeedback = node.type === CS_NODE_TYPE && (node as CSNode).hasMissingFeedback;
         return <g>
-            <rect class-print-node={printNode}
+            <rect 
+                class-missing-feedback-node={missingFeedback} class-print-node={printNode}
                 class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
                 class-mouseover={node.hoverFeedback} class-selected={node.selected}
                 x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
@@ -262,6 +269,24 @@ export class HeaderLabelView extends SLabelView {
     render(label: Readonly<SLabel>, context: RenderingContext): VNode | undefined {
         return <g class-header={true}>
             {super.render(label, context)}
-        </g>
+        </g>;
+    }
+}
+
+@injectable()
+export class PastaLabelView extends SLabelView {
+    render(label: Readonly<SLabel>, context: RenderingContext): VNode | undefined {
+        // label belongs to a node which may have missing feedback
+        const nodeMissingFeedback = label.parent.type === CS_NODE_TYPE && (label.parent as CSNode).hasMissingFeedback;
+        // label belongs to an edge which may be a missing feedback edge
+        const edgeMissingFeedback = (label.parent.type === CS_EDGE_TYPE || label.parent.type === CS_INTERMEDIATE_EDGE_TYPE) && (label.parent as CSEdge).edgeType === EdgeType.MISSING_FEEDBACK;
+        const missingFeedbackLabel = nodeMissingFeedback || edgeMissingFeedback;
+
+        const vnode = super.render(label, context);
+        if (vnode?.data?.class) {
+            vnode.data.class['missing-feedback-label'] = missingFeedbackLabel ?? false;
+        }
+
+        return vnode;
     }
 }
