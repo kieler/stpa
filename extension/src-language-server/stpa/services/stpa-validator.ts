@@ -75,6 +75,9 @@ export class StpaValidator {
     /** Boolean option to toggle the check whether all UCAs are covered by safety requirements. */
     checkSafetyRequirementsForUCAs = true;
 
+    /** Boolean option to toggle the check whether system components are missing feedback in the control structure. */
+    checkMissingFeedback = true;
+
     checkForConflictingUCAs = true;
 
     /**
@@ -445,10 +448,10 @@ export class StpaValidator {
     /**
      * Checks whether feedback is missing in the control structure and fills the missingFeedback map.
      * @param nodes The nodes of the control structure.
-     * @param accept 
+     * @param accept
      */
     protected checkForMissingFeedback(nodes: Node[], accept: ValidationAcceptor): void {
-        // TODO: show missing feedback as warning in editor??
+        // fill the map with the missing feedback
         this.missingFeedback.clear();
         for (const node of nodes) {
             const nodeID = node.name;
@@ -467,6 +470,21 @@ export class StpaValidator {
                             this.missingFeedback.get(targetID)?.push(node);
                         }
                     }
+                }
+            });
+        }
+
+        // show warnings for all nodes that have missing feedback
+        if (this.checkMissingFeedback) {
+            nodes.forEach(node => {
+                const missingTargets = this.missingFeedback.get(node.name);
+                if (missingTargets) {
+                    accept(
+                        "warning",
+                        "Feedback is missing to the following components: " +
+                            missingTargets.map(target => target.label ?? target.name).join(),
+                        { node: node, property: "name" }
+                    );
                 }
             });
         }

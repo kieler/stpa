@@ -127,6 +127,9 @@ export function updateValidationChecks(options: Record<string, any>, validator: 
             case "checkSafetyRequirementsForUCAs":
                 validator.checkSafetyRequirementsForUCAs = value;
                 break;
+            case "checkMissingFeedback":
+                validator.checkMissingFeedback = value;
+                break;
         }
     });
 }

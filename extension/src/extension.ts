@@ -158,6 +158,7 @@ function resetContextForStorageOptions(): void {
     vscode.commands.executeCommand("setContext", "pasta.checkConstraintsForUCAs", true);
     vscode.commands.executeCommand("setContext", "pasta.checkScenariosForUCAs", true);
     vscode.commands.executeCommand("setContext", "pasta.checkSafetyRequirementsForUCAs", true);
+    vscode.commands.executeCommand("setContext", "pasta.checkMissingFeedback", true);
     vscode.commands.executeCommand("setContext", "pasta.idGeneration", true);
 }
 
@@ -191,22 +192,29 @@ function registerSTPACommands(
     vscode.commands.executeCommand(
         "setContext",
         "pasta.checkResponsibilitiesForConstraints",
-        group && group["checkResponsibilitiesForConstraints"] ? group["checkResponsibilitiesForConstraints"] : true
+        group && group["checkResponsibilitiesForConstraints"] !== undefined
+            ? group["checkResponsibilitiesForConstraints"]
+            : true
     );
     vscode.commands.executeCommand(
         "setContext",
         "pasta.checkConstraintsForUCAs",
-        group && group["checkConstraintsForUCAs"] ? group["checkConstraintsForUCAs"] : true
+        group && group["checkConstraintsForUCAs"] !== undefined ? group["checkConstraintsForUCAs"] : true
     );
     vscode.commands.executeCommand(
         "setContext",
         "pasta.checkScenariosForUCAs",
-        group && group["checkScenariosForUCAs"] ? group["checkScenariosForUCAs"] : true
+        group && group["checkScenariosForUCAs"] !== undefined ? group["checkScenariosForUCAs"] : true
     );
     vscode.commands.executeCommand(
         "setContext",
         "pasta.checkSafetyRequirementsForUCAs",
-        group && group["checkSafetyRequirementsForUCAs"] ? group["checkSafetyRequirementsForUCAs"] : true
+        group && group["checkSafetyRequirementsForUCAs"] !== undefined ? group["checkSafetyRequirementsForUCAs"] : true
+    );
+    vscode.commands.executeCommand(
+        "setContext",
+        "pasta.checkMissingFeedback",
+        group && group["checkMissingFeedback"] !== undefined ? group["checkMissingFeedback"] : true
     );
     // commands for toggling the provided validation checks
     context.subscriptions.push(
@@ -317,6 +325,21 @@ function registerSTPACommands(
                     languageClient,
                     manager
                 );
+            }
+        )
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.checks.setCheckMissingFeedback", async () => {
+            vscode.commands.executeCommand("setContext", "pasta.checkMissingFeedback", true);
+            setStorageOption(validationGroupName, "checkMissingFeedback", true, storage, languageClient, manager);
+        })
+    );
+    context.subscriptions.push(
+        vscode.commands.registerCommand(
+            options.extensionPrefix + ".stpa.checks.unsetCheckMissingFeedback",
+            async () => {
+                vscode.commands.executeCommand("setContext", "pasta.checkMissingFeedback", false);
+                setStorageOption(validationGroupName, "checkMissingFeedback", false, storage, languageClient, manager);
             }
         )
     );

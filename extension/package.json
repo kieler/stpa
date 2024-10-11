@@ -143,6 +143,16 @@
                 "category": "STPA Checks"
             },
             {
+                "command": "pasta.stpa.checks.setCheckMissingFeedback",
+                "title": "Set the missing feedback for system components check",
+                "category": "STPA Checks"
+            },
+            {
+                "command": "pasta.stpa.checks.unsetCheckMissingFeedback",
+                "title": "✓ Set the missing feedback for system components check",
+                "category": "STPA Checks"
+            },
+            {
                 "command": "pasta.IDs.undo",
                 "title": "Executes the undo action",
                 "category": "STPA ID Enforcement"
@@ -257,6 +267,14 @@
                 {
                     "command": "pasta.stpa.checks.unsetCheckSafetyRequirementsForUCAs",
                     "when": "editorLangId == 'stpa' && checkSafetyRequirementsForUCAs == true"
+                },
+                {
+                    "command": "pasta.stpa.checks.setCheckMissingFeedback",
+                    "when": "editorLangId == 'stpa' && checkMissingFeedback == false"
+                },
+                {
+                    "command": "pasta.stpa.checks.unsetCheckMissingFeedback",
+                    "when": "editorLangId == 'stpa' && checkMissingFeedback == true"
                 },
                 {
                     "command": "pasta.stpa.SBM.generation",
@@ -401,6 +419,18 @@
                     "title": "editorLangId == 'stpa'",
                     "when": "editorLangId == 'stpa' && pasta.checkSafetyRequirementsForUCAs == true",
                     "group": "checks@4"
+                },
+                {
+                    "command": "pasta.stpa.checks.setCheckMissingFeedback",
+                    "title": "editorLangId == 'stpa'",
+                    "when": "editorLangId == 'stpa' && pasta.checkMissingFeedback == false",
+                    "group": "checks@5"
+                },
+                {
+                    "command": "pasta.stpa.checks.unsetCheckMissingFeedback",
+                    "title": "editorLangId == 'stpa'",
+                    "when": "editorLangId == 'stpa' && pasta.checkMissingFeedback == true",
+                    "group": "checks@5"
                 }
             ],
             "editor/title": [

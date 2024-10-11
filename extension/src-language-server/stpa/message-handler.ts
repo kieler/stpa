@@ -218,6 +218,7 @@ export function handleSTPAConfigReset(stpaServices: StpaServices): void {
     validator.checkConstraintsForUCAs = true;
     validator.checkScenariosForUCAs = true;
     validator.checkSafetyRequirementsForUCAs = true;
+    validator.checkMissingFeedback = true;
     // reset synthesis options
     stpaServices.options.SynthesisOptions.resetAll();
     // reset ID generation option

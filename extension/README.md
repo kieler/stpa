@@ -54,7 +54,7 @@ The markdown file can easily be exported to a PDF file.
 
 In the context menu an option to automatically generate a safe behavioral model as an SCChart is provided. 
 For that the defined UCAs are translated to LTL formulas, which are further used to create the SCChart.
-This guarantees that the identified UCAs cannot occur since the LTL formulas are respected except the ones for the UCA type too early.
+This guarantees that the identified UCAs cannot occur since the LTL formulas are respected except the ones for the UCA type **too early**.
 For the generation you can define ranges for the process model variable values with standard range notation and the keywords `MIN` and `MAX`.
 Example process model:
 ```
