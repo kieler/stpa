@@ -41,6 +41,7 @@ const filterCategoryID = "filterCategory";
 
 const showControlStructureID = "showControlStructure";
 const showProcessModelsID = "showProcessModels";
+const showUnclosedFeedbackLoopsID = "showUnclosedFeedbackLoops";
 const showRelationshipGraphID = "showRelationshipGraph";
 
 /**
@@ -291,9 +292,10 @@ const showLabelsOption: ValuedSynthesisOption = {
         id: showLabelsID,
         name: "Show Labels of",
         type: TransformationOptionType.DROPDOWN,
-        currentId: "losses",
+        currentId: "automatic",
         availableValues: [
             { displayName: "All", id: "all" },
+            { displayName: "Automatic", id: "automatic" },
             { displayName: "Losses", id: "losses" },
             { displayName: "Hazards", id: "hazards" },
             { displayName: "System Constraints", id: "systemConstraints" },
@@ -302,14 +304,29 @@ const showLabelsOption: ValuedSynthesisOption = {
             { displayName: "Controller Constraints", id: "controllerConstraints" },
             { displayName: "Scenarios", id: "scenarios" },
             { displayName: "Safety Constraints", id: "safetyConstraints" },
-            { displayName: "Automatic", id: "automatic" },
         ],
-        initialValue: "losses",
-        currentValue: "losses",
+        initialValue: "automatic",
+        currentValue: "automatic",
         values: [],
         category: layoutCategory,
     } as DropDownOption,
-    currentValue: "losses",
+    currentValue: "automatic",
+};
+
+/**
+ * Boolean option to toggle the visualization of missing feedback in the control structure.
+ */
+const showUnclosedFeedbackLoopsOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: showUnclosedFeedbackLoopsID,
+        name: "Missing Feedback Loops",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false],
+        category: filterCategory,
+    },
+    currentValue: true,
 };
 
 /**
@@ -317,6 +334,7 @@ const showLabelsOption: ValuedSynthesisOption = {
  */
 export enum showLabelsValue {
     ALL,
+    AUTOMATIC,
     LOSSES,
     HAZARDS,
     SYSTEM_CONSTRAINTS,
@@ -325,7 +343,6 @@ export enum showLabelsValue {
     CONTROLLER_CONSTRAINTS,
     SCENARIOS,
     SAFETY_CONSTRAINTS,
-    AUTOMATIC,
 }
 
 export class StpaSynthesisOptions extends SynthesisOptions {
@@ -340,6 +357,7 @@ export class StpaSynthesisOptions extends SynthesisOptions {
                 filteringOfUCAs,
                 showControlStructureOption,
                 showProcessModelsOption,
+                showUnclosedFeedbackLoopsOption,
                 showRelationshipGraphOption,
                 showSysConsOption,
                 showRespsOption,
@@ -509,6 +527,14 @@ export class StpaSynthesisOptions extends SynthesisOptions {
 
     getShowSafetyConstraints(): boolean {
         return this.getOption(showSafetyConstraintsID)?.currentValue;
+    }
+
+    setShowUnclosedFeedbackLoops(value: boolean): void {
+        this.setOption(showUnclosedFeedbackLoopsID, value);
+    }
+
+    getShowUnclosedFeedbackLoopsOption(): boolean {
+        return this.getOption(showUnclosedFeedbackLoopsID)?.currentValue;
     }
 
     /**

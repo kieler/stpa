@@ -72,6 +72,7 @@ export class PastaPort extends SPort {
  */
 export class CSNode extends SNode {
     level?: number;
+    hasMissingFeedback?: boolean;
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
 }
 
@@ -104,6 +105,7 @@ export enum STPAAspect {
 export enum EdgeType {
     CONTROL_ACTION,
     FEEDBACK,
+    MISSING_FEEDBACK,
     INPUT,
     OUTPUT,
     UNDEFINED,

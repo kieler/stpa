@@ -19,7 +19,27 @@
 
 .stpa-node {
     stroke: black;
-} 
+}
+
+/* red highlighting for visualization of missing feedback edges */
+.missing-feedback-label {
+    fill: red !important;
+}
+
+.missing-feedback-node {
+    stroke: red !important;
+    stroke-width: 3 !important;
+}
+
+.missing-edge {
+    stroke: red !important;
+    stroke-width: 3 !important;
+}
+
+.missing-edge-arrow {
+    stroke: red !important;
+    fill: red !important;
+}
 
 /* Feedback edges */
 .feedback-edge {

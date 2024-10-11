@@ -55,6 +55,7 @@ export interface PastaPort extends SPort {
  */
 export interface CSNode extends SNode {
     level?: number;
+    hasMissingFeedback?: boolean;
 }
 
 /**

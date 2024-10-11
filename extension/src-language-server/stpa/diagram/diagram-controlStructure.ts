@@ -41,13 +41,17 @@ import { getCommonAncestor, setLevelOfCSNodes, sortPorts } from "./utils";
  * @param idToSNode The map of IDs to SNodes.
  * @param options The synthesis options of the STPA model.
  * @param idCache The ID cache of the STPA model.
+ * @param addMissing Whether missing feedback should be added to the control structure.
+ * @param missingFeedback The missing feedbacks of the control structure.
  * @returns the generated control structure diagram.
  */
 export function createControlStructure(
     controlStructure: Graph,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
-    idCache: IdCache<AstNode>
+    idCache: IdCache<AstNode>,
+    addMissing: boolean,
+    missingFeedback?: Map<string, Node[]>
 ): ParentNode {
     // set the level of the nodes in the control structure automatically
     setLevelOfCSNodes(controlStructure.nodes);
@@ -56,7 +60,7 @@ export function createControlStructure(
     // children (nodes and edges) of the control structure
     const CSChildren = [
         ...csNodes,
-        ...generateVerticalCSEdges(controlStructure.nodes, idToSNode, idCache),
+        ...generateVerticalCSEdges(controlStructure.nodes, idToSNode, idCache, addMissing, missingFeedback),
         //...this.generateHorizontalCSEdges(filteredModel.controlStructure.edges, idCache)
     ];
     // sort the ports in order to group edges based on the nodes they are connected to
@@ -179,47 +183,67 @@ export function createProcessModelNodes(variables: Variable[], idCache: IdCache<
  * Creates the edges for the control structure.
  * @param nodes The nodes of the control structure.
  * @param idCache The ID cache of the STPA model.
+ * @param addMissing Whether missing feedback should be added to the control structure.
+ * @param missingFeedback The missing feedbacks of the control structure.
  * @returns A list of edges for the control structure.
  */
 export function generateVerticalCSEdges(
     nodes: Node[],
     idToSNode: Map<string, SNode>,
-    idCache: IdCache<AstNode>
+    idCache: IdCache<AstNode>,
+    addMissing: boolean,
+    missingFeedback?: Map<string, Node[]>
 ): (CSNode | CSEdge)[] {
     const edges: (CSNode | CSEdge)[] = [];
     // for every control action and feedback of every a node, a edge should be created
     for (const node of nodes) {
         // create edges representing the control actions
-        edges.push(...translateCommandsToEdges(node.actions, EdgeType.CONTROL_ACTION, idToSNode, idCache));
+        edges.push(
+            ...translateCommandsToEdges(
+                node,
+                node.actions,
+                EdgeType.CONTROL_ACTION,
+                idToSNode,
+                idCache,
+                addMissing,
+                missingFeedback
+            )
+        );
         // create edges representing feedback
-        edges.push(...translateCommandsToEdges(node.feedbacks, EdgeType.FEEDBACK, idToSNode, idCache));
+        edges.push(...translateCommandsToEdges(node, node.feedbacks, EdgeType.FEEDBACK, idToSNode, idCache, false));
         // create edges representing the other inputs
         edges.push(...translateIOToEdgeAndNode(node.inputs, node, EdgeType.INPUT, idToSNode, idCache));
         // create edges representing the other outputs
         edges.push(...translateIOToEdgeAndNode(node.outputs, node, EdgeType.OUTPUT, idToSNode, idCache));
         // create edges for children and add the ones that must be added at the top level
-        edges.push(...generateVerticalCSEdges(node.children, idToSNode, idCache));
+        edges.push(...generateVerticalCSEdges(node.children, idToSNode, idCache, addMissing, missingFeedback));
     }
     return edges;
 }
 
 /**
  * Translates the commands (control action or feedback) of a node to (intermediate) edges and adds them to the correct nodes.
+ * @param node The node of the commands.
  * @param commands The control actions or feedback of a node.
  * @param edgeType The type of the edge (control action or feedback).
+ * @param idToSNode The map of IDs to SNodes.
  * @param idCache The ID cache of the STPA model.
+ * @param addMissing Whether missing feedback should be added to the control structure.
+ * @param missingFeedback The missing feedbacks of the control structure.
  * @returns A list of edges representing the commands that should be added at the top level.
  */
 export function translateCommandsToEdges(
+    source: Node,
     commands: VerticalEdge[],
     edgeType: EdgeType,
     idToSNode: Map<string, SNode>,
-    idCache: IdCache<AstNode>
+    idCache: IdCache<AstNode>,
+    addMissing: boolean,
+    missingFeedback?: Map<string, Node[]>
 ): CSEdge[] {
     const edges: CSEdge[] = [];
     for (const edge of commands) {
         // create edge id
-        const source = edge.$container;
         const target = edge.target.ref;
         const edgeId = idCache.uniqueId(
             `${idCache.getId(source)}_${edge.comms[0].name}_${idCache.getId(target)}`,
@@ -233,42 +257,85 @@ export function translateCommandsToEdges(
                 const com = edge.comms[i];
                 label.push(com.label);
             }
-            // edges can be hierachy crossing so we must determine the common ancestor of source and target
-            const commonAncestor = getCommonAncestor(source, target);
-            // create the intermediate ports and edges
-            const ports = generateIntermediateCSEdges(
-                source,
-                target,
-                edgeId,
-                edgeType,
-                idToSNode,
-                idCache,
-                commonAncestor
-            );
-            // add edge between the two ports in the common ancestor
-            const csEdge = createControlStructureEdge(
-                idCache.uniqueId(edgeId),
-                ports.sourcePort,
-                ports.targetPort,
-                label,
-                edgeType,
-                // if the common ancestor is the parent of the target we want an edge with an arrow otherwise an intermediate edge
-                target.$container === commonAncestor ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
-                idCache
-            );
-            if (commonAncestor?.$type === "Graph") {
-                // if the common ancestor is the graph, the edge must be added at the top level and hence have to be returned
-                edges.push(csEdge);
-            } else if (commonAncestor) {
-                // if the common ancestor is a node, the edge must be added to the children of the common ancestor
-                const snodeAncestor = idToSNode.get(idCache.getId(commonAncestor)!);
-                snodeAncestor?.children
-                    ?.find(node => node.type === CS_INVISIBLE_SUBCOMPONENT_TYPE)
-                    ?.children?.push(csEdge);
+            createEdgeForCommand(source, target, edgeId, edgeType, label, idToSNode, idCache, edges);
+        }
+    }
+
+    // add missing feedback edges
+    if (addMissing && missingFeedback) {
+        // add feedback edge to each node to which a feedback is missing
+        let hasMissingFeedback = false;
+        for (const target of missingFeedback.get(source?.name ?? "") ?? []) {
+            if (source && target) {
+                hasMissingFeedback = true;
+                createEdgeForCommand(
+                    source,
+                    target,
+                    idCache.uniqueId(`${source?.name}_missingFeedback_${target}`),
+                    EdgeType.MISSING_FEEDBACK,
+                    ["MISSING"],
+                    idToSNode,
+                    idCache,
+                    edges
+                );
+            }
+        }
+        // set flag for missing feedback to the source node
+        if (hasMissingFeedback) {
+            const sourceNode = idToSNode.get(idCache.getId(source) ?? "");
+            if (sourceNode && sourceNode.type === CS_NODE_TYPE) {
+                (sourceNode as CSNode).hasMissingFeedback = true;
             }
         }
     }
+
     return edges;
+}
+
+/**
+ * Creates (intermediate) edges for the given {@code source} and {@code target} and adds them to the correct node.
+ * @param source The source of the edge.
+ * @param target The target of the edge.
+ * @param edgeId The ID of the edge.
+ * @param edgeType The type of the edge.
+ * @param label The label of the edge.
+ * @param idToSNode The map of IDs to SNodes.
+ * @param idCache The ID cache of the STPA model.
+ * @param edges The list of edges to add the created edges to.
+ */
+export function createEdgeForCommand(
+    source: Node,
+    target: Node,
+    edgeId: string,
+    edgeType: EdgeType,
+    label: string[],
+    idToSNode: Map<string, SNode>,
+    idCache: IdCache<AstNode>,
+    edges: CSEdge[]
+): void {
+    // edges can be hierachy crossing so we must determine the common ancestor of source and target
+    const commonAncestor = getCommonAncestor(source, target);
+    // create the intermediate ports and edges
+    const ports = generateIntermediateCSEdges(source, target, edgeId, edgeType, idToSNode, idCache, commonAncestor);
+    // add edge between the two ports in the common ancestor
+    const csEdge = createControlStructureEdge(
+        idCache.uniqueId(edgeId),
+        ports.sourcePort,
+        ports.targetPort,
+        label,
+        edgeType,
+        // if the common ancestor is the parent of the target we want an edge with an arrow otherwise an intermediate edge
+        target.$container === commonAncestor ? CS_EDGE_TYPE : CS_INTERMEDIATE_EDGE_TYPE,
+        idCache
+    );
+    if (commonAncestor?.$type === "Graph") {
+        // if the common ancestor is the graph, the edge must be added at the top level and hence have to be returned
+        edges.push(csEdge);
+    } else if (commonAncestor) {
+        // if the common ancestor is a node, the edge must be added to the children of the common ancestor
+        const snodeAncestor = idToSNode.get(idCache.getId(commonAncestor)!);
+        snodeAncestor?.children?.find(node => node.type === CS_INVISIBLE_SUBCOMPONENT_TYPE)?.children?.push(csEdge);
+    }
 }
 
 /**

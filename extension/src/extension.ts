@@ -34,7 +34,28 @@ import { StorageService } from "./storage-service";
 import { createFile, createOutputChannel, setStorageOption } from "./utils";
 
 let languageClient: LanguageClient;
-const validationGroupName = "validation";
+
+/* The names of the groups for the storage options. */
+export const validationGroupName = "validation";
+export const idGenGroupName = "IDGeneration";
+
+/* The contexts for the validation checks. */
+const validationContexts = [
+    "checkResponsibilitiesForConstraints",
+    "checkConstraintsForUCAs",
+    "checkScenariosForUCAs",
+    "checkSafetyRequirementsForUCAs",
+    "checkMissingFeedback",
+];
+
+/* The contexts for the ID generation. */
+const idGenContexts = ["generateIDs"];
+
+/* The command prefixes for toggling and contexts for the different storage groups. */
+const contextsAndPrefixForGroups: Map<string, {commandPrefix: string, contexts: string[]}> = new Map([
+    [validationGroupName, {commandPrefix: ".stpa.checks", contexts: validationContexts}],
+    [idGenGroupName, {commandPrefix: ".stpa", contexts: idGenContexts}],
+]);
 
 /**
  * All file endings of the languages that are supported by pasta.
@@ -153,12 +174,13 @@ function registerPastaCommands(
  * Reset the contexts for storage options to the default values.
  */
 function resetContextForStorageOptions(): void {
-    // set context for the validation checks depending on saved valued in storage
+    // set contexts for PASTA options depending on saved valued in storage
     vscode.commands.executeCommand("setContext", "pasta.checkResponsibilitiesForConstraints", true);
     vscode.commands.executeCommand("setContext", "pasta.checkConstraintsForUCAs", true);
     vscode.commands.executeCommand("setContext", "pasta.checkScenariosForUCAs", true);
     vscode.commands.executeCommand("setContext", "pasta.checkSafetyRequirementsForUCAs", true);
-    vscode.commands.executeCommand("setContext", "pasta.idGeneration", true);
+    vscode.commands.executeCommand("setContext", "pasta.checkMissingFeedback", true);
+    vscode.commands.executeCommand("setContext", "pasta.generateIDs", true);
 }
 
 /**
@@ -186,140 +208,9 @@ function registerSTPACommands(
         )
     );
 
-    // set context for the validation checks depending on saved value in storage
-    const group = storage.getItem(validationGroupName);
-    vscode.commands.executeCommand(
-        "setContext",
-        "pasta.checkResponsibilitiesForConstraints",
-        group && group["checkResponsibilitiesForConstraints"] ? group["checkResponsibilitiesForConstraints"] : true
-    );
-    vscode.commands.executeCommand(
-        "setContext",
-        "pasta.checkConstraintsForUCAs",
-        group && group["checkConstraintsForUCAs"] ? group["checkConstraintsForUCAs"] : true
-    );
-    vscode.commands.executeCommand(
-        "setContext",
-        "pasta.checkScenariosForUCAs",
-        group && group["checkScenariosForUCAs"] ? group["checkScenariosForUCAs"] : true
-    );
-    vscode.commands.executeCommand(
-        "setContext",
-        "pasta.checkSafetyRequirementsForUCAs",
-        group && group["checkSafetyRequirementsForUCAs"] ? group["checkSafetyRequirementsForUCAs"] : true
-    );
-    // commands for toggling the provided validation checks
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            options.extensionPrefix + ".stpa.checks.setCheckResponsibilitiesForConstraints",
-            async () => {
-                vscode.commands.executeCommand("setContext", "pasta.checkResponsibilitiesForConstraints", true);
-                setStorageOption(
-                    validationGroupName,
-                    "checkResponsibilitiesForConstraints",
-                    true,
-                    storage,
-                    languageClient,
-                    manager
-                );
-            }
-        )
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            options.extensionPrefix + ".stpa.checks.unsetCheckResponsibilitiesForConstraints",
-            async () => {
-                vscode.commands.executeCommand("setContext", "pasta.checkResponsibilitiesForConstraints", false);
-                setStorageOption(
-                    validationGroupName,
-                    "checkResponsibilitiesForConstraints",
-                    false,
-                    storage,
-                    languageClient,
-                    manager
-                );
-            }
-        )
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            options.extensionPrefix + ".stpa.checks.setCheckConstraintsForUCAs",
-            async () => {
-                vscode.commands.executeCommand("setContext", "pasta.checkConstraintsForUCAs", true);
-                setStorageOption(
-                    validationGroupName,
-                    "checkConstraintsForUCAs",
-                    true,
-                    storage,
-                    languageClient,
-                    manager
-                );
-            }
-        )
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            options.extensionPrefix + ".stpa.checks.unsetCheckConstraintsForUCAs",
-            async () => {
-                vscode.commands.executeCommand("setContext", "pasta.checkConstraintsForUCAs", false);
-                setStorageOption(
-                    validationGroupName,
-                    "checkConstraintsForUCAs",
-                    false,
-                    storage,
-                    languageClient,
-                    manager
-                );
-            }
-        )
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.checks.setCheckScenariosForUCAs", async () => {
-            vscode.commands.executeCommand("setContext", "pasta.checkScenariosForUCAs", true);
-            setStorageOption(validationGroupName, "checkScenariosForUCAs", true, storage, languageClient, manager);
-        })
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            options.extensionPrefix + ".stpa.checks.unsetCheckScenariosForUCAs",
-            async () => {
-                vscode.commands.executeCommand("setContext", "pasta.checkScenariosForUCAs", false);
-                setStorageOption(validationGroupName, "checkScenariosForUCAs", false, storage, languageClient, manager);
-            }
-        )
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            options.extensionPrefix + ".stpa.checks.setCheckSafetyRequirementsForUCAs",
-            async () => {
-                vscode.commands.executeCommand("setContext", "pasta.checkSafetyRequirementsForUCAs", true);
-                setStorageOption(
-                    validationGroupName,
-                    "checkSafetyRequirementsForUCAs",
-                    true,
-                    storage,
-                    languageClient,
-                    manager
-                );
-            }
-        )
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            options.extensionPrefix + ".stpa.checks.unsetCheckSafetyRequirementsForUCAs",
-            async () => {
-                vscode.commands.executeCommand("setContext", "pasta.checkSafetyRequirementsForUCAs", false);
-                setStorageOption(
-                    validationGroupName,
-                    "checkSafetyRequirementsForUCAs",
-                    false,
-                    storage,
-                    languageClient,
-                    manager
-                );
-            }
-        )
-    );
+    setContextsBasedOnStorage(storage);
+    registerCommandsForStorageUpdate(manager, context, storage, options);
+
     // needed to not activate ID generation on undo/redo
     context.subscriptions.push(
         vscode.commands.registerCommand(options.extensionPrefix + ".IDs.undo", async () => {
@@ -382,28 +273,71 @@ function registerSTPACommands(
             return formulas;
         })
     );
+}
 
-    // command for automating ID generation
-    const idGenGroup = "IDGeneration";
-    vscode.commands.executeCommand(
-        "setContext",
-        "pasta.idGeneration",
-        storage.getItem(idGenGroup) && storage.getItem(idGenGroup)["generateIDs"]
-            ? storage.getItem(idGenGroup)["generateIDs"]
-            : true
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.setIDGeneration", async () => {
-            vscode.commands.executeCommand("setContext", "pasta.idGeneration", true);
-            setStorageOption(idGenGroup, "generateIDs", true, storage, languageClient, manager);
-        })
-    );
-    context.subscriptions.push(
-        vscode.commands.registerCommand(options.extensionPrefix + ".stpa.unsetIDGeneration", async () => {
-            vscode.commands.executeCommand("setContext", "pasta.idGeneration", false);
-            setStorageOption(idGenGroup, "generateIDs", false, storage, languageClient, manager);
-        })
-    );
+/**
+ * Register the commands for setting and unsetting the contexts for the storage options.
+ * The command name must end with ".set" or ".unset" respectively and the name (camel-cased) of the context that should be set or unset.
+ * For the prefix of the command see {@code contextsAndPrefixForGroups}.
+ * The context name has to be the same as the key in the storage.
+ * @param manager The manager that handles the webview panels.
+ * @param context The context of the extension.
+ * @param storage The storage service for the extension.
+ * @param options The options for the commands.
+ */
+function registerCommandsForStorageUpdate(
+    manager: StpaLspVscodeExtension,
+    context: vscode.ExtensionContext,
+    storage: StorageService,
+    options: { extensionPrefix: string }
+): void {
+    for (const groupName of contextsAndPrefixForGroups.keys()) {
+        const prefix = contextsAndPrefixForGroups.get(groupName)?.commandPrefix;
+        for (const contextOfGroup of contextsAndPrefixForGroups.get(groupName)?.contexts ?? []) {
+            context.subscriptions.push(
+                vscode.commands.registerCommand(
+                    options.extensionPrefix +
+                        prefix + ".set" +
+                        contextOfGroup.charAt(0).toUpperCase() +
+                        contextOfGroup.slice(1),
+                    async () => {
+                        vscode.commands.executeCommand("setContext", "pasta." + contextOfGroup, true);
+                        setStorageOption(groupName, contextOfGroup, true, storage, languageClient, manager);
+                    }
+                )
+            );
+            context.subscriptions.push(
+                vscode.commands.registerCommand(
+                    options.extensionPrefix +
+                        prefix + ".unset" +
+                        contextOfGroup.charAt(0).toUpperCase() +
+                        contextOfGroup.slice(1),
+                    async () => {
+                        vscode.commands.executeCommand("setContext", "pasta." + contextOfGroup, false);
+                        setStorageOption(groupName, contextOfGroup, false, storage, languageClient, manager);
+                    }
+                )
+            );
+        }
+    }
+}
+
+/**
+ * Sets the context based on the storage for the custom contexts of PASTA.
+ * The context name has to be the same as the key in the storage.
+ * @param storage The storage service for the extension.
+ */
+function setContextsBasedOnStorage(storage: StorageService): void {
+    for (const groupName of contextsAndPrefixForGroups.keys()) {
+        const group = storage.getItem(groupName);
+        for (const contextOfGroup of contextsAndPrefixForGroups.get(groupName)?.contexts ?? []) {
+            vscode.commands.executeCommand(
+                "setContext",
+                "pasta." + contextOfGroup,
+                group && group[contextOfGroup] !== undefined ? group[contextOfGroup] : true
+            );
+        }
+    }
 }
 
 /**
