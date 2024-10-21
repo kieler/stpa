@@ -171,10 +171,8 @@ export function getRangeOfNodeSTPA(model: Model, label: string): Range | undefin
     let range: Range | undefined = undefined;
     const elements: elementWithName[] = [
         ...model.losses,
-        ...model.hazards,
-        ...model.hazards.flatMap((hazard) => hazard.subComponents),
-        ...model.systemLevelConstraints,
-        ...model.systemLevelConstraints.flatMap((constraint) => constraint.subComponents),
+        ...collectElementsWithSubComps(model.hazards),
+        ...collectElementsWithSubComps(model.systemLevelConstraints),
         ...model.responsibilities.flatMap((resp) => resp.responsiblitiesForOneSystem),
         ...model.allUCAs.flatMap((ucas) =>
             ucas.providingUcas.concat(ucas.notProvidingUcas, ucas.wrongTimingUcas, ucas.continousUcas)
@@ -185,10 +183,19 @@ export function getRangeOfNodeSTPA(model: Model, label: string): Range | undefin
         ...model.safetyCons,
     ];
     if (model.controlStructure) {
-        elements.push(...model.controlStructure.nodes);
+        let nodes = model.controlStructure.nodes;
+        for (let i = 0; i < nodes.length; i++) {
+            const current = nodes[i];
+            if (current.children) {
+                nodes = nodes.concat(current.children);
+            }
+        }
+        elements.push(...nodes);
     }
+    // in the diagram generator dots are replaced by underscores
+    const correctedLabel = label.replace(/_/g, ".");
     elements.forEach((component) => {
-        if (component.name === label) {
+        if (component.name === correctedLabel) {
             range = component.$cstNode?.range;
             return;
         }
