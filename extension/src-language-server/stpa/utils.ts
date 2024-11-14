@@ -193,7 +193,7 @@ export function getRangeOfNodeSTPA(model: Model, label: string): Range | undefin
         elements.push(...nodes);
     }
     // in the diagram generator dots are replaced by underscores
-    const correctedLabel = label.replace(/_/g, ".");
+    const correctedLabel = label?.replace(/_/g, ".");
     elements.forEach((component) => {
         if (component.name === correctedLabel) {
             range = component.$cstNode?.range;
