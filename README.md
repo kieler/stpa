@@ -1,6 +1,17 @@
-# STPA-DSL
+# PASTA
 
-The respository contains the VS Code Extension of the STPA-DSL. 
+PASTA provides a textual DSL for STPA and automatically generates diagrams.
+Further features are:
+* textual DSL for FTA with interactive cut set visualization;
+* automatic generation of fault trees based on STPA;
+* automatic generation of LTL formulas based on the UCAs of STPA;
+* automatic generation of a safe-by-construciton behavior model based on the automatically generated LTL formulas.
+
+Examples can be found in [pasta-examples](https://github.com/kieler/pasta-examples)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/kieler/pasta-examples)
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/new#https://github.com/kieler/pasta-examples/tree/main)
 
 ## Developing the VS Code extension
 
