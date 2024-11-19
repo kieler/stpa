@@ -1,11 +1,14 @@
 # PASTA
 
-PASTA provides a textual DSL for STPA and automatically generates diagrams.
+Pragmatic-Automated System Theoretic Process Analysis (PASTA) is a [VS Code Extension](https://marketplace.visualstudio.com/items?itemName=kieler.pasta) that provides a textual DSL for System-Theoretic Process Analysis (STPA) and automatically generates diagrams.
+
 Further features are:
-* textual DSL for FTA with interactive cut set visualization;
+* a textual DSL for Fault Tree Analysis (FTA) with interactive cut set visualization;
 * automatic generation of fault trees based on STPA;
-* automatic generation of LTL formulas based on the UCAs of STPA;
+* automatic generation of LTL formulas based on the Unsafe Control Actions (UCAs) of STPA;
 * automatic generation of a safe-by-construction behavior model based on the automatically generated LTL formulas.
+
+A more detailed explanation of all features can be found [here](https://github.com/kieler/pasta/blob/master/extension/README.md).
 
 Examples can be found in [pasta-examples](https://github.com/kieler/pasta-examples).
 
