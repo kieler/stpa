@@ -9,7 +9,7 @@
     "license": "EPL-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/kieler/stpa"
+        "url": "https://github.com/kieler/pasta"
     },
     "engines": {
         "vscode": "^1.80.0"
