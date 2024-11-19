@@ -5,9 +5,9 @@ Further features are:
 * textual DSL for FTA with interactive cut set visualization;
 * automatic generation of fault trees based on STPA;
 * automatic generation of LTL formulas based on the UCAs of STPA;
-* automatic generation of a safe-by-construciton behavior model based on the automatically generated LTL formulas.
+* automatic generation of a safe-by-construction behavior model based on the automatically generated LTL formulas.
 
-Examples can be found in [pasta-examples](https://github.com/kieler/pasta-examples)
+Examples can be found in [pasta-examples](https://github.com/kieler/pasta-examples).
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/kieler/pasta-examples)
 
