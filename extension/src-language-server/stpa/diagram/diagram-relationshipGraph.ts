@@ -127,7 +127,13 @@ export function createRelationshipGraphChildren(
                 .flat(1),
             ...sysCons
                 .map(systemConstraint =>
-                    generateAspectWithEdges(systemConstraint, showSystemConstraintDescription, idToSNode, options, idCache)
+                    generateAspectWithEdges(
+                        systemConstraint,
+                        showSystemConstraintDescription,
+                        idToSNode,
+                        options,
+                        idCache
+                    )
                 )
                 .flat(1),
         ]);
@@ -139,12 +145,18 @@ export function createRelationshipGraphChildren(
                 .flat(1),
             ...filteredModel.systemLevelConstraints
                 ?.map(systemConstraint =>
-                    generateAspectWithEdges(systemConstraint, showSystemConstraintDescription, idToSNode, options, idCache)
+                    generateAspectWithEdges(
+                        systemConstraint,
+                        showSystemConstraintDescription,
+                        idToSNode,
+                        options,
+                        idCache
+                    )
                 )
                 .flat(1),
             ...filteredModel.systemLevelConstraints
                 ?.map(systemConstraint =>
-                    systemConstraint.subComponents?.map(subsystemConstraint => 
+                    systemConstraint.subComponents?.map(subsystemConstraint =>
                         generateEdgesForSTPANode(subsystemConstraint, undefined, idToSNode, options, idCache)
                     )
                 )
@@ -157,7 +169,12 @@ export function createRelationshipGraphChildren(
         showLabels,
         labelManagement
     );
-    const showUCAsDescription = showLabelOfAspect(STPAAspect.UCA, aspectsToShowDescriptions, showLabels, labelManagement);
+    const showUCAsDescription = showLabelOfAspect(
+        STPAAspect.UCA,
+        aspectsToShowDescriptions,
+        showLabels,
+        labelManagement
+    );
     const showControllerConstraintDescription = showLabelOfAspect(
         STPAAspect.CONTROLLERCONSTRAINT,
         aspectsToShowDescriptions,
@@ -465,15 +482,7 @@ export function generateSTPAEdge(
             }
 
             // add edge between the two ports
-            return createSTPAEdge(
-                edgeId,
-                sourcePortId,
-                targetPortId,
-                children,
-                STPA_EDGE_TYPE,
-                getAspect(source)
-            );
-            
+            return createSTPAEdge(edgeId, sourcePortId, targetPortId, children, STPA_EDGE_TYPE, getAspect(source));
         }
     }
 }
