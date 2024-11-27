@@ -54,7 +54,7 @@ export function createControlStructure(
     missingFeedback?: Map<string, Node[]>
 ): ParentNode {
     // set the level of the nodes in the control structure automatically
-    setLevelOfCSNodes(controlStructure.nodes);
+    // setLevelOfCSNodes(controlStructure.nodes);
     // determine the nodes of the control structure graph
     const csNodes = controlStructure.nodes.map(n => createControlStructureNode(n, idToSNode, options, idCache));
     // children (nodes and edges) of the control structure

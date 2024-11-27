@@ -439,7 +439,8 @@ function registerTextEditorSync(manager: StpaLspVscodeExtension, context: vscode
                 '<svg xmlns="http://www.w3.org/2000/svg"'
             );
             // if the change event is triggered by the generation of an SVG, do not update the views
-            if (!svgGeneration) {
+            const fileTypeIsSupportedLanguage = changeEvent.document.uri.toString().endsWith(".stpa") || changeEvent.document.uri.toString().endsWith(".fta");
+            if (fileTypeIsSupportedLanguage && !svgGeneration) {
                 const document = changeEvent.document;
                 updateViews(manager, document);
             }

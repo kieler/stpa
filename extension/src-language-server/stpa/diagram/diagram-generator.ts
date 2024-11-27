@@ -134,9 +134,7 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
         const { document } = args;
         if (document.parseResult.lexerErrors.length === 0 && document.parseResult.parserErrors.length === 0) {
             const model: Model = document.parseResult.value;
-            if (!this.idCache) {
-                this.idCache = args.idCache;
-            }
+            this.idCache = args.idCache;
             return this.generateGraph(model);
         } else {
             // return empty graph if the model is not valid

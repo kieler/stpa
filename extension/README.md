@@ -2,6 +2,8 @@
 
 This extension offers a Domain-Specific-Language (DSL) for System-Theoretic Process Analysis (STPA) including an automatic visualization and validity checks.
 
+Examples can be found in [pasta-examples](https://github.com/kieler/pasta-examples).
+
 ## Features
 
 ### Validity Checks
