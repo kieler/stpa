@@ -37,17 +37,19 @@ export function CheckOption(props: CheckOptionProps): VNode {
     // The sprotty jsx function always puts an additional 'props' key around the element, requiring this hack.
     props = (props as any as {props: CheckOptionProps}).props
     return (
-        <label htmlFor={props.id} title={props.description ?? props.name}>
-            <input
-                class-options__input="true"
-                type="checkbox"
-                title={props.description ?? props.name}
-                id={props.id}
-                checked={props.value}
-                on-change={() => props.onChange(!props.value)}
-            />
-            {props.name}
-        </label>
+        <div class-options__column="true">
+            <label htmlFor={props.id} title={props.description ?? props.name}>
+                <input
+                    class-options__input="true"
+                    type="checkbox"
+                    title={props.description ?? props.name}
+                    id={props.id}
+                    checked={props.value}
+                    on-change={() => props.onChange(!props.value)}
+                />
+                {props.name}
+            </label>
+        </div>
     );
 }
 
