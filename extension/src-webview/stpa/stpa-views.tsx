@@ -22,7 +22,7 @@ import { IActionDispatcher, IView, IViewArgs, ModelRenderer, Point, PolylineEdge
 import { DISymbol } from '../di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
 import { SendModelRendererAction } from '../snippets/actions';
-import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { renderDiamond, renderEllipse, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { CSEdge, CSNode, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, CS_NODE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
@@ -55,11 +55,19 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const lessColoredEdge = colorStyle === "fewer colors";
         // coloring of the edge depends on the aspect
         let aspect: number = -1;
+        // renderings for all junction points
+        let junctionPointRenderings: VNode[] = [];
         if (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) {
             aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
+            junctionPointRenderings = (edge as STPAEdge).junctionPoints?.map(junctionPoint =>
+                renderEllipse(junctionPoint.x, junctionPoint.y, 4, 4, 1)
+            ) ?? [];
         }
-        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge}
-            class-feedback-edge={feedbackEdge} class-missing-edge={missing} class-greyed-out={hidden} aspect={aspect} d={path} />;
+        return <g class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge}
+        class-feedback-edge={feedbackEdge} class-missing-edge={missing} class-greyed-out={hidden} aspect={aspect}>
+        <path d={path} />
+            {...(junctionPointRenderings ?? [])}
+            </g>;
     }
 
     protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
@@ -290,3 +298,4 @@ export class PastaLabelView extends SLabelView {
         return vnode;
     }
 }
+

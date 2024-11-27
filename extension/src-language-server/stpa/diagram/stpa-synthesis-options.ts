@@ -24,6 +24,7 @@ import {
 import { SynthesisOptions, layoutCategory } from "../../synthesis-options";
 
 const hierarchyID = "hierarchy";
+const useHyperedgesID = "useHyperedges";
 const groupingUCAsID = "groupingUCAs";
 export const filteringUCAsID = "filteringUCAs";
 
@@ -330,6 +331,22 @@ const showUnclosedFeedbackLoopsOption: ValuedSynthesisOption = {
 };
 
 /**
+ * Boolean option to toggle the visualization of loss scenarios.
+ */
+const useHyperedgesOption: ValuedSynthesisOption = {
+    synthesisOption: {
+        id: useHyperedgesID,
+        name: "Merge Edges",
+        type: TransformationOptionType.CHECK,
+        initialValue: true,
+        currentValue: true,
+        values: [true, false],
+        category: layoutCategory,
+    },
+    currentValue: true,
+};
+
+/**
  * Values for filtering the node labels.
  */
 export enum showLabelsValue {
@@ -353,6 +370,7 @@ export class StpaSynthesisOptions extends SynthesisOptions {
                 filterCategoryOption,
                 showLabelsOption,
                 groupingOfUCAs,
+                useHyperedgesOption,
                 hierarchicalGraphOption,
                 filteringOfUCAs,
                 showControlStructureOption,
@@ -535,6 +553,14 @@ export class StpaSynthesisOptions extends SynthesisOptions {
 
     getShowUnclosedFeedbackLoopsOption(): boolean {
         return this.getOption(showUnclosedFeedbackLoopsID)?.currentValue;
+    }
+
+    setUseHyperEdges(value: boolean): void {
+        this.setOption(useHyperedgesID, value);
+    }
+
+    getUseHyperEdges(): boolean {
+        return this.getOption(useHyperedgesID)?.currentValue;
     }
 
     /**

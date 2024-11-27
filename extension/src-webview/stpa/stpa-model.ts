@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdge, SNode, SPort, connectableFeature, fadeFeature, layoutContainerFeature, selectFeature } from "sprotty";
+import { Point, SEdge, SNode, SPort, connectableFeature, fadeFeature, layoutContainerFeature, selectFeature } from "sprotty";
 
 // The types of diagram elements
 export const STPA_NODE_TYPE = 'node:stpa';
@@ -57,6 +57,7 @@ export class STPANode extends SNode {
 export class STPAEdge extends SEdge {
     aspect: STPAAspect = STPAAspect.UNDEFINED;
     highlight?: boolean;
+    junctionPoints?: Point[];
     static readonly DEFAULT_FEATURES = [fadeFeature];
 }
 

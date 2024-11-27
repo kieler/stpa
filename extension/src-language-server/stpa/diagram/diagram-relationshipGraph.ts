@@ -144,8 +144,8 @@ export function createRelationshipGraphChildren(
                 .flat(1),
             ...filteredModel.systemLevelConstraints
                 ?.map(systemConstraint =>
-                    systemConstraint.subComponents?.map(subsystemConstraint =>
-                        generateEdgesForSTPANode(subsystemConstraint, idToSNode, options, idCache)
+                    systemConstraint.subComponents?.map(subsystemConstraint => 
+                        generateEdgesForSTPANode(subsystemConstraint, undefined, idToSNode, options, idCache)
                     )
                 )
                 .flat(2),
@@ -299,7 +299,15 @@ export function generateAspectWithEdges(
     if ((isUCA(node) || isContext(node)) && node.$container.system.ref) {
         stpaNode.controlAction = node.$container.system.ref.name + "." + node.$container.action.ref?.name;
     }
-    const elements: SModelElement[] = generateEdgesForSTPANode(node, idToSNode, options, idCache);
+
+    let nodePort: SModelElement | undefined;
+    if (options.getUseHyperEdges()) {
+        const nodeId = idCache.getId(node);
+        nodePort = createPort(idCache.uniqueId(nodeId + "_outPort"), PortSide.NORTH);
+        stpaNode?.children?.push(nodePort);
+    }
+
+    const elements: SModelElement[] = generateEdgesForSTPANode(node, nodePort, idToSNode, options, idCache);
     elements.push(stpaNode);
     return elements;
 }
@@ -365,11 +373,15 @@ export function generateSTPANode(
 /**
  * Generates the edges for {@code node}.
  * @param node STPA component for which the edges should be created.
+ * @param nodePort The port of the node.
+ * @param idToSNode The map of the generated IDs to their generated SNodes.
+ * @param options The synthesis options of the STPA model.
  * @param idCache The ID cache of the STPA model.
  * @returns Edges representing the references {@code node} contains.
  */
 export function generateEdgesForSTPANode(
     node: AstNode,
+    nodePort: SModelElement | undefined,
     idToSNode: Map<string, SNode>,
     options: StpaSynthesisOptions,
     idCache: IdCache<AstNode>
@@ -378,8 +390,9 @@ export function generateEdgesForSTPANode(
     // for every reference an edge is created
     // if hierarchy option is false, edges from subcomponents to parents are created too
     const targets = getTargets(node, options.getHierarchy());
+
     for (const target of targets) {
-        const edge = generateSTPAEdge(node, target, "", idToSNode, idCache);
+        const edge = generateSTPAEdge(node, nodePort?.id, target, "", idToSNode, idCache);
         if (edge) {
             elements.push(edge);
         }
@@ -390,13 +403,16 @@ export function generateEdgesForSTPANode(
 /**
  * Generates a single STPAEdge based on the given arguments.
  * @param source The source of the edge.
+ * @param sourcePortId The ID of the source port of the edge.
  * @param target The target of the edge.
  * @param label The label of the edge.
- * @param param4 GeneratorContext of the STPA model.
+ * @param idToSNode The map of the generated IDs to their generated SNodes.
+ * @param idCache The ID cache of the STPA model.
  * @returns An STPAEdge.
  */
 export function generateSTPAEdge(
     source: AstNode,
+    sourcePortId: string | undefined,
     target: AstNode,
     label: string,
     idToSNode: Map<string, SNode>,
@@ -420,6 +436,7 @@ export function generateSTPAEdge(
                 target,
                 source,
                 sourceId,
+                sourcePortId,
                 edgeId,
                 children,
                 idToSNode,
@@ -427,25 +444,36 @@ export function generateSTPAEdge(
             );
         } else {
             // otherwise it is sufficient to add ports for source and target
-            const portIds = createPortsForSTPAEdge(
-                sourceId,
-                PortSide.NORTH,
-                targetId,
-                PortSide.SOUTH,
-                edgeId,
-                idToSNode,
-                idCache
-            );
+            let targetPortId: string | undefined;
+            if (sourcePortId) {
+                // if hyperedges are used, the source port is already given
+                const targetNode = idToSNode.get(targetId!);
+                targetPortId = idCache.uniqueId(edgeId + "_newTransition");
+                targetNode?.children?.push(createPort(targetPortId, PortSide.SOUTH));
+            } else {
+                const portIds = createPortsForSTPAEdge(
+                    sourceId,
+                    PortSide.NORTH,
+                    targetId,
+                    PortSide.SOUTH,
+                    edgeId,
+                    idToSNode,
+                    idCache
+                );
+                sourcePortId = portIds.sourcePortId;
+                targetPortId = portIds.targetPortId;
+            }
 
             // add edge between the two ports
             return createSTPAEdge(
                 edgeId,
-                portIds.sourcePortId,
-                portIds.targetPortId,
+                sourcePortId,
+                targetPortId,
                 children,
                 STPA_EDGE_TYPE,
                 getAspect(source)
             );
+            
         }
     }
 }
@@ -457,6 +485,7 @@ export function generateSTPAEdge(
  * @param targetId The id of the target node.
  * @param targetSide The side of the target node the edge should be connected to.
  * @param edgeId The id of the edge.
+ * @param idToSNode The map of the generated IDs to their generated SNodes.
  * @param idCache The id cache of the STPA model.
  * @returns the ids of the source and target port the edge should be connected to.
  */
@@ -486,8 +515,10 @@ export function createPortsForSTPAEdge(
  * @param target The target of the edge.
  * @param source The source of the edge.
  * @param sourceId The ID of the source of the edge.
+ * @param sourcePortId The ID of the source port of the edge.
  * @param edgeId The ID of the original edge.
  * @param children The children of the original edge.
+ * @param idToSNode The map of the generated IDs to their generated SNodes.
  * @param idCache The ID cache of the STPA model.
  * @returns an STPAEdge to connect the {@code source} (or its top parent) with the top parent of the {@code target}.
  */
@@ -495,6 +526,7 @@ export function generateIntermediateIncomingSTPAEdges(
     target: AstNode,
     source: AstNode,
     sourceId: string,
+    sourcePortId: string | undefined,
     edgeId: string,
     children: SModelElement[],
     idToSNode: Map<string, SNode>,
@@ -532,10 +564,12 @@ export function generateIntermediateIncomingSTPAEdges(
             idCache
         );
     } else {
-        // add port for source node
-        const sourceNode = idToSNode.get(sourceId);
-        const sourcePortId = idCache.uniqueId(edgeId + "_newTransition");
-        sourceNode?.children?.push(createPort(sourcePortId, PortSide.NORTH));
+        if (!sourcePortId) {
+            // add port for source node
+            const sourceNode = idToSNode.get(sourceId);
+            sourcePortId = idCache.uniqueId(edgeId + "_newTransition");
+            sourceNode?.children?.push(createPort(sourcePortId, PortSide.NORTH));
+        }
 
         // add edge from source to top parent of the target
         return createSTPAEdge(
@@ -555,6 +589,7 @@ export function generateIntermediateIncomingSTPAEdges(
  * @param edgeId The ID of the original edge.
  * @param children The children of the original edge.
  * @param targetPortId The ID of the target port.
+ * @param idToSNode The map of the generated IDs to their generated SNodes.
  * @param idCache The ID cache of the STPA model.
  * @returns the STPAEdge to connect the top parent of the {@code source} with the {@code targetPortId}.
  */
@@ -601,6 +636,7 @@ export function generateIntermediateOutgoingSTPAEdges(
  * @param current The current node.
  * @param edgeId The ID of the original edge for which the ports are created.
  * @param side The side of the ports.
+ * @param idToSNode The map of the generated IDs to their generated SNodes.
  * @param idCache The ID cache of the STPA model.
  * @returns the IDs of the created ports.
  */

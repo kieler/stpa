@@ -43,7 +43,7 @@ export class LayoutEngine extends ElkLayoutEngine {
     /** Override method to save the junctionpoints in FTAEdges*/
     protected applyEdge(sedge: SEdge, elkEdge: ElkExtendedEdge, index: SModelIndex): void {
         const points: Point[] = [];
-        if (sedge.type === FTA_EDGE_TYPE) {
+        if (sedge.type === FTA_EDGE_TYPE || sedge.type === STPA_EDGE_TYPE || sedge.type === STPA_INTERMEDIATE_EDGE_TYPE) {
             (sedge as any as FTAEdge).junctionPoints = elkEdge.junctionPoints;
         }
         if (elkEdge.sections && elkEdge.sections.length > 0) {
