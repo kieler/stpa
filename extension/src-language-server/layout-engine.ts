@@ -20,6 +20,7 @@ import { ElkLayoutEngine } from "sprotty-elk/lib/elk-layout";
 import { Point, SEdge, SGraph, SModelIndex } from "sprotty-protocol";
 import { FTAEdge } from "../src-webview/fta/fta-model";
 import { FTA_EDGE_TYPE } from "./fta/diagram/fta-model";
+import { STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa/diagram/stpa-model';
 
 export class LayoutEngine extends ElkLayoutEngine {
     layout(graph: SGraph, index?: SModelIndex | undefined): SGraph | Promise<SGraph> {
