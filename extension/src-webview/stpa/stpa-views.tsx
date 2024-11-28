@@ -20,9 +20,9 @@ import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { IActionDispatcher, IView, IViewArgs, ModelRenderer, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SLabel, SLabelView, SNode, SPort, TYPES, svg, toDegrees } from 'sprotty';
 import { DISymbol } from '../di.symbols';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
+import { ColorStyleOption, DifferentFormsOption, dottedFeedback, FeedbackStyleOption, lightGreyFeedback, RenderOptionsRegistry } from '../options/render-options-registry';
 import { SendModelRendererAction } from '../snippets/actions';
-import { renderDiamond, renderEllipse, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { renderDiamond, renderEllipse, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderPort, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { CSEdge, CSNode, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, CS_NODE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
@@ -44,7 +44,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
         // if an STPANode is selected, the components not connected to it should fade out
         const hidden = (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) && highlighting && !(edge as STPAEdge).highlight;
-        // feedback edges in the control structure should be dashed
+        // feedback edges in the control structure are possibly styled differently
         const feedbackEdge = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
         // edges that represent missing edges should be highlighted
         const missing = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.MISSING_FEEDBACK;
@@ -63,8 +63,11 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
                 renderEllipse(junctionPoint.x, junctionPoint.y, 4, 4, 1)
             ) ?? [];
         }
+        const feedbackStyle = this.renderOptionsRegistry.getValue(FeedbackStyleOption);
+        const dotted = feedbackStyle === dottedFeedback;
+        const greyFeedback = feedbackStyle === lightGreyFeedback;
         return <g class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge}
-        class-feedback-edge={feedbackEdge} class-missing-edge={missing} class-greyed-out={hidden} aspect={aspect}>
+        class-feedback-dotted={feedbackEdge && dotted} class-feedback-grey={feedbackEdge && greyFeedback} class-missing-edge={missing} class-greyed-out={hidden} aspect={aspect}>
         <path d={path} />
             {...(junctionPointRenderings ?? [])}
             </g>;
@@ -89,8 +92,13 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         // edges that represent missing edges should be highlighted
         const missing = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.MISSING_FEEDBACK;
 
+        // feedback edges in the control structure are possibly styled differently
+        const feedbackEdge = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
+        const feedbackStyle = this.renderOptionsRegistry.getValue(FeedbackStyleOption);
+        const greyFeedback = feedbackStyle === lightGreyFeedback;
         return [
             <path  class-missing-edge-arrow={missing} class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-greyed-out={hidden} aspect={aspect}
+                class-feedback-grey-arrow={feedbackEdge && greyFeedback}    
                 class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
                 transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} />
         ];

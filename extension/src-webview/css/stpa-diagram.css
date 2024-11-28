@@ -42,8 +42,17 @@
 }
 
 /* Feedback edges */
-.feedback-edge {
+.feedback-dotted {
     stroke-dasharray: 5, 5;
+}
+
+.feedback-grey {
+    stroke: var(--stpa-feedback-grey);
+}
+
+.feedback-grey-arrow {
+    stroke: var(--stpa-feedback-grey) !important;
+    fill: var(--stpa-feedback-grey) !important;
 }
 
 /* High contrast theme */
