@@ -124,6 +124,7 @@ export function collectElementsWithSubComps(topElements: (Hazard | SystemConstra
 
 export class StpaResult {
     title: string;
+    goals: StpaComponent[] = [];
     assumptions: StpaComponent[] = [];
     losses: StpaComponent[] = [];
     hazards: StpaComponent[] = [];

@@ -18,6 +18,7 @@
 grammar Stpa
 
 entry Model:
+    ('Goals' goals+=Goal*)?
     ('Assumptions' assumptions+=Assumption*)?
     ('Losses' losses+=Loss*)?
     ('Hazards' hazards+=Hazard*)?
@@ -29,6 +30,9 @@ entry Model:
     ('ControllerConstraints' controllerConstraints+=ControllerConstraint*)?
     ('LossScenarios' scenarios+=LossScenario*)?
     ('SafetyRequirements' safetyCons+=SafetyConstraint*)?;
+
+Goal:
+    name=ID description=STRING;
 
 Assumption:
     name=ID description=STRING;
