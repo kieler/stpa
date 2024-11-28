@@ -82,7 +82,9 @@ export async function createSTPAResultMarkdownFile(data: StpaResult, extension: 
 function createSTPAResultMarkdownText(data: StpaResult, diagramSizes: Record<string, number>): string {
     let markdown = `# STPA Report for ${data.title}\n\n`;
     // table of contents
-    markdown += createTOC();
+    markdown += createTOC() + "\n";
+    // assumptions
+    markdown += stpaAspectToMarkdown(Headers.Assumption, data.assumptions) + "\n";
     // losses
     markdown += stpaAspectToMarkdown(Headers.Loss, data.losses) + "\n";
     // hazards
@@ -407,25 +409,26 @@ function addCopyRight(): string {
 function createTOC(): string {
     //TODO: use regex for the whitespace
     let markdown = "## Table of Contents\n\n";
-    markdown += `1. [${Headers.Loss}](#${Headers.Loss.toLowerCase()})\n`;
-    markdown += `2. [${Headers.Hazard}](#${Headers.Hazard.toLowerCase()})\n`;
-    markdown += `3. [${Headers.SystemLevelConstraint}](#${Headers.SystemLevelConstraint.toLowerCase().replace(
+    markdown += `1. [${Headers.Assumption}](#${Headers.Assumption.toLowerCase()})\n`;
+    markdown += `2. [${Headers.Loss}](#${Headers.Loss.toLowerCase()})\n`;
+    markdown += `3. [${Headers.Hazard}](#${Headers.Hazard.toLowerCase()})\n`;
+    markdown += `4. [${Headers.SystemLevelConstraint}](#${Headers.SystemLevelConstraint.toLowerCase().replace(
         " ",
         "-"
     )})\n`;
-    markdown += `4. [${Headers.ControlStructure}](#${Headers.ControlStructure.toLowerCase().replace(" ", "-")})\n`;
-    markdown += `5. [${Headers.Responsibility}](#${Headers.Responsibility.toLowerCase()})\n`;
-    markdown += `6. [${Headers.UCA}](#${Headers.UCA.toLowerCase()})\n`;
-    markdown += `7. [${Headers.ControllerConstraint}](#${Headers.ControllerConstraint.toLowerCase().replace(
+    markdown += `5. [${Headers.ControlStructure}](#${Headers.ControlStructure.toLowerCase().replace(" ", "-")})\n`;
+    markdown += `6. [${Headers.Responsibility}](#${Headers.Responsibility.toLowerCase()})\n`;
+    markdown += `7. [${Headers.UCA}](#${Headers.UCA.toLowerCase()})\n`;
+    markdown += `8. [${Headers.ControllerConstraint}](#${Headers.ControllerConstraint.toLowerCase().replace(
         " ",
         "-"
     )})\n`;
-    markdown += `8. [${Headers.LossScenario}](#${Headers.LossScenario.toLowerCase().replace(" ", "-")})\n`;
-    markdown += `9. [${Headers.SafetyRequirement}](#${Headers.SafetyRequirement.toLowerCase().replace(" ", "-")})\n`;
-    markdown += `10. [${Headers.ControllerConstraint}](#${Headers.ControllerConstraint.toLowerCase().replace(
+    markdown += `9. [${Headers.LossScenario}](#${Headers.LossScenario.toLowerCase().replace(" ", "-")})\n`;
+    markdown += `10. [${Headers.SafetyRequirement}](#${Headers.SafetyRequirement.toLowerCase().replace(" ", "-")})\n`;
+    markdown += `11. [${Headers.ControllerConstraint}](#${Headers.ControllerConstraint.toLowerCase().replace(
         " ",
         "-"
     )})\n`;
-    markdown += `11. [${Headers.Summary}](#${Headers.Summary.toLowerCase().replace(" ", "-").replace(" ", "-")})\n`;
+    markdown += `12. [${Headers.Summary}](#${Headers.Summary.toLowerCase().replace(" ", "-").replace(" ", "-")})\n`;
     return markdown;
 }

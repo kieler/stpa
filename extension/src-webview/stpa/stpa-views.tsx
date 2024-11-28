@@ -22,7 +22,7 @@ import { IActionDispatcher, IView, IViewArgs, ModelRenderer, Point, PolylineEdge
 import { DISymbol } from '../di.symbols';
 import { ColorStyleOption, DifferentFormsOption, dottedFeedback, FeedbackStyleOption, lightGreyFeedback, RenderOptionsRegistry } from '../options/render-options-registry';
 import { SendModelRendererAction } from '../snippets/actions';
-import { renderDiamond, renderEllipse, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderPort, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { renderDiamond, renderEllipse, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { CSEdge, CSNode, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, CS_NODE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
