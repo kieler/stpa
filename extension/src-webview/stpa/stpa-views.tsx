@@ -260,7 +260,8 @@ export class STPAGraphView extends SGraphView {
 @injectable()
 export class PortView implements IView {
     render(model: SPort, context: RenderingContext): VNode {
-        return <g />;
+        const port = <g>{renderPort(model.position.x, model.position.y, model.size.width, model.size.height)}</g>;
+        return <g class-pasta-hidden>{port}</g>;
     }
 }
 

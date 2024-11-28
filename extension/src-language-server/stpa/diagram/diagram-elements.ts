@@ -77,6 +77,7 @@ export function createPort(id: string, side: PortSide, assocEdge?: { node1: stri
         type: PORT_TYPE,
         id: id,
         side: side,
+        size: {width: 1, height: 1},
         associatedEdge: assocEdge,
     };
 }
