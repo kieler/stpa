@@ -34,6 +34,7 @@ export const HEADER_LABEL_TYPE = 'label:header';
 
 export class ParentNode extends SNode {
     modelOrder: boolean;
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
 }
 
 /**
