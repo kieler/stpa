@@ -43,6 +43,8 @@ export async function createResultData(uri: string, shared: LangiumSprottyShared
     // get the current model
     const model = await getModel(uri, shared) as Model;
 
+    // TODO: make more generic (see goals, assumptions, losses)
+
     // goals
     const resultGoals: { id: string; description: string }[] = [];
     model.goals?.forEach((component) => {

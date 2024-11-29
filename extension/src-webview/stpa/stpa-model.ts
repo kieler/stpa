@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Point, SEdge, SNode, SPort, connectableFeature, fadeFeature, layoutContainerFeature, selectFeature } from "sprotty";
+import { Point, SEdge, SNode, SPort, connectableFeature, expandFeature, fadeFeature, layoutContainerFeature, selectFeature } from "sprotty";
 
 // The types of diagram elements
 export const STPA_NODE_TYPE = 'node:stpa';
@@ -74,7 +74,8 @@ export class PastaPort extends SPort {
 export class CSNode extends SNode {
     level?: number;
     hasMissingFeedback?: boolean;
-    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
+    expanded: boolean;
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature, expandFeature];
 }
 
 /**

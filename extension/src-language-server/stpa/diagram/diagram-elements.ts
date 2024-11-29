@@ -186,6 +186,7 @@ export function createDummyNode(name: string, level: number | undefined, idCache
         type: DUMMY_NODE_TYPE,
         id: idCache.uniqueId("dummy" + name),
         layout: "stack",
+        expanded: false,
         layoutOptions: {
             paddingTop: 10.0,
             paddingBottom: 10.0,

@@ -18,6 +18,7 @@
 import { AstNode } from "langium";
 import { IdCache } from "langium-sprotty";
 import { SModelElement, SNode } from "sprotty-protocol";
+import { expansionState } from "../../diagram-server";
 import { Command, Graph, Node, Variable, VerticalEdge } from "../../generated/ast";
 import { createControlStructureEdge, createDummyNode, createLabel, createPort } from "./diagram-elements";
 import { CSEdge, CSNode, ParentNode } from "./stpa-interfaces";
@@ -33,7 +34,7 @@ import {
     PortSide,
 } from "./stpa-model";
 import { StpaSynthesisOptions } from "./stpa-synthesis-options";
-import { getCommonAncestor, setLevelOfCSNodes, sortPorts } from "./utils";
+import { getCommonAncestor, sortPorts } from "./utils";
 
 /**
  * Creates the control structure diagram for the given {@code controlStructure}.
@@ -93,8 +94,8 @@ export function createControlStructureNode(
         // add nodes representing the process model
         children.push(createProcessModelNodes(node.variables, idCache));
     }
-    // add children of the control structure node
-    if (node.children?.length !== 0) {
+    // add children of the control structure node if the node is expanded
+    if (node.children?.length !== 0 && expansionState.get(node.name) === true) {
         // add invisible node to group the children in order to be able to lay them out separately from the process model node
         const invisibleNode = {
             type: CS_INVISIBLE_SUBCOMPONENT_TYPE,
@@ -119,6 +120,7 @@ export function createControlStructureNode(
         id: nodeId,
         level: node.level,
         children: children,
+        expanded: expansionState.get(node.name) === true,
         layout: "stack",
         layoutOptions: {
             paddingTop: 10.0,
@@ -153,6 +155,7 @@ export function createProcessModelNodes(variables: Variable[], idCache: IdCache<
             type: CS_NODE_TYPE,
             id: nodeId,
             children: children,
+            expanded: expansionState.get(variable.name) === true,
             layout: "stack",
             layoutOptions: {
                 paddingTop: 10.0,
@@ -215,8 +218,12 @@ export function generateVerticalCSEdges(
         edges.push(...translateIOToEdgeAndNode(node.inputs, node, EdgeType.INPUT, idToSNode, idCache));
         // create edges representing the other outputs
         edges.push(...translateIOToEdgeAndNode(node.outputs, node, EdgeType.OUTPUT, idToSNode, idCache));
-        // create edges for children and add the ones that must be added at the top level
-        edges.push(...generateVerticalCSEdges(node.children, idToSNode, idCache, addMissing, missingFeedback));
+
+        // add edges of the children of the node if the node is expanded
+        if (expansionState.get(node.name) === true) {
+            // create edges for children and add the ones that must be added at the top level
+            edges.push(...generateVerticalCSEdges(node.children, idToSNode, idCache, addMissing, missingFeedback));
+        }
     }
     return edges;
 }
@@ -519,7 +526,11 @@ export function generatePortsForCSHierarchy(
     const nodes: SNode[] = [];
     while (current && (!ancestor || current !== ancestor)) {
         const currentId = idCache.getId(current);
-        if (currentId) {
+        if (!currentId) {
+            // if the current node is collapsed, the ID is not set
+            // we still want to draw the edge so far as possible to indicate the connection
+            current = current?.$container;
+        } else {
             const currentNode = idToSNode.get(currentId);
             if (currentNode) {
                 // current node could have an invisible child that was skipped while going up the hierarchy because it does not exist in the AST
