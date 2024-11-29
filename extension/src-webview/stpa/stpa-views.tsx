@@ -20,9 +20,9 @@ import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { IActionDispatcher, IView, IViewArgs, ModelRenderer, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SLabel, SLabelView, SNode, SPort, TYPES, svg, toDegrees } from 'sprotty';
 import { DISymbol } from '../di.symbols';
-import { ColorStyleOption, DifferentFormsOption, dottedFeedback, FeedbackStyleOption, lightGreyFeedback, RenderOptionsRegistry } from '../options/render-options-registry';
+import { ColorStyleOption, DifferentFormsOption, FeedbackStyleOption, RenderOptionsRegistry, dottedFeedback, lightGreyFeedback } from '../options/render-options-registry';
 import { SendModelRendererAction } from '../snippets/actions';
-import { renderDiamond, renderEllipse, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { renderCollapseIcon, renderDiamond, renderEllipse, renderExpandIcon, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { CSEdge, CSNode, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, CS_NODE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
@@ -230,15 +230,26 @@ export class CSNodeView extends RectangularNodeView {
         const sprottyNode = colorStyle === "standard";
         const printNode = !sprottyNode;
         const missingFeedback = node.type === CS_NODE_TYPE && (node as CSNode).hasMissingFeedback;
-        return <g>
-            <rect 
+        const rectangle = <rect 
                 class-missing-feedback-node={missingFeedback} class-print-node={printNode}
                 class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
                 class-mouseover={node.hoverFeedback} class-selected={node.selected}
                 x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
-            > </rect>
-            {context.renderChildren(node)}
-        </g>;
+            > </rect>;
+        if (node.type === CS_NODE_TYPE && (node as CSNode).hasChildren) {
+            // render the expand/collapse icon indicating that the node can be expanded
+            const icon = (node as CSNode).expanded ? renderCollapseIcon() : renderExpandIcon();
+            return <g>
+                {icon}
+                {rectangle}
+                {context.renderChildren(node)}
+            </g>;
+        } else {
+            return <g>
+                {rectangle}
+                {context.renderChildren(node)}
+            </g>;
+        }
     }
 }
 

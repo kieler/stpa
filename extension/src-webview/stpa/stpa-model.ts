@@ -74,6 +74,7 @@ export class PastaPort extends SPort {
 export class CSNode extends SNode {
     level?: number;
     hasMissingFeedback?: boolean;
+    hasChildren: boolean;
     expanded: boolean;
     static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature, expandFeature];
 }

@@ -46,13 +46,22 @@
     stroke-dasharray: 5, 5;
 }
 
-.feedback-grey {
-    stroke: var(--stpa-feedback-grey);
+.vscode-light .feedback-grey {
+    stroke: var(--stpa-feedback-grey-light);
 }
 
-.feedback-grey-arrow {
-    stroke: var(--stpa-feedback-grey) !important;
-    fill: var(--stpa-feedback-grey) !important;
+.vscode-light .feedback-grey-arrow {
+    stroke: var(--stpa-feedback-grey-light) !important;
+    fill: var(--stpa-feedback-grey-light) !important;
+}
+
+.vscode-dark .feedback-grey {
+    stroke: var(--stpa-feedback-grey-dark);
+}
+
+.vscode-dark .feedback-grey-arrow {
+    stroke: var(--stpa-feedback-grey-dark) !important;
+    fill: var(--stpa-feedback-grey-dark) !important;
 }
 
 /* High contrast theme */

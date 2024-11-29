@@ -120,6 +120,7 @@ export function createControlStructureNode(
         id: nodeId,
         level: node.level,
         children: children,
+        hasChildren: node.children?.length !== 0,
         expanded: expansionState.get(node.name) === true,
         layout: "stack",
         layoutOptions: {
@@ -155,6 +156,7 @@ export function createProcessModelNodes(variables: Variable[], idCache: IdCache<
             type: CS_NODE_TYPE,
             id: nodeId,
             children: children,
+            hasChildren: false,
             expanded: expansionState.get(variable.name) === true,
             layout: "stack",
             layoutOptions: {
