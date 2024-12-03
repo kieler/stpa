@@ -530,7 +530,7 @@ export function generatePortsForCSHierarchy(
         const currentId = idCache.getId(current);
         if (!currentId) {
             // if the current node is collapsed, the ID is not set
-            // we still want to draw the edge so far as possible to indicate the connection
+            // we may still want to draw the edge so far as possible to indicate the connection
             current = current?.$container;
         } else {
             const currentNode = idToSNode.get(currentId);

@@ -36,10 +36,36 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
     protected renderLine(edge: SEdge, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
+        const p1 = segments[segments.length - 2];
+        const p2 = segments[segments.length - 1];
+
         let path = `M ${firstPoint.x},${firstPoint.y}`;
         for (let i = 1; i < segments.length; i++) {
             const p = segments[i];
-            path += ` L ${p.x},${p.y}`;
+            // adjust the last point if it is not an intermediate edge in order to draw the arrow correctly (not reaching into the target node)
+            if ((edge.type === CS_EDGE_TYPE || edge.type === STPA_EDGE_TYPE) && i === segments.length - 1) {
+                if (p1.x === p2.x) {
+                    // edge goes down or up
+                    if (p1.y < p2.y) {
+                        // edge goes down
+                        path += ` L ${p.x},${p.y-3}`;
+                    } else {
+                        // edge goes up
+                        path += ` L ${p.x},${p.y + 3}`;
+                    }
+                } else {
+                    // edge goes left or right
+                    if (p1.x < p2.x) {
+                        // edge goes right
+                        path += ` L ${p.x - 3},${p.y}`;
+                    } else {
+                        // edge goes left
+                        path += ` L ${p.x + 3},${p.y}`;
+                    }
+                }
+            } else {
+                path += ` L ${p.x},${p.y}`;
+            }
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
@@ -79,6 +105,28 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
+        let endpoint: string;
+        // determine the last point to draw the arrow correctly (not reaching into the target node)
+        if (p1.x === p2.x) {
+            // edge goes down or up
+            if (p1.y < p2.y) {
+                // edge goes down
+                endpoint = `${p2.x} ${p2.y-2}`;
+            } else {
+                // edge goes up
+                endpoint = `${p2.x} ${p2.y + 2}`;
+            }
+        } else {
+            // edge goes left or right
+            if (p1.x < p2.x) {
+                // edge goes right
+                endpoint = `${p2.x - 2} ${p2.y}`;
+            } else {
+                // edge goes left
+                endpoint = `${p2.x + 2} ${p2.y}`;
+            }
+        }
+
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const printEdge = colorStyle === "black & white";
@@ -100,7 +148,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             <path  class-missing-edge-arrow={missing} class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-greyed-out={hidden} aspect={aspect}
                 class-feedback-grey-arrow={feedbackEdge && greyFeedback}    
                 class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
-                transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} />
+                transform={`rotate(${this.angle(p2, p1)} ${endpoint}) translate(${endpoint})`} />
         ];
     }
 
@@ -112,25 +160,13 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 @injectable()
 export class IntermediateEdgeView extends PolylineArrowEdgeView {
 
-    render(edge: Readonly<SEdge>, context: RenderingContext, args?: IViewArgs): VNode | undefined {
-        const route = this.edgeRouterRegistry.route(edge, args);
-        if (route.length === 0) {
-            return this.renderDanglingEdge("Cannot compute route", edge, context);
-        }
-        if (!this.isVisible(edge, route, context)) {
-            if (edge.children.length === 0) {
-                return undefined;
-            }
-            // The children of an edge are not necessarily inside the bounding box of the route,
-            // so we need to render a group to ensure the children have a chance to be rendered.
-            return <g>{context.renderChildren(edge, { route })}</g>;
-        }
-
-        // intermediate edge do not have an arrow
-        return <g class-sprotty-edge={true} class-mouseover={edge.hoverFeedback}>
-            {this.renderLine(edge, route, context)}
-            {context.renderChildren(edge, { route })}
-        </g>;
+    protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
+        // const p = segments[segments.length - 1];
+        // return [
+        //     <path d="M 0 0 L 0 3 M 5 3 L -5 3"
+        //         transform={` translate(${p.x} ${p.y})`} />
+        // ];
+        return [];
     }
 }
 
