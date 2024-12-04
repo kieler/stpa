@@ -79,7 +79,7 @@ export class StpaDiagramGenerator extends SnippetGraphGenerator {
         );
         await (this.services.shared.workspace.DocumentBuilder as StpaDocumentBuilder).buildDocuments(
             [doc],
-            { validationChecks: "none" },
+            { validation: false },
             CancellationToken.None
         );
 

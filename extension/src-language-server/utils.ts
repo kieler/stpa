@@ -15,7 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AstNode, LangiumSharedServices } from "langium";
+import { AstNode } from "langium";
+import { LangiumSharedServices } from "langium/lsp";
 import { IdCache, LangiumSprottySharedServices } from "langium-sprotty";
 import { SLabel } from "sprotty-protocol";
 import { URI } from "vscode-uri";
@@ -33,7 +34,7 @@ export async function getModel(
     shared: LangiumSprottySharedServices | LangiumSharedServices
 ): Promise<AstNode> {
     const textDocuments = shared.workspace.LangiumDocuments;
-    const currentDoc = textDocuments.getOrCreateDocument(URI.parse(uri));
+    const currentDoc = await textDocuments.getOrCreateDocument(URI.parse(uri));
     return currentDoc.parseResult.value;
 }
 

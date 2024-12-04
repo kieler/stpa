@@ -16,8 +16,9 @@
  */
 
 import ElkConstructor from "elkjs/lib/elk.bundled";
-import { Module, PartialLangiumServices } from "langium";
+import { Module } from "langium";
 import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty";
+import { PartialLangiumServices } from "langium/lsp";
 import { DefaultElementFilter, ElkFactory, IElementFilter, ILayoutConfigurator } from "sprotty-elk/lib/elk-layout";
 import { LayoutEngine } from "../layout-engine";
 import { StpaDiagramSnippets } from "../snippets/stpa-snippets";

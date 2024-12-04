@@ -391,7 +391,7 @@ function handleCutSets(cutSets: string[], minimal?: boolean): void {
 }
 
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {
-    const serverModule = context.asAbsolutePath(path.join("pack", "language-server"));
+    const serverModule = context.asAbsolutePath(path.join("pack",  "src-language-server", "main.cjs"));
     // The debug options for the server
     // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging.
     // By setting `process.env.DEBUG_BREAK` to a truthy value, the language server will wait until a debugger is attached.

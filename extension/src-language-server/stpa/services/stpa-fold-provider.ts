@@ -17,11 +17,14 @@
 
 import {
     AstNode,
+    LangiumDocument,
+    AstUtils
+} from "langium";
+import {
     DefaultFoldingRangeProvider,
     FoldingRangeAcceptor,
-    LangiumDocument,
-    streamAllContents,
-} from "langium";
+    
+} from "langium/lsp";
 import {
     Model
 } from "../../generated/ast";
@@ -33,7 +36,7 @@ export class STPAFoldingRangeProvider extends DefaultFoldingRangeProvider {
         const root = document.parseResult?.value;
         if (root) {
             if (this.shouldProcessContent(root)) {
-                const treeIterator = streamAllContents(root).iterator();
+                const treeIterator = AstUtils.streamAllContents(root).iterator();
                 let result: IteratorResult<AstNode>;
                 // save the type of the previous top-most node
                 let previousType = "";

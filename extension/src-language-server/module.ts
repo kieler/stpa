@@ -15,13 +15,15 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext, inject, Module } from "langium";
+
+import { inject, Module } from 'langium';
 import {
     DefaultDiagramServerManager,
     DiagramActionNotification,
     LangiumSprottySharedServices,
     SprottySharedServices,
 } from "langium-sprotty";
+import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext } from "langium/lsp";
 import { DiagramOptions } from "sprotty-protocol";
 import { URI } from "vscode-uri";
 import { PastaDiagramServer } from "./diagram-server";

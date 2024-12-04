@@ -18,13 +18,13 @@
 import {
     AstNode,
     AstNodeDescription,
+    AstUtils,
     DefaultScopeProvider,
     EMPTY_SCOPE,
     PrecomputedScopes,
     ReferenceInfo,
     Scope,
     Stream,
-    getDocument,
     stream,
 } from "langium";
 import {
@@ -81,7 +81,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         const referenceType = this.reflection.getReferenceType(context);
         const node = context.container;
 
-        const precomputed = getDocument(node).precomputedScopes;
+        const precomputed = AstUtils.getDocument(node).precomputedScopes;
         // get the root container which should be the Model
         let model = node.$container;
         while (model && !isModel(model)) {

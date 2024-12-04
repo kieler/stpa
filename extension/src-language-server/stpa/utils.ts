@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { LangiumSharedServices } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
+import { LangiumSharedServices } from "langium/lsp";
 import { Range } from "vscode-languageserver";
 import {
     Command,

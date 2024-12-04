@@ -22,21 +22,34 @@ import { FTAEdge } from "../src-webview/fta/fta-model";
 import { FTA_EDGE_TYPE } from "./fta/diagram/fta-model";
 
 export class LayoutEngine extends ElkLayoutEngine {
-    layout(graph: SGraph, index?: SModelIndex | undefined): SGraph | Promise<SGraph> {
-        if (this.getBasicType(graph) !== "graph") {
-            return graph;
+    layout(sgraph: SGraph, index?: SModelIndex): SGraph | Promise<SGraph> {
+        if (this.getBasicType(sgraph) !== 'graph') {
+            return sgraph;
         }
         if (!index) {
             index = new SModelIndex();
-            index.add(graph);
+            index.add(sgraph);
         }
-        const elkGraph = this.transformToElk(graph, index) as ElkNode;
+
+        // STEP 1: Transform the Sprotty graph into an ELK graph with optional pre-processing
+        const elkGraph = this.transformGraph(sgraph, index);
         /* used to inspect the elk graph in elklive */
         // const debugElkGraph = JSON.stringify(elkGraph);
         // console.log(debugElkGraph);
-        return this.elk.layout(elkGraph).then((result) => {
+
+        if (this.preprocessor) {
+            this.preprocessor.preprocess(elkGraph, sgraph, index);
+        }
+
+        // STEP 2: Invoke the ELK layout engine
+        return this.elk.layout(elkGraph).then(result => {
+
+            // STEP 3: Apply the results with optional post-processing to the original graph
+            if (this.postprocessor) {
+                this.postprocessor.postprocess(result, sgraph, index!);
+            }
             this.applyLayout(result, index!);
-            return graph;
+            return sgraph;
         });
     }
 

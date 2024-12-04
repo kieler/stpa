@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { startLanguageServer } from "langium";
+import { startLanguageServer } from "langium/lsp";
 import { addDiagramHandler } from "langium-sprotty";
 import { NodeFileSystem } from "langium/node";
 import { createConnection, ProposedFeatures } from "vscode-languageserver/node";
@@ -33,6 +33,8 @@ const { shared, stpa, fta } = createServices({ connection, ...NodeFileSystem });
 // Start the language server with the language-specific services
 startLanguageServer(shared);
 addDiagramHandler(connection, shared);
+
+// addDiagramSelectionHandler
 
 addSTPANotificationHandler(connection, stpa, shared);
 addFTANotificationHandler(connection, fta, shared);
