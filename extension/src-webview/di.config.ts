@@ -27,10 +27,10 @@ import {
     ModelViewer,
     PreRenderedElement,
     PreRenderedView,
-    SGraph,
-    SLabel,
+    SGraphImpl,
+    SLabelImpl,
     SLabelView,
-    SNode,
+    SNodeImpl,
     TYPES,
     configureCommand,
     configureModelElement,
@@ -120,20 +120,20 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
 
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
-    configureModelElement(context, "label", SLabel, PastaLabelView);
-    configureModelElement(context, "label:xref", SLabel, PastaLabelView);
-    configureModelElement(context, HEADER_LABEL_TYPE, SLabel, HeaderLabelView);
+    configureModelElement(context, "label", SLabelImpl, PastaLabelView);
+    configureModelElement(context, "label:xref", SLabelImpl, PastaLabelView);
+    configureModelElement(context, HEADER_LABEL_TYPE, SLabelImpl, HeaderLabelView);
     configureModelElement(context, "html", HtmlRoot, HtmlRootView);
     configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
 
     // STPA
-    configureModelElement(context, "graph", SGraph, STPAGraphView);
-    configureModelElement(context, CS_INVISIBLE_SUBCOMPONENT_TYPE, SNode, InvisibleNodeView);
-    configureModelElement(context, PROCESS_MODEL_PARENT_NODE_TYPE, SNode, InvisibleNodeView);
+    configureModelElement(context, "graph", SGraphImpl, STPAGraphView);
+    configureModelElement(context, CS_INVISIBLE_SUBCOMPONENT_TYPE, SNodeImpl, InvisibleNodeView);
+    configureModelElement(context, PROCESS_MODEL_PARENT_NODE_TYPE, SNodeImpl, InvisibleNodeView);
     configureModelElement(context, DUMMY_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
-    configureModelElement(context, PARENT_TYPE, SNode, CSNodeView);
+    configureModelElement(context, PARENT_TYPE, SNodeImpl, CSNodeView);
     configureModelElement(context, STPA_EDGE_TYPE, STPAEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_INTERMEDIATE_EDGE_TYPE, CSEdge, IntermediateEdgeView);

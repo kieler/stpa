@@ -20,8 +20,8 @@ import {
     SynthesisOption,
     TransformationOptionType,
     ValuedSynthesisOption,
-} from "../../options/option-models";
-import { SynthesisOptions, layoutCategory } from "../../synthesis-options";
+} from "../../options/option-models.js";
+import { SynthesisOptions, layoutCategory } from "../../synthesis-options.js";
 
 const hierarchyID = "hierarchy";
 const groupingUCAsID = "groupingUCAs";

@@ -218,7 +218,7 @@ export class CSNodeView extends RectangularNodeView {
         return <g>
             <rect 
                 class-missing-feedback-node={missingFeedback} class-print-node={printNode}
-                class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
+                class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPortImpl}
                 class-mouseover={node.hoverFeedback} class-selected={node.selected}
                 x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
             > </rect>

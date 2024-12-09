@@ -17,14 +17,14 @@
 
 import { LangiumSprottySharedServices } from "langium-sprotty";
 import { Connection, Range } from "vscode-languageserver";
-import { handleFTAConfigInit, handleFTAConfigReset } from './fta/fta-message-handler';
-import { FtaServices } from './fta/fta-module';
-import { getRangeOfNodeFTA } from "./fta/utils";
-import { Model, isModel, isModelFTA } from "./generated/ast";
-import { handleSTPAConfigInit, handleSTPAConfigReset } from './stpa/message-handler';
-import { StpaServices } from './stpa/stpa-module';
-import { getRangeOfNodeSTPA } from "./stpa/utils";
-import { getModel } from "./utils";
+import { handleFTAConfigInit, handleFTAConfigReset } from './fta/fta-message-handler.js';
+import { FtaServices } from './fta/fta-module.js';
+import { getRangeOfNodeFTA } from "./fta/utils.js";
+import { Model, isModel, isModelFTA } from "./generated/ast.js";
+import { handleSTPAConfigInit, handleSTPAConfigReset } from './stpa/message-handler.js';
+import { StpaServices } from './stpa/stpa-module.js';
+import { getRangeOfNodeSTPA } from "./stpa/utils.js";
+import { getModel } from "./utils.js";
 
 /**
  * Adds handler for notifications.

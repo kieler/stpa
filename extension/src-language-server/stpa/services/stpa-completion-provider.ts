@@ -15,14 +15,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { MaybePromise } from "langium";
 import {
     CompletionAcceptor,
     CompletionContext,
     CompletionValueItem,
     DefaultCompletionProvider,
-    MaybePromise,
     NextFeature,
-} from "langium";
+} from "langium/lsp";
 import { CompletionItemKind } from "vscode-languageserver";
 import {
     Context,
@@ -35,7 +35,7 @@ import {
     Rule,
     UCA,
     VerticalEdge,
-} from "../../generated/ast";
+} from "../../generated/ast.js";
 
 /**
  * Generates UCA text for loss scenarios by providing an additional completion item.
@@ -116,13 +116,13 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 });
 
                 // add the generated text as completion item
-                acceptor({
-                    label: "Generate Constraints for the UCAs",
-                    kind: CompletionItemKind.Snippet,
-                    insertText: generatedText,
-                    detail: "Inserts a controller constraint for each UCA.",
-                    sortText: "0",
-                });
+                // acceptor({
+                //     label: "Generate Constraints for the UCAs",
+                //     kind: CompletionItemKind.Snippet,
+                //     insertText: generatedText,
+                //     detail: "Inserts a controller constraint for each UCA.",
+                //     sortText: "0",
+                // });
             }
         }
     }
@@ -144,13 +144,13 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
     feedback {
     }
 }`;
-            acceptor({
-                label: "Generate System Component",
-                kind: CompletionItemKind.Text,
-                insertText: generatedText,
-                detail: "Inserts a system component.",
-                sortText: "0",
-            });
+            // acceptor({
+            //     label: "Generate System Component",
+            //     kind: CompletionItemKind.Text,
+            //     insertText: generatedText,
+            //     detail: "Inserts a system component.",
+            //     sortText: "0",
+            // });
         }
     }
 
@@ -163,15 +163,15 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
     protected completionForUCARule(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
         if ((context.node?.$type === Rule || next.type === Rule) && next.property === "name") {
             const templateRuleItem = this.generateTemplateRuleItem();
-            acceptor(templateRuleItem);
+            // acceptor(templateRuleItem);
             const model = context.node?.$type === Model ? context.node : context.node?.$container;
             if (isModel(model)) {
                 const controlActions = this.collectControlActions(model);
                 const rulesForEverythingItem = this.generateRulesForEverythingItem(controlActions);
-                acceptor(rulesForEverythingItem);
+                // acceptor(rulesForEverythingItem);
                 const ruleForSpecificControlActionItems =
                     this.generateRuleForSpecificControlActionItems(controlActions);
-                ruleForSpecificControlActionItems.forEach(item => acceptor(item));
+                // ruleForSpecificControlActionItems.forEach(item => acceptor(item));
             }
         }
     }
@@ -302,7 +302,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
             );
 
             if (generatedItems.length > 0) {
-                generatedItems.forEach(item => acceptor(item));
+                // generatedItems.forEach(item => acceptor(item));
             }
         }
     }
@@ -386,13 +386,13 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
         if (context.node?.$type === LossScenario && next.property === "description") {
             const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
             if (generatedText !== "") {
-                acceptor({
-                    label: "Generate UCA Text",
-                    kind: CompletionItemKind.Text,
-                    insertText: generatedText,
-                    detail: "Inserts the UCA text for this scenario.",
-                    sortText: "0",
-                });
+                // acceptor({
+                //     label: "Generate UCA Text",
+                //     kind: CompletionItemKind.Text,
+                //     insertText: generatedText,
+                //     detail: "Inserts the UCA text for this scenario.",
+                //     sortText: "0",
+                // });
             }
         }
         if (next.type === LossScenario && next.property === "name") {
@@ -401,13 +401,13 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
             if (isModel(model)) {
                 const generatedBasicScenariosText = this.generateBasicScenarios(model);
                 if (generatedBasicScenariosText !== "") {
-                    acceptor({
-                        label: "Generate Basic Scenarios",
-                        kind: CompletionItemKind.Snippet,
-                        insertText: generatedBasicScenariosText,
-                        detail: "Creates basic scenarios for all UCAs.",
-                        sortText: "0",
-                    });
+                    // acceptor({
+                    //     label: "Generate Basic Scenarios",
+                    //     kind: CompletionItemKind.Snippet,
+                    //     insertText: generatedBasicScenariosText,
+                    //     detail: "Creates basic scenarios for all UCAs.",
+                    //     sortText: "0",
+                    // });
                 }
             }
         }

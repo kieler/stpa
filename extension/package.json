@@ -535,11 +535,14 @@
         "onCommand:pasta.getLTLFormula"
     ],
     "files": [
-        "lib",
         "extension",
-        "server",
+        "src",
+        "src-context-table",
+        "src-diagram-snippets",
+        "src-language-server",
         "syntaxes",
-        "webview"
+        "src-webview",
+        "pack"
     ],
     "main": "./pack/src/extension.cjs",
     "dependencies": {
@@ -574,13 +577,14 @@
         "ovsx": "^0.6.0",
         "esbuild": "^0.21.2"
     },
+    "type": "module",
     "scripts": {
         "prepare": "yarn run clean && yarn run langium:generate && yarn run build",
         "clean": "rimraf pack",
         "langium:generate": "langium generate",
         "langium:watch": "langium generate --watch",
         "lint": "eslint .",
-        "build": "yarn run langium:generate && node esbuild.mjs",
+        "build": "yarn run langium:generate && tsc -b tsconfig.json && node esbuild.mjs",
         "watch": "webpack --watch",
         "package": "vsce package --yarn -o pasta.vsix",
         "predistribute": "yarn run package",

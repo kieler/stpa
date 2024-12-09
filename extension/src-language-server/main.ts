@@ -18,11 +18,13 @@
 import { startLanguageServer } from "langium/lsp";
 import { addDiagramHandler } from "langium-sprotty";
 import { NodeFileSystem } from "langium/node";
-import { createConnection, ProposedFeatures } from "vscode-languageserver/node";
-import { addFTANotificationHandler } from "./fta/fta-message-handler";
-import { addNotificationHandler } from "./handler";
-import { createServices } from "./module";
-import { addSTPANotificationHandler } from "./stpa/message-handler";
+import { createConnection, ProposedFeatures } from "vscode-languageserver/node.js";
+import { addFTANotificationHandler } from "./fta/fta-message-handler.js";
+import { addNotificationHandler } from "./handler.js";
+import { createServices } from "./module.js";
+import { addSTPANotificationHandler } from "./stpa/message-handler.js";
+
+console.log("Starting server");
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
@@ -32,12 +34,14 @@ const { shared, stpa, fta } = createServices({ connection, ...NodeFileSystem });
 
 // Start the language server with the language-specific services
 startLanguageServer(shared);
-addDiagramHandler(connection, shared);
+// addDiagramHandler(connection, shared);
 
 // addDiagramSelectionHandler
 
-addSTPANotificationHandler(connection, stpa, shared);
-addFTANotificationHandler(connection, fta, shared);
-addNotificationHandler(connection, shared, stpa, fta);
+// addSTPANotificationHandler(connection, stpa, shared);
+// addFTANotificationHandler(connection, fta, shared);
+// addNotificationHandler(connection, shared, stpa, fta);
 
 connection.onInitialized(() => connection.sendNotification("ready"));
+
+console.log("Server started");

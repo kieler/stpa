@@ -34,9 +34,9 @@ import {
     SafetyConstraint,
     SystemConstraint,
     SystemResponsibilities
-} from "../../generated/ast";
-import { StpaServices } from "../stpa-module";
-import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils";
+} from "../../generated/ast.js";
+import { StpaServices } from "../stpa-module.js";
+import { collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils.js";
 
 /**
  * Default prefixes for the different STPA aspects.
@@ -95,46 +95,47 @@ export class IDEnforcer {
      * @returns the text edits needed to enforce the correct IDs.
      */
     async enforceIDs(changes: TextDocumentContentChangeEvent[], uri: string): Promise<TextEdit[]> {
-        if (!this.enabled) {
-            return [];
-        }
-        // update current document information
-        this.currentUri = uri;
-        this.currentDocument = this.stpaServices.shared.workspace.LangiumDocuments.getOrCreateDocument(
-            uri as any
-        ) as LangiumDocument<Model>;
+        // if (!this.enabled) {
+        //     return [];
+        // }
+        // // update current document information
+        // this.currentUri = uri;
+        // this.currentDocument = this.stpaServices.shared.workspace.LangiumDocuments.getOrCreateDocument(
+        //     uri as any
+        // ) as LangiumDocument<Model>;
 
-        // ID enforcement can only be done if the parser has no errors. Otherwise other syntax elements than IDs are interpreted as IDs.
-        if (
-            this.currentDocument.parseResult.lexerErrors.length !== 0 ||
-            this.currentDocument.parseResult.parserErrors.length !== 0
-        ) {
-            return [];
-        }
+        // // ID enforcement can only be done if the parser has no errors. Otherwise other syntax elements than IDs are interpreted as IDs.
+        // if (
+        //     this.currentDocument.parseResult.lexerErrors.length !== 0 ||
+        //     this.currentDocument.parseResult.parserErrors.length !== 0
+        // ) {
+        //     return [];
+        // }
 
-        let edits: TextEdit[] = [];
-        for (const change of changes) {
-            // calculates the elements that need to be considered for ID enforcement and the prefix that should be used for it
-            const modifiedAspect = this.findModifiedAspect(change.rangeOffset);
-            if (modifiedAspect) {
-                const elements: elementWithName[] = modifiedAspect.elements;
-                const prefix = modifiedAspect.prefix;
-                // enforce IDs on the affected elements
-                edits = edits.concat(await this.enforceIDsOnElements(elements, prefix, change));
+        // let edits: TextEdit[] = [];
+        // for (const change of changes) {
+        //     // calculates the elements that need to be considered for ID enforcement and the prefix that should be used for it
+        //     const modifiedAspect = this.findModifiedAspect(change.rangeOffset);
+        //     if (modifiedAspect) {
+        //         const elements: elementWithName[] = modifiedAspect.elements;
+        //         const prefix = modifiedAspect.prefix;
+        //         // enforce IDs on the affected elements
+        //         edits = edits.concat(await this.enforceIDsOnElements(elements, prefix, change));
 
-                // rule IDs must be handled separately
-                if (modifiedAspect.ruleElements.length !== 0) {
-                    edits = edits.concat(
-                        await this.enforceIDsOnElements(
-                            modifiedAspect.ruleElements,
-                            isRule(modifiedAspect.ruleElements[0]) ? IDPrefix.Rule : IDPrefix.DCARule,
-                            change
-                        )
-                    );
-                }
-            }
-        }
-        return edits;
+        //         // rule IDs must be handled separately
+        //         if (modifiedAspect.ruleElements.length !== 0) {
+        //             edits = edits.concat(
+        //                 await this.enforceIDsOnElements(
+        //                     modifiedAspect.ruleElements,
+        //                     isRule(modifiedAspect.ruleElements[0]) ? IDPrefix.Rule : IDPrefix.DCARule,
+        //                     change
+        //                 )
+        //             );
+        //         }
+        //     }
+        // }
+        // return edits;
+        return [];
     }
 
     /**

@@ -45,8 +45,12 @@ const nodeContext = await esbuild.context({
 });
 
 const browserContext = await esbuild.context({
-    entryPoints: ['src-webview/main.ts'],
-    outdir: 'pack/webview',
+    entryPoints: [
+        'src-webview/main.ts',
+        'src-diagram-snippets/main.ts',
+        'src-context-table/main.ts',
+    ],
+    outdir: 'pack',
     bundle: true,
     target: 'es6',
     loader: { '.ts': 'ts', '.css': 'css' },

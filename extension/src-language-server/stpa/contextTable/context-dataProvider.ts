@@ -24,10 +24,10 @@ import {
     ContextTableSystemVariables,
     ContextTableVariable,
     ContextTableVariableValues,
-} from "../../../src-context-table/utils";
-import { Model, Node } from "../../generated/ast";
-import { getModel } from "../../utils";
-import { StpaServices } from "../stpa-module";
+} from "../../../src-context-table/utils.js";
+import { Model, Node } from "../../generated/ast.js";
+import { getModel } from "../../utils.js";
+import { StpaServices } from "../stpa-module.js";
 
 export class ContextTableProvider {
     protected services: StpaServices;
@@ -44,20 +44,21 @@ export class ContextTableProvider {
      */
     getRangeOfUCA(uri: URI, ucaName: string): Range | undefined {
         // get the current model
-        const textDocuments = this.services.shared.workspace.LangiumDocuments;
-        const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
-        const model: Model = currentDoc.parseResult.value;
+        // const textDocuments = this.services.shared.workspace.LangiumDocuments;
+        // const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
+        // const model: Model = currentDoc.parseResult.value;
 
-        let range: Range | undefined = undefined;
-        model.rules.forEach((rule) =>
-            rule.contexts.forEach((uca) => {
-                if (uca.name === ucaName) {
-                    range = uca.$cstNode?.range;
-                    return;
-                }
-            })
-        );
-        return range;
+        // let range: Range | undefined = undefined;
+        // model.rules.forEach((rule) =>
+        //     rule.contexts.forEach((uca) => {
+        //         if (uca.name === ucaName) {
+        //             range = uca.$cstNode?.range;
+        //             return;
+        //         }
+        //     })
+        // );
+        // return range;
+        return undefined;
     }
 
     /**

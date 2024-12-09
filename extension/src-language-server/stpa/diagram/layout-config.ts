@@ -17,9 +17,9 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LayoutOptions } from "elkjs";
-import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout";
+import { DefaultLayoutConfigurator } from "sprotty-elk";
 import { SGraph, SModelIndex, SNode, SPort } from "sprotty-protocol";
-import { CSNode, ParentNode, STPANode, PastaPort } from "./stpa-interfaces";
+import { CSNode, ParentNode, STPANode, PastaPort } from "./stpa-interfaces.js";
 import {
     CS_NODE_TYPE,
     CS_INVISIBLE_SUBCOMPONENT_TYPE,
@@ -28,7 +28,7 @@ import {
     PortSide,
     STPA_NODE_TYPE,
     PORT_TYPE,
-} from "./stpa-model";
+} from "./stpa-model.js";
 
 export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
     protected graphOptions(sgraph: SGraph, index: SModelIndex): LayoutOptions {

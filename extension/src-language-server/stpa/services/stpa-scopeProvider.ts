@@ -59,8 +59,8 @@ import {
     isSystemConstraint,
     isSystemResponsibilities,
     isVerticalEdge
-} from "../../generated/ast";
-import { StpaServices } from "../stpa-module";
+} from "../../generated/ast.js";
+import { StpaServices } from "../stpa-module.js";
 
 export class StpaScopeProvider extends DefaultScopeProvider {
     /* the types of the different aspects */
@@ -75,9 +75,11 @@ export class StpaScopeProvider extends DefaultScopeProvider {
 
     constructor(services: StpaServices) {
         super(services);
+        console.log("ScopeProvider");
     }
 
     getScope(context: ReferenceInfo): Scope {
+        console.log("getScope");
         const referenceType = this.reflection.getReferenceType(context);
         const node = context.container;
 

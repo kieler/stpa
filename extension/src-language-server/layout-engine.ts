@@ -15,11 +15,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ElkExtendedEdge, ElkNode, ElkPrimitiveEdge } from "elkjs/lib/elk-api";
-import { ElkLayoutEngine } from "sprotty-elk/lib/elk-layout";
+import { ElkExtendedEdge, ElkNode, ElkPrimitiveEdge } from "elkjs";
+import { ElkLayoutEngine } from "sprotty-elk";
 import { Point, SEdge, SGraph, SModelIndex } from "sprotty-protocol";
-import { FTAEdge } from "../src-webview/fta/fta-model";
-import { FTA_EDGE_TYPE } from "./fta/diagram/fta-model";
+import { FTAEdge } from "../src-webview/fta/fta-model.js";
+import { FTA_EDGE_TYPE } from "./fta/diagram/fta-model.js";
 
 export class LayoutEngine extends ElkLayoutEngine {
     layout(sgraph: SGraph, index?: SModelIndex): SGraph | Promise<SGraph> {

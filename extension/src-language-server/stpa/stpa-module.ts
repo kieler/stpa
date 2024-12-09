@@ -15,34 +15,34 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import ElkConstructor from "elkjs/lib/elk.bundled";
+const ElkConstructor = require('elkjs/lib/elk.bundled.js').default;
 import { Module } from "langium";
 import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty";
 import { PartialLangiumServices } from "langium/lsp";
-import { DefaultElementFilter, ElkFactory, IElementFilter, ILayoutConfigurator } from "sprotty-elk/lib/elk-layout";
-import { LayoutEngine } from "../layout-engine";
-import { StpaDiagramSnippets } from "../snippets/stpa-snippets";
-import { ContextTableProvider } from "./contextTable/context-dataProvider";
-import { StpaDiagramGenerator } from "./diagram/diagram-generator";
-import { StpaLayoutConfigurator } from "./diagram/layout-config";
-import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options";
-import { IDEnforcer } from "./services/ID-enforcer";
-import { STPACompletionProvider } from "./services/stpa-completion-provider";
-import { STPAFoldingRangeProvider } from './services/stpa-fold-provider';
-import { StpaScopeProvider } from "./services/stpa-scopeProvider";
-import { StpaValidationRegistry, StpaValidator } from "./services/stpa-validator";
+import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from "sprotty-elk";
+import { LayoutEngine } from "../layout-engine.js";
+import { StpaDiagramSnippets } from "../snippets/stpa-snippets.js";
+import { ContextTableProvider } from "./contextTable/context-dataProvider.js";
+import { StpaDiagramGenerator } from "./diagram/diagram-generator.js";
+import { StpaLayoutConfigurator } from "./diagram/layout-config.js";
+import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options.js";
+import { IDEnforcer } from "./services/ID-enforcer.js";
+import { STPACompletionProvider } from "./services/stpa-completion-provider.js";
+import { STPAFoldingRangeProvider } from './services/stpa-fold-provider.js';
+import { StpaScopeProvider } from "./services/stpa-scopeProvider.js";
+import { StpaValidator } from "./services/stpa-validator.js";
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
 export type StpaAddedServices = {
-    lsp: {
-        StpaCompletionProvider: STPACompletionProvider;
-        StpaFoldingRangeProvider: STPAFoldingRangeProvider;
-    };
-    references: {
-        StpaScopeProvider: StpaScopeProvider;
-    };
+    // lsp: {
+    //     StpaCompletionProvider: STPACompletionProvider;
+    //     StpaFoldingRangeProvider: STPAFoldingRangeProvider;
+    // };
+    // references: {
+    //     StpaScopeProvider: StpaScopeProvider;
+    // };
     validation: {
         StpaValidator: StpaValidator;
     };
@@ -79,25 +79,28 @@ export type StpaServices = LangiumSprottyServices & StpaAddedServices;
 export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDiagramServices & StpaAddedServices> = {
     diagram: {
         DiagramGenerator: services => new StpaDiagramGenerator(services),
-        ModelLayoutEngine: services =>
-            new LayoutEngine(
-                services.layout.ElkFactory,
-                services.layout.ElementFilter,
-                services.layout.LayoutConfigurator
-            ) as any,
+        ModelLayoutEngine: services => new ElkLayoutEngine(services.layout.ElkFactory, services.layout.ElementFilter, services.layout.LayoutConfigurator) as any
     },
-    lsp: {
-        CompletionProvider: services => new STPACompletionProvider(services),
-        StpaCompletionProvider: services => new STPACompletionProvider(services),
-        FoldingRangeProvider: services => new STPAFoldingRangeProvider(services),
-        StpaFoldingRangeProvider: services => new STPAFoldingRangeProvider(services),
-    },
-    references: {
-        ScopeProvider: services => new StpaScopeProvider(services),
-        StpaScopeProvider: services => new StpaScopeProvider(services),
-    },
+    // diagram: {
+    //     DiagramGenerator: services => new StpaDiagramGenerator(services),
+    //     ModelLayoutEngine: services =>
+    //         new LayoutEngine(
+    //             services.layout.ElkFactory,
+    //             services.layout.ElementFilter,
+    //             services.layout.LayoutConfigurator
+    //         ) as any,
+    // },
+    // lsp: {
+    //     CompletionProvider: services => new STPACompletionProvider(services),
+    //     // StpaCompletionProvider: services => new STPACompletionProvider(services),
+    //     FoldingRangeProvider: services => new STPAFoldingRangeProvider(services),
+    //     // StpaFoldingRangeProvider: services => new STPAFoldingRangeProvider(services),
+    // },
+    // references: {
+    //     ScopeProvider: services => new StpaScopeProvider(services),
+    //     // StpaScopeProvider: services => new StpaScopeProvider(services),
+    // },
     validation: {
-        ValidationRegistry: services => new StpaValidationRegistry(services),
         StpaValidator: () => new StpaValidator(),
     },
     layout: {

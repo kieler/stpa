@@ -18,9 +18,9 @@
 import { AstNode } from "langium";
 import { IdCache } from "langium-sprotty";
 import { SModelElement, SNode } from "sprotty-protocol";
-import { Command, Graph, Node, Variable, VerticalEdge } from "../../generated/ast";
-import { createControlStructureEdge, createDummyNode, createLabel, createPort } from "./diagram-elements";
-import { CSEdge, CSNode, ParentNode } from "./stpa-interfaces";
+import { Command, Graph, Node, Variable, VerticalEdge } from "../../generated/ast.js";
+import { createControlStructureEdge, createDummyNode, createLabel, createPort } from "./diagram-elements.js";
+import { CSEdge, CSNode, ParentNode } from "./stpa-interfaces.js";
 import {
     CS_EDGE_TYPE,
     CS_INTERMEDIATE_EDGE_TYPE,
@@ -31,9 +31,9 @@ import {
     PARENT_TYPE,
     PROCESS_MODEL_PARENT_NODE_TYPE,
     PortSide,
-} from "./stpa-model";
-import { StpaSynthesisOptions } from "./stpa-synthesis-options";
-import { getCommonAncestor, setLevelOfCSNodes, sortPorts } from "./utils";
+} from "./stpa-model.js";
+import { StpaSynthesisOptions } from "./stpa-synthesis-options.js";
+import { getCommonAncestor, setLevelOfCSNodes, sortPorts } from "./utils.js";
 
 /**
  * Creates the control structure diagram for the given {@code controlStructure}.

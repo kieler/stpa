@@ -15,11 +15,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { LangiumDocuments, LangiumServices } from "langium";
+import { LangiumDocuments } from "langium";
+import { LangiumServices } from "langium/lsp";
 import { Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
-import { LanguageSnippet } from "./snippet-model";
+import { LanguageSnippet } from "./snippet-model.js";
 import * as defaultSnippets from "./default-stpa-snippets.json";
 
 /**
@@ -43,7 +44,7 @@ export class StpaDiagramSnippets {
      */
     protected generateDefaultSnippets(): LanguageSnippet[] {
         const list: LanguageSnippet[] = [];
-        defaultSnippets.snippets.forEach((snippet: { name: string; code: string }) => {
+        defaultSnippets.default.snippets.forEach((snippet: { name: string; code: string }) => {
             list.push(new CustomCSSnippet(this.langiumDocuments, snippet.code, snippet.name));
         });
         return list;
@@ -190,9 +191,10 @@ export class STPALanguageSnippet implements LanguageSnippet {
     }
 
     getPosition(uri: string): Position {
-        const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        this.insertText = addNodeIDs(this.baseCode, document);
-        return getPositionForCSSnippet(document, this);
+        // const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
+        // this.insertText = addNodeIDs(this.baseCode, document);
+        // return getPositionForCSSnippet(document, this);
+        return { line: 0, character: 0 };
     }
 }
 

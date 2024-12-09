@@ -27,7 +27,7 @@ import {
 } from "langium/lsp";
 import {
     Model
-} from "../../generated/ast";
+} from "../../generated/ast.js";
 
 export class STPAFoldingRangeProvider extends DefaultFoldingRangeProvider {
 

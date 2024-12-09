@@ -37,8 +37,8 @@ import {
     SystemConstraint,
     UCA,
     Variable,
-} from "../generated/ast";
-import { getModel } from "../utils";
+} from "../generated/ast.js";
+import { getModel } from "../utils.js";
 
 export type leafElement =
     | Loss

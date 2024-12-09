@@ -20,8 +20,8 @@ import { LangiumSharedServices } from "langium/lsp";
 import { IdCache, LangiumSprottySharedServices } from "langium-sprotty";
 import { SLabel } from "sprotty-protocol";
 import { URI } from "vscode-uri";
-import { StpaValidator } from "./stpa/services/stpa-validator";
-import { labelManagementValue } from "./synthesis-options";
+import { StpaValidator } from "./stpa/services/stpa-validator.js";
+import { labelManagementValue } from "./synthesis-options.js";
 
 /**
  * Determines the model for {@code uri}.

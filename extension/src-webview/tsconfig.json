@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
-      "module": "Node16",
+      "module": "CommonJS",
       "target": "ES2017",
       "outDir": "pack",
-      "lib": ["ESNext", "dom"],
+      "lib": ["es6", "dom"],
       "jsx": "react",
       "jsxFactory": "jsx",
       "sourceMap": true,
       "rootDir": "src",
       "strict": true, // enable all strict type-checking options
       "resolveJsonModule": true, // Allow importing JSON files
-      "moduleResolution": "Node16",
+      "moduleResolution": "node",
       "esModuleInterop": true,
       /* Additional Checks */
       "strictPropertyInitialization": false, // No need to initialize every variable

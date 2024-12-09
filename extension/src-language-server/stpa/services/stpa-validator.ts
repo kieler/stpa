@@ -34,29 +34,26 @@ import {
     SystemConstraint,
     isModel,
     isRule,
-} from "../../generated/ast";
-import { StpaServices } from "../stpa-module";
-import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils";
+} from "../../generated/ast.js";
+import { StpaServices } from "../stpa-module.js";
+import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils.js";
 
-/**
- * Registry for validation checks.
- */
-export class StpaValidationRegistry extends ValidationRegistry {
-    constructor(services: StpaServices) {
-        super(services);
-        const validator = services.validation.StpaValidator;
-        const checks: ValidationChecks<PastaAstType> = {
-            Model: validator.checkModel,
-            Hazard: validator.checkHazard,
-            SystemConstraint: validator.checkSystemConstraint,
-            Responsibility: validator.checkResponsibility,
-            ControllerConstraint: validator.checkControllerConstraints,
-            HazardList: validator.checkHazardList,
-            Node: validator.checkNode,
-            Graph: validator.checkControlStructure,
-        };
-        this.register(checks, validator);
-    }
+
+export function registerValidationChecks(services: StpaServices): void {
+    const registry = services.validation.ValidationRegistry;
+    console.log("Registering validation checks");
+    const validator = services.validation.StpaValidator;
+    const checks: ValidationChecks<PastaAstType> = {
+        Model: validator.checkModel,
+        Hazard: validator.checkHazard,
+        SystemConstraint: validator.checkSystemConstraint,
+        Responsibility: validator.checkResponsibility,
+        ControllerConstraint: validator.checkControllerConstraints,
+        HazardList: validator.checkHazardList,
+        Node: validator.checkNode,
+        Graph: validator.checkControlStructure,
+    };
+    registry.register(checks, validator);
 }
 
 /**
@@ -91,6 +88,7 @@ export class StpaValidator {
      * @param accept
      */
     checkModel(model: Model, accept: ValidationAcceptor): void {
+        console.log("Checking model");
         this.checkAllAspectsPresent(model, accept);
         this.checkForTODOs(model, accept);
 

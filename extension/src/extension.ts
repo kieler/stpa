@@ -17,8 +17,9 @@
 
 import * as path from "path";
 import { ActionMessage } from "sprotty-protocol";
-import { createFileUri, registerDefaultCommands } from "sprotty-vscode";
-import { LspSprottyEditorProvider, LspSprottyViewProvider, acceptMessageType } from "sprotty-vscode/lib/lsp";
+import { createFileUri, createWebviewHtml as doCreateWebviewHtml, registerDefaultCommands, SprottyDiagramIdentifier, WebviewContainer, WebviewEndpoint } from "sprotty-vscode";
+import { acceptMessageType, LspSprottyEditorProvider, LspSprottyViewProvider, LspWebviewEndpoint } from "sprotty-vscode/lib/lsp";
+import { addLspLabelEditActionHandler, addWorkspaceEditActionHandler } from 'sprotty-vscode/lib/lsp/editing';
 import * as vscode from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
 import { Messenger } from "vscode-messenger";
@@ -73,66 +74,78 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     languageClient = createLanguageClient(context);
-    // Create context key of supported languages
-    vscode.commands.executeCommand("setContext", "pasta.languages", supportedFileEndings);
+    // const extensionPath = context.extensionUri.fsPath;
+    // const localResourceRoots = [createFileUri(extensionPath, 'pack', 'diagram')];
+    // const createWebviewHtml = (identifier: SprottyDiagramIdentifier, container: WebviewContainer): string => doCreateWebviewHtml(identifier, container, {
+    //     scriptUri: createFileUri(extensionPath, 'pack', 'diagram', 'main.js'),
+    //     cssUri: createFileUri(extensionPath, 'pack', 'diagram', 'main.css')
+    // });
+    // const configureEndpoint = (endpoint: WebviewEndpoint): void => {
+    //     addWorkspaceEditActionHandler(endpoint as LspWebviewEndpoint);
+    //     addLspLabelEditActionHandler(endpoint as LspWebviewEndpoint);
+    // };
 
-    const storage = new StorageService(context.workspaceState);
 
-    if (diagramMode === "panel") {
-        // Set up webview panel manager for freestyle webviews
-        const webviewPanelManager = new StpaLspVscodeExtension(
-            {
-                extensionUri: context.extensionUri,
-                languageClient,
-                supportedFileExtensions: [".stpa", ".fta"],
-                singleton: true,
-                messenger: new Messenger({ ignoreHiddenViews: false }),
-            },
-            "pasta",
-            storage
-        );
-        registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
-        registerTextEditorSync(webviewPanelManager, context);
-        registerSTPACommands(webviewPanelManager, context, storage, { extensionPrefix: "pasta" });
-        registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
-        registerDiagramSnippetWebview(webviewPanelManager, context);
-        registerPastaCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
-    }
+    // // Create context key of supported languages
+    // vscode.commands.executeCommand("setContext", "pasta.languages", supportedFileEndings);
 
-    if (diagramMode === "editor") {
-        // Set up webview editor associated with file type
-        const webviewEditorProvider = new LspSprottyEditorProvider({
-            extensionUri: context.extensionUri,
-            viewType: "stpa",
-            languageClient,
-            supportedFileExtensions: [".stpa"],
-        });
-        context.subscriptions.push(
-            vscode.window.registerCustomEditorProvider("stpa", webviewEditorProvider, {
-                webviewOptions: { retainContextWhenHidden: true },
-            })
-        );
-        registerDefaultCommands(webviewEditorProvider, context, { extensionPrefix: "stpa" });
-    }
+    // const storage = new StorageService(context.workspaceState);
 
-    if (diagramMode === "view") {
-        // Set up webview view shown in the side panel
-        const webviewViewProvider = new LspSprottyViewProvider({
-            extensionUri: context.extensionUri,
-            viewType: "stpa",
-            languageClient,
-            supportedFileExtensions: [".stpa"],
-            openActiveEditor: true,
-            messenger: new Messenger({ ignoreHiddenViews: false }),
-        });
+    // if (diagramMode === "panel") {
+    //     // Set up webview panel manager for freestyle webviews
+    //     const webviewPanelManager = new StpaLspVscodeExtension(
+    //         {
+    //             extensionUri: context.extensionUri,
+    //             languageClient,
+    //             supportedFileExtensions: [".stpa", ".fta"],
+    //             singleton: true,
+    //             messenger: new Messenger({ ignoreHiddenViews: false }),
+    //         },
+    //         "pasta",
+    //         storage
+    //     );
+    //     registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
+    //     registerTextEditorSync(webviewPanelManager, context);
+    //     registerSTPACommands(webviewPanelManager, context, storage, { extensionPrefix: "pasta" });
+    //     registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
+    //     registerDiagramSnippetWebview(webviewPanelManager, context);
+    //     registerPastaCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
+    // }
 
-        context.subscriptions.push(
-            vscode.window.registerWebviewViewProvider("states", webviewViewProvider, {
-                webviewOptions: { retainContextWhenHidden: true },
-            })
-        );
-        registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: "stpa" });
-    }
+    // if (diagramMode === "editor") {
+    //     // Set up webview editor associated with file type
+    //     const webviewEditorProvider = new LspSprottyEditorProvider({
+    //         extensionUri: context.extensionUri,
+    //         viewType: "stpa",
+    //         languageClient,
+    //         supportedFileExtensions: [".stpa"],
+    //     });
+    //     context.subscriptions.push(
+    //         vscode.window.registerCustomEditorProvider("stpa", webviewEditorProvider, {
+    //             webviewOptions: { retainContextWhenHidden: true },
+    //         })
+    //     );
+    //     registerDefaultCommands(webviewEditorProvider, context, { extensionPrefix: "stpa" });
+    // }
+
+    // if (diagramMode === "view") {
+    //     // Set up webview view shown in the side panel
+    //     const webviewViewProvider = new LspSprottyViewProvider({
+    //         extensionUri: context.extensionUri,
+    //         viewType: "stpa",
+    //         languageClient,
+    //         supportedFileExtensions: [".stpa"],
+    //         openActiveEditor: true,
+    //         messenger: new Messenger({ ignoreHiddenViews: false }),
+    //     });
+
+    //     context.subscriptions.push(
+    //         vscode.window.registerWebviewViewProvider("states", webviewViewProvider, {
+    //             webviewOptions: { retainContextWhenHidden: true },
+    //         })
+    //     );
+    //     registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: "stpa" });
+    // }
 }
 
 export async function deactivate(): Promise<void> {
@@ -462,13 +475,18 @@ async function updateViews(manager: StpaLspVscodeExtension, document?: vscode.Te
         }
 
         // update diagram without reseting viewport
-        const message: ActionMessage = {
-            clientId: manager.clientId!,
-            action: {
-                kind: UpdateDiagramAction.KIND,
-            } as UpdateDiagramAction,
-        };
-        languageClient.sendNotification(acceptMessageType, message);
+        if (manager.clientId) {
+            const message: ActionMessage = {
+                clientId: manager.clientId!,
+                action: {
+                    kind: UpdateDiagramAction.KIND,
+                    options: {
+                        sourceUri: document.uri.toString(),
+                    }
+                } as UpdateDiagramAction,
+            };
+            languageClient.sendNotification(acceptMessageType, message);
+        }
 
         // update the context table
         if (manager.contextTable) {

@@ -21,15 +21,17 @@ import {
     DefaultDiagramServerManager,
     DiagramActionNotification,
     LangiumSprottySharedServices,
+    SprottySharedModule,
     SprottySharedServices,
 } from "langium-sprotty";
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext } from "langium/lsp";
 import { DiagramOptions } from "sprotty-protocol";
 import { URI } from "vscode-uri";
-import { PastaDiagramServer } from "./diagram-server";
-import { FtaModule, FtaServices } from "./fta/fta-module";
-import { FtaGeneratedModule, PastaGeneratedSharedModule, StpaGeneratedModule } from "./generated/module";
-import { STPAModule, StpaServices } from "./stpa/stpa-module";
+import { PastaDiagramServer } from "./diagram-server.js";
+import { FtaModule, FtaServices } from "./fta/fta-module.js";
+import { FtaGeneratedModule, PastaGeneratedSharedModule, StpaGeneratedModule } from "./generated/module.js";
+import { STPAModule, StpaServices } from "./stpa/stpa-module.js";
+import { registerValidationChecks } from './stpa/services/stpa-validator.js';
 
 /**
  * Create the full set of services required by Langium.
@@ -51,10 +53,11 @@ export function createServices(context: DefaultSharedModuleContext): {
     stpa: StpaServices;
     fta: FtaServices;
 } {
-    const shared = inject(createDefaultSharedModule(context), PastaGeneratedSharedModule, PastaSprottySharedModule);
+    const shared = inject(createDefaultSharedModule(context), PastaGeneratedSharedModule, SprottySharedModule/* , PastaSprottySharedModule */);
     const stpa = inject(createDefaultModule({ shared }), StpaGeneratedModule, STPAModule);
     const fta = inject(createDefaultModule({ shared }), FtaGeneratedModule, FtaModule);
     shared.ServiceRegistry.register(stpa);
+    registerValidationChecks(stpa);
     shared.ServiceRegistry.register(fta);
     return { shared, stpa, fta };
 }
