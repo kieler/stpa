@@ -27,18 +27,21 @@ import { StpaLayoutConfigurator } from "./diagram/layout-config.js";
 import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options.js";
 import { IDEnforcer } from "./services/ID-enforcer.js";
 import { StpaValidator } from "./services/stpa-validator.js";
+import { STPACompletionProvider } from './services/stpa-completion-provider.js';
+import { STPAFoldingRangeProvider } from './services/stpa-fold-provider.js';
+import { StpaScopeProvider } from './services/stpa-scopeProvider.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
 export type StpaAddedServices = {
-    // lsp: {
-    //     StpaCompletionProvider: STPACompletionProvider;
-    //     StpaFoldingRangeProvider: STPAFoldingRangeProvider;
-    // };
-    // references: {
-    //     StpaScopeProvider: StpaScopeProvider;
-    // };
+    lsp: {
+        StpaCompletionProvider: STPACompletionProvider;
+        StpaFoldingRangeProvider: STPAFoldingRangeProvider;
+    };
+    references: {
+        StpaScopeProvider: StpaScopeProvider;
+    };
     validation: {
         StpaValidator: StpaValidator;
     };
@@ -86,16 +89,16 @@ export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDi
     //             services.layout.LayoutConfigurator
     //         ) as any,
     // },
-    // lsp: {
-    //     CompletionProvider: services => new STPACompletionProvider(services),
-    //     // StpaCompletionProvider: services => new STPACompletionProvider(services),
-    //     FoldingRangeProvider: services => new STPAFoldingRangeProvider(services),
-    //     // StpaFoldingRangeProvider: services => new STPAFoldingRangeProvider(services),
-    // },
-    // references: {
-    //     ScopeProvider: services => new StpaScopeProvider(services),
-    //     // StpaScopeProvider: services => new StpaScopeProvider(services),
-    // },
+    lsp: {
+        CompletionProvider: services => new STPACompletionProvider(services),
+        StpaCompletionProvider: services => new STPACompletionProvider(services),
+        FoldingRangeProvider: services => new STPAFoldingRangeProvider(services),
+        StpaFoldingRangeProvider: services => new STPAFoldingRangeProvider(services),
+    },
+    references: {
+        ScopeProvider: services => new StpaScopeProvider(services),
+        StpaScopeProvider: services => new StpaScopeProvider(services),
+    },
     validation: {
         StpaValidator: () => new StpaValidator(),
     },
