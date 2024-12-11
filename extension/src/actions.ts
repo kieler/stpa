@@ -16,7 +16,7 @@
  */
 
 import { Action, JsonMap } from "sprotty-protocol";
-import { ContextTableData } from '../src-context-table/src/utils-classes';
+import { ContextTableData } from './utils-classes';
 
 /** Contains storage option values. Is sent between webview and extension. */
 export interface UpdateStorageAction extends Action {

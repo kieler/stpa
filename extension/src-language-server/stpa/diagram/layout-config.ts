@@ -17,7 +17,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LayoutOptions } from "elkjs";
-import { DefaultLayoutConfigurator } from "sprotty-elk";
+import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout.js";
 import { SGraph, SModelIndex, SNode, SPort } from "sprotty-protocol";
 import { CSNode, ParentNode, STPANode, PastaPort } from "./stpa-interfaces.js";
 import {

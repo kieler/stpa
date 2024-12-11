@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "outDir": "../pack/src-language-server",
     "target": "ES2017",
     "lib": [
         "es2019",

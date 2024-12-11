@@ -24,7 +24,7 @@ import {
     ContextTableSystemVariables,
     ContextTableVariable,
     ContextTableVariableValues,
-} from "../../../src-context-table/src/utils-classes.js";
+} from "./utils-classes.js";
 import { Model, Node } from "../../generated/ast.js";
 import { getModel } from "../../utils.js";
 import { StpaServices } from "../stpa-module.js";

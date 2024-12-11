@@ -6,7 +6,7 @@
       "resolveJsonModule": true, // Allow importing JSON files
       /* Additional Checks */
       "strictPropertyInitialization": false, // No need to initialize every variable
-      "declaration": true, // Generate corresponding .d.ts file
+      "declaration": false, // Generate corresponding .d.ts file
       "noImplicitAny": true,
       "noEmitOnError": true,
       "noImplicitThis": true,

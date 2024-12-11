@@ -19,7 +19,7 @@ const ElkConstructor = require('elkjs/lib/elk.bundled.js').default;
 import { Module } from "langium";
 import { PartialLangiumServices } from 'langium/lsp';
 import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty";
-import { DefaultElementFilter, ElkFactory, IElementFilter, ILayoutConfigurator } from "sprotty-elk";
+import { DefaultElementFilter, ElkFactory, IElementFilter, ILayoutConfigurator } from "sprotty-elk/lib/elk-layout.js";
 import { LayoutEngine } from "../layout-engine.js";
 import { FtaDiagramGenerator } from "./diagram/fta-diagram-generator.js";
 import { FtaLayoutConfigurator } from "./diagram/fta-layout-config.js";

@@ -16,7 +16,7 @@
  */
 
 import { LayoutOptions } from "elkjs";
-import { DefaultLayoutConfigurator } from "sprotty-elk";
+import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout.js";
 import { SModelIndex, SNode } from "sprotty-protocol";
 import { FTAGraph, FTANode, FTAPort } from "./fta-interfaces.js";
 import { FTA_DESCRIPTION_NODE_TYPE, FTA_NODE_TYPE, FTA_PORT_TYPE, FTNodeType, PortSide } from "./fta-model.js";

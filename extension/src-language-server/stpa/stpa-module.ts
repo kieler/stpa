@@ -19,17 +19,13 @@ const ElkConstructor = require('elkjs/lib/elk.bundled.js').default;
 import { Module } from "langium";
 import { LangiumSprottyServices, SprottyDiagramServices } from "langium-sprotty";
 import { PartialLangiumServices } from "langium/lsp";
-import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from "sprotty-elk";
-import { LayoutEngine } from "../layout-engine.js";
+import { DefaultElementFilter, ElkFactory, ElkLayoutEngine, IElementFilter, ILayoutConfigurator } from "sprotty-elk/lib/elk-layout.js";
 import { StpaDiagramSnippets } from "../snippets/stpa-snippets.js";
 import { ContextTableProvider } from "./contextTable/context-dataProvider.js";
 import { StpaDiagramGenerator } from "./diagram/diagram-generator.js";
 import { StpaLayoutConfigurator } from "./diagram/layout-config.js";
 import { StpaSynthesisOptions } from "./diagram/stpa-synthesis-options.js";
 import { IDEnforcer } from "./services/ID-enforcer.js";
-import { STPACompletionProvider } from "./services/stpa-completion-provider.js";
-import { STPAFoldingRangeProvider } from './services/stpa-fold-provider.js';
-import { StpaScopeProvider } from "./services/stpa-scopeProvider.js";
 import { StpaValidator } from "./services/stpa-validator.js";
 
 /**

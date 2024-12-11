@@ -16,9 +16,9 @@
  */
 
 import { ElkExtendedEdge, ElkNode, ElkPrimitiveEdge } from "elkjs";
-import { ElkLayoutEngine } from "sprotty-elk";
+import { ElkLayoutEngine } from "sprotty-elk/lib/elk-layout.js";
 import { Point, SEdge, SGraph, SModelIndex } from "sprotty-protocol";
-import { FTAEdge } from "../src-webview/fta/fta-model.js";
+import { FTAEdge } from "./fta/diagram/fta-interfaces.js";
 import { FTA_EDGE_TYPE } from "./fta/diagram/fta-model.js";
 
 export class LayoutEngine extends ElkLayoutEngine {

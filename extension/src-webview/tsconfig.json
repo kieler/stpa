@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "outDir": "../pack/src-webview",
     "target": "ES2017",
     "lib": [
         "es2017",
