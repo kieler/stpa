@@ -74,11 +74,13 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     languageClient = createLanguageClient(context);
+
+    // maybe needed in next sprotty update
     // const extensionPath = context.extensionUri.fsPath;
-    // const localResourceRoots = [createFileUri(extensionPath, 'pack', 'diagram')];
+    // const localResourceRoots = [createFileUri(extensionPath, 'pack', 'src-webview')];
     // const createWebviewHtml = (identifier: SprottyDiagramIdentifier, container: WebviewContainer): string => doCreateWebviewHtml(identifier, container, {
-    //     scriptUri: createFileUri(extensionPath, 'pack', 'diagram', 'main.js'),
-    //     cssUri: createFileUri(extensionPath, 'pack', 'diagram', 'main.css')
+    //     scriptUri: createFileUri(extensionPath, 'pack', 'src-webview', 'main.js'),
+    //     cssUri: createFileUri(extensionPath, 'pack', 'src-webview', 'main.css')
     // });
     // const configureEndpoint = (endpoint: WebviewEndpoint): void => {
     //     addWorkspaceEditActionHandler(endpoint as LspWebviewEndpoint);
@@ -86,31 +88,36 @@ export function activate(context: vscode.ExtensionContext): void {
     // };
 
 
-    // // Create context key of supported languages
-    // vscode.commands.executeCommand("setContext", "pasta.languages", supportedFileEndings);
+    // Create context key of supported languages
+    vscode.commands.executeCommand("setContext", "pasta.languages", supportedFileEndings);
 
-    // const storage = new StorageService(context.workspaceState);
+    const storage = new StorageService(context.workspaceState);
 
-    // if (diagramMode === "panel") {
-    //     // Set up webview panel manager for freestyle webviews
-    //     const webviewPanelManager = new StpaLspVscodeExtension(
-    //         {
-    //             extensionUri: context.extensionUri,
-    //             languageClient,
-    //             supportedFileExtensions: [".stpa", ".fta"],
-    //             singleton: true,
-    //             messenger: new Messenger({ ignoreHiddenViews: false }),
-    //         },
-    //         "pasta",
-    //         storage
-    //     );
-    //     registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
-    //     registerTextEditorSync(webviewPanelManager, context);
-    //     registerSTPACommands(webviewPanelManager, context, storage, { extensionPrefix: "pasta" });
-    //     registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
-    //     registerDiagramSnippetWebview(webviewPanelManager, context);
-    //     registerPastaCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
-    // }
+    if (diagramMode === "panel") {
+        // Set up webview panel manager for freestyle webviews
+        const webviewPanelManager = new StpaLspVscodeExtension(
+            {
+                extensionUri: context.extensionUri,
+                languageClient,
+                supportedFileExtensions: [".stpa", ".fta"],
+                // localResourceRoots,
+                // createWebviewHtml,
+                // configureEndpoint,
+                singleton: true,
+                messenger: new Messenger({ ignoreHiddenViews: false }),
+            },
+            "pasta",
+            storage
+        );
+        registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
+        // registerLspEditCommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
+
+        registerTextEditorSync(webviewPanelManager, context);
+        registerSTPACommands(webviewPanelManager, context, storage, { extensionPrefix: "pasta" });
+        registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
+        registerDiagramSnippetWebview(webviewPanelManager, context);
+        registerPastaCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
+    }
 
     // if (diagramMode === "editor") {
     //     // Set up webview editor associated with file type
