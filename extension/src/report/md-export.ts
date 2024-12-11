@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import dayjs from "dayjs";
+import * as dayjs from "dayjs";
 import * as vscode from "vscode";
 import { StpaLspVscodeExtension } from "../language-extension";
 import { UCA_TYPE, createFile } from "../utils";

@@ -23,18 +23,12 @@ import {
     addSelector,
     addText,
     ContextCell,
-    ContextTableControlAction,
     convertControlActionsToStrings,
     replaceSelector,
-    ContextTableRule,
-    ContextTableSystemVariables,
-    Type,
-    ContextTableVariable,
-    ContextTableVariableValues,
-    Row,
 } from "./utils";
 import { VNode } from "snabbdom";
 import { createResults, determineUsedRules } from "./context-table-logic";
+import { ContextTableControlAction, ContextTableRule, ContextTableSystemVariables, ContextTableVariable, ContextTableVariableValues, Row, Type } from './utils-classes';
 
 interface vscode {
     postMessage(message: any): void;

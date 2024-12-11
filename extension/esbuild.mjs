@@ -48,7 +48,7 @@ const browserContext = await esbuild.context({
     entryPoints: [
         'src-webview/main.ts',
         'src-diagram-snippets/main.ts',
-        'src-context-table/main.ts',
+        'src-context-table/src/main.ts',
     ],
     outdir: 'pack',
     bundle: true,

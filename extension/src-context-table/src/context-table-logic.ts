@@ -15,7 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ContextCell, ContextTableRule, Type, ContextTableVariable } from "./utils";
+import { ContextCell } from "./utils";
+import { ContextTableVariable, ContextTableRule, Type } from './utils-classes';
 
 /**
 /**

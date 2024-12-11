@@ -1,28 +1,11 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-      "module": "Node16",
-      "target": "ES2017",
-      "outDir": "pack",
-      "lib": ["ESNext", "dom"],
-      "jsx": "react",
-      "jsxFactory": "jsx",
-      "sourceMap": true,
-      "rootDir": "src",
-      "strict": true, // enable all strict type-checking options
-      "resolveJsonModule": true, // Allow importing JSON files
-      "moduleResolution": "Node16",
-      "esModuleInterop": true,
-      /* Additional Checks */
-      "strictPropertyInitialization": false, // No need to initialize every variable
-      "declaration": false,
-      "noImplicitAny": false,
-      "noEmitOnError": true,
-      "noImplicitThis": true,
-      "strictNullChecks": true,
-      "experimentalDecorators": true,
-      "emitDecoratorMetadata": true,
-      "skipLibCheck": true,
-  },
-  // "include": ["src"],
-  "exclude": ["node_modules", ".vscode-test", "pack"]
+    "target": "ES2017",
+    "lib": [
+        "es2019"
+    ],
+    "module": "es6",
+    "moduleResolution": "node",
+  }
 }

@@ -24,8 +24,7 @@ declare global {
   namespace JSX {
     // Based on the tag list in github:DefinitelyTyped/DefinitelyTyped:React
     interface IntrinsicElements {
-      // TODO: check whether this can be deleted or not
-      // [elemName: string]: VNodeData;
+      [elemName: string]: VNodeData;
     }
   }
 }
