@@ -75,11 +75,9 @@ export class StpaScopeProvider extends DefaultScopeProvider {
 
     constructor(services: StpaServices) {
         super(services);
-        console.log("ScopeProvider");
     }
 
     getScope(context: ReferenceInfo): Scope {
-        console.log("getScope");
         const referenceType = this.reflection.getReferenceType(context);
         const node = context.container;
 

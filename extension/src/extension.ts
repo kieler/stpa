@@ -119,40 +119,40 @@ export function activate(context: vscode.ExtensionContext): void {
         registerPastaCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
     }
 
-    // if (diagramMode === "editor") {
-    //     // Set up webview editor associated with file type
-    //     const webviewEditorProvider = new LspSprottyEditorProvider({
-    //         extensionUri: context.extensionUri,
-    //         viewType: "stpa",
-    //         languageClient,
-    //         supportedFileExtensions: [".stpa"],
-    //     });
-    //     context.subscriptions.push(
-    //         vscode.window.registerCustomEditorProvider("stpa", webviewEditorProvider, {
-    //             webviewOptions: { retainContextWhenHidden: true },
-    //         })
-    //     );
-    //     registerDefaultCommands(webviewEditorProvider, context, { extensionPrefix: "stpa" });
-    // }
+    if (diagramMode === "editor") {
+        // Set up webview editor associated with file type
+        const webviewEditorProvider = new LspSprottyEditorProvider({
+            extensionUri: context.extensionUri,
+            viewType: "stpa",
+            languageClient,
+            supportedFileExtensions: [".stpa"],
+        });
+        context.subscriptions.push(
+            vscode.window.registerCustomEditorProvider("stpa", webviewEditorProvider, {
+                webviewOptions: { retainContextWhenHidden: true },
+            })
+        );
+        registerDefaultCommands(webviewEditorProvider, context, { extensionPrefix: "stpa" });
+    }
 
-    // if (diagramMode === "view") {
-    //     // Set up webview view shown in the side panel
-    //     const webviewViewProvider = new LspSprottyViewProvider({
-    //         extensionUri: context.extensionUri,
-    //         viewType: "stpa",
-    //         languageClient,
-    //         supportedFileExtensions: [".stpa"],
-    //         openActiveEditor: true,
-    //         messenger: new Messenger({ ignoreHiddenViews: false }),
-    //     });
+    if (diagramMode === "view") {
+        // Set up webview view shown in the side panel
+        const webviewViewProvider = new LspSprottyViewProvider({
+            extensionUri: context.extensionUri,
+            viewType: "stpa",
+            languageClient,
+            supportedFileExtensions: [".stpa"],
+            openActiveEditor: true,
+            messenger: new Messenger({ ignoreHiddenViews: false }),
+        });
 
-    //     context.subscriptions.push(
-    //         vscode.window.registerWebviewViewProvider("states", webviewViewProvider, {
-    //             webviewOptions: { retainContextWhenHidden: true },
-    //         })
-    //     );
-    //     registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: "stpa" });
-    // }
+        context.subscriptions.push(
+            vscode.window.registerWebviewViewProvider("stpa", webviewViewProvider, {
+                webviewOptions: { retainContextWhenHidden: true },
+            })
+        );
+        registerDefaultCommands(webviewViewProvider, context, { extensionPrefix: "stpa" });
+    }
 }
 
 export async function deactivate(): Promise<void> {
