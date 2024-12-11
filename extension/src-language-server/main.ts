@@ -42,6 +42,6 @@ startLanguageServer(shared);
 // addFTANotificationHandler(connection, fta, shared);
 // addNotificationHandler(connection, shared, stpa, fta);
 
-connection.onInitialized(() => connection.sendNotification("ready"));
+// connection.onInitialized(() => connection.sendNotification("ready"));
 
 console.log("Server started");
