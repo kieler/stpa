@@ -75,6 +75,7 @@ import {
     CS_INVISIBLE_SUBCOMPONENT_TYPE,
     CS_NODE_TYPE,
     DUMMY_NODE_TYPE,
+    EdgeLabel,
     HEADER_LABEL_TYPE,
     PARENT_TYPE,
     PORT_TYPE,
@@ -121,7 +122,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     // configure the diagram elements
     const context = { bind, unbind, isBound, rebind };
     configureModelElement(context, "label", SLabelImpl, PastaLabelView);
-    configureModelElement(context, "label:xref", SLabelImpl, PastaLabelView);
+    configureModelElement(context, "label:xref", EdgeLabel, PastaLabelView);
     configureModelElement(context, HEADER_LABEL_TYPE, SLabelImpl, HeaderLabelView);
     configureModelElement(context, "html", HtmlRoot, HtmlRootView);
     configureModelElement(context, "pre-rendered", PreRenderedElement, PreRenderedView);
@@ -152,7 +153,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
 export function createPastaDiagramContainer(widgetId: string): Container {
     const container = new Container();
     loadDefaultModules(container, { exclude: [contextMenuModule] });
-    container.load(pastaContextMenuModule, pastaDiagramModule, sidebarModule, optionsModule, snippetModule);
+    container.load(pastaContextMenuModule, pastaDiagramModule, optionsModule, sidebarModule, snippetModule);
     overrideViewerOptions(container, {
         needsClientLayout: true,
         needsServerLayout: true,

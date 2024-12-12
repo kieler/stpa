@@ -15,7 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdgeImpl, SNodeImpl, SPortImpl, connectableFeature, fadeFeature, layoutContainerFeature, selectFeature } from "sprotty";
+import { SEdgeImpl, SLabelImpl, SNodeImpl, SPortImpl, connectableFeature, fadeFeature, layoutContainerFeature, selectFeature } from "sprotty";
+import { EdgePlacement } from "sprotty-protocol";
 
 // The types of diagram elements
 export const STPA_NODE_TYPE = 'node:stpa';
@@ -82,6 +83,13 @@ export class CSNode extends SNodeImpl {
 export class CSEdge extends SEdgeImpl {
     edgeType: EdgeType = EdgeType.UNDEFINED;
     static readonly DEFAULT_FEATURES = [fadeFeature];
+}
+
+export class EdgeLabel extends SLabelImpl {
+    override edgePlacement = <EdgePlacement> {
+        rotate: false,
+        side: "left",
+    };
 }
 
 /**

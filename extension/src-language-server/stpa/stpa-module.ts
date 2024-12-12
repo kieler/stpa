@@ -30,6 +30,7 @@ import { StpaValidator } from "./services/stpa-validator.js";
 import { STPACompletionProvider } from './services/stpa-completion-provider.js';
 import { STPAFoldingRangeProvider } from './services/stpa-fold-provider.js';
 import { StpaScopeProvider } from './services/stpa-scopeProvider.js';
+import { LayoutEngine } from '../layout-engine.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -78,17 +79,13 @@ export type StpaServices = LangiumSprottyServices & StpaAddedServices;
 export const STPAModule: Module<StpaServices, PartialLangiumServices & SprottyDiagramServices & StpaAddedServices> = {
     diagram: {
         DiagramGenerator: services => new StpaDiagramGenerator(services),
-        ModelLayoutEngine: services => new ElkLayoutEngine(services.layout.ElkFactory, services.layout.ElementFilter, services.layout.LayoutConfigurator) as any
+        ModelLayoutEngine: services =>
+            new LayoutEngine(
+                services.layout.ElkFactory,
+                services.layout.ElementFilter,
+                services.layout.LayoutConfigurator
+            ) as any,
     },
-    // diagram: {
-    //     DiagramGenerator: services => new StpaDiagramGenerator(services),
-    //     ModelLayoutEngine: services =>
-    //         new LayoutEngine(
-    //             services.layout.ElkFactory,
-    //             services.layout.ElementFilter,
-    //             services.layout.LayoutConfigurator
-    //         ) as any,
-    // },
     lsp: {
         CompletionProvider: services => new STPACompletionProvider(services),
         StpaCompletionProvider: services => new STPACompletionProvider(services),

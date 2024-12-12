@@ -53,7 +53,7 @@ export function createServices(context: DefaultSharedModuleContext): {
     stpa: StpaServices;
     fta: FtaServices;
 } {
-    const shared = inject(createDefaultSharedModule(context), PastaGeneratedSharedModule, SprottySharedModule/* , PastaSprottySharedModule */);
+    const shared = inject(createDefaultSharedModule(context), PastaGeneratedSharedModule, PastaSprottySharedModule);
     const stpa = inject(createDefaultModule({ shared }), StpaGeneratedModule, STPAModule);
     const fta = inject(createDefaultModule({ shared }), FtaGeneratedModule, FtaModule);
     shared.ServiceRegistry.register(stpa);
