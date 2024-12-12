@@ -32,11 +32,10 @@ import { getModel } from "./utils.js";
  * @param shared Shared services containing the workspace.
  */
 export function addNotificationHandler(connection: Connection, shared: LangiumSprottySharedServices,stpaServices: StpaServices, ftaServices: FtaServices): void {
-    // "onIntialized" crashes the language server, however this is needed to initialize the stored option values
-    // connection.onInitialized(() => {
-    //     //connection.sendNotification("ready");
-    //     connection.console.log("Connection initialized");
-    // });
+    // tells the extension that the language server is ready
+    shared.lsp.LanguageServer.onInitialized(() => {
+        connection.sendNotification("ready");
+    });
     // node selection in diagram
     connection.onNotification("diagram/selected", async (msg: { label: string; uri: string }) => {
         // get the current model
