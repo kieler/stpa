@@ -192,8 +192,9 @@ export class StpaLspVscodeExtension extends LspWebviewPanelManager {
         const extensionPath = this.options.extensionUri.fsPath;
         const tablePanel = new ContextTablePanel(
             "Context-Table",
-            [createFileUri(extensionPath, "pack")],
-            createFileUri(extensionPath, "pack", "src-context-table", "main.js")
+            [createFileUri(extensionPath, "pack", "src-context-table")],
+            createFileUri(extensionPath, "pack", "src-context-table", "main.js"),
+            createFileUri(extensionPath, "pack", "src-context-table", "main.css")
         );
         this.contextTable = tablePanel;
 
