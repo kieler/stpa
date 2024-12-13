@@ -191,9 +191,11 @@ export class STPALanguageSnippet implements LanguageSnippet {
     }
 
     getPosition(uri: string): Position {
-        // const document = this.documents.getOrCreateDocument(URI.parse(uri)).textDocument;
-        // this.insertText = addNodeIDs(this.baseCode, document);
-        // return getPositionForCSSnippet(document, this);
+        const document = this.documents.getDocument(URI.parse(uri))?.textDocument;
+        if (document) {
+            this.insertText = addNodeIDs(this.baseCode, document);
+            return getPositionForCSSnippet(document, this);
+        }
         return { line: 0, character: 0 };
     }
 }
