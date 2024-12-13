@@ -30,8 +30,8 @@ export function FeatherIcon(props: { iconId: string }): VNode {
   // Imitates what feather would usually do, all attributes are put in the styles (if possible) and
   // the classes are written in as well. Missing are the xmlns and viewBox, but they do not seem to
   // be necessary anyways.
-  const classes: Record<string, boolean> = {"feather": true}
-  classes[`feather-${props.iconId}`] = true
+  const classes: Record<string, boolean> = {"feather": true};
+  classes[`feather-${props.iconId}`] = true;
 
   return <svg 
     style={{
@@ -45,5 +45,5 @@ export function FeatherIcon(props: { iconId: string }): VNode {
     }}
     class={classes}
     props={{innerHTML: icons[props.iconId].toString()}}
-  />
+  />;
 }

@@ -520,7 +520,8 @@ function registerDiagramSnippetWebview(manager: StpaLspVscodeExtension, context:
             const snippetWebview = new DiagramSnippetWebview(
                 "snippets",
                 manager,
-                createFileUri(manager.options.extensionUri.fsPath, "pack", "snippetWebview.js")
+                createFileUri(manager.options.extensionUri.fsPath, 'pack', 'src-diagram-snippets', 'main.js'),
+                createFileUri(manager.options.extensionUri.fsPath, 'pack', 'src-diagram-snippets', 'main.css')
             );
             snippetWebview.webview = webviewView.webview;
             snippetWebview.webview.options = {
