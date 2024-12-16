@@ -44,21 +44,20 @@ export class ContextTableProvider {
      */
     getRangeOfUCA(uri: URI, ucaName: string): Range | undefined {
         // get the current model
-        // const textDocuments = this.services.shared.workspace.LangiumDocuments;
-        // const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
-        // const model: Model = currentDoc.parseResult.value;
+        const textDocuments = this.services.shared.workspace.LangiumDocuments;
+        const currentDoc = textDocuments.getDocument(uri as any) as LangiumDocument<Model>;
+        const model: Model = currentDoc.parseResult.value;
 
-        // let range: Range | undefined = undefined;
-        // model.rules.forEach((rule) =>
-        //     rule.contexts.forEach((uca) => {
-        //         if (uca.name === ucaName) {
-        //             range = uca.$cstNode?.range;
-        //             return;
-        //         }
-        //     })
-        // );
-        // return range;
-        return undefined;
+        let range: Range | undefined = undefined;
+        model.rules.forEach((rule) =>
+            rule.contexts.forEach((uca) => {
+                if (uca.name === ucaName) {
+                    range = uca.$cstNode?.range;
+                    return;
+                }
+            })
+        );
+        return range;
     }
 
     /**

@@ -88,7 +88,6 @@ export class StpaValidator {
      * @param accept
      */
     checkModel(model: Model, accept: ValidationAcceptor): void {
-        console.log("Checking model");
         this.checkAllAspectsPresent(model, accept);
         this.checkForTODOs(model, accept);
 
