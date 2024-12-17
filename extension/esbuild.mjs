@@ -39,7 +39,7 @@ const nodeContext = await esbuild.context({
     },
     external: ['vscode'],
     platform: 'node',
-    sourcemap: !options.minify,
+    sourcemap: 'inline',
     minify: options.minify,
     plugins,
 });
@@ -55,7 +55,7 @@ const browserContext = await esbuild.context({
     target: 'es6',
     loader: { '.ts': 'ts', '.css': 'css' },
     platform: 'browser',
-    sourcemap: !options.minify,
+    sourcemap: 'inline',
     minify: options.minify,
     plugins,
 });
