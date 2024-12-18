@@ -38,10 +38,8 @@ import {
 import { StpaServices } from "../stpa-module.js";
 import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils.js";
 
-
 export function registerValidationChecks(services: StpaServices): void {
     const registry = services.validation.ValidationRegistry;
-    console.log("Registering validation checks");
     const validator = services.validation.StpaValidator;
     const checks: ValidationChecks<PastaAstType> = {
         Model: validator.checkModel,
@@ -403,8 +401,14 @@ export class StpaValidator {
         // a top-level hazard should reference loss(es)
         if (isModel(hazard.$container) && hazard.refs.length === 0) {
             const range = hazard.$cstNode?.range;
-            if (range) {
-                range.start.character = range.end.character - 1;
+            const newRange = range
+                ? {
+                      start: { line: range.start.line, character: range.start.character },
+                      end: { line: range.end.line, character: range.end.character },
+                  }
+                : undefined;
+            if (newRange) {
+                newRange.start.character = newRange.end.character - 1;
             }
             accept("warning", "A hazard should reference loss(es)", { node: hazard, range: range });
         }
