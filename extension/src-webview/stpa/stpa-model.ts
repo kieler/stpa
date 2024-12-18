@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdgeImpl, SLabelImpl, SNodeImpl, SPortImpl, connectableFeature, fadeFeature, layoutContainerFeature, selectFeature } from "sprotty";
+import { SEdgeImpl, SLabelImpl, SNodeImpl, SPortImpl, alignFeature, boundsFeature, connectableFeature, fadeFeature, layoutContainerFeature, layoutableChildFeature, selectFeature } from "sprotty";
 import { EdgePlacement } from "sprotty-protocol";
 
 // The types of diagram elements
@@ -86,9 +86,11 @@ export class CSEdge extends SEdgeImpl {
 }
 
 export class EdgeLabel extends SLabelImpl {
+    static readonly DEFAULT_FEATURES = [boundsFeature, alignFeature, layoutableChildFeature, fadeFeature];
+    
     override edgePlacement = <EdgePlacement> {
         rotate: false,
-        side: "left",
+        side: "on",
     };
 }
 
