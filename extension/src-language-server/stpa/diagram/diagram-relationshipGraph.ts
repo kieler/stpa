@@ -24,6 +24,7 @@ import { createLabel, createPort, createSTPAEdge, createSTPANode, generateDescri
 import { CustomModel } from "./filtering.js";
 import { ParentNode, STPAEdge, STPANode } from "./stpa-interfaces.js";
 import {
+    EDGE_LABEL_TYPE,
     PARENT_TYPE,
     PortSide,
     STPAAspect,
@@ -411,7 +412,7 @@ export function generateSTPAEdge(
         // create the label of the edge
         let children: SModelElement[] = [];
         if (label !== "") {
-            children = createLabel([label], edgeId, idCache);
+            children = createLabel([label], edgeId, idCache, EDGE_LABEL_TYPE);
         }
 
         if ((isHazard(target) || isSystemConstraint(target)) && target.$container?.$type !== "Model") {

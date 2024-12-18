@@ -29,6 +29,7 @@ import {
     EdgeType,
     HEADER_LABEL_TYPE,
     PARENT_TYPE,
+    PASTA_LABEL_TYPE,
     PROCESS_MODEL_PARENT_NODE_TYPE,
     PortSide,
 } from "./stpa-model.js";
@@ -88,7 +89,7 @@ export function createControlStructureNode(
 ): CSNode {
     const label = node.label ? node.label : node.name;
     const nodeId = idCache.uniqueId(node.name, node);
-    const children: SModelElement[] = createLabel([label], nodeId, idCache);
+    const children: SModelElement[] = createLabel([label], nodeId, idCache, PASTA_LABEL_TYPE);
     if (options.getShowProcessModels()) {
         // add nodes representing the process model
         children.push(createProcessModelNodes(node.variables, idCache));
@@ -146,7 +147,7 @@ export function createProcessModelNodes(variables: Variable[], idCache: IdCache<
         const values = variable.values?.map(value => value.name);
         const children = [
             ...createLabel([label], nodeId, idCache, HEADER_LABEL_TYPE),
-            ...createLabel(values, nodeId, idCache),
+            ...createLabel(values, nodeId, idCache, PASTA_LABEL_TYPE),
         ];
         // create the actual node with the created labels
         const csNode = {

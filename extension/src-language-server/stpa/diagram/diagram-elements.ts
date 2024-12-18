@@ -22,6 +22,7 @@ import { getDescription } from "../../utils.js";
 import { CSEdge, CSNode, PastaPort, STPAEdge, STPANode } from "./stpa-interfaces.js";
 import {
     DUMMY_NODE_TYPE,
+    EDGE_LABEL_TYPE,
     EdgeType,
     HEADER_LABEL_TYPE,
     PORT_TYPE,
@@ -135,7 +136,7 @@ export function createControlStructureEdge(
         sourceId: sourceId!,
         targetId: targetId!,
         edgeType: edgeType,
-        children: createLabel(label, edgeId, idCache, undefined, dummyLabel),
+        children: createLabel(label, edgeId, idCache, EDGE_LABEL_TYPE, dummyLabel),
     };
 }
 
@@ -152,7 +153,7 @@ export function createLabel(
     label: string[],
     id: string,
     idCache: IdCache<AstNode>,
-    type: string = "label:xref",
+    type: string,
     dummyLabel: boolean = true
 ): SLabel[] {
     const children: SLabel[] = [];
