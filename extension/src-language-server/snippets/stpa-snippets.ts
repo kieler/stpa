@@ -15,13 +15,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { LangiumDocuments } from "langium";
+import { LangiumDocument, LangiumDocuments } from "langium";
 import { LangiumServices } from "langium/lsp";
 import { Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
 import { LanguageSnippet } from "./snippet-model.js";
 import * as defaultSnippets from "./default-stpa-snippets.json";
+import { Model } from '../generated/ast.js';
 
 /**
  * Class that handles snippets for the STPA diagram.
@@ -76,14 +77,17 @@ export class StpaDiagramSnippets {
  * @param snippet The snippet that should be inserted.
  * @returns the position where the snippet should be added to the {@code document}.
  */
-function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippet): Position {
+function getPositionForCSSnippet(langDoc: LangiumDocument, snippet: LanguageSnippet): Position {
+    const document = langDoc.textDocument;
     const docText = document.getText();
     // determine range of already existing definition of control structure
-    const titleIndex = docText.indexOf("ControlStructure");
-    const startIndex = titleIndex !== -1 ? titleIndex : 0;
-    const nextTitleIndex = docText.indexOf("Responsibilities");
-    const endIndex = nextTitleIndex !== -1 ? nextTitleIndex - 1 : docText.length - 1;
-    if (titleIndex === -1) {
+    // TODO: only working for STPA not FTA
+    const model = (langDoc.parseResult.value as Model);
+    const csStartIndex = model.controlStructure?.$cstNode?.offset ?? -1;
+    const startIndex = csStartIndex !== -1 ? csStartIndex : 0;
+    const csEnd = model.controlStructure?.$cstNode?.range.end;
+    const endIndex = csEnd ? document.offsetAt(csEnd) : docText.length - 1;
+    if (csStartIndex === -1) {
         return document.positionAt(endIndex);
     } else {
         // delete the control structure keyword
@@ -100,7 +104,7 @@ function getPositionForCSSnippet(document: TextDocument, snippet: LanguageSnippe
                 snippet.insertText.lastIndexOf("}")
             );
             const bracketIndex = csText.lastIndexOf("}");
-            return document.positionAt(titleIndex + bracketIndex);
+            return document.positionAt(csStartIndex + bracketIndex);
         }
     }
 }
@@ -191,9 +195,9 @@ export class STPALanguageSnippet implements LanguageSnippet {
     }
 
     getPosition(uri: string): Position {
-        const document = this.documents.getDocument(URI.parse(uri))?.textDocument;
+        const document = this.documents.getDocument(URI.parse(uri));
         if (document) {
-            this.insertText = addNodeIDs(this.baseCode, document);
+            this.insertText = addNodeIDs(this.baseCode, document.textDocument);
             return getPositionForCSSnippet(document, this);
         }
         return { line: 0, character: 0 };
