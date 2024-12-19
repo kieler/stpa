@@ -23,7 +23,7 @@ import { Point, toDegrees } from "sprotty-protocol";
 import { DISymbol } from '../di.symbols';
 import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
 import { SendModelRendererAction } from '../snippets/actions';
-import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderPort, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { CSEdge, CSNode, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, CS_NODE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
@@ -260,7 +260,7 @@ export class STPAGraphView extends SGraphView {
 
 @injectable()
 export class PortView implements IView {
-    render(model: SPort, context: RenderingContext): VNode {
+    render(model: SPortImpl, context: RenderingContext): VNode {
         const port = <g>{renderPort(model.position.x, model.position.y, model.size.width, model.size.height)}</g>;
         return <g class-pasta-hidden>{port}</g>;
     }
