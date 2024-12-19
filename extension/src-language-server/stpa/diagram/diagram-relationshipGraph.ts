@@ -19,6 +19,7 @@ import { AstNode } from "langium";
 import { IdCache } from "langium-sprotty";
 import { SModelElement, SNode } from "sprotty-protocol";
 import { Hazard, Model, SystemConstraint, isContext, isHazard, isSystemConstraint, isUCA } from "../../generated/ast.js";
+import { labelManagementValue } from "../../synthesis-options.js";
 import { collectElementsWithSubComps, leafElement } from "../utils.js";
 import { createLabel, createPort, createSTPAEdge, createSTPANode, generateDescriptionLabels } from "./diagram-elements.js";
 import { CustomModel } from "./filtering.js";
@@ -40,7 +41,6 @@ import {
     getTargets,
     setLevelsForSTPANodes,
 } from "./utils.js";
-import { labelManagementValue } from "../../synthesis-options.js";
 
 /**
  * Creates the relationship graph for the STPA model.

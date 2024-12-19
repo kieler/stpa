@@ -15,11 +15,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import * as vscode from 'vscode';
 import { ActionMessage } from 'sprotty-protocol';
-import { StpaLspVscodeExtension } from './language-extension';
 import { acceptMessageType } from 'sprotty-vscode/lib/lsp';
+import * as vscode from 'vscode';
 import { SendDefaultSnippetsAction } from './actions';
+import { StpaLspVscodeExtension } from './language-extension';
 
 /**
  * Initializes the diagram snippets webview and handles messages from and to it.

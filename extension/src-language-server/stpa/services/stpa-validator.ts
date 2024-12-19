@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from "langium";
+import { Reference, ValidationAcceptor, ValidationChecks } from "langium";
 import { Position } from "vscode-languageserver-types";
 import {
     Context,

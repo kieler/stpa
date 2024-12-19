@@ -88,6 +88,7 @@ export class CSEdge extends SEdgeImpl {
 }
 
 export class EdgeLabel extends SLabelImpl {
+    // alignFeature is not used here, otherwise multiple labels for one edge would be placed on top of each other
     static readonly DEFAULT_FEATURES = [boundsFeature, alignFeature, layoutableChildFeature, fadeFeature];
     
     override edgePlacement = <EdgePlacement> {

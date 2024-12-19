@@ -34,7 +34,7 @@ import {
     PortSide,
 } from "./stpa-model.js";
 import { StpaSynthesisOptions } from "./stpa-synthesis-options.js";
-import { getCommonAncestor, setLevelOfCSNodes, sortPorts } from "./utils.js";
+import { getCommonAncestor, sortPorts } from "./utils.js";
 
 /**
  * Creates the control structure diagram for the given {@code controlStructure}.

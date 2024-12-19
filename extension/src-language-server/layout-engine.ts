@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ElkExtendedEdge, ElkNode, ElkPrimitiveEdge } from "elkjs";
+import { ElkExtendedEdge, ElkPrimitiveEdge } from "elkjs";
 import { ElkLayoutEngine } from "sprotty-elk/lib/elk-layout.js";
 import { Point, SEdge, SGraph, SModelIndex } from "sprotty-protocol";
 import { FTAEdge } from "./fta/diagram/fta-interfaces.js";
@@ -23,7 +23,7 @@ import { FTA_EDGE_TYPE } from "./fta/diagram/fta-model.js";
 
 export class LayoutEngine extends ElkLayoutEngine {
     layout(sgraph: SGraph, index?: SModelIndex): SGraph | Promise<SGraph> {
-        if (this.getBasicType(sgraph) !== 'graph') {
+        if (this.getBasicType(sgraph) !== "graph") {
             return sgraph;
         }
         if (!index) {
@@ -43,7 +43,6 @@ export class LayoutEngine extends ElkLayoutEngine {
 
         // STEP 2: Invoke the ELK layout engine
         return this.elk.layout(elkGraph).then(result => {
-
             // STEP 3: Apply the results with optional post-processing to the original graph
             if (this.postprocessor) {
                 this.postprocessor.postprocess(result, sgraph, index!);
@@ -61,18 +60,30 @@ export class LayoutEngine extends ElkLayoutEngine {
         }
         if (elkEdge.sections && elkEdge.sections.length > 0) {
             const section = elkEdge.sections[0];
-            if (section.startPoint) { points.push(section.startPoint); }
-            if (section.bendPoints) { points.push(...section.bendPoints); }
-            if (section.endPoint) { points.push(section.endPoint); }
+            if (section.startPoint) {
+                points.push(section.startPoint);
+            }
+            if (section.bendPoints) {
+                points.push(...section.bendPoints);
+            }
+            if (section.endPoint) {
+                points.push(section.endPoint);
+            }
         } else if (isPrimitiveEdge(elkEdge)) {
-            if (elkEdge.sourcePoint) { points.push(elkEdge.sourcePoint); }
-            if (elkEdge.bendPoints) { points.push(...elkEdge.bendPoints); }
-            if (elkEdge.targetPoint) { points.push(elkEdge.targetPoint); }
+            if (elkEdge.sourcePoint) {
+                points.push(elkEdge.sourcePoint);
+            }
+            if (elkEdge.bendPoints) {
+                points.push(...elkEdge.bendPoints);
+            }
+            if (elkEdge.targetPoint) {
+                points.push(elkEdge.targetPoint);
+            }
         }
         sedge.routingPoints = points;
 
         if (elkEdge.labels) {
-            elkEdge.labels.forEach((elkLabel) => {
+            elkEdge.labels.forEach(elkLabel => {
                 const sLabel = elkLabel.id && index.getById(elkLabel.id);
                 if (sLabel) {
                     this.applyShape(sLabel, elkLabel, index);

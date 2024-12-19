@@ -27,14 +27,14 @@ import { CompletionItemKind } from "vscode-languageserver";
 import {
     Context,
     ControllerConstraint,
-    isModel,
-    isVerticalEdge,
     LossScenario,
     Model,
     Node,
     Rule,
     UCA,
     VerticalEdge,
+    isModel,
+    isVerticalEdge,
 } from "../../generated/ast.js";
 
 /**

@@ -18,8 +18,8 @@
 import { injectable } from "inversify";
 import { IContextMenuItemProvider, LabeledAction, SModelRootImpl } from "sprotty";
 import { Point } from "sprotty-protocol";
-import { FTANode, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "../fta/fta-model";
 import { CutSetAnalysisAction, MinimalCutSetAnalysisAction } from "../actions";
+import { FTANode, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "../fta/fta-model";
 
 @injectable()
 export class ContextMenuProvider implements IContextMenuItemProvider {

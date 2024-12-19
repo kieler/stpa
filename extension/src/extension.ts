@@ -17,9 +17,8 @@
 
 import * as path from "path";
 import { ActionMessage } from "sprotty-protocol";
-import { createFileUri, createWebviewHtml as doCreateWebviewHtml, registerDefaultCommands, SprottyDiagramIdentifier, WebviewContainer, WebviewEndpoint } from "sprotty-vscode";
-import { acceptMessageType, LspSprottyEditorProvider, LspSprottyViewProvider, LspWebviewEndpoint } from "sprotty-vscode/lib/lsp";
-import { addLspLabelEditActionHandler, addWorkspaceEditActionHandler } from 'sprotty-vscode/lib/lsp/editing';
+import { createFileUri, registerDefaultCommands } from "sprotty-vscode";
+import { acceptMessageType, LspSprottyEditorProvider, LspSprottyViewProvider } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
 import { Messenger } from "vscode-messenger";
@@ -110,7 +109,6 @@ export function activate(context: vscode.ExtensionContext): void {
             storage
         );
         registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
-        // registerLspEditCommands(webviewPanelManager, context, { extensionPrefix: 'pasta' });
 
         registerTextEditorSync(webviewPanelManager, context);
         registerSTPACommands(webviewPanelManager, context, storage, { extensionPrefix: "pasta" });

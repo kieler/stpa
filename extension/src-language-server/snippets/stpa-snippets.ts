@@ -20,9 +20,9 @@ import { LangiumServices } from "langium/lsp";
 import { Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
-import { LanguageSnippet } from "./snippet-model.js";
-import * as defaultSnippets from "./default-stpa-snippets.json";
 import { Model } from '../generated/ast.js';
+import * as defaultSnippets from "./default-stpa-snippets.json";
+import { LanguageSnippet } from "./snippet-model.js";
 
 /**
  * Class that handles snippets for the STPA diagram.

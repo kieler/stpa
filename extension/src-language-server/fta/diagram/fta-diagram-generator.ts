@@ -17,8 +17,9 @@
 
 import { AstNode } from "langium";
 import { GeneratorContext, IdCache, LangiumDiagramGenerator } from "langium-sprotty";
-import { SModelElement, SModelRoot, SNode, SLabel } from "sprotty-protocol";
+import { SLabel, SModelElement, SModelRoot, SNode } from "sprotty-protocol";
 import { Component, Condition, Gate, ModelFTA, isComponent, isCondition, isKNGate } from "../../generated/ast.js";
+import { HEADER_LABEL_TYPE } from "../../stpa/diagram/stpa-model.js";
 import { getDescription } from "../../utils.js";
 import { topOfAnalysis } from "../analysis/fta-cutSet-calculator.js";
 import { FtaServices } from "../fta-module.js";
@@ -36,7 +37,6 @@ import {
 } from "./fta-model.js";
 import { FtaSynthesisOptions, noCutSet, spofsSet } from "./fta-synthesis-options.js";
 import { getFTNodeType, getTargets } from "./utils.js";
-import { HEADER_LABEL_TYPE } from "../../stpa/diagram/stpa-model.js";
 export class FtaDiagramGenerator extends LangiumDiagramGenerator {
     protected readonly options: FtaSynthesisOptions;
 

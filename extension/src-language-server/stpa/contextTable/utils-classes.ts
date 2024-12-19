@@ -59,11 +59,11 @@ export class ContextTableData {
 export enum Type {
     PROVIDED,
     NOT_PROVIDED,
-    BOTH
+    BOTH,
 }
 
 /** A row in the context table. */
 export class Row {
     variables: ContextTableVariable[];
-    results: { hazards: string[], rules: ContextTableRule[]; }[];
+    results: { hazards: string[]; rules: ContextTableRule[] }[];
 }

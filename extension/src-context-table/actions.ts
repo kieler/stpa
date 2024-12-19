@@ -28,16 +28,13 @@ export interface SendContextTableDataAction extends Action {
     data: ContextTableData;
 }
 
-
 export namespace SendContextTableDataAction {
     export const KIND = "sendContextTableData";
 
-    export function create(
-        data: ContextTableData
-    ): SendContextTableDataAction {
+    export function create(data: ContextTableData): SendContextTableDataAction {
         return {
             kind: SendContextTableDataAction.KIND,
-            data
+            data,
         };
     }
 

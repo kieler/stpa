@@ -19,15 +19,15 @@
 import { LayoutOptions } from "elkjs";
 import { DefaultLayoutConfigurator } from "sprotty-elk/lib/elk-layout.js";
 import { SGraph, SLabel, SModelIndex, SNode, SPort } from "sprotty-protocol";
-import { CSNode, ParentNode, STPANode, PastaPort } from "./stpa-interfaces.js";
+import { CSNode, ParentNode, PastaPort, STPANode } from "./stpa-interfaces.js";
 import {
-    CS_NODE_TYPE,
     CS_INVISIBLE_SUBCOMPONENT_TYPE,
+    CS_NODE_TYPE,
     PARENT_TYPE,
+    PORT_TYPE,
     PROCESS_MODEL_PARENT_NODE_TYPE,
     PortSide,
     STPA_NODE_TYPE,
-    PORT_TYPE,
 } from "./stpa-model.js";
 
 export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
@@ -237,6 +237,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
 
     protected labelOptions(slabel: SLabel, index: SModelIndex): LayoutOptions | undefined {
         return {
+            // enables on edge labels
             "org.eclipse.elk.edgeLabels.inline": "true",
         };
     }

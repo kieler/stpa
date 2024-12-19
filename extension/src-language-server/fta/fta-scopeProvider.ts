@@ -25,7 +25,6 @@ import {
     Stream,
     stream
 } from "langium";
-//import { getDocument } from "langium/references/scope-provider";
 
 export class FtaScopeProvider extends DefaultScopeProvider {
     /* override super method to exclude definitions in other files */

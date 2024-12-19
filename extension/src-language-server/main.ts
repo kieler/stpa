@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { startLanguageServer } from "langium/lsp";
 import { addDiagramHandler } from "langium-sprotty";
+import { startLanguageServer } from "langium/lsp";
 import { NodeFileSystem } from "langium/node";
 import { createConnection, ProposedFeatures } from "vscode-languageserver/node.js";
 import { addFTANotificationHandler } from "./fta/fta-message-handler.js";

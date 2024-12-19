@@ -17,13 +17,12 @@
 
 import {
     AstNode,
-    LangiumDocument,
-    AstUtils
+    AstUtils,
+    LangiumDocument
 } from "langium";
 import {
     DefaultFoldingRangeProvider,
     FoldingRangeAcceptor,
-    
 } from "langium/lsp";
 import {
     Model

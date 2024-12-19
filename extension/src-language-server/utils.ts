@@ -16,8 +16,8 @@
  */
 
 import { AstNode } from "langium";
-import { LangiumSharedServices } from "langium/lsp";
 import { IdCache, LangiumSprottySharedServices } from "langium-sprotty";
+import { LangiumSharedServices } from "langium/lsp";
 import { SLabel } from "sprotty-protocol";
 import { URI } from "vscode-uri";
 import { StpaValidator } from "./stpa/services/stpa-validator.js";

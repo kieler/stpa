@@ -21,8 +21,7 @@ import {
     DefaultDiagramServerManager,
     DiagramActionNotification,
     LangiumSprottySharedServices,
-    SprottySharedModule,
-    SprottySharedServices,
+    SprottySharedServices
 } from "langium-sprotty";
 import { createDefaultModule, createDefaultSharedModule, DefaultSharedModuleContext } from "langium/lsp";
 import { DiagramOptions } from "sprotty-protocol";
@@ -30,8 +29,8 @@ import { URI } from "vscode-uri";
 import { PastaDiagramServer } from "./diagram-server.js";
 import { FtaModule, FtaServices } from "./fta/fta-module.js";
 import { FtaGeneratedModule, PastaGeneratedSharedModule, StpaGeneratedModule } from "./generated/module.js";
-import { STPAModule, StpaServices } from "./stpa/stpa-module.js";
 import { registerValidationChecks } from './stpa/services/stpa-validator.js';
+import { STPAModule, StpaServices } from "./stpa/stpa-module.js";
 
 /**
  * Create the full set of services required by Langium.

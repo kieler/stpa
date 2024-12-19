@@ -23,10 +23,10 @@ import {
     Loss,
     LossScenario,
     Model,
-    SystemResponsibilities,
     Rule,
     SafetyConstraint,
     SystemConstraint,
+    SystemResponsibilities,
 } from "../../generated/ast.js";
 import { StpaSynthesisOptions } from "./stpa-synthesis-options.js";
 

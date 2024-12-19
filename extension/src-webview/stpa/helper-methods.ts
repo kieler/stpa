@@ -16,7 +16,7 @@
  */
 
 import { SEdgeImpl, SModelElementImpl, SNodeImpl } from "sprotty";
-import { PortSide, STPAAspect, STPAEdge, STPANode, PastaPort, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE, PORT_TYPE } from "./stpa-model";
+import { PORT_TYPE, PastaPort, PortSide, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE, STPA_NODE_TYPE } from "./stpa-model";
 
 /**
  * Collects all children of the nodes in {@code nodes}.

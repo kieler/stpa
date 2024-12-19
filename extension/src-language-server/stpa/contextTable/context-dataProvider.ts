@@ -17,6 +17,9 @@
 
 import { LangiumDocument } from "langium";
 import { Range, URI } from "vscode-languageserver";
+import { Model, Node } from "../../generated/ast.js";
+import { getModel } from "../../utils.js";
+import { StpaServices } from "../stpa-module.js";
 import {
     ContextTableControlAction,
     ContextTableData,
@@ -25,9 +28,6 @@ import {
     ContextTableVariable,
     ContextTableVariableValues,
 } from "./utils-classes.js";
-import { Model, Node } from "../../generated/ast.js";
-import { getModel } from "../../utils.js";
-import { StpaServices } from "../stpa-module.js";
 
 export class ContextTableProvider {
     protected services: StpaServices;
