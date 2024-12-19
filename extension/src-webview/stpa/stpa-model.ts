@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdgeImpl, SLabelImpl, SNodeImpl, SPortImpl, alignFeature, boundsFeature, connectableFeature, fadeFeature, layoutContainerFeature, layoutableChildFeature, selectFeature } from "sprotty";
-import { EdgePlacement } from "sprotty-protocol";
+import { SEdgeImpl, SLabelImpl, SNodeImpl, SPortImpl, alignFeature, boundsFeature, connectableFeature, fadeFeature, layoutContainerFeature, layoutableChildFeature, selectFeature, expandFeature } from "sprotty";
+import { EdgePlacement, Point } from "sprotty-protocol";
 
 // The types of diagram elements
 export const STPA_NODE_TYPE = 'node:stpa';

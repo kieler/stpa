@@ -18,7 +18,7 @@
 import { AstNode } from "langium";
 import { IdCache } from "langium-sprotty";
 import { SModelElement, SNode } from "sprotty-protocol";
-import { expansionState } from "../../diagram-server";
+import { expansionState } from "../../diagram-server.js";
 import { Command, Graph, Node, Variable, VerticalEdge } from "../../generated/ast.js";
 import { createControlStructureEdge, createDummyNode, createLabel, createPort } from "./diagram-elements.js";
 import { CSEdge, CSNode, ParentNode } from "./stpa-interfaces.js";

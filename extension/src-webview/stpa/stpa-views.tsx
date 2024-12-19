@@ -161,7 +161,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 @injectable()
 export class IntermediateEdgeView extends PolylineArrowEdgeView {
 
-    protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
+    protected renderAdditionals(edge: SEdgeImpl, segments: Point[], context: RenderingContext): VNode[] {
         // const p = segments[segments.length - 1];
         // return [
         //     <path d="M 0 0 L 0 3 M 5 3 L -5 3"
@@ -327,6 +327,13 @@ export class PortView implements IView {
         const port = <g>{renderPort(model.position.x, model.position.y, model.size.width, model.size.height)}</g>;
         return <g class-pasta-hidden>{port}</g>;
     }
+}
+
+export function renderPort(x:number, y: number, width: number, height: number): VNode {
+    return <rect
+        x={x} y={y}
+        width={Math.max(width, 0)} height={Math.max(height, 0)}
+    />;
 }
 
 @injectable()
