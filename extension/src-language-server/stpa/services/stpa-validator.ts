@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Reference, ValidationAcceptor, ValidationChecks, ValidationRegistry } from "langium";
+import { Reference, ValidationAcceptor, ValidationChecks } from "langium";
 import { Position } from "vscode-languageserver-types";
 import {
     Context,
@@ -34,29 +34,24 @@ import {
     SystemConstraint,
     isModel,
     isRule,
-} from "../../generated/ast";
-import { StpaServices } from "../stpa-module";
-import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils";
+} from "../../generated/ast.js";
+import { StpaServices } from "../stpa-module.js";
+import { UCA_TYPE, collectElementsWithSubComps, elementWithName, elementWithRefs } from "../utils.js";
 
-/**
- * Registry for validation checks.
- */
-export class StpaValidationRegistry extends ValidationRegistry {
-    constructor(services: StpaServices) {
-        super(services);
-        const validator = services.validation.StpaValidator;
-        const checks: ValidationChecks<PastaAstType> = {
-            Model: validator.checkModel,
-            Hazard: validator.checkHazard,
-            SystemConstraint: validator.checkSystemConstraint,
-            Responsibility: validator.checkResponsibility,
-            ControllerConstraint: validator.checkControllerConstraints,
-            HazardList: validator.checkHazardList,
-            Node: validator.checkNode,
-            Graph: validator.checkControlStructure,
-        };
-        this.register(checks, validator);
-    }
+export function registerValidationChecks(services: StpaServices): void {
+    const registry = services.validation.ValidationRegistry;
+    const validator = services.validation.StpaValidator;
+    const checks: ValidationChecks<PastaAstType> = {
+        Model: validator.checkModel,
+        Hazard: validator.checkHazard,
+        SystemConstraint: validator.checkSystemConstraint,
+        Responsibility: validator.checkResponsibility,
+        ControllerConstraint: validator.checkControllerConstraints,
+        HazardList: validator.checkHazardList,
+        Node: validator.checkNode,
+        Graph: validator.checkControlStructure,
+    };
+    registry.register(checks, validator);
 }
 
 /**
@@ -406,8 +401,14 @@ export class StpaValidator {
         // a top-level hazard should reference loss(es)
         if (isModel(hazard.$container) && hazard.refs.length === 0) {
             const range = hazard.$cstNode?.range;
-            if (range) {
-                range.start.character = range.end.character - 1;
+            const newRange = range
+                ? {
+                      start: { line: range.start.line, character: range.start.character },
+                      end: { line: range.end.line, character: range.end.character },
+                  }
+                : undefined;
+            if (newRange) {
+                newRange.start.character = newRange.end.character - 1;
             }
             accept("warning", "A hazard should reference loss(es)", { node: hazard, range: range });
         }

@@ -17,6 +17,9 @@
 
 import { LangiumDocument } from "langium";
 import { Range, URI } from "vscode-languageserver";
+import { Model, Node } from "../../generated/ast.js";
+import { getModel } from "../../utils.js";
+import { StpaServices } from "../stpa-module.js";
 import {
     ContextTableControlAction,
     ContextTableData,
@@ -24,10 +27,7 @@ import {
     ContextTableSystemVariables,
     ContextTableVariable,
     ContextTableVariableValues,
-} from "../../../src-context-table/utils";
-import { Model, Node } from "../../generated/ast";
-import { getModel } from "../../utils";
-import { StpaServices } from "../stpa-module";
+} from "./utils-classes.js";
 
 export class ContextTableProvider {
     protected services: StpaServices;
@@ -45,7 +45,7 @@ export class ContextTableProvider {
     getRangeOfUCA(uri: URI, ucaName: string): Range | undefined {
         // get the current model
         const textDocuments = this.services.shared.workspace.LangiumDocuments;
-        const currentDoc = textDocuments.getOrCreateDocument(uri as any) as LangiumDocument<Model>;
+        const currentDoc = textDocuments.getDocument(uri as any) as LangiumDocument<Model>;
         const model: Model = currentDoc.parseResult.value;
 
         let range: Range | undefined = undefined;

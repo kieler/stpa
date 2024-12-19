@@ -21,7 +21,7 @@ import {
     SynthesisOption,
     TransformationOptionType,
     ValuedSynthesisOption,
-} from "./options/option-models";
+} from "./options/option-models.js";
 
 const labelManagementID = "labelManagement";
 const labelShorteningWidthID = "labelShorteningWidth";

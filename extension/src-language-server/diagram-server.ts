@@ -17,14 +17,14 @@
 
 import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from "sprotty-protocol";
 import { Connection } from "vscode-languageserver";
-import { FtaServices } from "./fta/fta-module";
-import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions";
-import { DropDownOption } from "./options/option-models";
-import { SnippetDiagramServer } from "./snippets/snippet-diagram-server";
-import { LanguageSnippet } from "./snippets/snippet-model";
-import { StpaDiagramSnippets } from "./snippets/stpa-snippets";
-import { GenerateSVGsAction, RequestSvgAction, SvgAction, UpdateDiagramAction } from "./stpa/actions";
-import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/stpa-synthesis-options";
+import { FtaServices } from "./fta/fta-module.js";
+import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions.js";
+import { DropDownOption } from "./options/option-models.js";
+import { SnippetDiagramServer } from "./snippets/snippet-diagram-server.js";
+import { LanguageSnippet } from "./snippets/snippet-model.js";
+import { StpaDiagramSnippets } from "./snippets/stpa-snippets.js";
+import { GenerateSVGsAction, RequestSvgAction, SvgAction, UpdateDiagramAction } from "./stpa/actions.js";
+import { StpaSynthesisOptions, filteringUCAsID } from "./stpa/diagram/stpa-synthesis-options.js";
 import {
     COMPLETE_GRAPH_PATH,
     CONTROL_STRUCTURE_PATH,
@@ -49,9 +49,9 @@ import {
     setScenarioWithFilteredUCAGraphOptions,
     setScenarioWithNoUCAGraphOptions,
     setSystemConstraintGraphOptions,
-} from "./stpa/result-report/svg-generator";
-import { StpaServices } from "./stpa/stpa-module";
-import { SynthesisOptions } from "./synthesis-options";
+} from "./stpa/result-report/svg-generator.js";
+import { StpaServices } from "./stpa/stpa-module.js";
+import { SynthesisOptions } from "./synthesis-options.js";
 
 export class PastaDiagramServer extends SnippetDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;

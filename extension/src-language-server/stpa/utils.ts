@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { LangiumSharedServices } from "langium";
 import { LangiumSprottySharedServices } from "langium-sprotty";
+import { LangiumSharedServices } from "langium/lsp";
 import { Range } from "vscode-languageserver";
 import {
     Command,
@@ -37,8 +37,8 @@ import {
     SystemConstraint,
     UCA,
     Variable,
-} from "../generated/ast";
-import { getModel } from "../utils";
+} from "../generated/ast.js";
+import { getModel } from "../utils.js";
 
 export type leafElement =
     | Loss

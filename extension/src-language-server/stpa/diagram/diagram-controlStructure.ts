@@ -18,9 +18,9 @@
 import { AstNode } from "langium";
 import { IdCache } from "langium-sprotty";
 import { SModelElement, SNode } from "sprotty-protocol";
-import { Command, Graph, Node, Variable, VerticalEdge } from "../../generated/ast";
-import { createControlStructureEdge, createDummyNode, createLabel, createPort } from "./diagram-elements";
-import { CSEdge, CSNode, ParentNode } from "./stpa-interfaces";
+import { Command, Graph, Node, Variable, VerticalEdge } from "../../generated/ast.js";
+import { createControlStructureEdge, createDummyNode, createLabel, createPort } from "./diagram-elements.js";
+import { CSEdge, CSNode, ParentNode } from "./stpa-interfaces.js";
 import {
     CS_EDGE_TYPE,
     CS_INTERMEDIATE_EDGE_TYPE,
@@ -29,11 +29,12 @@ import {
     EdgeType,
     HEADER_LABEL_TYPE,
     PARENT_TYPE,
+    PASTA_LABEL_TYPE,
     PROCESS_MODEL_PARENT_NODE_TYPE,
     PortSide,
-} from "./stpa-model";
-import { StpaSynthesisOptions } from "./stpa-synthesis-options";
-import { getCommonAncestor, setLevelOfCSNodes, sortPorts } from "./utils";
+} from "./stpa-model.js";
+import { StpaSynthesisOptions } from "./stpa-synthesis-options.js";
+import { getCommonAncestor, sortPorts } from "./utils.js";
 
 /**
  * Creates the control structure diagram for the given {@code controlStructure}.
@@ -88,7 +89,7 @@ export function createControlStructureNode(
 ): CSNode {
     const label = node.label ? node.label : node.name;
     const nodeId = idCache.uniqueId(node.name, node);
-    const children: SModelElement[] = createLabel([label], nodeId, idCache);
+    const children: SModelElement[] = createLabel([label], nodeId, idCache, PASTA_LABEL_TYPE);
     if (options.getShowProcessModels()) {
         // add nodes representing the process model
         children.push(createProcessModelNodes(node.variables, idCache));
@@ -146,7 +147,7 @@ export function createProcessModelNodes(variables: Variable[], idCache: IdCache<
         const values = variable.values?.map(value => value.name);
         const children = [
             ...createLabel([label], nodeId, idCache, HEADER_LABEL_TYPE),
-            ...createLabel(values, nodeId, idCache),
+            ...createLabel(values, nodeId, idCache, PASTA_LABEL_TYPE),
         ];
         // create the actual node with the created labels
         const csNode = {

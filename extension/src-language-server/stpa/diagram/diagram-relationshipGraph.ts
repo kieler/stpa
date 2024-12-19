@@ -18,28 +18,29 @@
 import { AstNode } from "langium";
 import { IdCache } from "langium-sprotty";
 import { SModelElement, SNode } from "sprotty-protocol";
-import { Hazard, Model, SystemConstraint, isContext, isHazard, isSystemConstraint, isUCA } from "../../generated/ast";
-import { collectElementsWithSubComps, leafElement } from "../utils";
-import { createLabel, createPort, createSTPAEdge, createSTPANode, generateDescriptionLabels } from "./diagram-elements";
-import { CustomModel } from "./filtering";
-import { ParentNode, STPAEdge, STPANode } from "./stpa-interfaces";
+import { Hazard, Model, SystemConstraint, isContext, isHazard, isSystemConstraint, isUCA } from "../../generated/ast.js";
+import { labelManagementValue } from "../../synthesis-options.js";
+import { collectElementsWithSubComps, leafElement } from "../utils.js";
+import { createLabel, createPort, createSTPAEdge, createSTPANode, generateDescriptionLabels } from "./diagram-elements.js";
+import { CustomModel } from "./filtering.js";
+import { ParentNode, STPAEdge, STPANode } from "./stpa-interfaces.js";
 import {
+    EDGE_LABEL_TYPE,
     PARENT_TYPE,
     PortSide,
     STPAAspect,
     STPA_EDGE_TYPE,
     STPA_INTERMEDIATE_EDGE_TYPE,
     STPA_NODE_TYPE,
-} from "./stpa-model";
-import { StpaSynthesisOptions, showLabelsValue } from "./stpa-synthesis-options";
+} from "./stpa-model.js";
+import { StpaSynthesisOptions, showLabelsValue } from "./stpa-synthesis-options.js";
 import {
     createUCAContextDescription,
     getAspect,
     getAspectsThatShouldHaveDesriptions,
     getTargets,
     setLevelsForSTPANodes,
-} from "./utils";
-import { labelManagementValue } from "../../synthesis-options";
+} from "./utils.js";
 
 /**
  * Creates the relationship graph for the STPA model.
@@ -411,7 +412,7 @@ export function generateSTPAEdge(
         // create the label of the edge
         let children: SModelElement[] = [];
         if (label !== "") {
-            children = createLabel([label], edgeId, idCache);
+            children = createLabel([label], edgeId, idCache, EDGE_LABEL_TYPE);
         }
 
         if ((isHazard(target) || isSystemConstraint(target)) && target.$container?.$type !== "Model") {
