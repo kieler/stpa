@@ -20,6 +20,7 @@ import { ElkLayoutEngine } from "sprotty-elk/lib/elk-layout.js";
 import { Point, SEdge, SGraph, SModelIndex } from "sprotty-protocol";
 import { FTAEdge } from "./fta/diagram/fta-interfaces.js";
 import { FTA_EDGE_TYPE } from "./fta/diagram/fta-model.js";
+import { STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa/diagram/stpa-model.js';
 
 export class LayoutEngine extends ElkLayoutEngine {
     layout(sgraph: SGraph, index?: SModelIndex): SGraph | Promise<SGraph> {
@@ -52,10 +53,10 @@ export class LayoutEngine extends ElkLayoutEngine {
         });
     }
 
-    /** Override method to save the junctionpoints in FTAEdges*/
+    /** Override method to save junctionpoints*/
     protected applyEdge(sedge: SEdge, elkEdge: ElkExtendedEdge, index: SModelIndex): void {
         const points: Point[] = [];
-        if (sedge.type === FTA_EDGE_TYPE) {
+        if (sedge.type === FTA_EDGE_TYPE || sedge.type === STPA_EDGE_TYPE || sedge.type === STPA_INTERMEDIATE_EDGE_TYPE) {
             (sedge as any as FTAEdge).junctionPoints = elkEdge.junctionPoints;
         }
         if (elkEdge.sections && elkEdge.sections.length > 0) {

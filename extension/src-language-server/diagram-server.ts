@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Action, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from "sprotty-protocol";
+import { Action, CollapseExpandAction, CollapseExpandAllAction, DiagramServices, JsonMap, RequestAction, RequestModelAction, ResponseAction } from "sprotty-protocol";
 import { Connection } from "vscode-languageserver";
 import { FtaServices } from "./fta/fta-module.js";
 import { SetSynthesisOptionsAction, UpdateOptionsAction } from "./options/actions.js";
@@ -52,6 +52,9 @@ import {
 } from "./stpa/result-report/svg-generator.js";
 import { StpaServices } from "./stpa/stpa-module.js";
 import { SynthesisOptions } from "./synthesis-options.js";
+
+// matches id of a node to its expansion state. True means expanded, false and undefined means collapsed
+export let expansionState = new Map<string, boolean>();
 
 export class PastaDiagramServer extends SnippetDiagramServer {
     protected synthesisOptions: SynthesisOptions | undefined;
@@ -103,8 +106,28 @@ export class PastaDiagramServer extends SnippetDiagramServer {
                 return this.handleGenerateSVGDiagrams(action as GenerateSVGsAction);
             case UpdateDiagramAction.KIND:
                 return this.updateView(this.state.options);
+            case CollapseExpandAction.KIND:
+                return this.collapseExpand(action as CollapseExpandAction);
+            case CollapseExpandAllAction.KIND:
+                // TODO: create buttons in sidepanel to send this action and implement the reaction to it
+                console.log("received collapse/expand all action");
         }
         return super.handleAction(action);
+    }
+
+    /**
+     * Collapses and expands the nodes with the given ids and updates the view.
+     * @param action The CollapseExpandAction that triggered this method.
+     * @returns 
+     */
+    protected collapseExpand(action: CollapseExpandAction): Promise<void> {
+        for (const id of action.expandIds) {
+            expansionState.set(id, true);
+        }
+        for (const id of action.collapseIds) {
+            expansionState.set(id, false);
+        }
+        return this.updateView(this.state.options);
     }
 
     /**

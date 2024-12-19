@@ -83,6 +83,7 @@ import {
     PASTA_LABEL_TYPE,
     PORT_TYPE,
     PROCESS_MODEL_PARENT_NODE_TYPE,
+    ParentNode,
     PastaPort,
     STPAEdge,
     STPANode,
@@ -136,7 +137,7 @@ const pastaDiagramModule = new ContainerModule((bind, unbind, isBound, rebind) =
     configureModelElement(context, DUMMY_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, CS_NODE_TYPE, CSNode, CSNodeView);
     configureModelElement(context, STPA_NODE_TYPE, STPANode, STPANodeView);
-    configureModelElement(context, PARENT_TYPE, SNodeImpl, CSNodeView);
+    configureModelElement(context, PARENT_TYPE, ParentNode, CSNodeView);
     configureModelElement(context, STPA_EDGE_TYPE, STPAEdge, PolylineArrowEdgeView);
     configureModelElement(context, STPA_INTERMEDIATE_EDGE_TYPE, STPAEdge, IntermediateEdgeView);
     configureModelElement(context, CS_INTERMEDIATE_EDGE_TYPE, CSEdge, IntermediateEdgeView);

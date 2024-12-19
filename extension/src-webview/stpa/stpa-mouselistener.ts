@@ -1,10 +1,9 @@
-import { MouseListener, SLabelImpl, SModelElementImpl } from "sprotty";
-import { Action } from "sprotty-protocol";
+import { isExpandable, MouseListener, SLabelImpl, SModelElementImpl } from "sprotty";
+import { Action, CollapseExpandAction } from "sprotty-protocol";
 import { flagConnectedElements, flagSameAspect } from "./helper-methods";
-import { STPAEdge, STPANode, STPA_NODE_TYPE } from "./stpa-model";
+import { CS_NODE_TYPE, STPA_NODE_TYPE, STPAEdge, STPANode } from "./stpa-model";
 
 export class StpaMouseListener extends MouseListener {
-
     protected flaggedElements: (STPANode | STPAEdge)[] = [];
 
     mouseDown(target: SModelElementImpl, event: MouseEvent): (Action | Promise<Action>)[] {
@@ -25,6 +24,21 @@ export class StpaMouseListener extends MouseListener {
         return [];
     }
 
+    doubleClick(target: SModelElementImpl, event: MouseEvent): (Action | Promise<Action>)[] {
+        // when a label is selected, we are interested in its parent node
+        target = target instanceof SLabelImpl ? target.parent : target;
+        // if the selected node is expandable, the node should be expanded or collapsed
+        if (target.type === CS_NODE_TYPE && isExpandable(target)) {
+            return [
+                CollapseExpandAction.create({
+                    expandIds: target.expanded ? [] : [target.id],
+                    collapseIds: target.expanded ? [target.id] : [],
+                }),
+            ];
+        }
+        return [];
+    }
+
     /**
      * Resets the highlight attribute of the highlighted nodes.
      */
@@ -34,5 +48,4 @@ export class StpaMouseListener extends MouseListener {
         }
         this.flaggedElements = [];
     }
-
 }

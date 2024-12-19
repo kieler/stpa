@@ -77,7 +77,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             options["org.eclipse.elk.separateConnectedComponents"] = "false";
         }
         if (csParent) {
-            options["org.eclipse.elk.layered.considerModelOrder.strategy"] = "PREFER_NODES";
+            options["org.eclipse.elk.layered.considerModelOrder.strategy"] = "NODES_AND_EDGES";
             options["org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder"] = "true";
             options["org.eclipse.elk.layered.cycleBreaking.strategy"] = "MODEL_ORDER";
         }
@@ -122,7 +122,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             "org.eclipse.elk.partitioning.activate": "true",
             "org.eclipse.elk.direction": "DOWN",
             "org.eclipse.elk.portConstraints": "FIXED_SIDE",
-            "org.eclipse.elk.layered.considerModelOrder.strategy": "PREFER_NODES",
+            "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
             "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true",
             "org.eclipse.elk.layered.cycleBreaking.strategy": "MODEL_ORDER",
             // nodes with many edges are streched
@@ -191,7 +191,7 @@ export class StpaLayoutConfigurator extends DefaultLayoutConfigurator {
             // nodes with many edges are streched
             "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
             "org.eclipse.elk.layered.nodePlacement.networkSimplex.nodeFlexibility.default": "NODE_SIZE",
-            "org.eclipse.elk.layered.considerModelOrder.strategy": "PREFER_NODES",
+            "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
             "org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder": "true",
             "org.eclipse.elk.layered.cycleBreaking.strategy": "MODEL_ORDER"
         };

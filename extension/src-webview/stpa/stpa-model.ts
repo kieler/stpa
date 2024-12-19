@@ -15,8 +15,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { SEdgeImpl, SLabelImpl, SNodeImpl, SPortImpl, alignFeature, boundsFeature, connectableFeature, fadeFeature, layoutContainerFeature, layoutableChildFeature, selectFeature } from "sprotty";
-import { EdgePlacement } from "sprotty-protocol";
+import { SEdgeImpl, SLabelImpl, SNodeImpl, SPortImpl, alignFeature, boundsFeature, connectableFeature, fadeFeature, layoutContainerFeature, layoutableChildFeature, selectFeature, expandFeature } from "sprotty";
+import { EdgePlacement, Point } from "sprotty-protocol";
 
 // The types of diagram elements
 export const STPA_NODE_TYPE = 'node:stpa';
@@ -37,6 +37,7 @@ export const EDGE_LABEL_TYPE = 'label:xref';
 
 export class ParentNode extends SNodeImpl {
     modelOrder: boolean;
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
 }
 
 /**
@@ -60,6 +61,7 @@ export class STPANode extends SNodeImpl {
 export class STPAEdge extends SEdgeImpl {
     aspect: STPAAspect = STPAAspect.UNDEFINED;
     highlight?: boolean;
+    junctionPoints?: Point[];
     static readonly DEFAULT_FEATURES = [fadeFeature];
 }
 
@@ -76,7 +78,9 @@ export class PastaPort extends SPortImpl {
 export class CSNode extends SNodeImpl {
     level?: number;
     hasMissingFeedback?: boolean;
-    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature];
+    hasChildren: boolean;
+    expanded: boolean;
+    static readonly DEFAULT_FEATURES = [connectableFeature, selectFeature, layoutContainerFeature, fadeFeature, expandFeature];
 }
 
 /**

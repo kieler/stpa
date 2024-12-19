@@ -21,9 +21,9 @@ import { VNode } from 'snabbdom';
 import { IActionDispatcher, IView, IViewArgs, ModelRenderer, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdgeImpl, SGraphImpl, SGraphView, SLabelImpl, SLabelView, SNodeImpl, SPortImpl, TYPES, svg } from 'sprotty';
 import { Point, toDegrees } from "sprotty-protocol";
 import { DISymbol } from '../di.symbols';
-import { ColorStyleOption, DifferentFormsOption, RenderOptionsRegistry } from '../options/render-options-registry';
+import { ColorStyleOption, DifferentFormsOption, FeedbackStyleOption, RenderOptionsRegistry, dottedFeedback, lightGreyFeedback } from '../options/render-options-registry';
 import { SendModelRendererAction } from '../snippets/actions';
-import { renderDiamond, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderPort, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
+import { renderCollapseIcon, renderDiamond, renderEllipse, renderExpandIcon, renderHexagon, renderMirroredTriangle, renderOval, renderPentagon, renderRectangle, renderRoundedRectangle, renderTrapez, renderTriangle } from '../views-rendering';
 import { collectAllChildren } from './helper-methods';
 import { CSEdge, CSNode, CS_EDGE_TYPE, CS_INTERMEDIATE_EDGE_TYPE, CS_NODE_TYPE, EdgeType, STPAAspect, STPAEdge, STPANode, STPA_EDGE_TYPE, STPA_INTERMEDIATE_EDGE_TYPE } from './stpa-model';
 
@@ -37,15 +37,41 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
     protected renderLine(edge: SEdgeImpl, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
+        const p1 = segments[segments.length - 2];
+        const p2 = segments[segments.length - 1];
+
         let path = `M ${firstPoint.x},${firstPoint.y}`;
         for (let i = 1; i < segments.length; i++) {
             const p = segments[i];
-            path += ` L ${p.x},${p.y}`;
+            // adjust the last point if it is not an intermediate edge in order to draw the arrow correctly (not reaching into the target node)
+            if ((edge.type === CS_EDGE_TYPE || edge.type === STPA_EDGE_TYPE) && i === segments.length - 1) {
+                if (p1.x === p2.x) {
+                    // edge goes down or up
+                    if (p1.y < p2.y) {
+                        // edge goes down
+                        path += ` L ${p.x},${p.y-3}`;
+                    } else {
+                        // edge goes up
+                        path += ` L ${p.x},${p.y + 3}`;
+                    }
+                } else {
+                    // edge goes left or right
+                    if (p1.x < p2.x) {
+                        // edge goes right
+                        path += ` L ${p.x - 3},${p.y}`;
+                    } else {
+                        // edge goes left
+                        path += ` L ${p.x + 3},${p.y}`;
+                    }
+                }
+            } else {
+                path += ` L ${p.x},${p.y}`;
+            }
         }
 
         // if an STPANode is selected, the components not connected to it should fade out
         const hidden = (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) && highlighting && !(edge as STPAEdge).highlight;
-        // feedback edges in the control structure should be dashed
+        // feedback edges in the control structure are possibly styled differently
         const feedbackEdge = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
         // edges that represent missing edges should be highlighted
         const missing = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.MISSING_FEEDBACK;
@@ -56,11 +82,22 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         const lessColoredEdge = colorStyle === "fewer colors";
         // coloring of the edge depends on the aspect
         let aspect: number = -1;
+        // renderings for all junction points
+        let junctionPointRenderings: VNode[] = [];
         if (edge.type === STPA_EDGE_TYPE || edge.type === STPA_INTERMEDIATE_EDGE_TYPE) {
             aspect = (edge as STPAEdge).aspect % 2 === 0 || !lessColoredEdge ? (edge as STPAEdge).aspect : (edge as STPAEdge).aspect - 1;
+            junctionPointRenderings = (edge as STPAEdge).junctionPoints?.map(junctionPoint =>
+                renderEllipse(junctionPoint.x, junctionPoint.y, 4, 4, 1)
+            ) ?? [];
         }
-        return <path class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge}
-            class-feedback-edge={feedbackEdge} class-missing-edge={missing} class-greyed-out={hidden} aspect={aspect} d={path} />;
+        const feedbackStyle = this.renderOptionsRegistry.getValue(FeedbackStyleOption);
+        const dotted = feedbackStyle === dottedFeedback;
+        const greyFeedback = feedbackStyle === lightGreyFeedback;
+        return <g class-print-edge={printEdge} class-stpa-edge={coloredEdge || lessColoredEdge}
+        class-feedback-dotted={feedbackEdge && dotted} class-feedback-grey={feedbackEdge && greyFeedback} class-missing-edge={missing} class-greyed-out={hidden} aspect={aspect}>
+        <path d={path} />
+            {...(junctionPointRenderings ?? [])}
+            </g>;
     }
 
     protected renderAdditionals(edge: SEdgeImpl, segments: Point[], context: RenderingContext): VNode[] {
@@ -69,6 +106,28 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
+        let endpoint: string;
+        // determine the last point to draw the arrow correctly (not reaching into the target node)
+        if (p1.x === p2.x) {
+            // edge goes down or up
+            if (p1.y < p2.y) {
+                // edge goes down
+                endpoint = `${p2.x} ${p2.y-2}`;
+            } else {
+                // edge goes up
+                endpoint = `${p2.x} ${p2.y + 2}`;
+            }
+        } else {
+            // edge goes left or right
+            if (p1.x < p2.x) {
+                // edge goes right
+                endpoint = `${p2.x - 2} ${p2.y}`;
+            } else {
+                // edge goes left
+                endpoint = `${p2.x + 2} ${p2.y}`;
+            }
+        }
+
 
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const printEdge = colorStyle === "black & white";
@@ -82,10 +141,15 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
         // edges that represent missing edges should be highlighted
         const missing = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.MISSING_FEEDBACK;
 
+        // feedback edges in the control structure are possibly styled differently
+        const feedbackEdge = (edge.type === CS_EDGE_TYPE || edge.type === CS_INTERMEDIATE_EDGE_TYPE) && (edge as CSEdge).edgeType === EdgeType.FEEDBACK;
+        const feedbackStyle = this.renderOptionsRegistry.getValue(FeedbackStyleOption);
+        const greyFeedback = feedbackStyle === lightGreyFeedback;
         return [
             <path  class-missing-edge-arrow={missing} class-print-edge-arrow={printEdge} class-stpa-edge-arrow={coloredEdge || lessColoredEdge} class-greyed-out={hidden} aspect={aspect}
+                class-feedback-grey-arrow={feedbackEdge && greyFeedback}    
                 class-sprotty-edge-arrow={sprottyEdge} d="M 6,-3 L 0,0 L 6,3 Z"
-                transform={`rotate(${this.angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`} />
+                transform={`rotate(${this.angle(p2, p1)} ${endpoint}) translate(${endpoint})`} />
         ];
     }
 
@@ -97,25 +161,13 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 @injectable()
 export class IntermediateEdgeView extends PolylineArrowEdgeView {
 
-    render(edge: Readonly<SEdgeImpl>, context: RenderingContext, args?: IViewArgs): VNode | undefined {
-        const route = this.edgeRouterRegistry.route(edge, args);
-        if (route.length === 0) {
-            return this.renderDanglingEdge("Cannot compute route", edge, context);
-        }
-        if (!this.isVisible(edge, route, context)) {
-            if (edge.children.length === 0) {
-                return undefined;
-            }
-            // The children of an edge are not necessarily inside the bounding box of the route,
-            // so we need to render a group to ensure the children have a chance to be rendered.
-            return <g>{context.renderChildren(edge, { route })}</g>;
-        }
-
-        // intermediate edge do not have an arrow
-        return <g class-sprotty-edge={true} class-mouseover={edge.hoverFeedback}>
-            {this.renderLine(edge, route, context)}
-            {context.renderChildren(edge, { route })}
-        </g>;
+    protected renderAdditionals(edge: SEdgeImpl, segments: Point[], context: RenderingContext): VNode[] {
+        // const p = segments[segments.length - 1];
+        // return [
+        //     <path d="M 0 0 L 0 3 M 5 3 L -5 3"
+        //         transform={` translate(${p.x} ${p.y})`} />
+        // ];
+        return [];
     }
 }
 
@@ -215,15 +267,26 @@ export class CSNodeView extends RectangularNodeView {
         const sprottyNode = colorStyle === "standard";
         const printNode = !sprottyNode;
         const missingFeedback = node.type === CS_NODE_TYPE && (node as CSNode).hasMissingFeedback;
-        return <g>
-            <rect 
+        const rectangle = <rect 
                 class-missing-feedback-node={missingFeedback} class-print-node={printNode}
                 class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPortImpl}
                 class-mouseover={node.hoverFeedback} class-selected={node.selected}
                 x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
-            > </rect>
-            {context.renderChildren(node)}
-        </g>;
+            > </rect>;
+        if (node.type === CS_NODE_TYPE && (node as CSNode).hasChildren) {
+            // render the expand/collapse icon indicating that the node can be expanded
+            const icon = (node as CSNode).expanded ? renderCollapseIcon() : renderExpandIcon();
+            return <g>
+                {icon}
+                {rectangle}
+                {context.renderChildren(node)}
+            </g>;
+        } else {
+            return <g>
+                {rectangle}
+                {context.renderChildren(node)}
+            </g>;
+        }
     }
 }
 
@@ -266,6 +329,13 @@ export class PortView implements IView {
     }
 }
 
+export function renderPort(x:number, y: number, width: number, height: number): VNode {
+    return <rect
+        x={x} y={y}
+        width={Math.max(width, 0)} height={Math.max(height, 0)}
+    />;
+}
+
 @injectable()
 export class HeaderLabelView extends SLabelView {
     render(label: Readonly<SLabelImpl>, context: RenderingContext): VNode | undefined {
@@ -293,3 +363,4 @@ export class EdgeLabelView extends SLabelView {
         return vnode;
     }
 }
+

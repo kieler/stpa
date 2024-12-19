@@ -312,3 +312,58 @@ export function renderInhibitGate(node: SNodeImpl): VNode {
         d={path}
     />;
 }
+
+/**
+ * Creates the icon for collapsing a node.
+ * @returns 
+ */
+export function renderCollapseIcon(): VNode {
+    return <g>
+        {renderCollapseExpandTriangle()}
+        {renderCollapseSign()}
+    </g>;
+}
+
+/**
+ * Creates the triangle for the expand and collapse icon.
+ * @returns 
+ */
+export function renderCollapseExpandTriangle(): VNode {
+    const path = `M 0 0 L 0 15 L 15 0 Z`;
+    return <path class-collapse-expand-triangle={true}
+        d={path}
+    />;
+}
+
+/**
+ * Creates the minus-sign for the collapse icon.
+ * @returns 
+ */
+export function renderCollapseSign(): VNode {
+    const path = `M 3 5 L 7 5`;
+    return <path class-collapse-expand-sign={true}
+        d={path}
+    />;
+}
+
+/**
+ * Creates the icon for expanding a node.
+ * @returns 
+ */
+export function renderExpandIcon(): VNode {
+    return <g>
+        {renderCollapseExpandTriangle()}
+        {renderExpandSign()}
+    </g>;
+}
+
+/**
+ * Creates the plus-sign for the expand icon.
+ * @returns 
+ */
+export function renderExpandSign(): VNode {
+    const path = `M 3 5 L 7 5 M 5 3 L 5 7`;
+    return <path class-collapse-expand-sign={true}
+        d={path}
+    />;
+}
