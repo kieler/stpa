@@ -23,7 +23,7 @@ import { FTANode, FTA_GRAPH_TYPE, FTA_NODE_TYPE } from "../fta/fta-model";
 
 @injectable()
 export class ContextMenuProvider implements IContextMenuItemProvider {
-    getItems(root: Readonly<SModelRootImpl>, lastMousePosition?: Point): Promise<LabeledAction[]> {
+    getItems(root: Readonly<SModelRootImpl>, _lastMousePosition?: Point): Promise<LabeledAction[]> {
         if (root.type === FTA_GRAPH_TYPE) {
             // find node that was clicked on
             let clickedNode: FTANode | undefined;
