@@ -276,6 +276,7 @@ export class HeaderLabelView extends SLabelView {
 
 @injectable()
 export class EdgeLabelView extends SLabelView {
+    // TODO: background for the labels to be better readable
     render(label: Readonly<SLabelImpl>, context: RenderingContext): VNode | undefined {
         // label belongs to a node which may have missing feedback
         const nodeMissingFeedback = label.parent.type === CS_NODE_TYPE && (label.parent as CSNode).hasMissingFeedback;
