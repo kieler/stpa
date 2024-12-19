@@ -63,6 +63,13 @@ export function renderRectangle(node: SNodeImpl): VNode {
     />;
 }
 
+export function renderPort(x:number, y: number, width: number, height: number): VNode {
+    return <rect
+        x={x} y={y}
+        width={Math.max(width, 0)} height={Math.max(height, 0)}
+    />;
+}
+
 /**
  * Creates rectangle borders for {@code node} at the top and bottom.
  * @param node The node that should be represented by a rectangle.
