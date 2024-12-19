@@ -18,7 +18,7 @@
 import * as path from "path";
 import { ActionMessage } from "sprotty-protocol";
 import { createFileUri, registerDefaultCommands } from "sprotty-vscode";
-import { LspSprottyEditorProvider, LspSprottyViewProvider, acceptMessageType } from "sprotty-vscode/lib/lsp";
+import { acceptMessageType, LspSprottyEditorProvider, LspSprottyViewProvider } from "sprotty-vscode/lib/lsp";
 import * as vscode from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
 import { Messenger } from "vscode-messenger";
@@ -73,6 +73,20 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     languageClient = createLanguageClient(context);
+
+    // maybe needed in next sprotty update
+    // const extensionPath = context.extensionUri.fsPath;
+    // const localResourceRoots = [createFileUri(extensionPath, 'pack', 'src-webview')];
+    // const createWebviewHtml = (identifier: SprottyDiagramIdentifier, container: WebviewContainer): string => doCreateWebviewHtml(identifier, container, {
+    //     scriptUri: createFileUri(extensionPath, 'pack', 'src-webview', 'main.js'),
+    //     cssUri: createFileUri(extensionPath, 'pack', 'src-webview', 'main.css')
+    // });
+    // const configureEndpoint = (endpoint: WebviewEndpoint): void => {
+    //     addWorkspaceEditActionHandler(endpoint as LspWebviewEndpoint);
+    //     addLspLabelEditActionHandler(endpoint as LspWebviewEndpoint);
+    // };
+
+
     // Create context key of supported languages
     vscode.commands.executeCommand("setContext", "pasta.languages", supportedFileEndings);
 
@@ -85,6 +99,9 @@ export function activate(context: vscode.ExtensionContext): void {
                 extensionUri: context.extensionUri,
                 languageClient,
                 supportedFileExtensions: [".stpa", ".fta"],
+                // localResourceRoots,
+                // createWebviewHtml,
+                // configureEndpoint,
                 singleton: true,
                 messenger: new Messenger({ ignoreHiddenViews: false }),
             },
@@ -92,6 +109,7 @@ export function activate(context: vscode.ExtensionContext): void {
             storage
         );
         registerDefaultCommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
+
         registerTextEditorSync(webviewPanelManager, context);
         registerSTPACommands(webviewPanelManager, context, storage, { extensionPrefix: "pasta" });
         registerFTACommands(webviewPanelManager, context, { extensionPrefix: "pasta" });
@@ -127,7 +145,7 @@ export function activate(context: vscode.ExtensionContext): void {
         });
 
         context.subscriptions.push(
-            vscode.window.registerWebviewViewProvider("states", webviewViewProvider, {
+            vscode.window.registerWebviewViewProvider("stpa", webviewViewProvider, {
                 webviewOptions: { retainContextWhenHidden: true },
             })
         );
@@ -391,7 +409,7 @@ function handleCutSets(cutSets: string[], minimal?: boolean): void {
 }
 
 function createLanguageClient(context: vscode.ExtensionContext): LanguageClient {
-    const serverModule = context.asAbsolutePath(path.join("pack", "language-server"));
+    const serverModule = context.asAbsolutePath(path.join("pack",  "src-language-server", "main.cjs"));
     // The debug options for the server
     // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging.
     // By setting `process.env.DEBUG_BREAK` to a truthy value, the language server will wait until a debugger is attached.
@@ -462,13 +480,18 @@ async function updateViews(manager: StpaLspVscodeExtension, document?: vscode.Te
         }
 
         // update diagram without reseting viewport
-        const message: ActionMessage = {
-            clientId: manager.clientId!,
-            action: {
-                kind: UpdateDiagramAction.KIND,
-            } as UpdateDiagramAction,
-        };
-        languageClient.sendNotification(acceptMessageType, message);
+        if (manager.clientId) {
+            const message: ActionMessage = {
+                clientId: manager.clientId!,
+                action: {
+                    kind: UpdateDiagramAction.KIND,
+                    options: {
+                        sourceUri: document.uri.toString(),
+                    }
+                } as UpdateDiagramAction,
+            };
+            languageClient.sendNotification(acceptMessageType, message);
+        }
 
         // update the context table
         if (manager.contextTable) {
@@ -495,7 +518,8 @@ function registerDiagramSnippetWebview(manager: StpaLspVscodeExtension, context:
             const snippetWebview = new DiagramSnippetWebview(
                 "snippets",
                 manager,
-                createFileUri(manager.options.extensionUri.fsPath, "pack", "snippetWebview.js")
+                createFileUri(manager.options.extensionUri.fsPath, 'pack', 'src-diagram-snippets', 'main.js'),
+                createFileUri(manager.options.extensionUri.fsPath, 'pack', 'src-diagram-snippets', 'main.css')
             );
             snippetWebview.webview = webviewView.webview;
             snippetWebview.webview.options = {

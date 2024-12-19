@@ -29,6 +29,8 @@ export const STPA_EDGE_TYPE = 'edge:stpa';
 export const STPA_INTERMEDIATE_EDGE_TYPE = 'edge:stpa-intermediate';
 export const PORT_TYPE = 'port:pasta';
 export const HEADER_LABEL_TYPE = 'label:header';
+export const PASTA_LABEL_TYPE = 'label';
+export const EDGE_LABEL_TYPE = 'label:xref';
 
 /**
  * The different aspects of STPA.
