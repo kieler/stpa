@@ -15,27 +15,27 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { MaybePromise } from "langium";
 import {
     CompletionAcceptor,
     CompletionContext,
     CompletionValueItem,
     DefaultCompletionProvider,
-    MaybePromise,
     NextFeature,
-} from "langium";
+} from "langium/lsp";
 import { CompletionItemKind } from "vscode-languageserver";
 import {
     Context,
     ControllerConstraint,
-    isModel,
-    isVerticalEdge,
     LossScenario,
     Model,
     Node,
     Rule,
     UCA,
     VerticalEdge,
-} from "../../generated/ast";
+    isModel,
+    isVerticalEdge,
+} from "../../generated/ast.js";
 
 /**
  * Generates UCA text for loss scenarios by providing an additional completion item.
@@ -56,7 +56,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
     ): MaybePromise<void> {
         super.completionFor(context, next, acceptor);
         if (this.enabled) {
-            this.completionForSystemComponent(next, acceptor);
+            this.completionForSystemComponent(context, next, acceptor);
             this.completionForScenario(context, next, acceptor);
             this.completionForUCA(context, next, acceptor);
             this.completionForUCARule(context, next, acceptor);
@@ -116,7 +116,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
                 });
 
                 // add the generated text as completion item
-                acceptor({
+                acceptor(context, {
                     label: "Generate Constraints for the UCAs",
                     kind: CompletionItemKind.Snippet,
                     insertText: generatedText,
@@ -129,10 +129,12 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
 
     /**
      * Adds a completion item for generating a system component if the current context is a system component.
+     * @param context The completion context.
      * @param next The next feature of the current rule to be called.
      * @param acceptor The completion acceptor to add the completion items.
      */
-    protected completionForSystemComponent(next: NextFeature, acceptor: CompletionAcceptor): void {
+    protected completionForSystemComponent(
+        context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
         if (next.type === Node && next.property === "name") {
             const generatedText = `Comp {
     hierarchyLevel 0
@@ -144,7 +146,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
     feedback {
     }
 }`;
-            acceptor({
+            acceptor(context, {
                 label: "Generate System Component",
                 kind: CompletionItemKind.Text,
                 insertText: generatedText,
@@ -163,15 +165,15 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
     protected completionForUCARule(context: CompletionContext, next: NextFeature, acceptor: CompletionAcceptor): void {
         if ((context.node?.$type === Rule || next.type === Rule) && next.property === "name") {
             const templateRuleItem = this.generateTemplateRuleItem();
-            acceptor(templateRuleItem);
+            acceptor(context, templateRuleItem);
             const model = context.node?.$type === Model ? context.node : context.node?.$container;
             if (isModel(model)) {
                 const controlActions = this.collectControlActions(model);
                 const rulesForEverythingItem = this.generateRulesForEverythingItem(controlActions);
-                acceptor(rulesForEverythingItem);
+                acceptor(context, rulesForEverythingItem);
                 const ruleForSpecificControlActionItems =
                     this.generateRuleForSpecificControlActionItems(controlActions);
-                ruleForSpecificControlActionItems.forEach(item => acceptor(item));
+                ruleForSpecificControlActionItems.forEach(item => acceptor(context, item));
             }
         }
     }
@@ -302,7 +304,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
             );
 
             if (generatedItems.length > 0) {
-                generatedItems.forEach(item => acceptor(item));
+                generatedItems.forEach(item => acceptor(context, item));
             }
         }
     }
@@ -386,7 +388,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
         if (context.node?.$type === LossScenario && next.property === "description") {
             const generatedText = this.generateScenarioForUCA(context.node as LossScenario);
             if (generatedText !== "") {
-                acceptor({
+                acceptor(context, {
                     label: "Generate UCA Text",
                     kind: CompletionItemKind.Text,
                     insertText: generatedText,
@@ -401,7 +403,7 @@ export class STPACompletionProvider extends DefaultCompletionProvider {
             if (isModel(model)) {
                 const generatedBasicScenariosText = this.generateBasicScenarios(model);
                 if (generatedBasicScenariosText !== "") {
-                    acceptor({
+                    acceptor(context, {
                         label: "Generate Basic Scenarios",
                         kind: CompletionItemKind.Snippet,
                         insertText: generatedBasicScenariosText,

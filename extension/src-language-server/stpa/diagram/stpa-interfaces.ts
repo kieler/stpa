@@ -16,7 +16,7 @@
  */
 
 import { Point, SEdge, SNode, SPort } from "sprotty-protocol";
-import { EdgeType, PortSide, STPAAspect } from "./stpa-model";
+import { EdgeType, PortSide, STPAAspect } from "./stpa-model.js";
 
 export interface ParentNode extends SNode {
     modelOrder: boolean;

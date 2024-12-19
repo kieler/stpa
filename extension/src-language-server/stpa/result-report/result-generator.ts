@@ -28,9 +28,9 @@ import {
     SafetyConstraint,
     SystemConstraint,
     UCA
-} from "../../generated/ast";
-import { getModel } from "../../utils";
-import { StpaComponent, StpaResult, UCA_TYPE } from "../utils";
+} from "../../generated/ast.js";
+import { getModel } from "../../utils.js";
+import { StpaComponent, StpaResult, UCA_TYPE } from "../utils.js";
 
 /**
  * Creates the STPA result data.

@@ -18,7 +18,8 @@
 /** @jsx svg */
 import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
-import { IActionDispatcher, IView, IViewArgs, ModelRenderer, Point, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdge, SGraph, SGraphView, SLabel, SLabelView, SNode, SPort, TYPES, svg, toDegrees } from 'sprotty';
+import { IActionDispatcher, IView, IViewArgs, ModelRenderer, PolylineEdgeView, RectangularNodeView, RenderingContext, SEdgeImpl, SGraphImpl, SGraphView, SLabelImpl, SLabelView, SNodeImpl, SPortImpl, TYPES, svg } from 'sprotty';
+import { Point, toDegrees } from "sprotty-protocol";
 import { DISymbol } from '../di.symbols';
 import { ColorStyleOption, DifferentFormsOption, FeedbackStyleOption, RenderOptionsRegistry, dottedFeedback, lightGreyFeedback } from '../options/render-options-registry';
 import { SendModelRendererAction } from '../snippets/actions';
@@ -34,7 +35,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
 
     @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
-    protected renderLine(edge: SEdge, segments: Point[], context: RenderingContext): VNode {
+    protected renderLine(edge: SEdgeImpl, segments: Point[], context: RenderingContext): VNode {
         const firstPoint = segments[0];
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
@@ -99,7 +100,7 @@ export class PolylineArrowEdgeView extends PolylineEdgeView {
             </g>;
     }
 
-    protected renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
+    protected renderAdditionals(edge: SEdgeImpl, segments: Point[], context: RenderingContext): VNode[] {
         // if an STPANode is selected, the components not connected to it should fade out
         const hidden = edge.type === STPA_EDGE_TYPE && highlighting && !(edge as STPAEdge).highlight;
 
@@ -247,7 +248,7 @@ export class STPANodeView extends RectangularNodeView {
             class-print-node={printNode}
             class-stpa-node={coloredNode || lessColoredNode} aspect={aspect}
             class-sprotty-node={sprottyNode}
-            class-sprotty-port={node instanceof SPort}
+            class-sprotty-port={node instanceof SPortImpl}
             class-mouseover={node.hoverFeedback}
             class-greyed-out={hidden}>
             <g class-node-selected={node.selected}>{element}</g>
@@ -261,14 +262,14 @@ export class CSNodeView extends RectangularNodeView {
 
     @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
-    render(node: SNode, context: RenderingContext): VNode {
+    render(node: SNodeImpl, context: RenderingContext): VNode {
         const colorStyle = this.renderOptionsRegistry.getValue(ColorStyleOption);
         const sprottyNode = colorStyle === "standard";
         const printNode = !sprottyNode;
         const missingFeedback = node.type === CS_NODE_TYPE && (node as CSNode).hasMissingFeedback;
         const rectangle = <rect 
                 class-missing-feedback-node={missingFeedback} class-print-node={printNode}
-                class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPort}
+                class-sprotty-node={sprottyNode} class-sprotty-port={node instanceof SPortImpl}
                 class-mouseover={node.hoverFeedback} class-selected={node.selected}
                 x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}
             > </rect>;
@@ -294,7 +295,7 @@ export class InvisibleNodeView extends RectangularNodeView {
 
     @inject(DISymbol.RenderOptionsRegistry) renderOptionsRegistry: RenderOptionsRegistry;
 
-    render(node: SNode, context: RenderingContext): VNode {
+    render(node: SNodeImpl, context: RenderingContext): VNode {
         return <g>
             {context.renderChildren(node)}
         </g>;
@@ -306,11 +307,11 @@ export class STPAGraphView extends SGraphView {
 
     @inject(TYPES.IActionDispatcher) private actionDispatcher: IActionDispatcher;
 
-    render(model: Readonly<SGraph>, context: RenderingContext): VNode {
+    render(model: Readonly<SGraphImpl>, context: RenderingContext): VNode {
         // to render the snippet panel the modelrenderer and the canvasbounds are needed
         this.actionDispatcher.dispatch(SendModelRendererAction.create(context as ModelRenderer, model.canvasBounds));
-        const allNodes: SNode[] = [];
-        collectAllChildren(model.children as SNode[], allNodes);
+        const allNodes: SNodeImpl[] = [];
+        collectAllChildren(model.children as SNodeImpl[], allNodes);
         highlighting = allNodes.find(node => {
             return node instanceof STPANode && node.highlight;
         }) !== undefined;
@@ -322,14 +323,15 @@ export class STPAGraphView extends SGraphView {
 
 @injectable()
 export class PortView implements IView {
-    render(model: SPort, context: RenderingContext): VNode {
-        return <g />;
+    render(model: SPortImpl, context: RenderingContext): VNode {
+        const port = <g>{renderPort(model.position.x, model.position.y, model.size.width, model.size.height)}</g>;
+        return <g class-pasta-hidden>{port}</g>;
     }
 }
 
 @injectable()
 export class HeaderLabelView extends SLabelView {
-    render(label: Readonly<SLabel>, context: RenderingContext): VNode | undefined {
+    render(label: Readonly<SLabelImpl>, context: RenderingContext): VNode | undefined {
         return <g class-header={true}>
             {super.render(label, context)}
         </g>;
@@ -337,8 +339,9 @@ export class HeaderLabelView extends SLabelView {
 }
 
 @injectable()
-export class PastaLabelView extends SLabelView {
-    render(label: Readonly<SLabel>, context: RenderingContext): VNode | undefined {
+export class EdgeLabelView extends SLabelView {
+    // TODO: background for the labels to be better readable
+    render(label: Readonly<SLabelImpl>, context: RenderingContext): VNode | undefined {
         // label belongs to a node which may have missing feedback
         const nodeMissingFeedback = label.parent.type === CS_NODE_TYPE && (label.parent as CSNode).hasMissingFeedback;
         // label belongs to an edge which may be a missing feedback edge

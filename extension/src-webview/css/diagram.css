@@ -35,6 +35,10 @@
     font-weight: bold;
 }
 
+.pasta-hidden {
+    opacity: 0;
+}
+
 /* sprotty and black/white colors */
 .vscode-high-contrast .print-node {
     stroke: white;

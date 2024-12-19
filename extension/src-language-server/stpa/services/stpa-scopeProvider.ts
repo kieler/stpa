@@ -18,13 +18,13 @@
 import {
     AstNode,
     AstNodeDescription,
+    AstUtils,
     DefaultScopeProvider,
     EMPTY_SCOPE,
     PrecomputedScopes,
     ReferenceInfo,
     Scope,
     Stream,
-    getDocument,
     stream,
 } from "langium";
 import {
@@ -59,8 +59,8 @@ import {
     isSystemConstraint,
     isSystemResponsibilities,
     isVerticalEdge
-} from "../../generated/ast";
-import { StpaServices } from "../stpa-module";
+} from "../../generated/ast.js";
+import { StpaServices } from "../stpa-module.js";
 
 export class StpaScopeProvider extends DefaultScopeProvider {
     /* the types of the different aspects */
@@ -81,7 +81,7 @@ export class StpaScopeProvider extends DefaultScopeProvider {
         const referenceType = this.reflection.getReferenceType(context);
         const node = context.container;
 
-        const precomputed = getDocument(node).precomputedScopes;
+        const precomputed = AstUtils.getDocument(node).precomputedScopes;
         // get the root container which should be the Model
         let model = node.$container;
         while (model && !isModel(model)) {
